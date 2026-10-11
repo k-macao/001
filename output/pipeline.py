@@ -376,6 +376,9 @@ import octopus_quant as _quant  # noqa: E402
 from octopus_quant import sector_rotation as _sector_rotation  # noqa: E402
 # A股申万一级行业轮动（2026-10-04 移植回上线）：独立于港股「板块轮动」，可整体关闭。
 from octopus_quant import industry_rotation as _industry_rotation  # noqa: E402
+# 【游资剑鱼】UZI 多流派趋势分析（2026-10-11 新增）：方法来自 vendored 的 UZI-Skill 规则引擎
+# （tools/UZI-Skill，MIT，66 位评委 × 242 条规则），日线复用 MACD 栏目同一批，零新增联网。
+from octopus_quant import uzi_trend as _uzi_trend  # noqa: E402
 import octopus_weekly as _weekly  # noqa: E402
 import octopus_ren as _ren  # noqa: E402
 import octopus_short as _short  # noqa: E402  # 🎯 短线速查卡（≤600 字，日报结尾）
@@ -404,6 +407,11 @@ INDUSTRY_ROTATION_SOURCE_LABEL = "东方财富 · 申万一级行业指数日线
 # 策略研判内的 MACD 子策略：独立于港股概率引擎，优先市场库 / 本次日线，缺项补免费源。
 MACD_ENABLED = str(os.environ.get("OCTOPUS_MACD", "1")).strip().lower() not in ("0", "false", "no")
 MACD_SOURCE_NAME = "MACD量化策略"
+# 【游资剑鱼】UZI 多流派趋势分析（独立栏目）：Weinstein 四阶段 + 均线排列 + 上游评委规则打分。
+# OCTOPUS_UZI_TREND=0 或 --no-uzi-trend 关闭；规则引擎（tools/UZI-Skill）缺席时栏目自然缺席。
+UZI_TREND_ENABLED = str(os.environ.get("OCTOPUS_UZI_TREND", "1")).strip().lower() not in ("0", "false", "no")
+UZI_TREND_SOURCE_NAME = "UZI多流派趋势分析"
+UZI_TREND_SOURCE_LABEL = "UZI-Skill 规则引擎（vendored）· 复用 MACD 栏目同一批已收盘日线"
 # 每周量化走势预测开关：OCTOPUS_WEEKLY=0 或 --no-weekly 可整体跳过
 WEEKLY_ENABLED = str(os.environ.get("OCTOPUS_WEEKLY", "1")).strip().lower() not in ("0", "false", "no")
 WEEKLY_HISTORY_FILENAME = _weekly.JOURNAL_FILENAME
@@ -3551,7 +3559,8 @@ def fetch_macd_strategy(data=None):
         if isinstance(row, dict) and row.get("code") and row.get("bars"):
             existing[row["code"]] = row["bars"]
     try:
-        result = _quant.macd_strategy.run_macd(safe_request, existing=existing)
+        result = _quant.macd_strategy.run_macd(safe_request, existing=existing,
+                                               include_bars=UZI_TREND_ENABLED)
     except Exception as exc:
         print(f"  ⚠️ MACD 策略异常：{type(exc).__name__}")
         return _source_result(MACD_SOURCE_NAME, "unavailable", result=None,
@@ -3576,8 +3585,58 @@ def fetch_macd_strategy(data=None):
           f"{result['as_of']} ~ {result['latest_as_of']} · 金叉 {result['golden_n']} / 死叉 {result['death_n']}")
     # 已有库 / 已有日线不因今天计算过而冒充当天行情；不使用 snapshot 绕过日期检查。
     today = datetime.now(CST).strftime("%Y-%m-%d")
-    return _source_result(MACD_SOURCE_NAME, "success", result=result,
-                          content_date=result["as_of"],
+    source = _source_result(MACD_SOURCE_NAME, "success", result=result,
+                            content_date=result["as_of"],
+                            is_today=any(row["as_of"] == today for row in result["items"]))
+    if UZI_TREND_ENABLED:
+        # 私有键：本次选中的日线交给 fetch_uzi_trend()（同一批数据、同一次取数），
+        # 由调用方弹出后立刻丢弃，不写进日报 / JSON 留痕。
+        source["_bars_by_code"] = result.pop("bars_by_code", {})
+    return source
+
+
+# ============================================================
+# 【游资剑鱼】UZI 多流派趋势分析（独立栏目，2026-10-11 新增）
+# ------------------------------------------------------------
+# 方法：vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill，MIT）——Weinstein 四阶段 /
+#       均线多头排列等指标按上游同式本地重算，打分直接调上游 evaluate()，不重写规则。
+# 数据：bars_by_code 来自 fetch_macd_strategy() 取好的同一批已收盘日线（同来源、同复权口径），
+#       本栏目零新增联网；MACD 关闭 / 日线不可用 → 整栏缺席。
+# ============================================================
+def fetch_uzi_trend(data=None, bars_by_code=None):
+    """规则引擎缺席或没有可用日线时返回 unavailable（栏目自然缺席，不占位、不编数字）。"""
+    if not UZI_TREND_ENABLED:
+        return None                    # 关闭时不写 data 键：栏目与审计都不出现
+    if not MACD_ENABLED or not AI_ANALYSIS_ENABLED:
+        return _source_result(UZI_TREND_SOURCE_LABEL, "unavailable", result=None,
+                              error="依赖 MACD 栏目的已收盘日线（该栏目已关闭）")
+    bars_by_code = bars_by_code if bars_by_code is not None else \
+        ((data or {}).get(MACD_SOURCE_NAME) or {}).pop("_bars_by_code", {})
+    if not bars_by_code:
+        return _source_result(UZI_TREND_SOURCE_LABEL, "unavailable", result=None,
+                              error="MACD 栏目本次没有可用已收盘日线")
+    print(f"📡 正在计算 UZI 多流派趋势分析（{len(bars_by_code)} 只标的 · "
+          f"评委 {'/'.join(_uzi_trend.panel_ids() or []) or '未装载'}）...")
+    try:
+        result = _uzi_trend.run_trend(bars_by_code, now=datetime.now(CST))
+    except Exception as exc:                     # 单栏失败绝不拖垮整份日报
+        print(f"  ⚠️ UZI 趋势分析异常：{type(exc).__name__}")
+        return _source_result(UZI_TREND_SOURCE_LABEL, "unavailable", result=None,
+                              error=f"UZI 趋势分析异常（{type(exc).__name__}）")
+    if not result.get("available"):
+        print(f"  ⚠️ UZI 趋势分析栏目缺席：{result.get('reason')}")
+        return _source_result(UZI_TREND_SOURCE_LABEL, "unavailable", result=result,
+                              error=result.get("reason") or "日线样本不足")
+    cover, panel = result["coverage"], result["panel"]
+    tones = "、".join(f"{k}={v}" for k, v in (result.get("tones") or {}).items() if v)
+    print(f"  ✅ UZI 趋势：{cover['valid']}/{cover['total']} 只 · 收盘日 "
+          f"{result['as_of']}~{result['latest_as_of']} · {panel['investors']} 位评委 × "
+          f"{result['rules_enabled']} 条规则 · 定调 {tones or '—'}"
+          + (f" · 未取到 {','.join(row['label'] for row in result['missing'])}"
+             if result.get("missing") else ""))
+    today = datetime.now(CST).strftime("%Y-%m-%d")
+    return _source_result(UZI_TREND_SOURCE_LABEL, "success", result=result,
+                          content_date=result["latest_as_of"],
                           is_today=any(row["as_of"] == today for row in result["items"]))
 
 
@@ -4752,7 +4811,12 @@ def collect_all_data():
 
     macd_src = fetch_macd_strategy(data)
     if macd_src is not None:
+        # 日线只在这一刻交给 UZI 趋势栏目（私有键，用完即弹出，不进 data / 不入库）。
+        uzi_bars = macd_src.pop("_bars_by_code", {})
         data[MACD_SOURCE_NAME] = macd_src
+        uzi_src = fetch_uzi_trend(data, uzi_bars)
+        if uzi_src is not None:
+            data[UZI_TREND_SOURCE_NAME] = uzi_src
 
     # 「时间节点」财经日历先抓：逐日表格要用窗口内的 ★★★ 日程做「事件日提醒」
     # （日程不参与概率计算，缺席也只是少一行提醒，不影响预测）。
@@ -7265,6 +7329,8 @@ SECTION_TITLE_ECON_CALENDAR = "【探照安康鱼】时间节点量化预测"
 # （美联储趋势 / 地缘政治趋势）、像素关卡名 FED TREND / GEO TREND 不变。
 SECTION_TITLE_FED_TREND = "【火爆大鱿鱼】美联储因子量化分析"
 SECTION_TITLE_GEO_TREND = "【巡回巨鲸】地缘政治因子量化分析"
+# 2026-10-11 新增：独立栏目，方法来自 vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill）。
+SECTION_TITLE_UZI_TREND = "【游资剑鱼】UZI 多流派趋势分析"
 SECTION_TITLE_QUANT_FORECAST = "【蜉蝣天地水母】量化预测总览"
 SECTION_TITLE_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
 SECTION_TITLE_WEEKLY_FORECAST = "【嗜血大白鲨】逐日走势量化预测"
@@ -7281,7 +7347,8 @@ SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化
 # 正文顺序：专业分析 → 数据显示 → 结论。
 # 社区情绪因子使用当次 Reddit / StockTwits 样本；没有可用样本时该栏缺席。
 REPORT_ANALYSIS_SECTIONS = (
-    "RETAIL SENTIMENT", "STRATEGY READ", "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
+    "RETAIL SENTIMENT", "STRATEGY READ", "UZI TREND",
+    "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
     "WEEKLY FORECAST", "SECTOR ROTATION", "INDUSTRY ROTATION",
     "POLICY SHOCK", "FED TREND", "GEO TREND",
 )
@@ -8653,6 +8720,21 @@ def _industry_rotation_block(res, kit):
                                   '不含滑点/费用，非投资建议；历史胜率不是未来成功概率。'))
     out.append(kit.rows("".join(hold_rows)))
     return "".join(out)
+def _render_uzi_trend(source, kit):
+    """两套主题共用：【游资剑鱼】UZI 多流派趋势分析。
+
+    内容来自 octopus_quant.uzi_trend.run_trend() 的结果字典：面板概览 → 逐标的
+    （阶段 / 均线 / RSI·KDJ·WR / 区间收益·位置·波动 / 评委面板 / 趋势定调）→
+    逐评委命中与未达 → 规则覆盖与被门禁撤下的评委 → 方法来源与口径。
+    数据不足时 run_trend() 直接判定整栏缺席，这里只负责排版，绝不补造数字。
+    """
+    result = (source or {}).get("result") or {}
+    if not isinstance(result, dict) or not result.get("available"):
+        return ""
+    return _uzi_trend.render_trend(result, kit,
+                                   limit=6 if LITE_ENABLED else 0, plain=PLAIN())
+
+
 def _render_industry_rotation(source, kit):
     """两套主题共用：【巡游旗鱼】申万一级行业轮动。
 
@@ -8711,6 +8793,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         source_items.append((INDUSTRY_ROTATION_SOURCE_NAME, data[INDUSTRY_ROTATION_SOURCE_NAME]))
     if isinstance(data.get(MACD_SOURCE_NAME), dict):
         source_items.append((MACD_SOURCE_NAME, data[MACD_SOURCE_NAME]))
+    # UZI 多流派趋势分析：独立栏目 + 独立来源行（关闭时不写 data 键，审计口径不变）。
+    if isinstance(data.get(UZI_TREND_SOURCE_NAME), dict):
+        source_items.append((UZI_TREND_SOURCE_NAME, data[UZI_TREND_SOURCE_NAME]))
     # 前瞻日程（「时间节点」栏目）：关掉采集时不进审计，总源数保持不变。
     # 它是「今日抓取的日程快照」而非当天发布的内容，因此不计入当天源（当天检验不受影响）。
     if isinstance(data.get("财经日历"), dict):
@@ -8904,6 +8989,22 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         )
         # 兼容旧 kicker 的锚点引用（如风险提示中的 AI READ 引用）
         blocks["AI READ"] = blocks["STRATEGY READ"]
+
+    # ④b 【游资剑鱼】UZI 多流派趋势分析（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
+    #     评委规则打分。日线复用 MACD 栏目同一批；规则引擎缺席或日线不足 → 整栏缺席。
+    uzi_src = data.get(UZI_TREND_SOURCE_NAME) or {}
+    if isinstance(uzi_src, dict) and uzi_src.get("status") == "success":
+        uzi_html = _render_uzi_trend(uzi_src, kit)
+        if uzi_html:
+            uzi_res = uzi_src.get("result") or {}
+            uzi_panel = uzi_res.get("panel") or {}
+            uzi_caption = ("" if PLAIN() else
+                           f"{uzi_panel.get('investors', 0)} 位评委 × "
+                           f"{uzi_res.get('rules_enabled', 0)} 条价格类规则 · "
+                           f"收盘日 {_asof_short(uzi_res.get('latest_as_of'))}")
+            blocks["UZI TREND"] = (
+                "UZI TREND", SECTION_TITLE_UZI_TREND, uzi_html,
+                kit.badge("量化策略", "ai"), uzi_caption)
 
     # ⑤ 趋势跟踪：全网 20 个新闻源头（港股挖掘）+ 多平台信息员（Reddit / StockTwits /
     #    TradingView / Bogleheads），任一来源抓取成功且有内容才渲染；全部缺席则整栏不进正文。
@@ -14569,6 +14670,8 @@ def main():
     parser.add_argument("--notes", action="store_true",
                        help="精简版面里保留说明文字 / 过程文字（计算口径、数据来源、折叠披露等；"
                             "默认入门版不渲染，等价 OCTOPUS_NOTES=1）")
+    parser.add_argument("--no-uzi-trend", action="store_true",
+                        help="关闭【游资剑鱼】UZI 多流派趋势分析栏目（等价 OCTOPUS_UZI_TREND=0）")
     parser.add_argument("--no-hk7", action="store_true",
                        help="跳过 AI 七日港股走势分析概率（只出常规栏目，运行更快）")
     parser.add_argument("--hk7-only", action="store_true",
@@ -14613,6 +14716,10 @@ def main():
         _quant.render.LITE = False      # 量化呈现层同步回全量长版
     if args.notes:
         set_notes_requested(True)       # 精简版面 + 说明文字（入门版关闭）
+
+    if args.no_uzi_trend:
+        global UZI_TREND_ENABLED
+        UZI_TREND_ENABLED = False
 
     if args.no_hk7:
         global HK7_ENABLED
