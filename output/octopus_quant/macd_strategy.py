@@ -159,7 +159,7 @@ def _history_ready(bars, code, now):
 
 
 def run_macd(fetch_json=None, *, existing=None, db_root=None, specs=None, now=None,
-             extend_history=True):
+             extend_history=True, include_bars=False):
     """编排入口。整段选源，绝不拼接不同源 / 复权口径的价格或用快照补日线。
 
     基础不足 / 过旧时补取 1 年；派生历史不足时尝试 2 年整段替换，失败保留基础。
@@ -309,7 +309,7 @@ def run_macd(fetch_json=None, *, existing=None, db_root=None, specs=None, now=No
         else:
             missing.append(row)
     dates = sorted({row["as_of"] for row in items})
-    return {
+    result = {
         "available": bool(items), "reason": None if items else "全部标的缺少足够新鲜的已收盘日线",
         "parameters": {"fast": FAST, "slow": SLOW, "signal": SIGNAL},
         "items": items, "missing": missing, "warnings": warnings,
@@ -324,6 +324,11 @@ def run_macd(fetch_json=None, *, existing=None, db_root=None, specs=None, now=No
             "total": len(items),
         } for key in derived.KEYS},
     }
+    # include_bars=True：把本次真正选中的日线一并交出（【游资剑鱼】UZI 趋势分析栏目复用，
+    # 避免为同一批标的再取一次数）。调用方负责在入库 / 渲染前弹出，不要把整段日线写进 JSON。
+    if include_bars:
+        result["bars_by_code"] = {code: list(record[0]) for code, record in selected.items()}
+    return result
 
 
 def render_strategy(result, kit, *, limit=0, plain=False):

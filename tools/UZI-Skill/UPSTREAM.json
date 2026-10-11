@@ -1,0 +1,22 @@
+{
+  "upstream_repo": "https://github.com/wbh604/UZI-Skill",
+  "upstream_commit": "650788c54a9b2e042bf7f983f16dbf8d727fce1d",
+  "upstream_commit_date": "2026-09-05",
+  "upstream_commit_subject": "feat: align daily screening with verifiable public market data",
+  "upstream_version": "v3.9.4",
+  "vendored_at": "2026-10-11",
+  "license": "MIT (Copyright (c) 2026 Float Future)",
+  "files": [
+    "skills/deep-analysis/scripts/lib/__init__.py",
+    "skills/deep-analysis/scripts/lib/investor_db.py",
+    "skills/deep-analysis/scripts/lib/investor_criteria.py",
+    "skills/deep-analysis/scripts/lib/investor_evaluator.py",
+    "skills/deep-analysis/scripts/lib/investor_knowledge.py",
+    "skills/deep-analysis/scripts/lib/investor_profile.py",
+    "skills/deep-analysis/scripts/lib/seat_db.py"
+  ],
+  "local_modifications": [
+    "skills/deep-analysis/scripts/lib/__init__.py: 去掉 .cache / .market_router / .data_sources 三个取数模块的导入（未 vendor）",
+    "新增 VENDORED.md / UPSTREAM.json / LICENSE 副本"
+  ]
+}
