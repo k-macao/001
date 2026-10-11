@@ -4,3 +4,6 @@ output/*_预览*.html
 .venv/
 # AI 数据集导出（大文件，走 Actions Artifact；库文件 output/market_db/YYYYMMDD.json 正常入库）
 output/market_db/ai/
+
+# 上游 UZI-Skill 本地镜像（tools/install_uzi_skill.sh 装的参考副本，不进版本库）
+vendor/

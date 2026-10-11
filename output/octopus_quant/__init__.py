@@ -29,13 +29,13 @@
 from __future__ import annotations
 
 from . import (features, industry_rotation, liquidity, macd_derivatives, macd_strategy,
-               probability, providers, render, sector_rotation, stats)
+               probability, providers, render, sector_rotation, stats, trend_jury)
 from .engine import (FORECAST_HORIZONS, JOURNAL_FILENAME, VALIDATE_HORIZONS,
                      QuantEngine, run_quant)
 
 __all__ = [
     "features", "industry_rotation", "liquidity", "macd_derivatives", "macd_strategy",
-    "probability", "providers", "render", "sector_rotation", "stats",
+    "probability", "providers", "render", "sector_rotation", "stats", "trend_jury",
     "QuantEngine", "run_quant",
     "FORECAST_HORIZONS", "VALIDATE_HORIZONS", "JOURNAL_FILENAME",
 ]

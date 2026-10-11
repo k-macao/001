@@ -446,6 +446,43 @@ def _ren_strategy(ctx):
     return text
 
 
+def _ren_trend_jury(ctx):
+    """【深海剑鱼】趋势多维评审团：把「方法评委按规则投票」讲成面试现场。
+
+    只引用评审结果里已有的数字（覆盖 / 票型 / 趋势分 / 分歧熵），不新造任何读数。
+    """
+    jury = ctx.get("trend_jury") or {}
+    if not jury.get("available"):
+        return ""
+    cons = jury.get("consensus") or {}
+    cov = jury.get("coverage") or {}
+    params = jury.get("parameters") or {}
+    label = str(cons.get("label") or "数据不足")
+    mark = str(cons.get("mark") or "■")
+    score = cons.get("score")
+    judge_n = int(params.get("judges") or 0)
+    rules_n = int(params.get("rules_total") or 0)
+    bits = [f"{cov.get('valid', 0)}/{cov.get('total', 0)} 只标的过了数据闸门"]
+    if judge_n and rules_n:
+        bits.append(f"{judge_n} 位方法评委按 {rules_n} 条规则投票")
+    bits.append(f"看多 {cons.get('judge_bull', 0)} / 看空 {cons.get('judge_bear', 0)}"
+                f" / 中性 {cons.get('judge_neutral', 0)}"
+                f" / 数据不足 {cons.get('judge_skip', 0)}")
+    if score is not None:
+        bits.append(f"平均趋势分 {float(score):.1f} → {mark} {label}")
+    if cons.get("divergence") is not None:
+        bits.append(f"分歧熵 {cons['divergence']:.0f}/100")
+    lead = str(((cons.get("lead_symbol") or {}).get("label")) or "").strip()
+    tone = ("翻译：这不是某位大神说了算，是一套公开规则逐条打分——"
+            "「数据不足」那几位不是弃权，是真的没拿到数据；缺数据比看空更该警惕。")
+    if cons.get("divergence") is not None and float(cons["divergence"]) >= 60:
+        tone = ("翻译：评委吵得挺凶（分歧熵高），这种时候比「跟谁」更重要的是「谁的数据全」；"
+                "分歧本身就是今天最值钱的信号，别把它抹成一句「谨慎观望」。")
+    elif lead:
+        tone = f"翻译：各路方法难得投了同一边，重点盯 {lead} 的箱体上沿有没有量能配合。"
+    return "趋势评审团：" + "，".join(bits) + "。" + tone
+
+
 def _ren_trend(ctx):
     """趋势跟踪：把海外论坛 / 20 家媒体讲成「吃瓜前线」。"""
     trend = ctx.get("trend") or {}
@@ -615,6 +652,7 @@ _GENERATORS = {
     "FED TREND": _ren_fed,
     "GEO TREND": _ren_geo,
     "STRATEGY READ": _ren_strategy,
+    "TREND JURY": _ren_trend_jury,
     "TREND TRACKING": _ren_trend,
     "GLOBAL HEADLINES": _ren_global_headlines,
     "EASTMONEY WIRE": _ren_eastmoney_wire,
@@ -670,6 +708,7 @@ def _garnish_obj(kicker, ctx):
         "FED TREND": ctx.get("fed"),
         "GEO TREND": ctx.get("geo"),
         "STRATEGY READ": ctx.get("ai"),
+        "TREND JURY": ctx.get("trend_jury"),
         "TREND TRACKING": ctx.get("trend"),
         "GLOBAL HEADLINES": ctx.get("google"),
         "EASTMONEY WIRE": ctx.get("em"),

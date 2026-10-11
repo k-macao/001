@@ -312,6 +312,45 @@
       按用户要求，标题常量 SECTION_TITLE_NEWS_SENTIMENT 与其余鱼名栏目同口径）：
       只改显示标题与 backup_sources 的 used_by 标注；数据源键名、审计标签、
       kicker（NEWS SENTIMENT）与 DNS/MOM/ANV 计算口径一律不变；历史归档日报不改写。
+  26. 新增独立趋势分析栏目「【深海剑鱼】趋势多维评审团」（2026-10-11 · 按用户要求先安装
+      上游 UZI-Skill，再把它的方法方案移植成日报栏目）：
+      · 安装：bash tools/install_uzi_skill.sh（默认 clone / 更新到 vendor/UZI-Skill，该目录
+        已 gitignore，上游本体不进版本库、本栏目零新依赖）；镜像信息与逐条移植对照见
+        tools/uzi-skill/VENDORED.md，安装记录与验证过程见 UZISkill-安装与趋势分析栏目.md。
+      · 方法移植（上游 → output/octopus_quant/trend_jury.py，纯确定性、可离线测试）：
+        ① 带权重量化规则库 + 规则引擎裁决：12 位「方法评委」× 54 条规则，
+           得分 = 命中权重 / 可评权重 ×100，≥65 看多 / <35 看空（阈值逐字沿用上游）；
+        ② 数据不足即 skip：缺维度的规则不占分母，可评权重覆盖率 <60% 的评委整位跳过 ——
+           绝不把「没取到数据」渲染成「看空」（上游 _safe_check 的核心口径）；
+        ③ 流派分组与 SCHOOL LOCK：A 趋势跟随 / B 阶段均线 / C 强度动量 / D 量能确认 /
+           E 市场环境 / F 风险纪律；OCTOPUS_TREND_SCHOOL=A..F 锁定单一流派，其余评委记 skip，
+           栏目顶部出「流派锁定」提示，避免被误读成全体评委结论；
+        ④ 数据完整性闸门：≥120 根已收盘日线、关键维度（收盘价 / 50 日线 / 均线排列 /
+           20 日动量 / 箱体上沿 / 趋势 t 值）缺任何一个即整行不进评审并写明原因，
+           滞后 >4 个自然日的标的不进评审并在缺项点名；
+        ⑤ The Great Divide：最强多头评委 vs 最强空头评委并置 + 一句必须带数字的定调句；
+           评委分歧熵（多空二元 Shannon 熵，与【麻辣大龙虾】栏同算法）本身写进正文；
+        ⑥ 禁用空泛话术（「基本面良好 / 值得关注 / 前景广阔 / 建议重视 / 存在一定风险」
+           出现即自检失败）+ 出稿自检 9 条 + Step 1–6 可审计推导链（全量模式随正文出）；
+        ⑦ 趋势失效风险 8 信号扫描（上游「杀猪盘」8 信号结构移植到趋势语境，
+           每格必须给出「命中 / 未命中 / 数据不足」之一，命中必须附证据）。
+      · 取数：与策略研判的 MACD 子策略完全同一阶梯（市场库 → 本次已有日线 → Yahoo / 东财
+        免费主备链），整段选源不混接；「市场环境派」用的涨跌家数 / 成交额环比 / 板块净强弱 /
+        港股流动性分 / 社区与标题多空，全部复用日报本次已抓到的同一批实参
+        （A股大盘全景、港股量化引擎、散户情绪因子、政策因子同一批标题与同一份多空词表），
+        不新取数、不用均值或 0 补位；缺哪一路就少哪一维（该维规则 skip）。
+      · 位置与命名：收在专业分析组最后一栏（美联储 / 地缘政治之后、数据显示组之前）；
+        kicker TREND JURY，数据源键名「趋势多维评审团」，本次采集过即计入数据覆盖审计；
+        无有效标的即整栏缺席并在总结点名。
+      · 开关：OCTOPUS_TREND_JURY=0 整栏关闭（不进正文、不进审计、总源数不变）；
+        标的池 OCTOPUS_TREND_SYMBOLS（默认 9 只大盘指数，最多 12 只）；
+        精简模式标的表最多 4 行（LITE「jury_rows」）；--full / --notes 回到全量长版与说明文字。
+      · 与既有栏目的分工：【六眼飞鱼】给 MACD 单指标信号、【蜉蝣天地水母】/【嗜血大白鲨】
+        给概率预测、【滚滚翻车鱼】/【巡游旗鱼】给板块与行业轮动、【深海大鲨鱼】给资讯线索，
+        本栏给「多方法交叉裁决后的趋势定调」；栏内 MACD 维度与【六眼飞鱼】同参数但独立计算，
+        不并入其信号分（与政策因子 / 量化引擎的相互独立口径一致）。
+      · 回归：tests/test_trend_jury.py（49 项，全离线：三态裁决 / 数据闸门 / 截面二阶段裁决 /
+        流派锁定 / 8 信号 / 禁用话术 / 五套主题渲染 / 接线与审计计数）。历史归档日报不改写。
 
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
@@ -404,6 +443,12 @@ INDUSTRY_ROTATION_SOURCE_LABEL = "东方财富 · 申万一级行业指数日线
 # 策略研判内的 MACD 子策略：独立于港股概率引擎，优先市场库 / 本次日线，缺项补免费源。
 MACD_ENABLED = str(os.environ.get("OCTOPUS_MACD", "1")).strip().lower() not in ("0", "false", "no")
 MACD_SOURCE_NAME = "MACD量化策略"
+# 趋势分析模块（2026-10-11 新增 · UZI-Skill 方法移植）：独立栏目【深海剑鱼】趋势多维评审团。
+# 取数阶梯与 MACD 子策略一致（市场库 → 本次量化日线 → Yahoo/东财主备链），
+# OCTOPUS_TREND_JURY=0 可整栏关闭（不进正文、不进审计、不改变总源数）。
+TREND_JURY_ENABLED = str(os.environ.get("OCTOPUS_TREND_JURY", "1")).strip().lower() not in ("0", "false", "no")
+TREND_JURY_SOURCE_NAME = "趋势多维评审团"
+TREND_JURY_KICKER = "TREND JURY"
 # 每周量化走势预测开关：OCTOPUS_WEEKLY=0 或 --no-weekly 可整体跳过
 WEEKLY_ENABLED = str(os.environ.get("OCTOPUS_WEEKLY", "1")).strip().lower() not in ("0", "false", "no")
 WEEKLY_HISTORY_FILENAME = _weekly.JOURNAL_FILENAME
@@ -505,6 +550,9 @@ LITE_LIMITS = {
     "em_summary": (60, 0),           # 东财快讯摘要截断字数（0 = 不截断）
     "notes": (0, 1),                 # 方法论长注：0 = 折叠成一句，1 = 全文
     "risk_cards": (2, 0),            # 风险提示卡条数（0 = 全部）
+    # 趋势评审团（2026-10-11）：标的表行数（0 = 全展开）与「重点裁决」表最多几行
+    "jury_rows": (4, 0),
+    "jury_verdicts": (6, 0),
 }
 
 
@@ -3582,6 +3630,119 @@ def fetch_macd_strategy(data=None):
 
 
 # ============================================================
+# 【深海剑鱼】趋势多维评审团（2026-10-11 新增 · UZI-Skill 方法移植）
+#   数据阶梯与 MACD 子策略完全一致：市场库 → 本次量化日线 → Yahoo / 东财主备链；
+#   环境维度不另取数，只复用日报本次已抓到的同一批实参（全景宽度 / 板块 / 流动性 /
+#   社区情绪 / 标题多空），缺哪一路就少哪一维，评审引擎对缺维度一律 skip 不判负。
+# ============================================================
+def _trend_jury_extras(data=None):
+    """市场环境派需要的读数（全部取自本已抓取对象，不新取数、不用均值补位）。"""
+    data = data or {}
+    extras = {}
+    pan = data.get("A股大盘全景") or {}
+
+    breadth = pan.get("breadth") if isinstance(pan.get("breadth"), dict) else {}
+    up = _panorama_int((breadth or {}).get("up"))
+    down = _panorama_int((breadth or {}).get("down"))
+    if up is not None and down is not None:
+        extras["breadth_up_n"], extras["breadth_down_n"] = up, down
+        ratio = _panorama_float((breadth or {}).get("ratio"))
+        extras["breadth_ratio_txt"] = (f"涨跌比 {ratio:.2f}" if ratio is not None
+                                       else "下跌家数为 0，比率不适用")
+
+    chg = ((pan.get("turnover") or {}) if isinstance(pan.get("turnover"), dict) else {}).get("chg_pct")
+    if isinstance(chg, (int, float)):
+        extras["turnover_chg_pct"] = float(chg)
+
+    sectors = pan.get("sectors") or {}
+    lead = [r.get("chg_pct") for r in (sectors.get("leading") or [])
+            if isinstance(r.get("chg_pct"), (int, float))]
+    lag = [r.get("chg_pct") for r in (sectors.get("lagging") or [])
+           if isinstance(r.get("chg_pct"), (int, float))]
+    if lead and lag:
+        # 领跌涨幅本身是负数：两者相加 > 0 表示涨幅面盖过跌幅面（口径写进栏目正文）。
+        extras["sector_net"] = round(sum(lead) / len(lead) + sum(lag) / len(lag), 2)
+        extras["sector_up_n"], extras["sector_dn_n"] = len(lead), len(lag)
+
+    quant_res = ((data.get("港股量化") or {}).get("result") or {})
+    liq = quant_res.get("liquidity") or {}
+    if isinstance(liq, dict) and liq.get("available") and isinstance(liq.get("score"), (int, float)):
+        extras["liquidity_score"] = float(liq["score"])
+
+    # 社区多空：直接取【麻辣大龙虾】栏同一套计算（同一批 Reddit / StockTwits 样本）。
+    try:
+        senti = _senti_strategy.calculate(data) or {}
+    except Exception:
+        senti = {}
+    if senti.get("available"):
+        bull_n, bear_n = int(senti.get("bull") or 0), int(senti.get("bear") or 0)
+        extras["crowd_bull"], extras["crowd_bear"] = bull_n, bear_n
+        extras["crowd_net"] = bull_n - bear_n
+        nbi = senti.get("nbi")
+        extras["crowd_nbi"] = float(nbi) if isinstance(nbi, (int, float)) else None
+        extras["crowd_nbi_txt"] = (f"{nbi:+.1f}/100" if isinstance(nbi, (int, float)) else "—")
+
+    # 标题多空：与政策因子同一批标题（_collect_headline_items）+ 同一份多空词表。
+    try:
+        items = _collect_headline_items(data, datetime.now(CST).strftime("%Y-%m-%d"))
+        bull, bear = _zh_title_bull_bear([it.get("title") for it in items])
+    except Exception:
+        bull = bear = 0
+    if items:
+        extras["headline_bull"], extras["headline_bear"] = bull, bear
+        extras["headline_net"] = bull - bear
+    return extras
+
+
+def fetch_trend_jury(data=None):
+    """趋势评审团：只在采集阶段取数；渲染 / build_section 不读库、不联网。"""
+    if not TREND_JURY_ENABLED:
+        return None                       # 关闭时不出正文，也不加入数据审计
+    print("🧭 正在计算趋势多维评审团（UZI 方法移植：市场库 → 已有日线 → Yahoo/东财免费源）...")
+    quant_src = (data or {}).get("港股量化") or {}
+    quant_res = quant_src.get("result") or {}
+    existing = {}
+    for row in list(quant_res.get("indices") or []) + list(quant_res.get("stocks") or []):
+        if isinstance(row, dict) and row.get("code") and row.get("bars"):
+            existing[row["code"]] = row["bars"]
+    try:
+        result = _quant.trend_jury.run_trend(safe_request, existing=existing,
+                                             extras=_trend_jury_extras(data))
+    except Exception as exc:
+        print(f"  ⚠️ 趋势评审团异常：{type(exc).__name__}")
+        return _source_result(TREND_JURY_SOURCE_NAME, "unavailable", result=None,
+                              error=f"趋势评审团异常（{type(exc).__name__}）")
+    if not result.get("available"):
+        print(f"  ⚠️ 趋势评审团暂不可用：{result.get('reason')}")
+        return _source_result(TREND_JURY_SOURCE_NAME, "unavailable", result=result,
+                              error=result.get("reason") or "日线样本不足")
+    # 真实命中的主备路由写进本次备用源审计；市场库 / 已有日线复用不虚构网络命中。
+    for row in result["items"]:
+        url = row.get("source_url")
+        if not url:
+            continue
+        if "eastmoney.com" in str(url):
+            em_primary = _backup.DATA_LINES["yahoo_bars"]["backups"][1][1]
+            _note_backup_served("yahoo_bars", em_primary, symbol=row["code"])
+            _note_backup_served("em_kline", url)
+        else:
+            _note_backup_served("yahoo_bars", url, symbol=row["code"])
+    cons = result.get("consensus") or {}
+    cov = result.get("coverage") or {}
+    print(f"  ✅ 趋势评审团：{cov.get('valid')}/{cov.get('total')} 只 · 维度 {cov.get('dims')} · "
+          f"定调 {cons.get('mark')} {cons.get('score')}（{cons.get('label')}）· "
+          f"评委 多{cons.get('judge_bull')} / 空{cons.get('judge_bear')} / 跳{cons.get('judge_skip')}")
+    checks = (result.get("self_check") or {}).get("checks") or []
+    for item in checks:
+        if not item.get("ok"):
+            print(f"  ⚠️ 趋势评审团自检未过：{item.get('name')}")
+    today = datetime.now(CST).strftime("%Y-%m-%d")
+    return _source_result(TREND_JURY_SOURCE_NAME, "success", result=result,
+                          content_date=result.get("as_of"),
+                          is_today=any(row.get("as_of") == today for row in result["items"]))
+
+
+# ============================================================
 # 【滚滚翻车鱼】板块轮动量化策略
 # ============================================================
 def _sector_rotation_is_today(content_date, today=None):
@@ -4785,6 +4946,13 @@ def collect_all_data():
     data[INDUSTRY_ROTATION_SOURCE_NAME] = fetch_industry_rotation()
     time.sleep(0.5)
 
+    # 趋势多维评审团（UZI-Skill 方法移植）：复用上面已抓到的日线与环境读数，
+    # 返回 None / 不可用时不写键，栏目与数据审计都不出现（总源数不变）。
+    trend_jury_src = fetch_trend_jury(data)
+    if trend_jury_src is not None:
+        data[TREND_JURY_SOURCE_NAME] = trend_jury_src
+    time.sleep(0.5)
+
     # === 新增：全栏目新鲜度检查 ===
     print("\n🕐 正在检查全栏目数据新鲜度...")
     try:
@@ -5086,6 +5254,8 @@ _SECTION_ICON_META = {
     "INDUSTRY ROTATION": ("◑", "INDUST", C_LEMON, C_FLAT_BG),
     # 港股行情（2026-10-02 新增）：境外数据源（Yahoo / Stooq / HKEX / 可选浏览器）
     "HK QUOTES": ("◍", "HK-MKT", C_CYAN, "#092836"),
+    # 趋势评审团（2026-10-11 UZI 方法移植）：◭ = 趋势台阶，短标签 TREND-JURY
+    "TREND JURY": ("◭", "TREND-JURY", C_LEMON, C_AI_BG),
 }
 
 
@@ -7277,6 +7447,8 @@ SECTION_TITLE_TREND = "【深海大鲨鱼】趋势跟踪"
 SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
 # 2026-10-10 更名：原「新闻情绪」；数据源键名、审计标签与 kicker（NEWS SENTIMENT）不变。
 SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
+# 2026-10-11 新增（UZI-Skill 方法移植）：独立的趋势分析栏目，方法评委团 × 量化规则。
+SECTION_TITLE_TREND_JURY = "【深海剑鱼】趋势多维评审团"
 
 # 正文顺序：专业分析 → 数据显示 → 结论。
 # 社区情绪因子使用当次 Reddit / StockTwits 样本；没有可用样本时该栏缺席。
@@ -7284,6 +7456,9 @@ REPORT_ANALYSIS_SECTIONS = (
     "RETAIL SENTIMENT", "STRATEGY READ", "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
     "WEEKLY FORECAST", "SECTOR ROTATION", "INDUSTRY ROTATION",
     "POLICY SHOCK", "FED TREND", "GEO TREND",
+    # 趋势分析模块（UZI 方法移植）：收在专业分析最后一栏，把上面各栏的日线与环境证据
+    # 折成「方法评委团定调」；数据不足整栏缺席，不影响其余栏顺序。
+    TREND_JURY_KICKER,
 )
 # 2026-10-02 起 GLOBAL HEADLINES（【无敌帝王蟹】全球头条）与 HK GURU CHANNELS
 # （港股名家频道）按用户要求从页面隐藏，与此前隐藏的 EASTMONEY WIRE（东方财富快讯）
@@ -7551,7 +7726,8 @@ def _trend_section_stats(data):
     }
 
 
-def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo_trend=None):
+def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo_trend=None,
+                           trend_jury=None):
     """为有内容的数据栏目生成逐栏 AI 研判（概率多空 + 预测）。
 
     返回 {kicker: note}；仅真实有数据的栏目出研判。结论型栏目
@@ -7777,6 +7953,23 @@ def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo
                 prob, f"归因 {senti.get('total_matched')} 只（前 {len(stocks)} 只评分），"
                       f"最强 {_esc(str(best.get('name')))}、最弱 {_esc(str(worst.get('name')))}"
                       f" → 预测：新闻情绪{label}，关注情绪与价格背离")
+
+    # ⑥b 趋势多维评审团：证据 = 方法评委的投票分布（与正文同一批裁决，不另算一套）。
+    jury = trend_jury or {}
+    if isinstance(jury, dict) and jury.get("available"):
+        cons = jury.get("consensus") or {}
+        jb = int(cons.get("judge_bull") or 0)
+        jr = int(cons.get("judge_bear") or 0)
+        if jb + jr > 0:
+            prob = _ai_judge_prob(jb, jr)
+            parts = (f"{cons.get('symbol_n', 0)} 只标的 · 方法评委看多 {jb} / 看空 {jr} / "
+                     f"中性 {cons.get('judge_neutral', 0)} / 数据不足 {cons.get('judge_skip', 0)}"
+                     f"（分歧熵 {cons['divergence']:.0f}/100）" if cons.get("divergence") is not None
+                     else f"方法评委看多 {jb} / 看空 {jr}")
+            verdict = (f"{cons.get('mark', '■')} {cons.get('label', '数据不足')}"
+                       + (f" · 趋势分 {cons['score']:.1f}" if isinstance(cons.get("score"), (int, float)) else ""))
+            notes[TREND_JURY_KICKER] = _judge_note(
+                prob, f"{parts} → 预测：{verdict}")
 
     return notes
 
@@ -8711,6 +8904,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         source_items.append((INDUSTRY_ROTATION_SOURCE_NAME, data[INDUSTRY_ROTATION_SOURCE_NAME]))
     if isinstance(data.get(MACD_SOURCE_NAME), dict):
         source_items.append((MACD_SOURCE_NAME, data[MACD_SOURCE_NAME]))
+    # 趋势多维评审团（UZI 方法移植）：独立数据线（市场库 / 已有日线 / 免费主备源），存在即进审计。
+    if isinstance(data.get(TREND_JURY_SOURCE_NAME), dict):
+        source_items.append((TREND_JURY_SOURCE_NAME, data[TREND_JURY_SOURCE_NAME]))
     # 前瞻日程（「时间节点」栏目）：关掉采集时不进审计，总源数保持不变。
     # 它是「今日抓取的日程快照」而非当天发布的内容，因此不计入当天源（当天检验不受影响）。
     if isinstance(data.get("财经日历"), dict):
@@ -8905,6 +9101,21 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         # 兼容旧 kicker 的锚点引用（如风险提示中的 AI READ 引用）
         blocks["AI READ"] = blocks["STRATEGY READ"]
 
+    # ④b 趋势多维评审团（2026-10-11 · UZI-Skill 方法移植）：方法评委团 × 量化规则的
+    #     独立趋势分析栏目。数据不可用 / 评委全体 skip 时不建块，整栏缺席并在总结点名。
+    jury_src = data.get(TREND_JURY_SOURCE_NAME) or {}
+    jury_res = jury_src.get("result") or {} if isinstance(jury_src, dict) else {}
+    if TREND_JURY_ENABLED and jury_res.get("available"):
+        jury_html = _quant.trend_jury.render_jury(
+            jury_res, kit, limit=LITE("jury_rows"), plain=PLAIN())
+        if jury_html:
+            jury_cov = jury_res.get("coverage") or {}
+            jury_caption = (f"{jury_cov.get('valid', 0)}/{jury_cov.get('total', 0)} 只标的 · "
+                            f"评委维度 {_quant.trend_jury.RULE_TOTAL_N} 条规则 · 非投资建议")
+            blocks[TREND_JURY_KICKER] = (
+                TREND_JURY_KICKER, SECTION_TITLE_TREND_JURY, jury_html,
+                kit.badge("量化策略", "ai"), jury_caption)
+
     # ⑤ 趋势跟踪：全网 20 个新闻源头（港股挖掘）+ 多平台信息员（Reddit / StockTwits /
     #    TradingView / Bogleheads），任一来源抓取成功且有内容才渲染；全部缺席则整栏不进正文。
     if ((data.get("Reddit") or {}).get("status") == "success"
@@ -8956,7 +9167,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         data, policy=policy if (isinstance(policy, dict) and policy.get("available")) else None,
         senti=senti_result if (isinstance(senti_result, dict) and senti_result.get("available")) else None,
         fed_trend=fed_res if (isinstance(fed_res, dict) and fed_res.get("available")) else None,
-        geo_trend=geo_res if (isinstance(geo_res, dict) and geo_res.get("available")) else None)
+        geo_trend=geo_res if (isinstance(geo_res, dict) and geo_res.get("available")) else None,
+        trend_jury=jury_res if (isinstance(jury_res, dict) and jury_res.get("available")) else None)
     if judge_notes:
         new_sections = []
         for kick, title, content, badge, caption in sections:
@@ -8981,6 +9193,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "market": market, "pan": pan, "policy": policy, "ai": ai_result,
             "quant": quant, "weekly": weekly_res, "hk7": hk7_res,
             "fed": fed_res, "geo": geo_res, "senti": senti_result,
+            "trend_jury": jury_res if (isinstance(jury_res, dict) and jury_res.get("available")) else None,
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
             "coverage": {
@@ -11759,6 +11972,7 @@ DOSSIER_ICONS = {
     "QUANT POLICY": ("◉", D_RED_INK, "■", D_BLACK),
     "FED TREND": ("$", D_GREEN_INK, "●", D_RED_INK),
     "GEO TREND": ("◎", D_RED_INK, "■", D_BLACK),
+    "TREND JURY": ("◭", D_GREEN_INK, "▲", D_RED_INK),
     "AI READ": ("●", D_GREEN_INK, "▲", D_RED_INK),
     "HK GURU CHANNELS": ("▶", D_GREEN_INK, "■", D_RED_INK),
 }
@@ -12154,6 +12368,7 @@ FORUM_ICONS = {
     "QUANT POLICY": ("📄", F_ORANGE),
     "FED TREND": ("💵", F_GREEN),
     "GEO TREND": ("🌏", F_CYAN),
+    "TREND JURY": ("🧭", F_ORANGE),     # 指南针：趋势定调（橙色，避开涨跌语义色）
     "AI READ": ("🤖", F_PURPLE),
     "HK GURU CHANNELS": ("📺", F_RED),
 }
