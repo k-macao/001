@@ -21,11 +21,49 @@ ren = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ren)
 
 ALL_KICKERS = (
-    "STRATEGY READ", "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
+    "STRATEGY READ", "UZI TREND", "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
     "WEEKLY FORECAST", "POLICY SHOCK", "FED TREND", "GEO TREND", "ECON CALENDAR",
     "MARKET REVIEW", "TREND TRACKING", "GLOBAL HEADLINES", "EASTMONEY WIRE",
     "HK GURU CHANNELS", "NEWS SENTIMENT", "HK 7D PROB", "SUMMARY", "FORECAST",
 )
+
+
+def uzi_result():
+    """一份【游资剑鱼】UZI 多流派趋势分析的 run_trend() 结果（数字均为测试造的）。
+
+    键与 output/octopus_quant/uzi_trend.py 的真实返回一一对应：coverage / panel /
+    rules_enabled / rules_total / tones / items（含 tone_key + tone + score_avg）/
+    dropped（被准入门禁撤下的评委）/ missing（没拿到合格日线的标的）。
+    """
+    return {
+        "available": True, "reason": None,
+        "engine": {"version": "v3.9.4", "investors_total": 66, "rules_total": 242,
+                   "panel": ["利弗莫尔", "米内尔维尼", "达瓦斯", "江恩", "西蒙斯"]},
+        "items": [
+            {"available": True, "label": "恒生指数", "code": "^HSI", "as_of": "2026-09-29",
+             "tone_key": "up", "tone": "多头趋势成立",
+             "tone_detail": "Stage 2 上升 · 4/5 位评委看多",
+             "score_avg": 18.4, "bullish_n": 4, "bearish_n": 1, "neutral_n": 0,
+             "panel": [{"id": "livermore", "name": "利弗莫尔", "score": 22.0,
+                        "signal": "bullish"}],
+             "dropped": {}},
+            {"available": True, "label": "腾讯控股", "code": "0700.HK", "as_of": "2026-09-29",
+             "tone_key": "base", "tone": "底部构筑",
+             "tone_detail": "Stage 1 底部 · 看多 2 / 看空 2",
+             "score_avg": 6.1, "bullish_n": 2, "bearish_n": 2, "neutral_n": 1,
+             "panel": [{"id": "darvas", "name": "达瓦斯", "score": 6.1, "signal": "neutral"}],
+             "dropped": {"江恩": "可评估 1/4 条（权重 3/17 = 18%）"}},
+        ],
+        "missing": [{"label": "恒生科技", "code": "^HSTECH",
+                     "reason": "本次没有可用已收盘日线"}],
+        "coverage": {"valid": 2, "total": 3},
+        "as_of": "2026-09-29", "latest_as_of": "2026-09-29",
+        "rules_enabled": 14, "rules_total": 242,
+        "dropped": {"江恩": "可评估 1/4 条（权重 3/17 = 18%）"},
+        "panel": {"investors": 5, "bullish": 6, "bearish": 3, "neutral": 1,
+                  "avg_score": 12.3},
+        "tones": {"up": 1, "mixed": 0, "base": 1, "top": 0, "down": 0, "unknown": 0},
+    }
 
 
 def rich_ctx():
@@ -44,6 +82,7 @@ def rich_ctx():
                    "winners": [{"name": "银行"}], "losers": [{"name": "地产链"}]},
         "ai": {"available": True, "sentiment_label": "中性", "score": 7,
                "confidence": "高", "themes": ["AI/算力", "新能源/锂电"]},
+        "uzi": uzi_result(),
         "quant": {
             "available": True,
             "headline": {"available": True, "label": "中性", "p_up": 0.52, "arrow": "■"},
@@ -129,9 +168,10 @@ class NoFabricationTests(unittest.TestCase):
     def test_unavailable_results_return_empty(self):
         """available=False / status!=success 时整行缺席，绝不用旧数据充数。"""
         ctx = rich_ctx()
-        for key in ("policy", "ai", "quant", "weekly", "fed", "geo", "senti"):
+        for key in ("policy", "ai", "uzi", "quant", "weekly", "fed", "geo", "senti"):
             broken = dict(ctx, **{key: {"available": False}})
             kicker = {"policy": "POLICY SHOCK", "ai": "STRATEGY READ",
+                      "uzi": "UZI TREND",
                       "quant": "QUANT FORECAST", "weekly": "WEEKLY FORECAST",
                       "fed": "FED TREND", "geo": "GEO TREND",
                       "senti": "NEWS SENTIMENT"}[key]
@@ -152,6 +192,8 @@ class NoFabricationTests(unittest.TestCase):
             "QUANT FORECAST": ["52%", "185"],
             "HK PROBABILITY": ["63%", "36%", "24"],
             "LIQUIDITY FLOW": ["640", "45/100"],
+            "UZI TREND": ["3 只里 2 只", "5 位方法评委按 14 条规则", "评委库 66 位 / 242 条规则",
+                          "看多 6 / 看空 3 / 中性 1", "均分 12.3"],
             "WEEKLY FORECAST": ["53%"],
             "POLICY SHOCK": ["-9"],
             "FED TREND": ["命中 7 次", "8 条"],
@@ -206,6 +248,91 @@ class ContentTests(unittest.TestCase):
         self.assertIn("后视镜", ren.section_ren("NEWS SENTIMENT", ctx))
         self.assertIn("非投资建议", ren.section_ren("SUMMARY", ctx) + ren.DISCLAIMER)
 
+
+
+class UziTrendRenTests(unittest.TestCase):
+    """【游资剑鱼】UZI 多流派趋势分析的「AI帮你提鲜」（2026-10-13 接入）。
+
+    防自欺口径与该栏正文一致：解读只引用 run_trend() 结果里已有的数字与 items 自带的
+    tone 文案；本栏没有概率口径 → 几率条整条缺席（绝不硬凑一个涨跌概率）。
+    """
+
+    def test_text_only_quotes_numbers_from_the_result(self):
+        text = ren._ren_uzi_trend(rich_ctx())
+        for token in ("观察池 3 只里 2 只这次算出了结果",
+                      "5 位方法评委按 14 条规则投票",
+                      "评委库 66 位 / 242 条规则",
+                      "看多 6 / 看空 3 / 中性 1",
+                      "均分 12.3",
+                      "多头趋势成立 1 只",
+                      "底部构筑 1 只",
+                      "最高分：恒生指数（均分 18.4 · 多头趋势成立）",
+                      "1 位评委没过准入门禁被整位撤下（江恩）",
+                      "恒生科技这次没算出来，整只缺席，不拿旧数据顶",
+                      "非投资建议"):
+            self.assertIn(token, text)
+
+    def test_tone_wording_is_taken_from_items_not_retranslated(self):
+        """定调用语直接取 items 的 tone（与正文同一套 _verdict 口径，不另写翻译）。"""
+        ctx = rich_ctx()
+        uzi = dict(ctx["uzi"],
+                   items=[dict(row, tone="测试定调文案") for row in ctx["uzi"]["items"]])
+        self.assertIn("测试定调文案", ren._ren_uzi_trend(dict(ctx, uzi=uzi)))
+
+    def test_dropped_judges_are_named_not_smoothed_over(self):
+        """被门禁撤下的评委如实点名，并说清「不是弃权，是缺数据」。"""
+        ctx = rich_ctx()
+        text = ren._ren_uzi_trend(ctx)
+        self.assertIn("江恩", text)
+        self.assertIn("不是弃权，是真的缺数据", text)
+        many = dict(ctx["uzi"], dropped={"江恩": "r1", "西蒙斯": "r2", "达瓦斯": "r3"})
+        text = ren._ren_uzi_trend(dict(ctx, uzi=many))
+        self.assertIn("3 位评委没过准入门禁被整位撤下（江恩、西蒙斯等）", text)
+
+    def test_unavailable_or_empty_items_returns_empty(self):
+        ctx = rich_ctx()
+        for broken in ({"available": False}, {"available": True, "items": []}, {}):
+            self.assertEqual(ren._ren_uzi_trend(dict(ctx, uzi=broken)), "")
+        self.assertEqual(ren._ren_uzi_trend(dict(ctx, uzi=None)), "")
+
+    def test_no_odds_meter_because_the_column_has_no_probability(self):
+        """本栏没有概率 → label / p_pct 都是 None，渲染层跳过几率条（不造新数字）。"""
+        block = ren.section_ren_block("UZI TREND", rich_ctx())
+        self.assertIsNotNone(block)
+        self.assertIsNone(block["p_pct"])
+        self.assertIsNone(block["label"])
+
+    def test_garnish_reads_the_same_result_object(self):
+        """活鲜度点缀与解读读同一份对象；本栏是「本次现算」的分析栏 → 计活鲜。"""
+        ctx = rich_ctx()
+        self.assertIs(ren._garnish_obj("UZI TREND", ctx), ctx["uzi"])
+        self.assertTrue(ren._garnish_available(ctx["uzi"]))
+        self.assertTrue(ren._garnish_is_today("UZI TREND", ctx["uzi"]))
+        self.assertIn("🦐", ren.section_ren("UZI TREND", ctx))
+
+    def test_wording_follows_the_vote_but_never_gives_advice(self):
+        ctx = rich_ctx()
+        bearish = dict(ctx["uzi"], panel=dict(ctx["uzi"]["panel"], bullish=1, bearish=9))
+        text = ren._ren_uzi_trend(dict(ctx, uzi=bearish))
+        self.assertTrue(any(w in text for w in ("空头票更多", "看空票占上风")), text)
+        neutral = dict(ctx["uzi"], panel=dict(ctx["uzi"]["panel"],
+                                              bullish=0, bearish=0, neutral=5))
+        self.assertIn("全是中性票", ren._ren_uzi_trend(dict(ctx, uzi=neutral)))
+        tied = dict(ctx["uzi"], panel=dict(ctx["uzi"]["panel"], bullish=4, bearish=4))
+        text = ren._ren_uzi_trend(dict(ctx, uzi=tied))
+        self.assertTrue(any(w in text for w in ("多空打平", "五五开的评审团")), text)
+        for sample in (bearish, neutral, tied):
+            self.assertIn("非投资建议", ren._ren_uzi_trend(dict(ctx, uzi=sample)))
+
+    def test_day_seed_changes_wording_but_not_numbers(self):
+        """隔天换措辞，数字口径不变（均分 12.3 还是 12.3）。"""
+        ctx_a, ctx_b = rich_ctx(), dict(rich_ctx(), date_str="20260930")
+        for ctx in (ctx_a, ctx_b):
+            text = ren._ren_uzi_trend(ctx)
+            self.assertIn("均分 12.3", text)
+            self.assertIn("看多 6 / 看空 3 / 中性 1", text)
+        self.assertEqual(ren.section_ren("UZI TREND", ctx_a),
+                         ren.section_ren("UZI TREND", ctx_a))
 
 
 class FreshMeterTests(unittest.TestCase):
@@ -351,6 +478,34 @@ class PipelineIntegrationTests(unittest.TestCase):
             self.assertRegex(html, r"几率 涨 \d+ ： \d+ 跌", theme)
             # 独立内容区域：块标题与大白话正文同块出现
             self.assertIn("大白话", html, theme)
+
+    def test_uzi_column_carries_its_own_ren_block(self):
+        """【游资剑鱼】的解读走 ctx["uzi"]（该栏正文渲染另由 tests/test_uzi_trend.py 覆盖，
+        这里把正文渲染打桩，只验解读块确实挂进了这一栏）。"""
+        p = self.pipeline
+        data = self._data()
+        data[p.UZI_TREND_SOURCE_NAME] = p._source_result(
+            p.UZI_TREND_SOURCE_LABEL, "success", result=uzi_result(),
+            content_date="2026-09-29", is_today=True)
+        stub = "<p>UZI 正文（测试桩）</p>"
+        with unittest.mock.patch.object(p, "_render_uzi_trend", return_value=stub):
+            html = p.generate_report(data, "2026年9月29日 · 周二", "20260929")
+        self.assertIn(p.SECTION_TITLE_UZI_TREND, html)
+        self.assertIn(stub, html)
+        self.assertIn("趋势评审团：", html)
+        self.assertIn("观察池 3 只里 2 只这次算出了结果", html)
+        self.assertIn("最高分：恒生指数（均分 18.4 · 多头趋势成立）", html)
+
+    def test_uzi_ren_disappears_when_the_column_is_absent(self):
+        """栏目缺席 → 解读也缺席，不留一句硬编的大白话。"""
+        p = self.pipeline
+        data = self._data()
+        data[p.UZI_TREND_SOURCE_NAME] = p._source_result(
+            p.UZI_TREND_SOURCE_LABEL, "unavailable", result=None,
+            error="MACD 栏目本次没有可用已收盘日线")
+        html = p.generate_report(data, "2026年9月29日 · 周二", "20260929")
+        self.assertNotIn(p.SECTION_TITLE_UZI_TREND, html)
+        self.assertNotIn("趋势评审团：", html)
 
 
 if __name__ == "__main__":

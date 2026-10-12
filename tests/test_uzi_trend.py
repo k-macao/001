@@ -5,7 +5,9 @@
   · 指标口径（满窗口 MA、Weinstein 四阶段、RSI / KDJ / Williams%R、区间收益窗口）；
   · 「缺数据不打假分」——算不出来的特征让规则整条出局，评委按准入门禁整位撤下并点名；
   · run_trend 的覆盖 / 缺项 / 定调；
-  · pipeline 集成：私有日线键用完即弃、五套主题渲染、入门版与全量版差异、HTML 转义。
+  · pipeline 集成：私有日线键用完即弃、五套主题渲染、入门版与全量版差异、HTML 转义；
+  · 「🦑 AI帮你提鲜」接入（2026-10-13）：解读数字与正文同一份 run_trend() 结果、
+    本栏无概率口径故几率条缺席、栏目缺席 / 关解读时的降级行为。
 """
 import importlib.util
 import math
@@ -399,6 +401,47 @@ class ReportIntegrationTest(unittest.TestCase):
         parts = pipeline._collect_report_parts(self._data("unavailable"), pipeline.LIME_KIT,
                                                date_str="20261002")
         self.assertNotIn("UZI TREND", [section[0] for section in parts["sections"]])
+
+    def test_section_carries_its_own_ren_block_with_same_source_numbers(self):
+        """「🦑 AI帮你提鲜」接进本栏（2026-10-13）：解读引用的数字与正文同一份结果。
+
+        真跑 run_trend()（不手搓 fixture）：ctx["uzi"] 与 blocks["UZI TREND"] 走
+        pipeline._uzi_result() 同一个出口，解读里的数字必须能在正文结果里逐字对上。
+        """
+        data = self._data()
+        result = data[pipeline.UZI_TREND_SOURCE_NAME]["result"]
+        self.assertTrue(result["available"])
+        html = self._html(data, "guizang")
+        self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html)
+        self.assertIn("趋势评审团：", html)
+        cover, panel = result["coverage"], result["panel"]
+        self.assertIn(f"观察池 {cover['total']} 只里 {cover['valid']} 只这次算出了结果", html)
+        self.assertIn(f"{panel['investors']} 位方法评委按 {result['rules_enabled']} 条规则投票",
+                      html)
+        self.assertIn(f"看多 {panel['bullish']} / 看空 {panel['bearish']} / "
+                      f"中性 {panel['neutral']}", html)
+        # 定调用语取 items 自带的 tone（与正文同一套 _verdict，不另写一份翻译）
+        for row in result["items"]:
+            self.assertIn(row["tone"], html)
+        # 本栏没有概率口径 → 解读块不出几率条（绝不硬凑一个涨跌概率）
+        block = pipeline._ren.section_ren_block(
+            "UZI TREND", {"uzi": result, "date_str": "20261002"})
+        self.assertIsNotNone(block)
+        self.assertIsNone(block["p_pct"])
+        self.assertIsNone(block["label"])
+
+    def test_ren_block_disappears_with_the_section(self):
+        """栏目缺席时解读一起缺席：不留一句硬编的大白话。"""
+        self.assertNotIn("趋势评审团：", self._html(self._data("unavailable"), "guizang"))
+
+    def test_ren_can_be_switched_off_without_touching_the_section(self):
+        """OCTOPUS_REN=0 / --no-ren 与其它栏目同一开关：关解读不关栏目。"""
+        data = self._data()
+        with patch.object(pipeline, "REN_ENABLED", False):
+            html = self._html(data, "guizang")
+        self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html)
+        self.assertIn("UZI 多流派趋势分析 · 已收盘日线", html)
+        self.assertNotIn("趋势评审团：", html)
 
 
 if __name__ == "__main__":
