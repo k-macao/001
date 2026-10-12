@@ -117,17 +117,28 @@ class RegistryTests(unittest.TestCase):
             self.assertIn("bing.com", urls[0])
             self.assertIn("news.google.com", urls[1])
 
-    def test_existing_hk_news_pool_is_untouched(self):
-        """新增 18 家不挤占原有的港股 20 家源池（证券时报网与「证券时报·快讯」同域，
-        是两条独立数据线：前者进标题池，后者仍按港股关键词挖掘）。"""
-        self.assertEqual(pipeline.HK_NEWS_TOTAL, 20)
-        self.assertEqual(len(pipeline.HK_NEWS_SOURCES), 20)
+    def test_hk_pool_and_mainland_pool_coexist(self):
+        """两套源头并存（用户 2026-10-12 选定：B 方案）：
+
+        · 「全网新闻源头」池 = 香港 7 + 内地 23 + 国际 6 = 36（内地段含 main 侧并入的 16 家）；
+        · 「内地财经媒体源头」= 独立 18 家（含 证券时报网 / 证券日报之声 这两条 main 侧未加的）；
+        · 同域媒体会同时出现在两条线上，但**是两条独立数据线**（hk_news_rss / mainland_news_rss），
+          各自采集、各自审计计数，不互相替代；
+        · 18 家池自身不得混进 36 源池（源表彼此独立）。
+        """
+        self.assertEqual(pipeline.HK_NEWS_TOTAL, 36)
+        self.assertEqual(len(pipeline.HK_NEWS_SOURCES), 36)
         hk_names = [c["name"] for c in pipeline.HK_NEWS_SOURCES]
         self.assertIn("证券时报·快讯", hk_names)
         self.assertNotIn(pipeline.MAINLAND_NEWS_SOURCE_NAME, hk_names)
-        # 两条线各有自己的站内检索数据线（避免审计归属混在一起）
+        self.assertEqual(pipeline.MAINLAND_NEWS_TOTAL, 18)
+        # 两条线各有自己的站内检索数据线（审计归属分开）
         self.assertIn("hk_news_rss", bk.DATA_LINES)
         self.assertIn("mainland_news_rss", bk.DATA_LINES)
+        # 同域并存是明确选择：两条线的域名存在交集（例如 cs.com.cn）
+        hk_hosts = {h for c in pipeline.HK_NEWS_SOURCES for h in (c.get("hosts") or ())}
+        ml_hosts = {h for c in pipeline.MAINLAND_NEWS_SOURCES for h in (c.get("hosts") or ())}
+        self.assertTrue(hk_hosts & ml_hosts, "两套源头并存时域名本就应有交集")
 
     def test_declared_hosts_cover_their_own_home_url(self):
         """主页域名必须在白名单里，否则主源取到的原文链接会被自己拦掉。"""
