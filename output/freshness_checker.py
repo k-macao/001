@@ -41,6 +41,9 @@ FRESHNESS_THRESHOLDS = {
     "港股名家频道": {"max_lag_days": 7, "type": "news", "desc": "YouTube/RSS 频道，允许一周内"},
     "全网新闻源头（20家）": {"max_lag_days": 3, "type": "news", "desc": "20 家新闻源，72h 窗口"},
     "港股新闻源头": {"max_lag_days": 3, "type": "news", "desc": "20 家新闻源，72h 窗口"},
+    # 内地财经媒体源头（2026-10-12）：18 家内地财经 / 证券 / 科技媒体，72h 窗口
+    "内地财经媒体源头": {"max_lag_days": 3, "type": "news", "desc": "18 家内地财经媒体，72h 窗口"},
+    "内地财经媒体（18家）": {"max_lag_days": 3, "type": "news", "desc": "18 家内地财经媒体，72h 窗口"},
     
     # 社区平台：72h 窗口
     "Reddit": {"max_lag_days": 3, "type": "community", "desc": "Reddit 热帖，72h 窗口"},

@@ -294,6 +294,23 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
         ),
         "note": "",
     },
+    "mainland_news_rss": {
+        "name": "内地财经媒体 · 18 家（官方订阅 / 站内检索 RSS）",
+        "used_by": ("【亮亮灯光鱿鱼】新闻情绪因子量化分析",
+                    "【深海肥蓝鲸】政策因子",
+                    "策略研判 / 逐栏 AI 研判（标题池）"),
+        "primary": ("各媒体官方 RSS / Atom（若有）", "{feed}"),
+        "backups": (
+            ("Bing News 站内检索 RSS（同格式 RSS，链接直达原文）",
+             "https://www.bing.com/news/search?q=site%3A{host}&format=rss", True),
+            ("Google News 站内检索 RSS（同格式 RSS，链接经 news.google.com 跳转）",
+             "https://news.google.com/rss/search?q=site%3A{host}&hl=zh-CN&gl=CN&ceid=CN:zh-Hans", True),
+        ),
+        "note": ("这 18 家媒体多数在 2022 年后下线或从未提供官方 RSS，"
+                 "默认直接走「站内检索 RSS（Bing → Google News）」按站点取公开标题；"
+                 "任一媒体若拿到官方订阅地址，填进 MAINLAND_NEWS_SOURCES 的 feed 即自动优先走官方源。"
+                 "只收标题 / 发布时间 / 原文链接，不复制正文，不绕过付费墙。"),
+    },
     "hk_news_rss": {
         "name": "港股新闻源头 · 20 家媒体 RSS",
         "used_by": ("【深海大鲨鱼】趋势跟踪·新闻源头",),
@@ -493,11 +510,20 @@ def get_bogleheads_urls() -> List[str]:
     return urls("bogleheads")
 
 
-def get_news_site_backup_urls(host: str) -> List[str]:
-    """新闻源头按主域名生成的两路站内检索 RSS（Bing → Google）。"""
+def get_news_site_backup_urls(host: str, line_id: str = "hk_news_rss") -> List[str]:
+    """新闻源头按主域名生成的两路站内检索 RSS（Bing → Google）。
+
+    line_id 缺省沿用港股新闻源头那条数据线；内地财经媒体传
+    "mainland_news_rss"（两条线的检索模板相同，但审计归属分开记）。
+    """
     if not host:
         return []
-    return [u for _l, u, same in candidates("hk_news_rss", feed="", host=host)[1:] if same]
+    return [u for _l, u, same in candidates(line_id, feed="", host=host)[1:] if same]
+
+
+def get_mainland_news_site_urls(host: str) -> List[str]:
+    """内地财经媒体：按主域名生成的两路站内检索 RSS（Bing → Google）。"""
+    return get_news_site_backup_urls(host, line_id="mainland_news_rss")
 
 
 def get_rsshub_fallbacks(feed_url: str) -> List[str]:

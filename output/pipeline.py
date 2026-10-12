@@ -312,6 +312,52 @@
       按用户要求，标题常量 SECTION_TITLE_NEWS_SENTIMENT 与其余鱼名栏目同口径）：
       只改显示标题与 backup_sources 的 used_by 标注；数据源键名、审计标签、
       kicker（NEWS SENTIMENT）与 DNS/MOM/ANV 计算口径一律不变；历史归档日报不改写。
+  26. 跨栏「同子栏」合并（2026-10-12 按用户要求：「给大纲，核对内容重复率，重复就合并同子栏」）：
+      核对工具 tools/report_outline.py 把任一 HTML 日报拆成「栏目 → 子栏 / 行」两层大纲，
+      按**数字事实**（价格 / 百分比 / 成交额 / 概率）与文本相似度两路口径算跨栏重复率。
+      实测出的正文栏重复（结论三栏的复述是设计内行为，不计）按下面口径合并：
+        · 同一批数据一份日报只展开一次；后出现的栏目**保留子栏标题**，只留一行
+          「↳ 同子栏合并：…｜见 XX 栏目（同一批数据，不重复展示）」——数字不静默消失；
+        · 指针指到**栏目名**（不带序号）：栏目序号按当日出场栏数动态编号，写死序号会在
+          缺栏的那天指错栏目；
+        · 合并只在「保留栏确实在场」时发生（保留栏缺席 → 原栏目照常出数字），
+          绝不让指针指向一个没渲染出来的栏目（见 _panorama_heat_selection 与 lq_html）；
+        · 结论三栏（总结 / 今日预判 / 短线速查卡）不参与合并：它们本来就负责复述结论。
+      本版合并两处跨栏 + 三处栏内：
+        ① 【及时秋刀鱼】AI 行情复盘 · 南北向资金（前一收盘）→ 只在【资金流动性分析】
+           展开（环比 / z 值 / 分位 / 冲击成本 / 综合分，口径更专业）；
+        ② 【六眼飞鱼】量化 MACD 策略 · 量化强度榜的涨跌 / 主力净流入 → 只在 AI 行情复盘
+           「板块热力」展开（行情口径，附领涨股）；强度榜只留趋势分 / 趋势 / 信号。
+        ③ 【亮亮灯光鱿鱼】新闻情绪：一条快讯常同时点名多只个股，同一篇标题只展开一次，
+           后面几处留「↳ 同一篇：见 XX」，并在「市场情绪关键词」如实写「同题合并 N 条」；
+           全量版「原因」行引用同篇标题时改写为「见下方证据」，不把长标题连贴两次。
+        ④ 【滚滚翻车鱼】板块轮动：多个概念共用同一只港股观察篮子时，名单只展开一次，
+           后面几行留「↳ 同一篮子：见 XX（N 只）」。
+        ⑤ 🦐 活鲜词库点缀：同一份日报里同一句比喻只出现一次（撞句按确定性顺序换变体，
+           登记表在 pipeline 逐栏生成时递进，词库函数本身无状态、同输入同输出）。
+      OCTOPUS_SUB_MERGE=0 关闭（版式回到 2026-10-12 之前，仅用于对照）；
+      逐条重复清单与未合并项的理由见《大纲-栏目重复率核对.md》，回归测试
+      tests/test_sub_merge.py（数字只出现一次 / 保留栏缺席时逐字回旧行为 / 结论栏不受影响）。
+
+  27. 新增「内地财经媒体源头」数据源（2026-10-12 按用户指定）：
+      18 家内地财经 / 证券 / 科技媒体的公开标题池——中证网（中国证券报）、证券日报网、
+      证券日报之声、中国基金报、财闻、经济参考网、IT之家、券商中国、每日经济新闻、
+      北京商报网、21世纪经济报道、证券之星、证券时报网、和讯网、金融投资报、时代财经、
+      经济观察网、凤凰网财经。
+      口径与「港股新闻源头」完全一致（只读公开订阅、72h 窗口 + 可验证时区、来源域名白名单、
+      只留标题 / 发布时间 / 原文链接；抓不到就如实标暂缺）；区别是**不做港股过滤**——
+      这 18 家是内地财经媒体，标题进同一标题池，供新闻情绪因子、政策因子、策略研判与
+      逐栏 AI 研判共用（新闻情绪里的「来源：内地财经媒体N条」即此源）。
+      这些媒体多数 2022 年后已下线或从未提供官方 RSS，因此默认走「站内检索 RSS
+      （Bing → Google News）」按站点取公开标题（数据线 mainland_news_rss）；谁拿到官方
+      订阅地址，把 MAINLAND_NEWS_SOURCES 里对应条目的 feed 填上即自动优先走官方源。
+      可调开关：OCTOPUS_MAINLAND_NEWS=0 整体关闭；OCTOPUS_MAINLAND_NEWS_PER_SOURCE、
+      OCTOPUS_MAINLAND_NEWS_MAX 控制每源与全栏目条数上限。数据源键名「内地财经媒体源头」，
+      审计标签「内地财经媒体（18家）」。页面可见位置有三处：① 趋势跟踪栏目的
+      「内地财经媒体 ×18」源头行（报覆盖：几家有更新 / 扫描条数 / 进标题池条数；
+      非入门版另列「覆盖面（内地源头 · 窗口内条数）」——**不在这里重复列标题**，
+      标题只在被引用处出现，避免跨栏重复展示）；② 新闻情绪证据行 / 政策因子引用行
+      （标题 + 媒体名 + 原文链接）；③ 总结「数据覆盖」行（缺失时按 18 家点名）。
 
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
@@ -660,6 +706,82 @@ def _env_int(name, default, lo, hi):
     return max(lo, min(hi, value))
 
 
+# ============================================================
+# 🔁 跨栏「同子栏」合并（2026-10-12 按用户要求：「核对内容重复率，重复就合并同子栏」）
+# ------------------------------------------------------------
+# 口径：同一批数据（同一个子栏）一份日报里只展开一次。后出现的栏目**保留子栏标题**，
+# 只留一行指针「↳ 同子栏合并：… 见 XX 栏目」——数字不静默消失，读者仍知道去哪儿核对。
+# 本版合并两处实测重复（核对脚本：tools/report_outline.py，可复现）：
+#   ① 南北向资金（前一收盘）：【资金流动性分析】栏目更专业（环比 / z 值 / 分位 / 冲击成本 /
+#      综合分），【及时秋刀鱼】AI 行情复盘 不再重复同一批成交总额（631.61 / 2,480.23 亿）；
+#   ② 板块涨跌 + 主力净流入：AI 行情复盘的「板块热力」是行情口径（附领涨股），
+#      【六眼飞鱼】量化 MACD 策略 的量化强度榜对已列出的板块只留趋势分 / 趋势 / 信号。
+# 结论三栏（总结 / 今日预判 / 短线速查卡）**不参与合并**：它们的职责就是复述结论。
+# 同源但口径不同的重复（社区样本计数、港股个股行情 vs 概率池、栏内概括行）不合并，
+# 逐条理由写在《大纲-栏目重复率核对.md》，可用 --full 与 OCTOPUS_SUB_MERGE=0 对照。
+# OCTOPUS_SUB_MERGE=0 → 回到 2026-10-12 之前：同一批数字多处重复（不推荐，仅用于对照）。
+# ============================================================
+SUB_MERGE_ENABLED = _env_flag("OCTOPUS_SUB_MERGE", True)
+# 指针行统一文案（四套主题共用）：短前缀 + 数据所在栏目 + 口径说明。
+SUB_MERGE_POINTER = "↳ 同子栏合并"
+# 指针指到栏目名（不带栏目序号）：栏目序号按当日实际出场栏数动态编号，
+# 写死序号会在缺栏的某天指向别的栏目 —— 用栏目名既稳又够reader定位。
+SUB_MERGE_OWNER_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
+SUB_MERGE_OWNER_LIQUIDITY = "资金流动性分析"
+SUB_MERGE_NOTE_FLOW = "南向 / 北向成交总额（成交总额口径）"
+SUB_MERGE_NOTE_BOARD = "板块涨跌 / 主力净流入"
+
+
+def _panorama_heat_selection(pan, theme=""):
+    """12 栏「板块热力」本轮实际渲染的板块名集合（两个 panorama 渲染器同口径）。
+
+    pixel 版不按版面预算切片（榜单 TOP 全出）；归藏 / lime / dossier / forum 版按
+    LITE("sector_heat") 切。这里与渲染器读同一份 pan、用同一条切片规则，保证
+    「01 栏指针指向的板块」在 12 栏里确实出现过，不会出现指向空气的死指针。
+    """
+    if not isinstance(pan, dict):
+        return set()
+    sec = pan.get("sectors") or {}
+    limit = 0 if str(theme or "").strip().lower() == "pixel" else LITE("sector_heat")
+    names = set()
+    for key in ("leading", "lagging"):
+        items = sec.get(key) or []
+        for item in (items[:limit] if limit else items):
+            name = str((item or {}).get("name") or "").strip()
+            if name:
+                names.add(name)
+    return names
+
+
+def sub_merge_pointer_text(text, owner=""):
+    """指针行的值文案：`… ｜见 XX 栏目（同一批数据，不重复展示）`。"""
+    if not owner:
+        return text
+    return f"{text}｜见 {owner}（同一批数据，不重复展示）"
+
+
+# 「同一篇标题只展开一次」（2026-10-12 同子栏合并的**栏内**口径）：
+# 一条快讯常常同时点名多只个股（行业 / 宏观类标题尤其如此），逐股证据行就会把同一篇
+# 长标题重复贴 2~3 次。第一处照常展开，后面几处只留一行「↳ 同一篇：见 XX」——
+# 标题不重复，但证据条数与因子计数一律照旧（不静默丢，只是不重复排版）。
+SUB_MERGE_SAME_HEADLINE = "↳ 同一篇"
+# 「同一只港股观察篮子」（07 板块轮动栏内）：多个概念共用同一批映射港股时，
+# 名单只展开一次，后面的行只写「↳ 同一篮子：见 XX」+ 只数。
+SUB_MERGE_SAME_BASKET = "↳ 同一篮子"
+
+
+def senti_headline_owner(seen, title, stock_label):
+    """同一篇标题的首次出现者：返回已登记过的个股标签；首次出现则登记并返回 ""。"""
+    key = re.sub(r"\s+", "", str(title or ""))
+    if not key:
+        return ""
+    owner = seen.get(key)
+    if owner:
+        return owner
+    seen[key] = stock_label
+    return ""
+
+
 ECON_CALENDAR_ENABLED = str(os.environ.get("OCTOPUS_CALENDAR", "1")).strip().lower() not in ("0", "false", "no")
 ECON_CALENDAR_DAYS = _env_int("OCTOPUS_CALENDAR_DAYS", 30, 1, 120)      # 前瞻窗口天数
 ECON_CALENDAR_MAX_ROWS = _env_int("OCTOPUS_CALENDAR_ROWS", 60, 5, 300)  # 正文行数上限（版面保护）
@@ -909,6 +1031,118 @@ HK_NEWS_SOURCES = (
      "desc": "Google 新闻按「Hang Seng OR Hong Kong stocks」聚合的英文报道"},
 )
 HK_NEWS_TOTAL = len(HK_NEWS_SOURCES)  # 应为 20；测试会校验
+
+# ── 内地财经媒体源头 · 18 家（2026-10-12 按用户指定新增）──────────────
+# 与「港股新闻源头」同一套抓取口径（公开订阅、72h 窗口、可验证时区、来源域名白名单、
+# 只留标题 / 发布时间 / 原文链接），区别只有两点：
+#   ① 不做港股关键词过滤——这 18 家是内地财经 / 证券 / 科技媒体，其标题进
+#      「标题池」供新闻情绪因子、政策因子、策略研判与逐栏 AI 研判共用；
+#   ② 多数媒体 2022 年后已下线或从未提供官方 RSS，因此默认直接走
+#      「站内检索 RSS（Bing → Google News）」按站点取公开标题（见 backup_sources
+#      的 mainland_news_rss 数据线）；谁拿到官方订阅地址，把 feed 填上即自动优先走官方源。
+# 只读公开信息，不登录、不绕付费墙、不复制正文；抓不到就如实标暂缺，绝不用历史内容兜底。
+# OCTOPUS_MAINLAND_NEWS=0 整体关闭；OCTOPUS_MAINLAND_NEWS_PER_SOURCE / MAX 调版面预算。
+MAINLAND_NEWS_SOURCE_NAME = "内地财经媒体源头"
+MAINLAND_NEWS_ENABLED = _env_flag("OCTOPUS_MAINLAND_NEWS", True)
+MAINLAND_NEWS_PER_SOURCE = _env_int("OCTOPUS_MAINLAND_NEWS_PER_SOURCE", 3, 1, 8)
+MAINLAND_NEWS_MAX_ITEMS = _env_int("OCTOPUS_MAINLAND_NEWS_MAX", 48, 6, 120)
+MAINLAND_NEWS_SCAN_LIMIT = 12                # 每个源头先扫描的最新条目数（窗口过滤前）
+MAINLAND_NEWS_WINDOW_HOURS = PUBLIC_SITE_WINDOW_HOURS   # 72 小时，与其余新闻源同窗口
+MAINLAND_NEWS_SECTION = "内地财经媒体"        # 标题池里的来源归属（新闻情绪 / 政策因子的「来源」列）
+
+MAINLAND_NEWS_SOURCES = (
+    {"name": "中证网（中国证券报）", "region": "内地",
+     "url": "https://www.cs.com.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("cs.com.cn", "www.cs.com.cn", "csnews.cs.com.cn"),
+     "desc": "新华社《中国证券报》官网，资本市场权威披露与解读"},
+    {"name": "证券日报网", "region": "内地",
+     "url": "https://www.zqrb.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("zqrb.cn", "www.zqrb.cn", "m.zqrb.cn"),
+     "desc": "《证券日报》官网，证券市场信息披露与评论"},
+    {"name": "证券日报之声", "region": "内地",
+     "url": "https://www.zqrb.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("zqrb.cn", "www.zqrb.cn", "m.zqrb.cn"),
+     "desc": "证券日报社旗下新媒体品牌（与证券日报网同社同域名，跨源同题自动去重）"},
+    {"name": "中国基金报", "region": "内地",
+     "url": "https://www.chnfund.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("chnfund.com", "www.chnfund.com"),
+     "desc": "资管 / 公募基金行业专业媒体（《中国基金报》社）"},
+    {"name": "财闻", "region": "内地",
+     "url": "https://www.caiwennews.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("caiwennews.com", "www.caiwennews.com"),
+     "desc": "财闻网（持互联网新闻信息服务许可证），财经 / 科技 / 法治"},
+    {"name": "经济参考网", "region": "内地",
+     "url": "https://www.jjckb.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("jjckb.cn", "www.jjckb.cn"),
+     "desc": "新华社《经济参考报》官网，宏观政策与产业经济"},
+    {"name": "IT之家", "region": "内地",
+     "url": "https://www.ithome.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("ithome.com", "www.ithome.com", "m.ithome.com"),
+     "desc": "科技产业资讯（消费电子 / 半导体 / 互联网平台动态）"},
+    {"name": "券商中国", "region": "内地",
+     "url": "https://qzs.stcn.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("stcn.com", "qzs.stcn.com", "www.stcn.com", "quanzhongshe.com"),
+     "desc": "证券时报社旗下新媒体「券商中国」（官方网址 qzs.stcn.com）"},
+    {"name": "每日经济新闻", "region": "内地",
+     "url": "https://www.nbd.com.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("nbd.com.cn", "www.nbd.com.cn", "m.nbd.com.cn"),
+     "desc": "《每日经济新闻》官网，公司 / 产业 / 资本市场报道"},
+    {"name": "北京商报（北京商报网）", "region": "内地",
+     "url": "https://www.bbtonline.com.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("bbtonline.com.cn", "www.bbtonline.com.cn"),
+     "desc": "《北京商报》官网，商业 / 消费 / 上市公司"},
+    {"name": "21世纪经济报道", "region": "内地",
+     "url": "https://www.21jingji.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("21jingji.com", "www.21jingji.com", "m.21jingji.com"),
+     "desc": "南方财经全媒体集团旗下财经媒体，宏观与金融"},
+    {"name": "证券之星", "region": "内地",
+     "url": "https://www.stockstar.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("stockstar.com", "www.stockstar.com", "m.stockstar.com"),
+     "desc": "证券之星，行情 / 基金 / 个股资讯与数据服务"},
+    {"name": "证券时报网", "region": "内地",
+     "url": "https://www.stcn.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("stcn.com", "www.stcn.com", "news.stcn.com", "finance.stcn.com"),
+     "desc": "《证券时报》官网，7×24 快讯与监管 / 市场要闻"},
+    {"name": "和讯网", "region": "内地",
+     "url": "https://www.hexun.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("hexun.com", "www.hexun.com", "news.hexun.com", "stock.hexun.com"),
+     "desc": "和讯网，股票 / 基金 / 财经综合资讯"},
+    {"name": "金融投资报", "region": "内地",
+     "url": "https://www.jrtzb.com.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("jrtzb.com.cn", "www.jrtzb.com.cn"),
+     "desc": "四川《金融投资报》官网，证券市场与区域经济"},
+    {"name": "时代财经", "region": "内地",
+     "url": "https://www.tfcaijing.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("tfcaijing.com", "www.tfcaijing.com"),
+     "desc": "南方传媒旗下深度财经媒体，企业与行业资本动态"},
+    {"name": "经济观察网", "region": "内地",
+     "url": "https://www.eeo.com.cn/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("eeo.com.cn", "www.eeo.com.cn"),
+     "desc": "《经济观察报》官网，宏观 / 产业 / 金融观察"},
+    {"name": "凤凰网财经", "region": "内地",
+     "url": "https://finance.ifeng.com/",
+     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     "hosts": ("ifeng.com", "finance.ifeng.com", "www.ifeng.com"),
+     "desc": "凤凰网财经频道，市场资讯与公司报道"},
+)
+MAINLAND_NEWS_TOTAL = len(MAINLAND_NEWS_SOURCES)   # 应为 18；测试会校验
 
 HK_CHANNELS = [
     # ── 港股股评人 YouTube 频道（可自动抓取）─────────────────
@@ -3486,6 +3720,181 @@ def fetch_hk_news_sources():
 
 
 # ============================================================
+# 内地财经媒体源头 · 18 家（2026-10-12 新增；标题池供新闻情绪 / 政策因子共用）
+# ============================================================
+def fetch_mainland_news_sources():
+    """抓取 18 家内地财经媒体的公开标题，供新闻情绪因子 / 政策因子 / 策略研判共用。
+
+    与「港股新闻源头」同一套诚实口径：
+      · 逐源并行；每源取数路径 = 官方订阅（若配了 feed）→ 站内检索 RSS（Bing → Google News）；
+      · 只保留 72 小时窗口内、带可验证时区发布时间的条目；
+      · 链接按该媒体自己的域名白名单校验（https + 主机名精确匹配），防标题 / 链接注入；
+      · 不做港股关键词过滤（这 18 家是内地财经 / 证券 / 科技媒体，全量进标题池），
+        但每源至多 MAINLAND_NEWS_PER_SOURCE 条、全栏目至多 MAINLAND_NEWS_MAX_ITEMS 条；
+      · 同一个标题被两家媒体转出时只留首次出现的那条（并如实记 merged 条数）；
+      · 单源失败只标该源暂缺；全部取不到时整源 unavailable 并给出原因，绝不历史兜底。
+    说明：这些媒体多数已无官方 RSS，默认走站内检索按站点取公开标题——本条数据线的
+    主源仍是「官方订阅（若有）」，站内检索同时充当备用源，归属见 backup_sources。
+    """
+    if not MAINLAND_NEWS_ENABLED:
+        print("⏭ 已关闭内地财经媒体源头采集（OCTOPUS_MAINLAND_NEWS=0）")
+        return _source_result(MAINLAND_NEWS_SOURCE_NAME, "unavailable", sources=[], headlines=[],
+                              analysis=None, note="",
+                              error="本次运行已关闭内地财经媒体源头采集（OCTOPUS_MAINLAND_NEWS=0）")
+
+    print(f"📡 正在采集内地财经媒体源头 {MAINLAND_NEWS_TOTAL} 家"
+          f"（官方订阅 / 站内检索 → 标题池：新闻情绪 + 政策因子）...")
+    now = datetime.now(CST)
+
+    def _fetch_one(cfg):
+        site_host = _hk_news_site_host(cfg)
+        official_feed = str(cfg.get("feed") or "").strip()
+        search_urls = _backup.get_mainland_news_site_urls(site_host)
+        urls = ([official_feed] + search_urls) if official_feed else search_urls
+        xml_text, served_url, _ = safe_request_with_fallback(
+            urls, is_json=False, timeout=10,
+            validate=lambda t: bool(_parse_rss_items(t, limit=MAINLAND_NEWS_SCAN_LIMIT)))
+        parsed = _parse_rss_items(xml_text, limit=MAINLAND_NEWS_SCAN_LIMIT) if xml_text else []
+        via_official = bool(official_feed) and served_url == official_feed
+        via_backup = bool(official_feed) and bool(served_url) and not via_official
+        via_search = (not official_feed) and bool(served_url)
+        if via_backup:
+            # 只在该媒体「配了官方订阅却没取到」时记备用源事件；无官方订阅的站内检索是常规路径。
+            _note_backup_served("mainland_news_rss", served_url, feed=official_feed, host=site_host)
+        allowed_hosts = tuple(cfg.get("hosts") or ())
+        if via_backup or via_search:
+            allowed_hosts = allowed_hosts + _HK_NEWS_BACKUP_LINK_HOSTS
+        rec = {"name": cfg.get("name", "?"), "region": cfg.get("region", ""),
+               "url": cfg.get("url", ""), "hosts": tuple(cfg.get("hosts") or ()),
+               "desc": cfg.get("desc", ""), "feed": official_feed,
+               "status": "fail", "scanned": 0, "today": 0, "newest": None,
+               "items": [], "titles": [], "note": "",
+               "served_by": ("官方订阅" if via_official else
+                             ("备用源（站内检索）" if via_backup else
+                              ("站内检索" if via_search else "—")))}
+        if not parsed:
+            rec["note"] = ("自动抓取失败（源可能被限流、订阅地址变化，或站内检索无结果），暂缺"
+                           if official_feed else
+                           "站内检索未返回结果（可能被限流或该站未被检索平台收录），暂缺")
+            return rec
+        fresh, newest, fresh_today = [], None, 0
+        for row in parsed:
+            raw_date = str(row.get("published") or "").strip()
+            # 没有显式时区就不确定自然日，拒绝用运行机器的本地时区猜测（与港股新闻源头同口径）。
+            if not re.search(r"(?:Z|[+-]\d{2}:?\d{2}|\bGMT|\bUTC)$", raw_date, re.I):
+                continue
+            try:
+                dt = datetime.strptime(str(row.get("published_cst") or ""),
+                                       "%Y-%m-%d %H:%M").replace(tzinfo=CST)
+            except ValueError:
+                continue
+            if not _public_recent(dt, now, MAINLAND_NEWS_WINDOW_HOURS):
+                continue
+            url = _news_url(row.get("url"), allowed_hosts)
+            title = _public_text(row.get("title"), 160)
+            if not via_official and " - " in title:
+                title = title.rsplit(" - ", 1)[0].strip() or title   # 检索平台附加的「 - 媒体名」
+            if not (url and title):
+                continue
+            fresh.append({"title": title, "url": url,
+                          "published_cst": dt.strftime("%Y-%m-%d %H:%M"),
+                          "date": dt.strftime("%Y-%m-%d"),
+                          "is_today": dt.date() == now.date()})
+            if not newest or dt > newest:
+                newest = dt
+            if dt.date() == now.date():
+                fresh_today += 1
+        if not fresh:
+            rec["status"] = "empty"
+            rec["note"] = (f"近 {MAINLAND_NEWS_WINDOW_HOURS} 小时窗口内"
+                           "无可验证发布时间的新内容")
+            return rec
+        items = fresh[:MAINLAND_NEWS_PER_SOURCE]
+        for it in items:
+            it["detail"] = f"发布于 {it['published_cst']}（北京时间）"
+        rec.update({
+            "status": "ok", "scanned": len(fresh), "today": fresh_today,
+            "newest": newest.strftime("%Y-%m-%d"), "items": items,
+            "titles": [it["title"] for it in fresh],
+        })
+        if via_backup:
+            rec["note"] = ("官方订阅不可用，本次经站内检索备用源"
+                           f"（{'Bing' if 'bing.com' in served_url else 'Google News'}）取得")
+        elif via_search:
+            rec["note"] = "该媒体无可用官方订阅，本次经站内检索 RSS 取得公开标题"
+        return rec
+
+    records = [None] * MAINLAND_NEWS_TOTAL
+    with ThreadPoolExecutor(max_workers=min(10, MAINLAND_NEWS_TOTAL)) as executor:
+        futures = {executor.submit(_fetch_one, cfg): idx
+                   for idx, cfg in enumerate(MAINLAND_NEWS_SOURCES)}
+        for future, idx in futures.items():
+            try:
+                records[idx] = future.result()
+            except Exception as exc:  # 单源异常只标记该源，不拖垮其余源头
+                cfg = MAINLAND_NEWS_SOURCES[idx]
+                records[idx] = {"name": cfg.get("name", "?"), "region": cfg.get("region", ""),
+                                "url": cfg.get("url", ""), "hosts": tuple(cfg.get("hosts") or ()),
+                                "desc": cfg.get("desc", ""), "feed": str(cfg.get("feed") or ""),
+                                "status": "fail", "scanned": 0, "today": 0, "newest": None,
+                                "items": [], "titles": [], "served_by": "—",
+                                "note": f"抓取异常（{type(exc).__name__}），暂缺"}
+    records = [r for r in records if isinstance(r, dict)]
+
+    # 跨源同题去重（同一篇被两家转出只留一次），并汇总标题池
+    headlines, merged = [], 0
+    seen = set()
+    for rec in records:
+        for it in rec.get("items") or []:
+            key = re.sub(r"\s+", "", str(it.get("title") or ""))
+            if key and key in seen:
+                merged += 1
+                continue
+            if key:
+                seen.add(key)
+            headlines.append({"title": it["title"], "source": rec["name"],
+                              "section": MAINLAND_NEWS_SECTION, "url": it["url"],
+                              "published_cst": it["published_cst"], "date": it["date"],
+                              "is_today": it["is_today"]})
+            if len(headlines) >= MAINLAND_NEWS_MAX_ITEMS:
+                break
+        if len(headlines) >= MAINLAND_NEWS_MAX_ITEMS:
+            break
+
+    ok_n = sum(1 for r in records if r.get("status") == "ok")
+    scanned = sum(int(r.get("scanned") or 0) for r in records)
+    today_n = sum(int(r.get("today") or 0) for r in records)
+    newest = max((r["newest"] for r in records if r.get("newest")), default=None)
+    missing = [r["name"] for r in records if r.get("status") != "ok"]
+    analysis = {"scanned": scanned, "ok_n": ok_n, "today_n": today_n,
+                "newest": newest, "items_n": len(headlines), "merged": merged}
+    note = (f"只收录 {MAINLAND_NEWS_TOTAL} 家内地财经媒体公开信息源"
+            "（官方订阅优先，无官方订阅的走站内检索 RSS）的标题、发布时间与原文链接（北京时间）；"
+            "不做港股过滤，供新闻情绪因子 / 政策因子 / 策略研判共用标题池；"
+            "媒体观点未经核实，不构成投资建议。")
+    if missing:
+        note += f" 暂缺（{len(missing)} 家）：" + "、".join(missing) + "。"
+
+    if scanned == 0:
+        reason = (f"近 {MAINLAND_NEWS_WINDOW_HOURS} 小时窗口内 {MAINLAND_NEWS_TOTAL} 家媒体"
+                  "均未取得带可验证时区发布时间的公开标题（网络受限 / 检索平台限流）")
+        print(f"  ⚠️ 内地财经媒体源头暂不可用：{reason}")
+        return _source_result(MAINLAND_NEWS_SOURCE_NAME, "unavailable",
+                              sources=records, headlines=[], analysis=analysis,
+                              note=note, error=reason)
+
+    print(f"  ✅ 内地财经媒体 {ok_n}/{MAINLAND_NEWS_TOTAL} 家窗口内有更新 · 扫描 {scanned} 条"
+          f" · 进标题池 {len(headlines)} 条" + (f"（跨源同题合并 {merged} 条）" if merged else ""))
+    if missing:
+        print(f"  🕐 {len(missing)} 家暂缺：" + "、".join(missing))
+    return _source_result(
+        MAINLAND_NEWS_SOURCE_NAME, "success",
+        is_today=today_n > 0, content_date=newest,
+        sources=records, headlines=headlines, analysis=analysis, note=note,
+        partial=bool(missing), error=None)
+
+
+# ============================================================
 # 数据采集主函数
 # ============================================================
 def fetch_hk_quant():
@@ -4829,10 +5238,16 @@ def collect_all_data():
     time.sleep(0.5)
 
     print("\n📰 正在采集趋势跟踪（多平台信息员：" + " + ".join(_active_public_site_names())
-          + "；另有全网 20 个新闻源头港股挖掘）...")
+          + f"；另有全网 {HK_NEWS_TOTAL} 个新闻源头港股挖掘"
+          + f" + 内地财经媒体 {MAINLAND_NEWS_TOTAL} 家标题池）...")
     data.update(fetch_public_sites())
     if HK_NEWS_ENABLED:
         data[HK_NEWS_SOURCE_NAME] = fetch_hk_news_sources()
+    # 内地财经媒体源头（18 家，2026-10-12 按用户指定新增）：与港股新闻源头并行采集，
+    # 标题进同一标题池（新闻情绪因子 / 政策因子 / 策略研判）；关闭时不写 data 键。
+    if MAINLAND_NEWS_ENABLED:
+        data[MAINLAND_NEWS_SOURCE_NAME] = fetch_mainland_news_sources()
+        time.sleep(0.5)
 
     # AI 七日港股走势分析概率：等当日证据（行情 / 日程 / 港股标题）齐了再研判。
     # 未配置 Key（且未开启降级）或本次关闭 → None：不写 data 键，栏目与审计都不出现。
@@ -5869,11 +6284,14 @@ def gz_market_section(market, pan=None):
     )
 
 
-def gz_panorama_block(pan, with_indices=True):
+def gz_panorama_block(pan, with_indices=True, merge_flow=""):
     """guizang 版 A股全景：指数表现 / 涨跌家数 / 成交额 / 南北向 / 板块热力，均用表格。
 
     with_indices=False（合并进「AI 行情复盘」时的用法）：指数表已由 gz_market_section
     并入 A股指数一块，这里不再重复出一份。
+
+    merge_flow 非空（见 SUB_MERGE_ENABLED）：南北向成交总额已在该栏目展开，
+    这里只留一行「↳ 同子栏合并」指针，不再重复同一批数字。
     """
     parts = []
 
@@ -5939,7 +6357,13 @@ def gz_panorama_block(pan, with_indices=True):
             flow_pairs.append((f"南向成交总额（{north.get('south_date') or north.get('date') or '—'}）",
                                _gz_num(f'{north["south_amount_yi"]:,.2f} 亿元')))
         if flow_pairs:
-            parts.append(gz_subsection("南北向资金（前一收盘）") + gz_kv_table(flow_pairs))
+            if merge_flow and SUB_MERGE_ENABLED:
+                # 同子栏合并：成交总额已在 merge_flow 栏目（资金流动性）展开 —— 这里只留指针。
+                parts.append(gz_subsection("南北向资金（前一收盘）") + gz_kv_table(
+                    [(SUB_MERGE_POINTER,
+                      sub_merge_pointer_text(SUB_MERGE_NOTE_FLOW, merge_flow))]))
+            else:
+                parts.append(gz_subsection("南北向资金（前一收盘）") + gz_kv_table(flow_pairs))
 
     sec = pan.get("sectors") or {}
     heat_n = LITE("sector_heat")
@@ -5965,14 +6389,15 @@ def gz_panorama_block(pan, with_indices=True):
     return "".join(parts)
 
 
-def gz_market_review(market, pan):
+def gz_market_review(market, pan, merge_flow=""):
     """guizang 版【及时秋刀鱼】AI 行情复盘：逐项报价 + A股全景，重复数字只出一份。
 
     合并前「全球指数概览」与「A股四指数 / 指数表现」在两栏各出一遍；合并后全球与港股
     指数只在报价块出现一次，A股八大宽基（含成交额）只在 A股指数表出现一次。
+    merge_flow 非空时，南北向资金也走同一套「同子栏合并」口径（见 SUB_MERGE_ENABLED）。
     """
     return (gz_market_section(market, pan)
-            + gz_panorama_block(pan or {}, with_indices=False))
+            + gz_panorama_block(pan or {}, with_indices=False, merge_flow=merge_flow))
 
 
 def _cal_gz_cells(day_label, t_plus, item, first=False):
@@ -6285,8 +6710,13 @@ def gz_section(num, kicker_en, title, content, badge_html="", caption=""):
     return head + SECTION_BODY_MARK + body
 
 
-def gz_ai_analysis_block(res):
-    """策略研判 · 依据展开：倾向与核心判断已置顶到「今日预判」，关注主题收在「总结」。"""
+def gz_ai_analysis_block(res, merge_boards=(), board_owner=""):
+    """策略研判 · 依据展开：倾向与核心判断已置顶到「今日预判」，关注主题收在「总结」。
+
+    merge_boards / board_owner：跨栏「同子栏合并」（见 SUB_MERGE_ENABLED）——
+    这些板块的涨跌 / 主力净流入已在 board_owner 栏目（AI 行情复盘 · 板块热力）按行情
+    口径展示，强度榜只留趋势分 / 趋势 / 信号，避免同一批数字在正文里出现两次。
+    """
     out = []
     # 策略总览：量化信号与 regime
     regime = res.get("regime") or res.get("sentiment_label") or "中性"
@@ -6305,6 +6735,7 @@ def gz_ai_analysis_block(res):
     sectors = res.get("quant_sectors") or []
     if sectors:
         rows = []
+        merged_names = []
         for sec in sectors[:LITE("sector_rows")]:
             chg = sec.get("chg")
             badge = gz_trend_badge(chg, compact=True) if chg is not None else _gz_missing()
@@ -6313,10 +6744,23 @@ def gz_ai_analysis_block(res):
             trend = _esc(sec.get("trend") or "—")
             sig = _esc(sec.get("signal") or "—")
             score_txt = f'{sec.get("composite", 0):+.2f}'
-            rows.append([_esc(sec.get("name") or ""), score_txt, badge, flow_txt, trend, sig])
+            name = str(sec.get("name") or "")
+            if (SUB_MERGE_ENABLED and board_owner and name
+                    and name in set(merge_boards)):
+                # 同子栏合并：该板块的涨跌 / 主力净流入已在 12 栏按行情口径展示。
+                merged_names.append(name)
+                badge = (f'<span style="color:{GZ_FAINT};">{SUB_MERGE_POINTER}</span>')
+                flow_txt = "—"
+            rows.append([_esc(name), score_txt, badge, flow_txt, trend, sig])
         out.append(gz_subsection("板块趋势跟踪 · 量化强度榜"
                                  + ("" if PLAIN() else "（价格60% + 资金30% + 舆情10%）")) + gz_data_table(
             ["板块", "趋势分", "涨跌", "主力净流入", "趋势", "信号"], rows))
+        if merged_names:
+            out.append(gz_shell(
+                f'<div style="font-size:{GZ_FS_META}px;color:{GZ_FAINT};line-height:1.7;">'
+                f'{SUB_MERGE_POINTER} · {sub_merge_pointer_text(SUB_MERGE_NOTE_BOARD, board_owner)}'
+                f'（已合并：{"、".join(_esc(x) for x in merged_names)}）</div>',
+                bg=GZ_PAPER, pad="6px 0"))
         weak = [s for s in sectors if (s.get("composite") or 0) < -0.5][:2]
         if weak:
             out.append(gz_shell(
@@ -6632,11 +7076,11 @@ def _pixel_hk_quotes_block(res):
     return "".join(parts)
 
 
-def _panorama_block(pan, with_indices=True):
+def _panorama_block(pan, with_indices=True, merge_flow=""):
     """pixel 版 A股全景：指数表现 / 涨跌家数 / 成交额 / 南北向 / 板块热力。
 
     with_indices=False（合并进「AI 行情复盘」时的用法）：指数表已并入 A股指数一块，
-    这里不再重复出一份。
+    这里不再重复出一份。merge_flow 非空 = 同子栏合并（成交总额见该栏目）。
     """
     parts = []
 
@@ -6696,12 +7140,18 @@ def _panorama_block(pan, with_indices=True):
                      f'{north["south_amount_yi"]:,.2f} 亿元</span>') \
             if (north.get("south_available") and north.get("south_amount_yi") is not None) \
             else f'<span style="color:{C_FAINT};">■ 数据暂缺</span>'
-        parts.append(_subsection("南北向资金（前一收盘）")
-                     + _mini_table([
-                         (f'北向成交总额（{_esc(north.get("date") or "—")}）', north_val),
-                         (f'南向成交总额（{_esc(north.get("south_date") or north.get("date") or "—")}）', south_val),
-                     ])
-                     + _note(north.get("policy_note") or PANORAMA_NORTH_POLICY_NOTE))
+        if merge_flow and SUB_MERGE_ENABLED:
+            # 同子栏合并：成交总额已在 merge_flow 栏目展开 —— 这里只留指针。
+            parts.append(_subsection("南北向资金（前一收盘）")
+                         + _mini_table([(SUB_MERGE_POINTER,
+                                         sub_merge_pointer_text(SUB_MERGE_NOTE_FLOW, merge_flow))]))
+        else:
+            parts.append(_subsection("南北向资金（前一收盘）")
+                         + _mini_table([
+                             (f'北向成交总额（{_esc(north.get("date") or "—")}）', north_val),
+                             (f'南向成交总额（{_esc(north.get("south_date") or north.get("date") or "—")}）', south_val),
+                         ])
+                         + _note(north.get("policy_note") or PANORAMA_NORTH_POLICY_NOTE))
 
     # 5) 板块热力
     sec = pan.get("sectors") or {}
@@ -6731,10 +7181,13 @@ def _panorama_block(pan, with_indices=True):
     return "".join(parts)
 
 
-def _pixel_market_review(market, pan):
-    """pixel 版【及时秋刀鱼】AI 行情复盘：逐项报价 + A股全景，重复数字只出一份。"""
+def _pixel_market_review(market, pan, merge_flow=""):
+    """pixel 版【及时秋刀鱼】AI 行情复盘：逐项报价 + A股全景，重复数字只出一份。
+
+    merge_flow 非空时，南北向资金走「同子栏合并」口径（见 SUB_MERGE_ENABLED）。
+    """
     return (_pixel_market_section(market, pan)
-            + _panorama_block(pan or {}, with_indices=False))
+            + _panorama_block(pan or {}, with_indices=False, merge_flow=merge_flow))
 
 
 def _cal_pixel_cells(day_label, t_plus, item, first=False):
@@ -7009,6 +7462,35 @@ def _trend_clues_block(data, kit):
                     detail = " · ".join(x for x in (src_name, detail) if x)
                 rows.append(kit.item_row(f"{shown + 1:02d}", link, _esc(detail)))
                 shown += 1
+
+    # ①b 内地财经媒体（18 家，2026-10-12 按用户指定新增）：与「新闻源头」同一展示位，
+    #     只报**源头级覆盖**（每家窗口内条数），标题不在这里重复列出——它们在被引用处
+    #     （新闻情绪证据行 / 政策因子引用行）带媒体名出现，避免跨栏重复展示同一批标题。
+    mainland = data.get(MAINLAND_NEWS_SOURCE_NAME) or {}
+    if mainland.get("status") == "success":
+        m_an = mainland.get("analysis") or {}
+        m_recs = [r for r in (mainland.get("sources") or []) if isinstance(r, dict)]
+        m_items_n = int(m_an.get("items_n") or 0)
+        m_date = _public_text(mainland.get("content_date") or "", 30)
+        if PLAIN():
+            m_head = (f'<b>内地财经媒体 ×{MAINLAND_NEWS_TOTAL}</b> · 标题池 {m_items_n} 条'
+                      f' {kit.source_badge(mainland)}')
+        else:
+            m_head = (f'<b>内地财经媒体 ×{MAINLAND_NEWS_TOTAL}</b>'
+                      f' · {int(m_an.get("ok_n") or 0)} 家窗口内有更新'
+                      f' · 扫描 {int(m_an.get("scanned") or 0)} 条 · 进标题池 {m_items_n} 条'
+                      f' {kit.source_badge(mainland)}')
+        rows.append(kit.item_row("", m_head, _esc(m_date)))
+        if not PLAIN():
+            m_cover = [f'{str(rec.get("name") or "")} '
+                       f'{len([it for it in (rec.get("items") or []) if isinstance(it, dict)])}'
+                       for rec in m_recs
+                       if any(isinstance(it, dict) for it in (rec.get("items") or []))]
+            if m_cover:
+                rows.append(kit.item_row("▤", "<b>覆盖面</b>（内地源头 · 窗口内条数）",
+                                         _esc(" · ".join(m_cover))))
+            rows.append(kit.item_row("▤", "标题去向",
+                                     "标题进同一标题池，供新闻情绪因子与政策因子逐条引用"))
 
     # ② 多平台信息员（Reddit / StockTwits / TradingView / Bogleheads）
     live = []
@@ -8437,11 +8919,16 @@ def _short_card_section(card_ctx, kit, today_n, total):
 
 
 
-def _sector_rotation_rows(item, kit, rank_label=None, plain=None):
+def _sector_rotation_rows(item, kit, rank_label=None, plain=None, basket_seen=None):
     """一条映射概念的窄屏渲染行：名称、可用总分、港股观察股、五维和三票。
 
     plain（入门版，缺省跟随 PLAIN()）：五维只给分数（不带 有效/总数 与可用权重），
     三策略只给各票方向与结论（不带 有效 n/3），映射命中词不出，事件证据只留标题。
+
+    basket_seen（2026-10-12 同子栏合并）：同栏里多个概念常共用同一只港股观察篮子
+    （例如 AI应用 / AIGC概念 / 互联网服务 都映射到同一批港股），名单会被逐行重复贴。
+    传一个 dict 进来后，第二次起只写「与 XX 同一篮子」并给只数，名单不重复列——
+    只数来自同一份映射数据，绝不改数字。
     """
     esc = kit.esc
     plain = PLAIN() if plain is None else bool(plain)
@@ -8460,6 +8947,15 @@ def _sector_rotation_rows(item, kit, rank_label=None, plain=None):
     mapping_text = "、".join(mapped[:6]) or "映射港股无行情记录"
     if len(mapped) > 6:
         mapping_text += f" 等 {len(mapped)} 只"
+    basket_note = ""
+    if basket_seen is not None and len(mapped) >= 2:
+        key = tuple(mapped)
+        first = basket_seen.get(key)
+        if first:
+            # 同一篮子已在前面的概念行展开过 → 只留指针，不重复名单。
+            basket_note = f"{SUB_MERGE_SAME_BASKET}：见 {first}（{len(mapped)} 只，同一批映射，不重复列名单）"
+        else:
+            basket_seen[key] = f"{number} {item.get('name') or '未命名概念'}"
 
     dim_labels = (("技术面", "技"), ("资金面", "资"), ("基本面", "基"),
                   ("行业板块", "板"), ("事件驱动", "事"))
@@ -8487,7 +8983,7 @@ def _sector_rotation_rows(item, kit, rank_label=None, plain=None):
     consensus = str(vote_summary.get("consensus") or "数据不足")
     votes_text = ("三策 " + " / ".join(vote_bits)
                   + f" → {consensus}" + ("" if plain else f"（有效 {valid_n}/3）"))
-    pieces = [f"港股观察篮子：{_esc(mapping_text)}", _esc(dim_text), _esc(votes_text)]
+    pieces = [f"港股观察篮子：{_esc(basket_note or mapping_text)}", _esc(dim_text), _esc(votes_text)]
     matched = "、".join(str(x) for x in (item.get("matched_terms") or [])[:5])
     if matched and not plain:
         pieces.append("映射命中词：" + _esc(matched))
@@ -8541,6 +9037,8 @@ def _render_sector_rotation(source, kit):
 
     items = [row for row in result.get("items") or [] if isinstance(row, dict)]
     scored = [row for row in items if row.get("overall_score") is not None]
+    # 同子栏合并（栏内）：同一只港股观察篮子只列一次名单（OCTOPUS_SUB_MERGE=0 时整栏照旧）
+    basket_seen = {} if SUB_MERGE_ENABLED else None
     if scored:
         if len(scored) <= 8:
             leaders = scored
@@ -8551,11 +9049,13 @@ def _render_sector_rotation(source, kit):
         hidden_n = max(0, len(scored) - len(leaders) - len(laggards))
         out.append(kit.sub("综合分靠前" + (f"（另 {hidden_n} 个未列）" if hidden_n and plain else "")))
         for index, item in enumerate(leaders, 1):
-            out.append(_sector_rotation_rows(item, kit, rank_label=item.get("rank") or index))
+            out.append(_sector_rotation_rows(item, kit, rank_label=item.get("rank") or index,
+                                             basket_seen=basket_seen))
         if laggards:
             out.append(kit.sub("综合分靠后（供风险对照）"))
             for item in laggards:
-                out.append(_sector_rotation_rows(item, kit, rank_label=item.get("rank")))
+                out.append(_sector_rotation_rows(item, kit, rank_label=item.get("rank"),
+                                                 basket_seen=basket_seen))
         out.append(kit.note(_esc(
             f"共有 {scored_total} 个概念满足总分门槛；版面展示前 5 与后 3（若候选不超过 8 个则全部列出）。")))
     else:
@@ -8566,7 +9066,7 @@ def _render_sector_rotation(source, kit):
     if unscored and not plain:        # 入门版：数据不足的概念属于诊断信息，不进正文
         out.append(kit.sub("数据不足的映射概念（示例）"))
         for item in unscored[:3]:
-            out.append(_sector_rotation_rows(item, kit))
+            out.append(_sector_rotation_rows(item, kit, basket_seen=basket_seen))
         if len(unscored) > 3:
             out.append(kit.note(_esc(f"另有 {len(unscored) - 3} 个映射概念未达到综合评分门槛。")))
     if not items:
@@ -8813,6 +9313,11 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 外部旧调用若无该键仍维持原来的基础数据源数量。
     if isinstance(data.get(HK_NEWS_SOURCE_NAME), dict):
         source_items.append(("全网新闻源头（20家）", data[HK_NEWS_SOURCE_NAME]))
+    # 内地财经媒体源头（18 家，2026-10-12 新增）：同样按需进审计（外部旧调用没有该键时
+    # 基础数据源数量不变），当天源计数随其窗口内是否有当天发布而计入。
+    if isinstance(data.get(MAINLAND_NEWS_SOURCE_NAME), dict):
+        source_items.append((f"内地财经媒体（{MAINLAND_NEWS_TOTAL}家）",
+                             data[MAINLAND_NEWS_SOURCE_NAME]))
     # 港股境外数据源（2026-10-02）：Yahoo / Stooq / HKEX / 可选浏览器，存在即进审计。
     if isinstance(data.get(HK_OVERSEAS_SOURCE_NAME), dict):
         source_items.append((HK_OVERSEAS_SOURCE_NAME, data[HK_OVERSEAS_SOURCE_NAME]))
@@ -8842,6 +9347,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     quant_src = data.get("港股量化") or {}
     if isinstance(quant_src, dict):
         quant = quant_src.get("result") or {}
+    lq_html = ""          # 资金流动性正文（同子栏合并要用它判断 05 栏是否真的在场）
     if quant.get("available"):
         quant_badge = kit.badge("量化模型", "ai")
         fc_html = _quant.render.render_forecast(quant, kit)
@@ -8921,9 +9427,13 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # ① 【及时秋刀鱼】AI 行情复盘（2026-09-30 合并原「行情速览」+「全球大盘全景复盘」）
     #    逐项报价（Yahoo / 东财回补）+ A股全景（东财）；重复数字只出一份，缺失品种不出行。
     #    两路数据任意一路成功即渲染，徽标与副标题分别标出各自状态。
+    #    2026-10-12 起「同子栏合并」：05 资金流动性栏目在场时，南北向成交总额只在
+    #    05 展开（更专业口径：环比 / z 值 / 分位 / 综合分），本栏只留指针（见 SUB_MERGE_*）。
     market_ok = market.get("status") == "success"
     pan_ok = pan.get("status") == "success"
-    review_html = (kit.market_review(market if market_ok else {}, pan if pan_ok else {})
+    merge_flow_owner = SUB_MERGE_OWNER_LIQUIDITY if (SUB_MERGE_ENABLED and lq_html) else ""
+    review_html = (kit.market_review(market if market_ok else {}, pan if pan_ok else {},
+                                     merge_flow=merge_flow_owner)
                    if (market_ok or pan_ok) else "")
     if review_html:
         review_badge, review_caption = _market_review_meta(
@@ -8978,7 +9488,13 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 kit.ai_badge(), "")
 
     # ④ 策略研判（倾向 / 结论已置顶，此处只展开依据；MACD 是栏内子块）
-    strategy_html = kit.ai_block(ai_result) if ai_result.get("available") else \
+    #    同子栏合并：12 栏「板块热力」已按行情口径展示的板块，强度榜不再重复其
+    #    涨跌 / 主力净流入（与 12 栏同一份 pan 数据、同一条切片规则，见 _panorama_heat_selection）。
+    merge_boards = (_panorama_heat_selection(pan, getattr(kit, "theme", ""))
+                    if (SUB_MERGE_ENABLED and review_html) else set())
+    board_owner = SUB_MERGE_OWNER_MARKET_REVIEW if merge_boards else ""
+    strategy_html = kit.ai_block(ai_result, merge_boards=merge_boards,
+                                 board_owner=board_owner) if ai_result.get("available") else \
         _quant.macd_strategy.render_strategy(ai_result.get("macd"), kit,
                                               limit=9 if LITE_ENABLED else 0,
                                               plain=PLAIN())
@@ -9006,10 +9522,12 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "UZI TREND", SECTION_TITLE_UZI_TREND, uzi_html,
                 kit.badge("量化策略", "ai"), uzi_caption)
 
-    # ⑤ 趋势跟踪：全网 20 个新闻源头（港股挖掘）+ 多平台信息员（Reddit / StockTwits /
-    #    TradingView / Bogleheads），任一来源抓取成功且有内容才渲染；全部缺席则整栏不进正文。
+    # ⑤ 趋势跟踪：全网 20 个新闻源头（港股挖掘）+ 内地财经媒体 18 家（标题池覆盖）
+    #    + 多平台信息员（Reddit / StockTwits / TradingView / Bogleheads），
+    #    任一来源抓取成功且有内容才渲染；全部缺席则整栏不进正文。
     if ((data.get("Reddit") or {}).get("status") == "success"
             or (data.get(HK_NEWS_SOURCE_NAME) or {}).get("status") == "success"
+            or (data.get(MAINLAND_NEWS_SOURCE_NAME) or {}).get("status") == "success"
             or any((data.get(n) or {}).get("status") == "success"
                    for n in _active_public_site_names())):
         digest = _trend_clues_block(data, kit)
@@ -9090,9 +9608,13 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             },
         }
         decorated = []
+        garnish_used = []   # 同一份日报里同一句活鲜比喻只出现一次（见 octopus_ren._seafood_garnish_parts）
         for kick, title, content, badge, caption in sections:
+            ren_ctx["_garnish_avoid"] = tuple(garnish_used) if SUB_MERGE_ENABLED else ()
             ren_block = _ren.section_ren_block(kick, ren_ctx)
             if ren_block:
+                if ren_block.get("metaphor"):
+                    garnish_used.append(ren_block["metaphor"])
                 content = content + _ren_judgment_row(ren_block["text"], kit, meta=ren_block)
             decorated.append((kick, title, content, badge, caption))
         sections = decorated
@@ -9571,8 +10093,13 @@ def build_ai_analysis(data):
     """兼容别名：原 AI 盘研判入口，现为策略研判。"""
     return build_daily_quant_strategy(data)
 
-def _ai_analysis_block(res):
-    """渲染「策略研判」：量化信号优先、板块趋势榜分层、内容使用独立像素面板。"""
+def _ai_analysis_block(res, merge_boards=(), board_owner=""):
+    """渲染「策略研判」：量化信号优先、板块趋势榜分层、内容使用独立像素面板。
+
+    merge_boards / board_owner：跨栏「同子栏合并」（见 SUB_MERGE_ENABLED）——
+    这些板块的涨跌 / 主力净流入已在 AI 行情复盘 · 板块热力按行情口径展示，
+    强度榜只留趋势分 / 趋势 / 信号，避免同一批数字在正文里出现两次。
+    """
     color = res["sentiment_color"]
     score = int(res["score"])
 
@@ -9627,11 +10154,19 @@ def _ai_analysis_block(res):
     quant_sectors = res.get("quant_sectors") or []
     if quant_sectors:
         rows = []
+        merged_names = []
         for sec in quant_sectors[:6]:
             chg = sec.get("chg")
             badge = _trend_badge(chg, compact=True) if chg is not None else '<span style="color:%s;">■ --</span>' % C_FAINT
             inflow = sec.get("inflow")
             flow_txt = _format_amount(inflow) if inflow is not None else "—"
+            name = str(sec.get("name") or "")
+            if (SUB_MERGE_ENABLED and board_owner and name
+                    and name in set(merge_boards)):
+                # 同子栏合并：该板块的涨跌 / 主力净流入已在 12 栏按行情口径展示。
+                merged_names.append(name)
+                badge = f'<span style="color:{C_FAINT};">{SUB_MERGE_POINTER}</span>'
+                flow_txt = "—"
             trend = _esc(sec.get("trend") or "—")
             sig = _esc(sec.get("signal") or "—")
             score_txt = f'{sec.get("composite", 0):+.2f}'
@@ -9654,6 +10189,11 @@ def _ai_analysis_block(res):
         # 用 _pixel_table 展示多列
         sec_header = ["趋势分", "板块", "涨跌", "主力", "趋势", "信号"]
         sectors_body = _pixel_table(sec_header, rows, aligns=("right","left","center","right","center","left"))
+        if merged_names:
+            sectors_body += (f'<div style="font-size:10px;color:{C_FAINT};margin-top:6px;padding:4px 6px;'
+                             f'line-height:1.7;font-family:{FONT_MONO};">'
+                             f'{SUB_MERGE_POINTER} · {sub_merge_pointer_text(SUB_MERGE_NOTE_BOARD, board_owner)}'
+                             f'（已合并：{"、".join(_esc(x) for x in merged_names)}）</div>')
         weak = [s for s in quant_sectors if (s.get("composite") or 0) < -0.5][:2]
         if weak:
             sectors_body += (f'<div style="font-size:11px;color:{C_RED};margin-top:8px;padding:6px 8px;'
@@ -10125,6 +10665,15 @@ def _collect_headline_items(data, default_date):
         ch_name = ch.get("name", "港股频道")
         for v in ch.get("videos", []) or []:
             _add(v.get("title"), ch_name, "港股名家频道", v.get("published_cst"))
+    # 内地财经媒体源头（2026-10-12 新增，18 家）：标题、来源与原文链接一并进标题池，
+    # 供新闻情绪因子 / 政策因子 / 策略研判与逐栏 AI 研判共用；窗口仍由
+    # _filter_headlines_window 按 ts 统一判定。
+    mainland = data.get(MAINLAND_NEWS_SOURCE_NAME) or {}
+    if isinstance(mainland, dict):
+        for h in mainland.get("headlines") or []:
+            if isinstance(h, dict):
+                _add(h.get("title"), h.get("source"), MAINLAND_NEWS_SECTION,
+                     h.get("published_cst"), date_raw=h.get("date"), url=h.get("url", ""))
 
     # 中国政府网官方政策单独进入标题存档；政策因子会在同一窗口内对其做矩阵映射。
     # 兼容手工调用传入的旧键名「中国政府网」。
@@ -10732,6 +11281,23 @@ def _senti_comment_text(s):
     return text
 
 
+def _senti_reason_text(s, heads=()):
+    """个股「原因」文案：引用的标题若与下方证据行同篇，就不再重复长标题（同子栏合并）。
+
+    全量版会同时展示「原因」与「证据标题」：原因里按设计引用最强标题的一段（前 40 字），
+    证据行又把整条标题贴一遍。这里把重复引用的那一段换成「见下方证据」——结论与计数不变，
+    只是同一条长标题不再连贴两次；「原因」的其余部分（命中词 / 来源 / 动量）原样保留。
+    """
+    text = str(s.get("reason") or "")
+    if not text:
+        return text
+    for h in heads or ():
+        title = str((h or {}).get("title") or "")
+        if len(title) >= 12 and title[:40] in text:
+            return text.replace(title[:40], "见下方证据", 1)
+    return text
+
+
 def _senti_headline_sub(h):
     """标题行副文案：栏目 · 来源 · 命中词（双主题共用）；72h 窗口内旧日标题前缀日期。"""
     hits = (h["pos_hits"] or []) + (h["neg_hits"] or [])
@@ -10798,6 +11364,7 @@ def _pixel_sentiment_block(res):
             _mini_table(summary_rows), color, arrow))
     # 逐市场逐股
     cards = []
+    seen_heads, dup_heads = {}, 0
     for mb in by_market:
         cards.append(_subsection(f'{_esc(mb["market"])} · 成交量前{HOT_STOCK_TOP_N}'))
         for s in mb.get("stocks") or []:
@@ -10817,15 +11384,18 @@ def _pixel_sentiment_block(res):
                 color, icon = C_RED, "▼"
             else:
                 color, icon = C_AMBER, "■"
+            heads = s["headlines"][:5]
             rows = [
                 ("AI 情绪分", f'<span style="color:{color};font-weight:900;">{s["score"]:+.2f}</span>'
                               f'（正{s["pos"]}/中{s["neu"]}/负{s["neg"]} · {_esc(s["label"])}）'),
                 ("总结评论", _esc(_senti_comment_text(s))),
-                ("原因", _esc(s.get("reason") or "")),
+                ("原因", _esc(_senti_reason_text(s, heads) if SUB_MERGE_ENABLED
+                              else str(s.get("reason") or ""))),
             ]
             body = _mini_table(rows) + _mini_table(_senti_factor_lines(s))
             evidence = []
-            for h in s["headlines"][:5]:
+            stock_label = f'{s["name"]} {s["code"]}'.strip() + f' · {s["market"]}'
+            for h in heads:
                 badge, bcolor = {1: ("S+1", C_GREEN), -1: ("S−1", C_RED),
                                  0: ("S0", C_AMBER)}[h["s"]]
                 tag_mark = ""
@@ -10833,6 +11403,17 @@ def _pixel_sentiment_block(res):
                     tag_mark = ' <span style="font-size:10px;color:#888;">[别名]</span>'
                 elif h.get("tag") == "sector":
                     tag_mark = ' <span style="font-size:10px;color:#888;">[行业]</span>'
+                # 同子栏合并（栏内）：同一篇标题只展开一次，后出现的只留指针，不重复长标题。
+                seen_owner = (senti_headline_owner(seen_heads, h["title"], stock_label)
+                              if SUB_MERGE_ENABLED else "")
+                if seen_owner and seen_owner != stock_label:
+                    dup_heads += 1
+                    evidence.append(_item_row(
+                        "»", f'<b style="color:{bcolor};">[{badge}]</b> '
+                             f'<span style="color:{C_MUTED};">{SUB_MERGE_SAME_HEADLINE}：'
+                             f'见 {_esc(seen_owner)}（同一篇快讯，标题不重复展开）</span>',
+                        _esc(_senti_headline_sub(h))))
+                    continue
                 evidence.append(_item_row(
                     "»", f'<b style="color:{bcolor};">[{badge}]</b> {_esc(h["title"][:70])}{tag_mark}',
                     _esc(_senti_headline_sub(h))))
@@ -10850,15 +11431,20 @@ def _pixel_sentiment_block(res):
     unattr_n = res.get("unattributed_n") or 0
     unattr_keywords = res.get("unattributed_keywords") or []
     topic_cards = []
-    if unattr_n > 0:
-        topic_rows = [
-            ("未归因", f'{unattr_n} 条（正{res.get("unattributed_pos_n") or 0}/中{res.get("unattributed_neu_n") or 0}/负{res.get("unattributed_neg_n") or 0}）'),
-        ]
-        if unattr_keywords:
-            kw_parts = [f'{kw}×{n}' for kw, n in unattr_keywords[:8]]
-            topic_rows.append(("高频情绪词", "、".join(kw_parts)))
-        else:
-            topic_rows.append(("高频情绪词", "无显著情绪词命中"))
+    if unattr_n > 0 or dup_heads:
+        topic_rows = []
+        if unattr_n > 0:
+            topic_rows.append(
+                ("未归因", f'{unattr_n} 条（正{res.get("unattributed_pos_n") or 0}/'
+                           f'中{res.get("unattributed_neu_n") or 0}/负{res.get("unattributed_neg_n") or 0}）'))
+            if unattr_keywords:
+                kw_parts = [f'{kw}×{n}' for kw, n in unattr_keywords[:8]]
+                topic_rows.append(("高频情绪词", "、".join(kw_parts)))
+            else:
+                topic_rows.append(("高频情绪词", "无显著情绪词命中"))
+        if dup_heads:
+            topic_rows.append(("同题合并", f'{dup_heads} 条（同一篇标题在多只个股重复出现，'
+                                           '标题只展开一次，计数照旧计入各股因子）'))
         topic_cards.append(_pixel_panel(
             f"MARKET MOOD // 未归因{unattr_n}条市场级情绪",
             _mini_table(topic_rows), C_AMBER, "■"))
@@ -10947,6 +11533,7 @@ def gz_sentiment_block(res):
     #    全景总览（整体 DNS / 三市 DNS / 最暖最冷 / 报道最多）与关键词统计一行不少。
     per_market = LITE("senti_stocks")
     per_stock_heads = LITE("senti_headlines")
+    seen_heads, dup_heads = {}, 0
     for mb in by_market:
         scored = [st for st in (mb.get("stocks") or []) if st.get("matched")]
         if not scored:
@@ -10973,16 +11560,18 @@ def gz_sentiment_block(res):
                 f'{_esc(title)} · {s["market"]} {arrow}'
                 + ("" if PLAIN() else
                    f' <span style="color:{GZ_META};font-weight:{GZ_W_BODY};">归因：{tag_label}</span>')))
+            heads = (sorted(s["headlines"], key=lambda h: -abs(h.get("s") or 0))
+                     if LITE_ENABLED else s["headlines"])[:per_stock_heads]
             stock_pairs = [("AI 情绪分", _esc(_senti_comment_text(s)))]
             if not LITE_ENABLED:
-                stock_pairs.append(("原因", _esc(s.get("reason") or "")))
+                stock_pairs.append((
+                    "原因", _esc(_senti_reason_text(s, heads) if SUB_MERGE_ENABLED
+                                 else str(s.get("reason") or ""))))
                 for label, line in _senti_factor_lines(s):
                     if "样本不足" in line:
                         continue  # 冷启动的动量 / 新闻量不出行
                     stock_pairs.append((label, _esc(line)))
             out.append(gz_kv_table(stock_pairs))
-            heads = (sorted(s["headlines"], key=lambda h: -abs(h.get("s") or 0))
-                     if LITE_ENABLED else s["headlines"])[:per_stock_heads]
             for h in heads:
                 badge = {1: "▲ S+1", -1: "▼ S−1", 0: "■ S0"}[h["s"]]
                 tag_mark = ""
@@ -10992,6 +11581,18 @@ def gz_sentiment_block(res):
                     tag_mark = f' <span style="color:{GZ_META}">[别名]</span>'
                 elif h.get("tag") == "sector":
                     tag_mark = f' <span style="color:{GZ_META}">[行业]</span>'
+                # 同子栏合并（栏内）：同一篇标题只展开一次，后出现的只留指针，不重复长标题。
+                stock_label = (f'{s["name"]} {s["code"]}'.strip() + f' · {s["market"]}')
+                seen_owner = (senti_headline_owner(seen_heads, h["title"], stock_label)
+                              if SUB_MERGE_ENABLED else "")
+                if seen_owner and seen_owner != stock_label:
+                    dup_heads += 1
+                    out.append(gz_item_row(
+                        "»",
+                        f'<b>{badge}</b> <span style="color:{GZ_META};">'
+                        f'{SUB_MERGE_SAME_HEADLINE}：见 {_esc(seen_owner)}（同一篇快讯，标题不重复展开）</span>',
+                        _senti_headline_sub(h)))
+                    continue
                 out.append(gz_item_row(
                     "»",
                     f'<b>{badge}</b> {_esc(h["title"][:70])}{tag_mark}',
@@ -10999,13 +11600,18 @@ def gz_sentiment_block(res):
     # ④ 未归因市场级情绪关键词（避免重复展示已在正文出现的标题）
     unattr_n = res.get("unattributed_n") or 0
     unattr_keywords = res.get("unattributed_keywords") or []
-    if unattr_n > 0:
-        mood_pairs = [("未归因标题",
-                       f'{unattr_n} 条 · 正{res.get("unattributed_pos_n") or 0} / '
-                       f'中{res.get("unattributed_neu_n") or 0} / 负{res.get("unattributed_neg_n") or 0}')]
-        if unattr_keywords:
-            kw_parts = [f'{kw}×{n}' for kw, n in unattr_keywords[:8]]
-            mood_pairs.append(("高频情绪词", _esc("、".join(kw_parts))))
+    if unattr_n > 0 or dup_heads:
+        mood_pairs = []
+        if unattr_n > 0:
+            mood_pairs.append(("未归因标题",
+                               f'{unattr_n} 条 · 正{res.get("unattributed_pos_n") or 0} / '
+                               f'中{res.get("unattributed_neu_n") or 0} / 负{res.get("unattributed_neg_n") or 0}'))
+            if unattr_keywords:
+                kw_parts = [f'{kw}×{n}' for kw, n in unattr_keywords[:8]]
+                mood_pairs.append(("高频情绪词", _esc("、".join(kw_parts))))
+        if dup_heads:
+            mood_pairs.append(("同题合并", f'{dup_heads} 条（同一篇标题在多只个股重复出现，'
+                                           '标题只展开一次，计数照旧计入各股因子）'))
         out.append(gz_subsection("市场情绪关键词") + gz_kv_table(mood_pairs))
     return "".join(out)
 
@@ -11602,7 +12208,9 @@ def _pixel_trend_summary(topic, icon, color, res):
         f'</td></tr></table>')
 
 
+# theme：跨栏「同子栏合并」按主题判定 12 栏板块热力的切片口径（见 _panorama_heat_selection）。
 PIXEL_KIT = _RenderKit(
+    theme="pixel",
     market_section=_pixel_market_section,
     market_review=_pixel_market_review,
     hk_quotes_block=_pixel_hk_quotes_block,
@@ -11683,7 +12291,9 @@ def gz_trend_topic_block(res):
     return "".join(out)
 
 
+# theme：跨栏「同子栏合并」按主题判定 12 栏板块热力的切片口径（见 _panorama_heat_selection）。
 GUIZANG_KIT = _RenderKit(
+    theme="guizang",
     market_section=gz_market_section,
     market_review=gz_market_review,
     hk_quotes_block=gz_hk_quotes_block,
@@ -11935,7 +12545,9 @@ def _is_guizang_like(kit):
             or kit is FORUM_KIT or kit is LIME_KIT)
 
 
+# theme：跨栏「同子栏合并」按主题判定 12 栏板块热力的切片口径（见 _panorama_heat_selection）。
 DOSSIER_KIT = _RenderKit(
+    theme="dossier",
     market_section=gz_market_section,
     market_review=gz_market_review,
     hk_quotes_block=gz_hk_quotes_block,
@@ -12472,7 +13084,9 @@ def _forum_html_frame(masthead, first_section, content_html, footer_text,
 </html>"""
 
 
+# theme：跨栏「同子栏合并」按主题判定 12 栏板块热力的切片口径（见 _panorama_heat_selection）。
 FORUM_KIT = _RenderKit(
+    theme="forum",
     market_section=gz_market_section,
     market_review=gz_market_review,
     hk_quotes_block=gz_hk_quotes_block,
@@ -12750,7 +13364,9 @@ def generate_report_lime(data, date_display, date_str, sentiment_history=None,
         return _enforce_dark_gray_font(html, dark_gray=L_MUTED)
 
 
+# theme：跨栏「同子栏合并」按主题判定 12 栏板块热力的切片口径（见 _panorama_heat_selection）。
 LIME_KIT = _RenderKit(
+    theme="lime",
     market_section=gz_market_section,
     market_review=gz_market_review,
     hk_quotes_block=gz_hk_quotes_block,

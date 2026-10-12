@@ -718,43 +718,71 @@ def _garnish_dir(kicker, ctx, obj):
     return None, None
 
 
-def _seafood_garnish(kicker, ctx):
-    """返回可直接追加的「｜🦐 活鲜度：X — 比喻」串；数据不足返回 ""（不点缀）。"""
+def _seafood_garnish_parts(kicker, ctx):
+    """返回 (点缀串, 本次选中的比喻句)；数据不足时是 ("", "")。
+
+    「同一份日报里同一句比喻只出现一次」（2026-10-12 同子栏合并的栏内口径）：词库短语池
+    不大，两个栏目可能抽到同一句（例如两栏都是「活鲜 — 今天的货是活的，现捞现看」）。
+    上层（pipeline 逐栏生成时）把已用过的比喻句放进 ctx["_garnish_avoid"]，这里撞句就按
+    **确定性顺序**换下一个变体（最多试 8 个）；全试完仍撞句就照用。
+
+    本函数**只读 ctx、不改 ctx**：同输入永远同输出（可复现性靠上层按固定栏目顺序递进）。
+    """
     obj = _garnish_obj(kicker, ctx)
     if not _garnish_available(obj):
-        return ""
+        return "", ""
     lex = _lexicon()
     label, p_pct = _garnish_dir(kicker, ctx, obj)
     vol_pct = obj.get("vol_pct") if isinstance(obj, dict) else None
-    g = lex.section_garnish(
-        available=True, is_today=_garnish_is_today(kicker, obj),
-        label=label, p_pct=p_pct, vol_pct=vol_pct,
-        seed=f"{(ctx or {}).get('date_str') or ''}|{kicker}|SEAFOOD")
-    return lex.seafood_line(g)
+    base_seed = f"{(ctx or {}).get('date_str') or ''}|{kicker}|SEAFOOD"
+    avoid = set()
+    if isinstance(ctx, dict):
+        avoid = {str(x) for x in (ctx.get("_garnish_avoid") or ()) if str(x)}
+    g = None
+    for attempt in range(8):
+        seed = base_seed if attempt == 0 else f"{base_seed}|alt{attempt}"
+        g = lex.section_garnish(
+            available=True, is_today=_garnish_is_today(kicker, obj),
+            label=label, p_pct=p_pct, vol_pct=vol_pct, seed=seed)
+        metaphor = (g or {}).get("metaphor") or ""
+        if not avoid or not metaphor or metaphor not in avoid:
+            break
+    return lex.seafood_line(g), ((g or {}).get("metaphor") or "")
 
 
-def section_ren(kicker, ctx):
-    """返回某栏目的「AI帮你提鲜」正文文本；数据不足 / 出错返回 ""（调用方就不加块）。
+def _seafood_garnish(kicker, ctx):
+    """（兼容旧入口）只返回「｜🦐 活鲜度：X — 比喻」串；数据不足返回 ""（不点缀）。"""
+    return _seafood_garnish_parts(kicker, ctx)[0]
+
+
+def section_ren_with_meta(kicker, ctx):
+    """返回 (「AI帮你提鲜」正文, 本次选中的活鲜比喻句)；数据不足 / 出错返回 ("", "")。
 
     2026-09-30 起：解读末尾按行情状态确定性点缀「🦐 活鲜度」标签 + 一句活鲜比喻
     （octopus_lexicon 词库；条件驱动、无数字、可复现）。数据不足时整行仍缺席。
+    比喻句随返回值交给上层做「同一份日报里同一句只出现一次」的去重。
     """
     gen = _GENERATORS.get(kicker)
     if gen is None:
-        return ""
+        return "", ""
     try:
         text = str(gen(ctx) or "")
     except Exception as exc:            # 单栏出措不拖垮整份日报
         print(f"  ⚠️ AI帮你提鲜（{kicker}）生成失败，本栏跳过：{exc}")
-        return ""
+        return "", ""
     if not text:
-        return ""
+        return "", ""
     try:
-        garnish = _seafood_garnish(kicker, ctx)
+        garnish, metaphor = _seafood_garnish_parts(kicker, ctx)
     except Exception as exc:            # 点缀出错只丢点缀，解读本体照常
         print(f"  ⚠️ 活鲜点缀（{kicker}）生成失败，跳过点缀：{exc}")
-        garnish = ""
-    return text + garnish if garnish else text
+        garnish, metaphor = "", ""
+    return (text + garnish if garnish else text), metaphor
+
+
+def section_ren(kicker, ctx):
+    """返回某栏目的「AI帮你提鲜」正文文本；数据不足 / 出错返回 ""（调用方就不加块）。"""
+    return section_ren_with_meta(kicker, ctx)[0]
 
 
 def section_ren_block(kicker, ctx):
@@ -765,7 +793,7 @@ def section_ren_block(kicker, ctx):
     渲染层只负责把 p_pct 画成几率条字符图，绝不在这里造新数字。
     p_pct 缺失（栏目没有研判概率）→ None：渲染层跳过几率条，只出字符图头 + 正文。
     """
-    text = section_ren(kicker, ctx)
+    text, metaphor = section_ren_with_meta(kicker, ctx)
     if not text:
         return None
     try:
@@ -778,4 +806,5 @@ def section_ren_block(kicker, ctx):
         p_pct = round(float(p_pct), 1)
     else:
         p_pct = None
-    return {"text": text, "label": label or None, "p_pct": p_pct}
+    return {"text": text, "label": label or None, "p_pct": p_pct,
+            "metaphor": metaphor or None}
