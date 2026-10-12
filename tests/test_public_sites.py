@@ -1,4 +1,4 @@
-"""趋势跟踪（多平台信息员 + 全网 20 个新闻源头 · 港股挖掘）的离线解析、降级、主题渲染及推送门禁测试。
+"""趋势跟踪（多平台信息员 + 全网 36 个新闻源头 · 港股挖掘）的离线解析、降级、主题渲染及推送门禁测试。
 
 覆盖四个公开平台：Reddit（板块热门帖）、StockTwits（趋势榜 + 平台情绪标签）、
 TradingView（Ideas RSS）、Bogleheads（论坛 RSS）与港股新闻源（RSS/Atom 聚合）；
@@ -696,7 +696,7 @@ def _rss_feed(items):
 
 
 class HKNewsSourceTests(unittest.TestCase):
-    """全网 20 个新闻源头：注册表 / 白名单 / 港股挖掘 / 规则分析 / 栏目渲染（离线 mock）。"""
+    """全网 36 个新闻源头：注册表 / 白名单 / 港股挖掘 / 规则分析 / 栏目渲染（离线 mock）。"""
 
     @staticmethod
     def _rfc(dt):
@@ -750,19 +750,46 @@ class HKNewsSourceTests(unittest.TestCase):
         }
         return feeds
 
-    def test_registry_twenty_sources_https_hosts_and_regions(self):
-        self.assertEqual(len(pipeline.HK_NEWS_SOURCES), 20)
-        self.assertEqual(pipeline.HK_NEWS_TOTAL, 20)
+    def test_registry_thirty_six_sources_https_hosts_and_regions(self):
+        self.assertEqual(len(pipeline.HK_NEWS_SOURCES), 36)
+        self.assertEqual(pipeline.HK_NEWS_TOTAL, 36)
         names = [s["name"] for s in pipeline.HK_NEWS_SOURCES]
-        self.assertEqual(len(set(names)), 20)
+        self.assertEqual(len(set(names)), 36)
         from collections import Counter
         self.assertEqual(Counter(s["region"] for s in pipeline.HK_NEWS_SOURCES),
-                         {"香港": 7, "内地": 7, "国际": 6})
+                         {"香港": 7, "内地": 23, "国际": 6})
         for s in pipeline.HK_NEWS_SOURCES:
-            self.assertTrue(s["feed"].startswith("https://"), s["name"])
-            self.assertTrue(s["url"].startswith("https://"), s["name"])
+            # feed 允许为空：无公开订阅的媒体直接走 Bing / Google 站内检索备用源
+            self.assertTrue(s["feed"] == "" or s["feed"].startswith("https://"), s["name"])
+            self.assertTrue(s["url"].startswith("https://") or s["url"].startswith("http://"), s["name"])
             self.assertTrue(s["hosts"], s["name"])
             self.assertTrue(s["desc"], s["name"])
+        # 2026-10-12 新增的媒体必须在册（用户指定名单）
+        for name in ("中证网", "证券日报网", "中国基金报", "财闻网", "经济参考网", "IT之家",
+                     "券商中国", "每日经济新闻", "北京商报", "21世纪经济报道", "证券之星",
+                     "和讯网", "金融投资报", "时代财经", "经济观察网", "凤凰网财经"):
+            self.assertIn(name, names)
+        # 已在册的「证券时报·快讯」即证券时报网，不重复添加
+        self.assertIn("证券时报·快讯", names)
+        self.assertEqual(len([n for n in names if "证券时报" in n]), 1)
+
+    def test_empty_feed_source_uses_site_search_backup(self):
+        # 无公开订阅的媒体（feed 为空）直接走 Bing 站内检索 RSS，并标注为备用源
+        cfg = next(s for s in pipeline.HK_NEWS_SOURCES if s["name"] == "中证网")
+        self.assertEqual(cfg["feed"], "")
+        host = pipeline._hk_news_site_host(cfg)
+        self.assertEqual(host, "cs.com.cn")
+        bing_url = pipeline._backup.get_news_site_backup_urls(host)[0]
+        now = datetime.now(pipeline.CST)
+        feeds = {bing_url: _rss_feed([
+            ("恒指收涨，港股通资金净买入", "https://www.cs.com.cn/xwzx/1.html",
+             self._rfc(now - timedelta(hours=2)))])}
+        result = self._fetch_result(feeds)
+        rec = next(r for r in result["sources"] if r["name"] == "中证网")
+        self.assertEqual(rec["status"], "ok")
+        self.assertEqual(rec["served_by"], "备用源")
+        self.assertEqual(rec["hk_n"], 1)
+        self.assertEqual(rec["items"][0]["url"], "https://www.cs.com.cn/xwzx/1.html")
 
     def test_news_url_whitelist_is_per_source_host(self):
         self.assertEqual(pipeline._news_url("https://www.hket.com/rss/finance",
@@ -786,7 +813,7 @@ class HKNewsSourceTests(unittest.TestCase):
         self.assertEqual(result["status"], "success")
         self.assertTrue(result["is_today"])
         records = {r["name"]: r for r in result["sources"]}
-        self.assertEqual(len(result["sources"]), 20)
+        self.assertEqual(len(result["sources"]), pipeline.HK_NEWS_TOTAL)
 
         r0 = records[pipeline.HK_NEWS_SOURCES[0]["name"]]
         self.assertEqual(r0["status"], "ok")
@@ -810,17 +837,17 @@ class HKNewsSourceTests(unittest.TestCase):
         self.assertEqual(r3["hk_n"], 0)
 
         failed = [r for r in result["sources"] if r["status"] == "fail"]
-        self.assertEqual(len(failed), 16)           # 其余 16 源未配置 feed 返回
+        self.assertEqual(len(failed), pipeline.HK_NEWS_TOTAL - 4)  # 其余源（含备用检索）均无返回
         self.assertIn("暂缺", result["note"])
         self.assertIn(pipeline.HK_NEWS_SOURCES[5]["name"], result["note"])
         self.assertTrue(result["partial"])
 
         an = result["analysis"]
         self.assertEqual(an["ok_n"], 3)
-        self.assertEqual(an["fail_n"], 16)
+        self.assertEqual(an["fail_n"], pipeline.HK_NEWS_TOTAL - 4)
         self.assertEqual(an["scanned"], 8)
         self.assertEqual(an["hk_n"], 6)             # 4 + 2
-        self.assertEqual(an["total"], 20)
+        self.assertEqual(an["total"], pipeline.HK_NEWS_TOTAL)
         self.assertGreaterEqual(an["bull"], 2)      # 反弹/升 → 多头证据
         self.assertGreaterEqual(an["bear"], 1)      # 跳水 → 空头证据
         self.assertEqual(an["prob"] + (100 - an["prob"]), 100)
@@ -833,7 +860,7 @@ class HKNewsSourceTests(unittest.TestCase):
         self.assertEqual(result["items"] if "items" in result else [], [])
         self.assertFalse(result["is_today"])
         self.assertIn("72", result["error"])
-        self.assertEqual(len(result["sources"]), 20)
+        self.assertEqual(len(result["sources"]), pipeline.HK_NEWS_TOTAL)
 
     def test_disabled_switch_returns_unavailable(self):
         with patch.object(pipeline, "HK_NEWS_ENABLED", False):
@@ -869,7 +896,7 @@ class HKNewsSourceTests(unittest.TestCase):
                                                       theme=theme)
                     self.assertIn("TREND TRACKING" if theme == "pixel"
                                   else f"{pipeline.SECTION_TITLE_TREND}</h2>", report)
-                    self.assertIn("全网新闻源头 ×20", report)
+                    self.assertIn(f"全网新闻源头 ×{pipeline.HK_NEWS_TOTAL}", report)
                     self.assertIn("港股相关 6 条", report)      # 汇总行 4+2
                     self.assertIn("港股反弹，恒指收复25000点", report)
                     self.assertIn("香港经济日报 HKET·财经", report)
@@ -889,7 +916,7 @@ class HKNewsSourceTests(unittest.TestCase):
         data = {pipeline.HK_NEWS_SOURCE_NAME: news, "Reddit": reddit}
         with patch.object(pipeline, "AI_ANALYSIS_ENABLED", False):
             report = pipeline.generate_report(data, "2026年9月28日 · 周一", "20260928")
-        self.assertIn("全网新闻源头 ×20", report)
+        self.assertIn(f"全网新闻源头 ×{pipeline.HK_NEWS_TOTAL}", report)
         self.assertIn("Reddit", report)
         self.assertIn("r/stocks", report)
         # 8 个基础数据源 + 全网新闻源头 + Reddit

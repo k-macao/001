@@ -1066,7 +1066,7 @@ class GuizangOnePageTests(unittest.TestCase):
         return data
 
     def _trend_data(self):
-        """趋势跟踪重日体量：10 个 Reddit 板块 + 3 个平台 + 20 个新闻源头。"""
+        """趋势跟踪重日体量：10 个 Reddit 板块 + 3 个平台 + 36 个新闻源头。"""
         data = {}
         boards = pipeline._REDDIT_BOARDS
         reddit = [{"title": f"r/{board} 热门帖样本{i}：港股与美股资金面观察，讨论热度持续",

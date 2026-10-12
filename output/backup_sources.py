@@ -295,7 +295,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
         "note": "",
     },
     "hk_news_rss": {
-        "name": "港股新闻源头 · 20 家媒体 RSS",
+        "name": "港股新闻源头 · 36 家媒体 RSS",
         "used_by": ("【深海大鲨鱼】趋势跟踪·新闻源头",),
         "primary": ("各媒体官方 RSS / Atom", "{feed}"),
         "backups": (
