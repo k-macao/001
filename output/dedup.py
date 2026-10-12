@@ -286,6 +286,8 @@ def dedup_across_sections(data: Dict, threshold: float = 0.7) -> Dict:
         "地缘政治趋势",
         "港股新闻源头",
         "全网新闻源头（36家）",
+        "内地财经媒体源头",       # 2026-10-12：18 家内地财经媒体（headlines 列表）
+        "内地财经媒体（18家）",
     ]
     
     # 收集所有标题
