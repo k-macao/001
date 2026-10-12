@@ -776,8 +776,8 @@ STOCKTWITS_MESSAGES_PER_STREAM = 30   # 每个标的最多读多少条公开消�
 TRADINGVIEW_IDEAS_N = 10       # TradingView 最新公开观点条数
 BOGLEHEADS_TOPICS_N = 10       # Bogleheads 论坛最新主题条数
 
-# ── 趋势跟踪 · 全网 20 个新闻源头（2026-09-28 新增）────────────
-# 在 Reddit 板块热帖之外，固定跟踪全网 20 个新闻源头的公开 RSS/Atom 订阅，
+# ── 趋势跟踪 · 全网 36 个新闻源头（2026-09-28 新增）────────────
+# 在 Reddit 板块热帖之外，固定跟踪全网 36 个新闻源头的公开 RSS/Atom 订阅，
 # 按港股关键词挖掘与港股市场相关的信息，并用确定性规则合成分析（多空词概率 +
 # 热点主题），随「趋势跟踪」栏目一起渲染。
 # 设计约束（与 Reddit 源同一口径）：
@@ -785,7 +785,7 @@ BOGLEHEADS_TOPICS_N = 10       # Bogleheads 论坛最新主题条数
 #   · 每条链接按该源头自己的域名白名单校验（https + 主机名精确匹配），防止标题/链接注入；
 #   · 只保留 72 小时窗口内、带可验证时区发布时间的条目；抓不到的源头如实标注暂缺与原因，
 #     绝不用历史内容冒充更新；分析只做词表命中计数，不猜测、不编造。
-# 源头分组：香港 7 / 内地 7 / 国际 6；顺序同时用于抓取、栏目与审计展示。
+# 源头分组：香港 7 / 内地 23 / 国际 6；顺序同时用于抓取、栏目与审计展示。
 # 增删源头直接改 HK_NEWS_SOURCES；公共 RSSHub 实例被限流时用
 # OCTOPUS_RSSHUB_BASE 换实例；OCTOPUS_HK_NEWS=0 可整体关闭本源。
 HK_NEWS_SOURCE_NAME = "港股新闻源头"
@@ -874,6 +874,72 @@ HK_NEWS_SOURCES = (
               "&hl=zh-Hans&gl=CN&ceid=CN:zh-Hans"),
      "hosts": ("news.google.com",),
      "desc": "Google 新闻按「港股 OR 恒生指数」聚合的中文报道"},
+    # ── 内地新增（2026-10-12 用户指定，16 家）────────────────────
+    # 无公开 RSS 的媒体 feed 留空：直接走 Bing / Google 站内检索备用源（safe_request_with_fallback 自动跳过空地址）。
+    {"name": "中证网", "region": "内地",
+     "url": "https://www.cs.com.cn/", "feed": "",
+     "hosts": ("cs.com.cn", "www.cs.com.cn", "news.cs.com.cn", "stock.cs.com.cn"),
+     "desc": "中国证券报旗下财经证券网站，证券市场资讯与行情"},
+    {"name": "证券日报网", "region": "内地",
+     "url": "https://www.zqrb.cn/", "feed": "",
+     "hosts": ("zqrb.cn", "www.zqrb.cn", "stock.zqrb.cn"),
+     "desc": "证券日报官方网站，宏观经济、上市公司与资本市场动态"},
+    {"name": "中国基金报", "region": "内地",
+     "url": "https://www.chnfund.com/", "feed": "",
+     "hosts": ("chnfund.com", "www.chnfund.com"),
+     "desc": "基金行业媒体，公募、私募与 ETF 资讯"},
+    {"name": "财闻网", "region": "内地",
+     "url": "https://www.caiwennews.com/", "feed": "",
+     "hosts": ("caiwennews.com", "www.caiwennews.com"),
+     "desc": "财经、科技与法治综合资讯网站"},
+    {"name": "经济参考网", "region": "内地",
+     "url": "https://www.jjckb.cn/", "feed": "",
+     "hosts": ("jjckb.cn", "www.jjckb.cn"),
+     "desc": "新华社主管、经济参考报社主办的经济网站，政经与产经热点"},
+    {"name": "IT之家", "region": "内地",
+     "url": "https://www.ithome.com/", "feed": "https://www.ithome.com/rss/",
+     "hosts": ("ithome.com", "www.ithome.com"),
+     "desc": "科技媒体，科技企业与产业动态（港股相关条目经关键词筛选）"},
+    {"name": "券商中国", "region": "内地",
+     "url": "https://www.stcn.com/article/wx/qszg.html", "feed": "",
+     "hosts": ("stcn.com", "www.stcn.com"),
+     "desc": "证券时报旗下券商资讯栏目，券商研究与资本市场报道"},
+    {"name": "每日经济新闻", "region": "内地",
+     "url": "https://www.nbd.com.cn/", "feed": "",
+     "hosts": ("nbd.com.cn", "www.nbd.com.cn"),
+     "desc": "综合财经媒体，宏观、金融与上市公司报道"},
+    {"name": "北京商报", "region": "内地",
+     "url": "https://www.bbtnews.com.cn/", "feed": "",
+     "hosts": ("bbtnews.com.cn", "www.bbtnews.com.cn"),
+     "desc": "商业财经媒体，消费、金融与产业报道"},
+    {"name": "21世纪经济报道", "region": "内地",
+     "url": "https://www.21jingji.com/", "feed": "",
+     "hosts": ("21jingji.com", "www.21jingji.com", "m.21jingji.com"),
+     "desc": "财经深度媒体，宏观政策、产业与公司深度报道"},
+    {"name": "证券之星", "region": "内地",
+     "url": "https://www.stockstar.com/", "feed": "",
+     "hosts": ("stockstar.com", "www.stockstar.com", "news.stockstar.com"),
+     "desc": "证券资讯网站，股市行情、个股与基金资讯"},
+    {"name": "和讯网", "region": "内地",
+     "url": "https://www.hexun.com/", "feed": "",
+     "hosts": ("hexun.com", "www.hexun.com", "finance.hexun.com", "news.hexun.com"),
+     "desc": "财经门户，证券、基金与宏观资讯"},
+    {"name": "金融投资报", "region": "内地",
+     "url": "http://www.jrtzb.com.cn/", "feed": "",
+     "hosts": ("jrtzb.com.cn", "www.jrtzb.com.cn"),
+     "desc": "四川日报报业集团旗下财经报纸，证券与投资资讯"},
+    {"name": "时代财经", "region": "内地",
+     "url": "https://www.tfcaijing.com/", "feed": "",
+     "hosts": ("tfcaijing.com", "www.tfcaijing.com"),
+     "desc": "泛财经新闻平台，原创财经报道与企业动态"},
+    {"name": "经济观察网", "region": "内地",
+     "url": "https://www.eeo.com.cn/", "feed": "",
+     "hosts": ("eeo.com.cn", "www.eeo.com.cn", "m.eeo.com.cn"),
+     "desc": "经济观察报社网站，宏观经济、产业与公司观察"},
+    {"name": "凤凰网财经", "region": "内地",
+     "url": "https://finance.ifeng.com/", "feed": "",
+     "hosts": ("finance.ifeng.com",),
+     "desc": "凤凰网财经频道，宏观、股市与公司新闻"},
     # ── 国际（6）───────────────────────────────────────────────
     {"name": "Bloomberg·Markets", "region": "国际",
      "url": "https://www.bloomberg.com/markets",
@@ -908,7 +974,7 @@ HK_NEWS_SOURCES = (
      "hosts": ("news.google.com",),
      "desc": "Google 新闻按「Hang Seng OR Hong Kong stocks」聚合的英文报道"},
 )
-HK_NEWS_TOTAL = len(HK_NEWS_SOURCES)  # 应为 20；测试会校验
+HK_NEWS_TOTAL = len(HK_NEWS_SOURCES)  # 应为 36；测试会校验
 
 HK_CHANNELS = [
     # ── 港股股评人 YouTube 频道（可自动抓取）─────────────────
@@ -3215,7 +3281,7 @@ def fetch_public_sites():
 
 
 # ============================================================
-# 趋势跟踪 · 全网 20 个新闻源头（港股挖掘 + 规则分析）
+# 趋势跟踪 · 全网 36 个新闻源头（港股挖掘 + 规则分析）
 # ============================================================
 # 港股相关判定：标题命中下列任一关键词（子串匹配，英文不区分大小写）。
 # 覆盖指数/市场（港股、恒生、恒指、H股、南向…）、香港本地（香港、本港、港府、
@@ -3295,7 +3361,7 @@ def _hk_news_bull_bear(titles):
 
 
 def _hk_news_analysis(records):
-    """20 个新闻源头的港股挖掘分析（确定性规则，可复现，不调大模型）。
+    """36 个新闻源头的港股挖掘分析（确定性规则，可复现，不调大模型）。
 
     输入是 fetch 返回的逐源记录，输出：
       scanned/ok_n/hk_n —— 覆盖度；bull/bear/prob/label —— 多空词概率（5%~95%）；
@@ -3356,7 +3422,7 @@ def _hk_news_site_host(cfg):
 
 
 def fetch_hk_news_sources():
-    """抓取全网 20 个新闻源头的公开 RSS/Atom 订阅，挖掘港股相关信息。
+    """抓取全网 36 个新闻源头的公开 RSS/Atom 订阅，挖掘港股相关信息。
 
     逐源并行抓取 → 只保留 72 小时窗口内、带可验证时区发布时间的条目 →
     按港股关键词命中筛选（未命中只计扫描数）→ 每源至多 HK_NEWS_PER_SOURCE 条、
@@ -3459,14 +3525,14 @@ def fetch_hk_news_sources():
 
     analysis = _hk_news_analysis(records)
     missing = [r["name"] for r in records if r.get("status") != "ok"]
-    note = ("只收录 20 个新闻源头公开订阅的标题、发布时间与原文链接（北京时间），"
+    note = ("只收录 36 个新闻源头公开订阅的标题、发布时间与原文链接（北京时间），"
             "港股相关按关键词命中筛选；分析为多空词表 + 主题词表的规则合成，"
             "社区与媒体观点未经核实，不构成投资建议。")
     if missing:
         note += f" 暂缺（{len(missing)} 家）：" + "、".join(missing) + "。"
 
     if analysis["scanned"] == 0:
-        reason = (f"近 {HK_NEWS_WINDOW_HOURS} 小时窗口内 20 个源头均未取得"
+        reason = (f"近 {HK_NEWS_WINDOW_HOURS} 小时窗口内 36 个源头均未取得"
                   "带可验证时区发布时间的新闻（网络受限或订阅地址变化）")
         print(f"  ⚠️ 全网新闻源头暂不可用：{reason}")
         return _source_result(HK_NEWS_SOURCE_NAME, "unavailable",
@@ -4829,7 +4895,7 @@ def collect_all_data():
     time.sleep(0.5)
 
     print("\n📰 正在采集趋势跟踪（多平台信息员：" + " + ".join(_active_public_site_names())
-          + "；另有全网 20 个新闻源头港股挖掘）...")
+          + "；另有全网 36 个新闻源头港股挖掘）...")
     data.update(fetch_public_sites())
     if HK_NEWS_ENABLED:
         data[HK_NEWS_SOURCE_NAME] = fetch_hk_news_sources()
@@ -6931,14 +6997,14 @@ def _trend_clue_item_row(item, pick_no, base, color, kit, title_limit=235):
 
 
 def _trend_clues_block(data, kit):
-    """两主题共用：趋势跟踪——① 全网 20 个新闻源头 · 港股信息挖掘 + 分析；
+    """两主题共用：趋势跟踪——① 全网 36 个新闻源头 · 港股信息挖掘 + 分析；
     ② 多平台信息员（Reddit / StockTwits / TradingView / Bogleheads）社区样本。
 
     无数据的源头 / 平台不进正文；缺失来源只在总结的「数据覆盖」里点名。Reddit 按 10 个
     板块分组（每板块至多 5 条），其余平台按各自榜单 / 板块分组。
 
     精简模式（默认）：每个源头只列 1 条、社区每组只留 2 条样本、标题收到 80 字——
-    **覆盖面一个字不少**（20 家源头的名字、条数、更新时间全在），砍掉的只是重复展开的
+    **覆盖面一个字不少**（36 家源头的名字、条数、更新时间全在），砍掉的只是重复展开的
     样本正文；每个源头 / 分组行都写明「共 N 条」，读者知道折叠了多少。
     """
     color = GZ_KLEIN if _is_guizang_like(kit) else C_CYAN
@@ -6949,7 +7015,7 @@ def _trend_clues_block(data, kit):
     detail_limit = 70 if LITE_ENABLED else 210
     rows = []
 
-    # ① 全网 20 个新闻源头 · 港股挖掘（结论先行：覆盖度 + 港股相关条数）
+    # ① 全网 36 个新闻源头 · 港股挖掘（结论先行：覆盖度 + 港股相关条数）
     news = data.get(HK_NEWS_SOURCE_NAME) or {}
     if news.get("status") == "success":
         an = news.get("analysis") or {}
@@ -6966,7 +7032,7 @@ def _trend_clues_block(data, kit):
                        f' {kit.source_badge(news)}')
         rows.append(kit.item_row("", heading, _esc(latest)))
         if LITE_ENABLED and not PLAIN():
-            # 精简模式：20 家源头不再一家一行（光覆盖名单就占半屏），压成一行「覆盖面」
+            # 精简模式：36 家源头不再一家一行（光覆盖名单就占半屏），压成一行「覆盖面」
             # ——**名字与港股相关条数一个不删**（按抓取顺序，含因条数预算未列条目的源头），
             # 条目照常带链接逐条列出。
             cover = [f'{str(rec.get("name") or "")} '
@@ -8809,10 +8875,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         source_items.append(("每周量化走势预测（恒指·7交易日）", data["每周走势预测"]))
     if isinstance(data.get(HK7_SOURCE_NAME), dict):
         source_items.append((HK7_SOURCE_NAME, data[HK7_SOURCE_NAME]))
-    # 全网 20 个新闻源头（港股挖掘）：与社区平台同为趋势跟踪，按需加入审计；
+    # 全网 36 个新闻源头（港股挖掘）：与社区平台同为趋势跟踪，按需加入审计；
     # 外部旧调用若无该键仍维持原来的基础数据源数量。
     if isinstance(data.get(HK_NEWS_SOURCE_NAME), dict):
-        source_items.append(("全网新闻源头（20家）", data[HK_NEWS_SOURCE_NAME]))
+        source_items.append(("全网新闻源头（36家）", data[HK_NEWS_SOURCE_NAME]))
     # 港股境外数据源（2026-10-02）：Yahoo / Stooq / HKEX / 可选浏览器，存在即进审计。
     if isinstance(data.get(HK_OVERSEAS_SOURCE_NAME), dict):
         source_items.append((HK_OVERSEAS_SOURCE_NAME, data[HK_OVERSEAS_SOURCE_NAME]))
@@ -9006,7 +9072,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "UZI TREND", SECTION_TITLE_UZI_TREND, uzi_html,
                 kit.badge("量化策略", "ai"), uzi_caption)
 
-    # ⑤ 趋势跟踪：全网 20 个新闻源头（港股挖掘）+ 多平台信息员（Reddit / StockTwits /
+    # ⑤ 趋势跟踪：全网 36 个新闻源头（港股挖掘）+ 多平台信息员（Reddit / StockTwits /
     #    TradingView / Bogleheads），任一来源抓取成功且有内容才渲染；全部缺席则整栏不进正文。
     if ((data.get("Reddit") or {}).get("status") == "success"
             or (data.get(HK_NEWS_SOURCE_NAME) or {}).get("status") == "success"

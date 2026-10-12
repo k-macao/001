@@ -39,8 +39,8 @@ FRESHNESS_THRESHOLDS = {
     "全球头条": {"max_lag_days": 1, "type": "news", "desc": "Google News 头条，要求当天"},
     "东财快讯": {"max_lag_days": 1, "type": "news", "desc": "东财快讯，要求当天"},
     "港股名家频道": {"max_lag_days": 7, "type": "news", "desc": "YouTube/RSS 频道，允许一周内"},
-    "全网新闻源头（20家）": {"max_lag_days": 3, "type": "news", "desc": "20 家新闻源，72h 窗口"},
-    "港股新闻源头": {"max_lag_days": 3, "type": "news", "desc": "20 家新闻源，72h 窗口"},
+    "全网新闻源头（36家）": {"max_lag_days": 3, "type": "news", "desc": "36 家新闻源，72h 窗口"},
+    "港股新闻源头": {"max_lag_days": 3, "type": "news", "desc": "36 家新闻源，72h 窗口"},
     
     # 社区平台：72h 窗口
     "Reddit": {"max_lag_days": 3, "type": "community", "desc": "Reddit 热帖，72h 窗口"},

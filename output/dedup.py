@@ -285,7 +285,7 @@ def dedup_across_sections(data: Dict, threshold: float = 0.7) -> Dict:
         "美联储趋势",
         "地缘政治趋势",
         "港股新闻源头",
-        "全网新闻源头（20家）",
+        "全网新闻源头（36家）",
     ]
     
     # 收集所有标题

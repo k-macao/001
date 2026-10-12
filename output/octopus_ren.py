@@ -447,7 +447,7 @@ def _ren_strategy(ctx):
 
 
 def _ren_trend(ctx):
-    """趋势跟踪：把海外论坛 / 20 家媒体讲成「吃瓜前线」。"""
+    """趋势跟踪：把海外论坛 / 36 家媒体讲成「吃瓜前线」。"""
     trend = ctx.get("trend") or {}
     if not trend:
         return ""
