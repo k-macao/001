@@ -1,0 +1,28 @@
+{
+  "upstream_repo": "https://github.com/palemoky/chinese-poetry-api",
+  "upstream_commit": "6de8d1d95ad954d14bc6793b1a9c55d4bb8cd01a",
+  "upstream_commit_date": "2026-10-07",
+  "upstream_commit_subject": "build(deps): bump the go-deps group with 6 updates (#144)",
+  "upstream_data_repo": "https://github.com/palemoky/chinese-poetry",
+  "upstream_data_branch": "fix-typo",
+  "upstream_data_commit": "041b8ab50bdf07bf498bba2d1666b1d1fd707f4e",
+  "upstream_skill_repo": "https://github.com/lianginx/chinese-poetry-api-skill",
+  "online_service": "https://poetry.palemoky.com",
+  "vendored_at": "2026-10-11",
+  "license": "GPL-3.0 (https://github.com/palemoky/chinese-poetry-api/blob/main/LICENSE)",
+  "files": [
+    "LICENSE",
+    "README.md",
+    "requests.http",
+    "internal/api/rest/handler/poem.go",
+    "internal/api/rest/handler/formatter.go",
+    "internal/classifier/dynasty.go",
+    "internal/classifier/type.go",
+    "internal/loader/json_loader.go",
+    "data/poems.json"
+  ],
+  "local_modifications": [
+    "data/poems.json: 按 internal/classifier/dynasty.go、type.go 与 internal/api/rest/handler/formatter.go 口径抽取的离线诗词库（含先秦/魏晋/唐/五代/宋/元/清共 141 首经典诗词）",
+    "新增 VENDORED.md / UPSTREAM.json"
+  ]
+}

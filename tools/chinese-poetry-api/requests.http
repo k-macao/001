@@ -1,0 +1,148 @@
+# Chinese Poetry API - manual test requests
+# Compatible with the VS Code "REST Client" extension and JetBrains HTTP Client.
+# Server must be running (`make run-server` or `./build/server`), default port 1279.
+
+@host = http://localhost:1279
+@authorId = 1
+@dynastyId = 6
+@typeId = 11
+
+
+### Health check
+GET {{host}}/api/v1/health
+
+
+### Overall statistics
+GET {{host}}/api/v1/stats
+
+
+# Poems
+
+### List poems (paginated, simplified Chinese default)
+GET {{host}}/api/v1/poems?page=1&page_size=20
+
+### List poems, traditional Chinese
+GET {{host}}/api/v1/poems?lang=zh-Hant&page=1&page_size=10
+
+### Random poem
+GET {{host}}/api/v1/poems/random
+
+### Random poem filtered by author
+GET {{host}}/api/v1/poems/random?author=李白
+
+### Random poem filtered by type + dynasty
+GET {{host}}/api/v1/poems/random?type=五言绝句&dynasty=唐
+
+### Random poem filtered by multiple types (OR)
+GET {{host}}/api/v1/poems/random?author=李白&dynasty=唐&type=五言绝句&type=七言绝句&type=五言律诗
+
+### Random poem filtered by IDs
+GET {{host}}/api/v1/poems/random?author_id={{authorId}}&dynasty_id={{dynastyId}}&type_id={{typeId}}
+
+### Random poem by character (飞花令), FTS-backed
+GET {{host}}/api/v1/poems/random?char=春
+
+### Random poem by character, combined with lang (only combination allowed)
+GET {{host}}/api/v1/poems/random?char=春&lang=zh-Hant
+
+### Random poem by character + author (expected 400 - not combinable)
+GET {{host}}/api/v1/poems/random?char=春&author=李白
+
+### Random poem by multi-character string (expected 400 - char must be a single character)
+GET {{host}}/api/v1/poems/random?char=春天
+
+
+# Search (FTS5-backed, see internal/database/migrate.go)
+
+### Search all fields (title + content + author) - common phrase
+GET {{host}}/api/v1/poems/search?q=静夜思
+
+### Search all fields - single/double CJK character (trigram tokenizer handles short queries)
+GET {{host}}/api/v1/poems/search?q=月
+
+### Search title only
+GET {{host}}/api/v1/poems/search?q=庐山&type=title
+
+### Search content only
+GET {{host}}/api/v1/poems/search?q=明月光&type=content
+
+### Search author only
+GET {{host}}/api/v1/poems/search?q=李白&type=author
+
+### Search with pagination
+GET {{host}}/api/v1/poems/search?q=月&page=2&page_size=10
+
+### Search with no matches (sanity check for empty result handling)
+GET {{host}}/api/v1/poems/search?q=不存在的内容不存在
+
+
+# Authors
+
+### List authors
+GET {{host}}/api/v1/authors?page=1&page_size=20
+
+### Get a single author by ID
+GET {{host}}/api/v1/authors/{{authorId}}
+
+
+# Dynasties
+
+### List dynasties (with poem/author counts)
+GET {{host}}/api/v1/dynasties
+
+### Get a single dynasty by ID
+GET {{host}}/api/v1/dynasties/{{dynastyId}}
+
+
+# Poetry types
+
+### List poetry types
+GET {{host}}/api/v1/types
+
+### Get a single poetry type by ID
+GET {{host}}/api/v1/types/{{typeId}}
+
+
+# GraphQL
+
+### Search poems (GraphQL equivalent of the FTS search above)
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query($q: String!) { searchPoems(query: $q, searchType: ALL, page: 1, pageSize: 10) { totalCount edges { node { id title author { name } dynasty { name } } } } }",
+  "variables": { "q": "静夜思" }
+}
+
+### Get a single poem by ID
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query($id: ID!) { poem(id: $id) { id title content author { name } dynasty { name } type { name } } }",
+  "variables": { "id": "1" }
+}
+
+### List poems with filters
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query { poems(page: 1, pageSize: 10, dynastyId: 6) { totalCount pageInfo { hasNextPage } edges { node { id title } } } }"
+}
+
+### Random poem (GraphQL)
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query { randomPoem { id title author { name } } }"
+}
+
+### Statistics
+POST {{host}}/graphql
+Content-Type: application/json
+
+{
+  "query": "query { statistics { totalPoems totalAuthors totalDynasties poemsByDynasty { dynasty { name } count } } }"
+}
