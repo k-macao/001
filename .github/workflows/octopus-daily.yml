@@ -69,15 +69,20 @@ jobs:
           # 策略研判内的 MACD（无需密钥）：优先库 / 本次日线，缺项才取免费源。
           OCTOPUS_MACD: ${{ vars.OCTOPUS_MACD || '1' }}
           OCTOPUS_MACD_SYMBOLS: ${{ vars.OCTOPUS_MACD_SYMBOLS }}
-          # ◧ AI 七日港股走势分析概率的大模型（默认 DeepSeek：https://api.deepseek.com + deepseek-flash）
-          # 未配置 OCTOPUS_LLM_API_KEY → 该栏目整体缺席（不进审计），日报其它栏目照常
+          # ◧ AI 七日港股走势分析概率的大模型（默认 DeepSeek：https://api.deepseek.com）
+          # Key 按原名透传，由 output/hk_seven_day.py 按「本仓专用名 → 厂商通用名」回落取用：
+          # 仓库里既有的 DEEPSEEK_API_KEY 不必改名换值，配好就能被这一栏用上。
+          # 三个都没有 → 该栏目整体缺席（不进审计），日报其它栏目照常；
           # 想「没有 Key 也看量化基准」→ OCTOPUS_HK7_FALLBACK: "1"
           OCTOPUS_LLM_API_KEY: ${{ secrets.OCTOPUS_LLM_API_KEY }}
-          # 下面三个都可以留空：留空 = https://api.deepseek.com / deepseek-flash / auto（DeepSeek 关思考）
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          # 下面两个都可以留空：留空 = https://api.deepseek.com/v1；模型留空则按候选链
+          # （deepseek-flash → deepseek-v4-flash → deepseek-chat …）逐个试，只有「模型名不对」才换下一个
           OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
           OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
-          OCTOPUS_LLM_THINKING: ${{ vars.OCTOPUS_LLM_THINKING }}
-          # OCTOPUS_LLM_MAX_TOKENS: "2048"     # JSON 被截断时调大
+          # JSON 被截断时调大（如 2048）；留空 = 用服务端默认
+          OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
           # OCTOPUS_LLM_TIMEOUT: "60"
           # OCTOPUS_HK7_FALLBACK: "1"
         run: |
@@ -91,11 +96,16 @@ jobs:
 
           CURRENT_HOUR=$(TZ='Asia/Shanghai' date +%H)
 
-          # 只报「有没有配」，绝不回显 Key 本身
-          if [ -n "${OCTOPUS_LLM_API_KEY:-}" ]; then
-            echo "◧ 大模型：已配置 Key（${OCTOPUS_LLM_BASE_URL:-默认 https://api.deepseek.com} / ${OCTOPUS_LLM_MODEL:-默认 deepseek-flash}）"
+          # 只报「有没有配、配在哪个变量名上」，绝不回显 Key 本身
+          LLM_KEY_SOURCE=""
+          for name in OCTOPUS_LLM_API_KEY DEEPSEEK_API_KEY OPENAI_API_KEY; do
+            if [ -n "${!name:-}" ]; then LLM_KEY_SOURCE="$name"; break; fi
+          done
+          if [ -n "$LLM_KEY_SOURCE" ]; then
+            echo "◧ 大模型：已配置 Key（来源 ${LLM_KEY_SOURCE} · 端点 ${OCTOPUS_LLM_BASE_URL:-默认 https://api.deepseek.com/v1} · 模型 ${OCTOPUS_LLM_MODEL:-未指定 → 候选链自动挑}）"
           else
-            echo "◧ 大模型：未配置 OCTOPUS_LLM_API_KEY → AI 七日港股走势分析概率整栏缺席"
+            echo "◧ 大模型：未配置 Key（OCTOPUS_LLM_API_KEY / DEEPSEEK_API_KEY / OPENAI_API_KEY 都没有）→ AI 七日港股走势分析概率整栏缺席"
+            echo "   修复：仓库 Settings → Secrets and variables → Actions 新增 DEEPSEEK_API_KEY；或用 llm_check 勾选手动运行先探活"
           fi
 
           if [ "$LLM_CHECK" = "true" ]; then

@@ -194,6 +194,86 @@ class LLMTests(unittest.TestCase):
         self.assertEqual(hk7.llm_config({"OCTOPUS_HK7_FALLBACK": "0"})["fallback"], "never")
         self.assertFalse(hk7.llm_config({})["enabled"])
 
+    def test_llm_config_accepts_vendor_key_names_and_model_chain(self):
+        """既有的 DEEPSEEK_API_KEY 不必改名就能用；未指定模型时走档位别名候选链。"""
+        cfg = hk7.llm_config({"DEEPSEEK_API_KEY": "sk-demo", "OCTOPUS_LLM_MAX_TOKENS": "2048"})
+        self.assertTrue(cfg["enabled"])
+        self.assertEqual(cfg["key_source"], "DEEPSEEK_API_KEY")
+        self.assertEqual(cfg["max_tokens"], 2048)
+        self.assertFalse(cfg["model_explicit"])          # 没显式指定 → 走候选链
+        self.assertEqual(cfg["models"][0], "deepseek-flash")
+        self.assertIn("deepseek-chat", cfg["models"])    # 历史别名也在链上兜底
+        # 显式指定模型名 → 只用它，绝不偷偷换掉
+        self.assertEqual(hk7.llm_config({"DEEPSEEK_API_KEY": "k",
+                                         "OCTOPUS_LLM_MODEL": "m1"})["models"], ("m1",))
+        # 自建 / 第三方地址：不往别人的服务上试 DeepSeek 别名
+        other = hk7.llm_config({"OPENAI_API_KEY": "k", "OPENAI_BASE_URL": "https://api.openai.com/v1"})
+        self.assertEqual(other["models"], ("deepseek-chat",))
+        self.assertEqual(other["key_source"], "OPENAI_API_KEY")
+        self.assertEqual(other["base_source"], "OPENAI_BASE_URL")
+        # 目录过滤：只留服务端真有的名字
+        self.assertEqual(hk7.model_chain({"base": "https://api.deepseek.com/v1",
+                                          "model": "deepseek-chat"},
+                                         catalog=["deepseek-v4-pro", "deepseek-chat"]),
+                         ("deepseek-chat", "deepseek-v4-pro"))
+
+    def test_call_llm_switches_model_only_on_model_fault(self):
+        """模型名不对 → 换下一个名字；网络 / 超时错误 → 不换（换了也一样失败，白烧预算）。"""
+        cfg = hk7.llm_config({"DEEPSEEK_API_KEY": "k"})
+        seen = []
+
+        def fake_post(url, payload, headers, timeout):
+            seen.append(payload["model"])
+            if payload["model"] != "deepseek-v4-flash":
+                raise RuntimeError("Error code: 400 - model does not exist")
+            return {"choices": [{"message": {"content": "{\"targets\": []}"}}]}
+
+        trace = {}
+        payload, err = hk7.call_llm(cfg, hk7.PROBE_CONTEXT, post_json=fake_post, trace=trace)
+        self.assertEqual(payload, {"targets": []})
+        self.assertEqual(err, "")
+        self.assertEqual(trace["model"], "deepseek-v4-flash")
+        self.assertEqual(seen, ["deepseek-flash", "deepseek-v4-flash"])
+
+        seen.clear()
+
+        def boom(url, payload, headers, timeout):
+            seen.append(payload["model"])
+            raise RuntimeError("urlopen error timed out")
+
+        payload, err = hk7.call_llm(cfg, hk7.PROBE_CONTEXT, post_json=boom)
+        self.assertIsNone(payload)
+        self.assertEqual(seen, ["deepseek-flash"])       # 只试一次
+        self.assertIn("timed out", err)
+
+    def test_llm_probe_reports_sources_without_echoing_key(self):
+        """探活报告：报「哪个变量名生效」+ 目录 + 逐模型结果；全文不得出现 Key 本身。"""
+        cfg = hk7.llm_config({"DEEPSEEK_API_KEY": "sk-demo-secret"})
+
+        def fake_get(url, headers, timeout):
+            self.assertTrue(url.endswith("/models"))
+            self.assertEqual(headers["Authorization"], "Bearer sk-demo-secret")
+            return {"data": [{"id": "deepseek-flash"}, {"id": "deepseek-v4-pro"}]}
+
+        def fake_post(url, payload, headers, timeout):
+            self.assertTrue(url.endswith("/chat/completions"))
+            body = {"targets": [{"code": "^HSI", "p_up": 0.57, "summary": "探活",
+                                 "drivers": [], "risks": []}]}
+            return {"choices": [{"message": {"content": json.dumps(body, ensure_ascii=False)}}]}
+
+        probe = hk7.llm_probe(cfg, get_json=fake_get, post_json=fake_post)
+        self.assertTrue(probe["ok"])
+        self.assertEqual(probe["catalog"]["ids"], ["deepseek-flash", "deepseek-v4-pro"])
+        self.assertEqual(probe["config"]["key_source"], "DEEPSEEK_API_KEY")
+        self.assertEqual(probe["config"]["key_len"], len("sk-demo-secret"))
+        self.assertTrue(probe["attempts"][0]["ok"])
+        self.assertTrue(probe["attempts"][0]["field_ok"])
+        self.assertNotIn("sk-demo-secret", json.dumps(probe, ensure_ascii=False))
+        # 没配 Key：结论直说整栏缺席，且不抛异常
+        empty = hk7.llm_probe(hk7.llm_config({}))
+        self.assertFalse(empty["ok"])
+        self.assertIn("整栏缺席", empty["verdict"])
+
     def test_extract_json_tolerates_fences_and_noise(self):
         self.assertEqual(hk7._extract_json('```json\n{"a": 1}\n```'), {"a": 1})
         self.assertEqual(hk7._extract_json('前言 {"a": {"b": 2}} 后记'), {"a": {"b": 2}})

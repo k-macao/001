@@ -201,7 +201,12 @@
       复用 octopus_weekly 的因果引擎（视界 7：扩张基准率 + 20 日特征最近邻、s+7≤t 已结算
       锚点、截断不变性自检、5%~95% 夹逼）；研判引擎按优先级三选一——
       ① 大模型（OpenAI 兼容 /chat/completions：OCTOPUS_LLM_API_KEY /
-      OCTOPUS_LLM_BASE_URL / OCTOPUS_LLM_MODEL）只在给定数据内做合成研判：概率偏离量化
+      OCTOPUS_LLM_BASE_URL / OCTOPUS_LLM_MODEL）只在给定数据内做合成研判：Key / 地址 /
+      模型三组变量都支持厂商通用名回落（DEEPSEEK_API_KEY、DEEPSEEK_BASE_URL、DEEPSEEK_MODEL
+      等），既有的 DeepSeek 配置不必改名；未显式指定模型时按 DeepSeek 档位/版本别名候选链
+      （deepseek-flash → deepseek-v4-flash → deepseek-chat …）逐个尝试，只有「模型名不对」
+      才换下一个；--llm-check 可单独探活（Key 来源 / /models 目录 / JSON 合同）。
+      概率偏离量化
       基准 >20pp 即收敛、文案数字必须能在本次数据里溯源、绝对化措辞与编造数字一律回退
       量化口径；② Jev 类型化决策本地模型（output/jev_bridge.py，2026-10-03 接入，
       OCTOPUS_JEV_BASE_URL / OCTOPUS_JEV_API_KEY / OCTOPUS_JEV_MODE）：只输出值 + 已校准
@@ -15709,6 +15714,62 @@ def hk7_only_report():
     print("\n✅ 研究模式不推送")
     return 0
 
+def llm_check_report():
+    """大模型 API 探活（研究 / 排障用：不抓行情、不生成日报、不推送、不写留痕）。
+
+    回答的是「这台机器 / 这次运行里，AI 七日港股走势分析概率这一栏到底能不能出内容」：
+      · 用的是哪个变量名提供的 Key（只报名字与长度，绝不回显 Key）；
+      · 端点与模型：显式指定还是走候选链；
+      · {base}/models 目录里到底有哪些模型可选（端点不支持就如实标注）；
+      · 逐个候选模型发一次真实 JSON 请求，看鉴权、模型名、JSON 合同三层是否都通。
+    """
+    print("🐙 " + "=" * 48)
+    print("   章鱼 AI · 大模型 API 探活（不生成日报、不推送）")
+    print("🐙 " + "=" * 48)
+    probe = _hk7.llm_probe()
+    view = probe.get("config") or {}
+    print("\n【配置】")
+    if view.get("key_source"):
+        print(f"  Key 来源：{view['key_source']}（长度 {view.get('key_len')}；只报来源，不回显）")
+    else:
+        print("  Key 来源：未配置（可用变量名：" + "、".join(_hk7.ENV_KEY_NAMES) + "）")
+    print(f"  端点：{view.get('base')}"
+          + (f"（来源 {view['base_source']}）" if view.get("base_source") else "（默认值，未设置变量）"))
+    if view.get("model_explicit"):
+        print(f"  模型：{view.get('model')}（显式指定，来源 {view.get('model_source')}）")
+    else:
+        print(f"  模型：未显式指定 → 默认 {view.get('model')}，候选链 "
+              + " → ".join(_hk7.MODEL_FALLBACKS[: _hk7.MODEL_ATTEMPTS_MAX]))
+    print(f"  超时：{view.get('timeout')} 秒 · max_tokens："
+          f"{view.get('max_tokens') or '未设置（用服务端默认）'} · 降级口径：{view.get('fallback')}")
+    cat = probe.get("catalog") or {}
+    print(f"\n【模型目录 {str(view.get('base') or '').rstrip('/')}/models】")
+    if cat.get("ok"):
+        print("  可选模型：" + "、".join(cat.get("ids") or []))
+    else:
+        print(f"  读不到目录：{cat.get('reason') or '未尝试'}（不影响下面的逐个探活）")
+    attempts = probe.get("attempts") or []
+    print(f"\n【逐模型探活】共 {len(attempts)} 次请求")
+    for row in attempts:
+        mark = "✅" if row.get("ok") else "❌"
+        extra = (" · targets " + "、".join(row.get("targets") or [])) if row.get("targets") else ""
+        if row.get("field_ok"):
+            extra += " · p_up 在 5%~95% 内"
+        print(f"  {mark} {row.get('model')} · {row.get('ms')} ms{extra}")
+        if row.get("error"):
+            print(f"      错误：{row['error']}")
+    for p in probe.get("problems") or []:
+        print(f"  ⚠️ {p}")
+    print(f"\n{'✅' if probe.get('ok') else '❌'} 结论：{probe.get('verdict')}")
+    if not probe.get("ok"):
+        print("  → Key 可用但模型名对不上时：显式设置 OCTOPUS_LLM_MODEL 为目录里的名字，"
+              "或留空让候选链自动挑。")
+        print("  → Key 没配时：仓库 Settings → Secrets and variables → Actions 新增 "
+              "DEEPSEEK_API_KEY（或 OCTOPUS_LLM_API_KEY）后重跑本探活。")
+    print("\n（本探活不抓行情、不生成日报、不推送、不写留痕）")
+    return 0 if probe.get("ok") else 1
+
+
 def calendar_only_report(days=None):
     """只抓「时间节点」（原「未来 N 天影响经济时间点」）并打印（研究 / 排障用：不生成日报、不推送）。
 
@@ -15759,6 +15820,7 @@ def main():
   python3 output/pipeline.py --weekly-only          # 只跑每周预测并打印方向/概率/回测/留痕
   python3 output/pipeline.py --hk7-only             # 只跑 AI 七日港股走势分析概率并打印
   python3 output/pipeline.py --no-hk7               # 跳过 AI 七日港股走势分析概率
+  python3 output/pipeline.py --llm-check            # 只探活大模型 API（Key/端点/模型名，不生成日报）
   python3 output/pipeline.py --calendar-only        # 只抓「时间节点」（未来30天影响经济时间点）并打印
   python3 output/pipeline.py --calendar-only 7      # 同上，窗口改成未来 7 天
   python3 output/pipeline.py --theme lime          # 默认：白底圆角卡片 + 荧光绿强调风
@@ -15812,6 +15874,9 @@ def main():
                        help="跳过 AI 七日港股走势分析概率（只出常规栏目，运行更快）")
     parser.add_argument("--hk7-only", action="store_true",
                        help="只跑 AI 七日港股走势分析概率并打印结果（研究模式：不生成日报、不推送）")
+    parser.add_argument("--llm-check", action="store_true",
+                       help="只探活大模型 API：读配置、列 /models 目录、逐个候选模型发一次 JSON "
+                            "请求（研究模式：不抓行情、不生成日报、不推送、不写留痕）")
     parser.add_argument("--weekly-only", action="store_true",
                        help="只跑每周量化走势预测并打印结果（研究模式：不生成日报、不推送）")
     parser.add_argument("--sources", action="store_true",
@@ -15908,6 +15973,10 @@ def main():
     # --weekly-only 模式：只跑每周量化走势预测，把方向 / 概率 / 回测 / 留痕打到控制台
     if args.weekly_only:
         return weekly_only_report()
+
+    # --llm-check 模式：只探活大模型 API（Key 来源 / 端点 / 模型名 / JSON 合同）
+    if args.llm_check:
+        return llm_check_report()
 
     # --hk7-only 模式：只跑 AI 七日港股走势分析概率，把三只指数的概率 / 依据打到控制台
     if args.hk7_only:

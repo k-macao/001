@@ -41,10 +41,15 @@ jobs:
       - name: 🐙 抓取最新动态数据并推送（手动）
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-          # AI 七日港股走势分析概率的大模型 Key（OpenAI 兼容；未配置自动降级为量化基准）
+          # AI 七日港股走势分析概率的大模型 Key（OpenAI 兼容；未配置按 OCTOPUS_HK7_FALLBACK 口径处理）
+          # 按原名透传，由 hk_seven_day.py 做「本仓专用名 → 厂商通用名」回落：
+          # 仓库里既有的 DEEPSEEK_API_KEY 不必改名换值，配好就能用。
           OCTOPUS_LLM_API_KEY: ${{ secrets.OCTOPUS_LLM_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
           OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
+          OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
         run: |
           set -euo pipefail
           NO_PUSH="${{ github.event.inputs.no_push || 'false' }}"

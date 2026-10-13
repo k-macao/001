@@ -103,11 +103,21 @@ FACTOR_WEIGHTS = {
 }
 
 # 大模型配置：任何 OpenAI 兼容服务都能用（默认 DeepSeek，可在环境变量里改）
+# Key / 地址 / 模型三组变量都按「本仓专用名 → 厂商通用名」的顺序回落，任一个非空即生效：
+# 于是「仓库里本来就有 DEEPSEEK_API_KEY 这类既有配置」不必改名换值，直接就能被这一栏用上。
 ENV_KEY_NAMES = ("OCTOPUS_LLM_API_KEY", "OCTOPUS_HK7_LLM_KEY",
-                 "OPENAI_API_KEY", "DEEPSEEK_API_KEY",
+                 "DEEPSEEK_API_KEY", "OPENAI_API_KEY",
                  "MOONSHOT_API_KEY", "DASHSCOPE_API_KEY")
+ENV_BASE_NAMES = ("OCTOPUS_LLM_BASE_URL", "DEEPSEEK_BASE_URL", "OPENAI_BASE_URL")
+ENV_MODEL_NAMES = ("OCTOPUS_LLM_MODEL", "DEEPSEEK_MODEL", "OPENAI_MODEL")
 DEFAULT_BASE_URL = "https://api.deepseek.com/v1"
 DEFAULT_MODEL = "deepseek-chat"
+# 未显式指定模型名时按序尝试的候选链：DeepSeek 官方把「版本名」与「档位别名」都收在
+# /models 目录里，别名随版本滚动（deepseek-chat / deepseek-reasoner 是历史别名，
+# deepseek-flash / deepseek-v4-flash 是现行档位）——只写死一个名字，官方改名那天整栏就没了。
+MODEL_FALLBACKS = ("deepseek-flash", "deepseek-v4-flash", "deepseek-chat",
+                   "deepseek-reasoner", "deepseek-v4-pro")
+MODEL_ATTEMPTS_MAX = 3       # 单次运行最多换几个模型名（只有「模型名不对」才换，见 _model_fault）
 DEFAULT_TIMEOUT = 60
 USER_AGENT = "octopus-ai-daily/1.0 (+hk-seven-day)"
 
@@ -513,8 +523,28 @@ def quant_probability(closes, factor_scores=None):
 # ============================================================
 # 大模型：配置 / 调用 / 严格 JSON 解析 / 校验
 # ============================================================
+def _env_first(env, names):
+    """按顺序取第一个非空环境变量；返回 (值, 变量名)，都没有时返回 ("", "")。
+
+    变量名一并返回是为了排障：以后台日志只能报「Key 来自哪个变量名」，绝不回显 Key 本身。
+    """
+    for name in names:
+        val = str(env.get(name) or "").strip()
+        if val:
+            return val, name
+    return "", ""
+
+
 def llm_config(env=None):
     """读取大模型配置；无 Key 时 enabled=False。
+
+    Key / 地址 / 模型各自按 ``ENV_KEY_NAMES`` / ``ENV_BASE_NAMES`` / ``ENV_MODEL_NAMES``
+    的顺序回落，所以「仓库里既有的 DEEPSEEK_API_KEY」不需要改名或复制到新变量名上；
+    ``key_source`` / ``base_source`` / ``model_source`` 记录实际生效的变量名（不含值），
+    供日志与 ``--llm-check`` 报「这次到底用了哪一个」。
+
+    ``models``：本次按序尝试的模型名（显式指定 ``OCTOPUS_LLM_MODEL`` 时只有它自己；
+    未指定时是 ``MODEL_FALLBACKS`` 里的 DeepSeek 档位/版本别名，遇到「模型名不对」才换下一个）。
 
     ``fallback`` 三档（``OCTOPUS_HK7_FALLBACK``）：
       · auto（默认）——未配置 Key → 上层整栏缺席；已配 Key 但大模型不可用 → 降级量化基准；
@@ -522,19 +552,22 @@ def llm_config(env=None):
       · never（=0）——任何大模型不可用（含调用失败）都整栏缺席。
     """
     env = os.environ if env is None else env
-    key = ""
-    for name in ENV_KEY_NAMES:
-        val = str(env.get(name) or "").strip()
-        if val:
-            key = val
-            break
-    base = str(env.get("OCTOPUS_LLM_BASE_URL") or DEFAULT_BASE_URL).strip().rstrip("/")
-    model = str(env.get("OCTOPUS_LLM_MODEL") or DEFAULT_MODEL).strip()
+    key, key_source = _env_first(env, ENV_KEY_NAMES)
+    base, base_source = _env_first(env, ENV_BASE_NAMES)
+    model, model_source = _env_first(env, ENV_MODEL_NAMES)
+    base = (base or DEFAULT_BASE_URL).rstrip("/")
+    model_explicit = bool(model_source)
+    model = model or DEFAULT_MODEL
     timeout = 60
     try:
         timeout = max(5, min(180, int(str(env.get("OCTOPUS_LLM_TIMEOUT") or DEFAULT_TIMEOUT))))
     except (TypeError, ValueError):
         timeout = DEFAULT_TIMEOUT
+    try:
+        max_tokens = int(str(env.get("OCTOPUS_LLM_MAX_TOKENS") or "0").strip() or 0)
+    except (TypeError, ValueError):
+        max_tokens = 0
+    max_tokens = max(0, min(8192, max_tokens))     # 0 = 不带该字段，用服务端默认
     mode = str(env.get("OCTOPUS_HK7_FALLBACK", "auto")).strip().lower()
     if mode in ("1", "true", "yes", "always"):
         fallback = "always"
@@ -542,8 +575,58 @@ def llm_config(env=None):
         fallback = "never"
     else:
         fallback = "auto"
-    return {"enabled": bool(key), "key": key, "base": base, "model": model,
+    return {"enabled": bool(key), "key": key, "key_source": key_source,
+            "base": base, "base_source": base_source,
+            "model": model, "model_source": model_source, "model_explicit": model_explicit,
+            "models": model_chain({"base": base, "model": model,
+                                   "model_explicit": model_explicit}),
+            "max_tokens": max_tokens,
             "timeout": timeout, "fallback": fallback}
+
+
+def is_deepseek_base(base):
+    """地址是不是 DeepSeek 官方域名（决定未指定模型时要不要走 DeepSeek 档位别名轮换链）。"""
+    host = str(base or "").lower()
+    return "deepseek.com" in host
+
+
+def model_chain(config, catalog=None):
+    """本次按序尝试的模型名（纯函数，不发请求；``catalog`` 为 /models 目录 id 列表，可选）。
+
+    规则：
+      · 显式指定了模型名 → 只用它（用户指定的名字优先，绝不偷偷换掉）；
+      · 未指定 + 官方地址 → DeepSeek 档位/版本别名链；给了目录就先用目录过滤掉不存在的名字；
+      · 未指定 + 自建 / 第三方地址 → 只试配置里的默认名（别人的服务上不存在 DeepSeek 别名）；
+      · 最多 ``MODEL_ATTEMPTS_MAX`` 个，防止把超时预算耗在换名上。
+    """
+    cfg = config or {}
+    model = str(cfg.get("model") or DEFAULT_MODEL).strip()
+    if cfg.get("model_explicit") or not is_deepseek_base(cfg.get("base")):
+        return (model,)
+    chain = [m for m in MODEL_FALLBACKS]
+    if catalog:
+        ids = [str(x).strip() for x in catalog if str(x or "").strip()]
+        present = [m for m in chain if m in ids]
+        if present:
+            chain = present
+    return tuple(chain[:max(1, MODEL_ATTEMPTS_MAX)])
+
+
+def _model_fault(err):
+    """错误像不像「模型名不对 / 无权限」——只有这类错误才值得换下一个模型名重试。
+
+    网络中断、超时、限流换名字也一样失败，换名字只会把预算烧光，所以一律不重试。
+    """
+    text = str(err or "").lower()
+    if not text:
+        return False
+    if any(k in text for k in ("timed out", "timeout", "urlopen error", "connection",
+                               "temporarily", "rate limit", "429", "500", "502", "503", "504")):
+        return False
+    return ("model" in text) and any(k in text for k in ("not exist", "not found", "invalid",
+                                                         "unsupported", "unknown", "无此",
+                                                         "不存在", "不支持", "no permission",
+                                                         "permission denied", "401", "403", "404"))
 
 
 def http_post_json(url, payload, headers, timeout=DEFAULT_TIMEOUT):
@@ -554,6 +637,41 @@ def http_post_json(url, payload, headers, timeout=DEFAULT_TIMEOUT):
         headers={"User-Agent": USER_AGENT, "Content-Type": "application/json", **headers})
     with urllib.request.urlopen(req, timeout=timeout) as resp:
         return json.loads(resp.read().decode("utf-8", "replace"))
+
+
+def http_get_json(url, headers, timeout=DEFAULT_TIMEOUT):
+    """标准库 GET → 解析 JSON（读 /models 目录用）；异常直接抛出，由调用方决定降级口径。"""
+    req = urllib.request.Request(url, method="GET",
+                                 headers={"User-Agent": USER_AGENT, **headers})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return json.loads(resp.read().decode("utf-8", "replace"))
+
+
+def list_models(config, get_json=None):
+    """读 ``{base}/models`` 目录：返回 {ok, ids, reason}；端点不支持就 ok=False + 原因。
+
+    这一层只做「探明有哪些模型可选」，不参与预测；失败绝不抛给上层（探活/选名用）。
+    """
+    cfg = config or {}
+    getter = get_json or http_get_json
+    url = f"{str(cfg.get('base') or DEFAULT_BASE_URL).rstrip('/')}/models"
+    headers = {"Authorization": f"Bearer {cfg.get('key') or ''}"}
+    try:
+        data = getter(url, headers, int(cfg.get("timeout") or DEFAULT_TIMEOUT))
+    except Exception as exc:
+        return {"ok": False, "ids": [], "reason": f"{type(exc).__name__}: {exc}"}
+    items = data.get("data") if isinstance(data, dict) else None
+    ids = []
+    for it in items or []:
+        if isinstance(it, dict):
+            mid = str(it.get("id") or "").strip()
+            if mid:
+                ids.append(mid)
+        elif isinstance(it, str) and it.strip():
+            ids.append(it.strip())
+    if not ids:
+        return {"ok": False, "ids": [], "reason": "目录里没有模型 id"}
+    return {"ok": True, "ids": ids, "reason": ""}
 
 
 def build_prompt(context):
@@ -598,25 +716,23 @@ def _extract_json(text):
     return data if isinstance(data, dict) else None
 
 
-def call_llm(config, context, post_json=None):
-    """调用大模型；返回 (payload, error)。任何一步失败都返回 (None, 原因)。"""
-    if not config.get("enabled"):
-        return None, "未配置大模型 API Key"
-    post = post_json or http_post_json
-    url = f"{config['base']}/chat/completions"
+def build_request(config, model, context):
+    """组装一次 chat/completions 请求体（严格 JSON 输出模式；模型名由调用方决定）。"""
     system, user = build_prompt(context)
     payload = {
-        "model": config.get("model") or DEFAULT_MODEL,
+        "model": model,
         "messages": [{"role": "system", "content": system},
                      {"role": "user", "content": user}],
         "temperature": 0.2,
         "response_format": {"type": "json_object"},
     }
-    headers = {"Authorization": f"Bearer {config.get('key') or ''}"}
-    try:
-        data = post(url, payload, headers, int(config.get("timeout") or DEFAULT_TIMEOUT))
-    except Exception as exc:                      # 网络 / HTTP / 解析异常一律降级
-        return None, f"{type(exc).__name__}: {exc}"
+    if int(config.get("max_tokens") or 0) > 0:
+        payload["max_tokens"] = int(config["max_tokens"])
+    return payload
+
+
+def _read_completion(data):
+    """从响应里取 (parsed_json, error)：结构不对时把服务端 error.message 原样带出来。"""
     if not isinstance(data, dict):
         return None, "大模型返回不是 JSON 对象"
     try:
@@ -628,6 +744,162 @@ def call_llm(config, context, post_json=None):
     if parsed is None:
         return None, "大模型回复不是合法 JSON"
     return parsed, ""
+
+
+def call_llm(config, context, post_json=None, models=None, trace=None):
+    """调用大模型；返回 (payload, error)。任何一步失败都返回 (None, 原因)。
+
+    ``models`` 缺省取 ``config['models']``（未显式指定模型名时是 DeepSeek 档位别名轮换链）。
+    只有「模型名不对 / 无权限」这类错误才换下一个名字重试，网络与限流错误直接上报；
+    实际用上的模型名写进 ``trace['model']``（缺省不传就丢弃），供引擎标注与排障。
+    """
+    if not config.get("enabled"):
+        return None, "未配置大模型 API Key"
+    post = post_json or http_post_json
+    url = f"{str(config.get('base') or DEFAULT_BASE_URL).rstrip('/')}/chat/completions"
+    headers = {"Authorization": f"Bearer {config.get('key') or ''}"}
+    timeout = int(config.get("timeout") or DEFAULT_TIMEOUT)
+    chain = [m for m in (models or config.get("models")
+                         or (config.get("model") or DEFAULT_MODEL,)) if str(m or "").strip()]
+    if not chain:
+        chain = [config.get("model") or DEFAULT_MODEL]
+    tried, errors = [], []
+    for model in chain:
+        tried.append(str(model))
+        try:
+            data = post(url, build_request(config, model, context), headers, timeout)
+        except Exception as exc:                  # 网络 / HTTP / 解析异常一律降级（不静默）
+            err = f"{type(exc).__name__}: {exc}"
+            errors.append(f"{model} → {err}")
+            if not _model_fault(err):
+                break
+            continue
+        payload, err = _read_completion(data)
+        if payload is not None:
+            if trace is not None:
+                trace["model"] = str(model)
+                trace["tried"] = tried
+            return payload, ""
+        errors.append(f"{model} → {err}")
+        if not _model_fault(err):
+            break
+    if trace is not None:
+        trace["tried"] = tried
+    tail = f"（已试模型：{'、'.join(tried)}）" if len(tried) > 1 else ""
+    return None, (errors[-1] if errors else "大模型调用失败") + tail
+
+
+# ------------------------------------------------------------
+# 接口探活（--llm-check）：不生成日报、不进留痕，只回答「这个 Key 现在能不能用」
+# ------------------------------------------------------------
+# 探活用的结构样本：字段与真实预测因子块同构，但数字是写死的示意值（不是行情），
+# 因此可以脱离行情源单独验证「鉴权 → 模型名 → JSON 合同」这三层。
+PROBE_CONTEXT = {
+    "as_of": "2026-01-05",
+    "target_date": "2026-01-14",
+    "horizon_trading_days": HORIZON,
+    "probe": True,
+    "probe_note": "接口探活样本：数字为示意值，不构成预测、不进留痕、不推送",
+    "anti_lookahead_guarantee": "输入闭合（所有数据 ≤ as_of）· 目标日严格在后",
+    "indices": [{
+        "code": "^HSI", "name": "恒生指数", "close": 25000.0,
+        "predictive_factors": {
+            "momentum_factor": {"ret5_pct": 1.2, "ret20_pct": 2.4, "ret60_pct": 5.0,
+                                "score": 0.3, "driver": "探活样本"},
+            "trend_channel_factor": {"ma20_dev_pct": 0.8, "ma60_dev_pct": 1.6,
+                                     "range20_low": 24200.0, "range20_high": 25800.0,
+                                     "score": 0.2, "driver": "探活样本"},
+        },
+        "quant_baseline": {"p_up": 0.55, "n_resolved": 0, "horizon_trading_days": HORIZON},
+    }],
+    "news_titles": [],
+}
+
+
+def llm_probe(config=None, get_json=None, post_json=None, models=None):
+    """大模型接口探活：读配置 → 列 /models 目录 → 逐个候选模型发一次真实 JSON 请求。
+
+    返回结构与结论（不抛异常、不生成日报、不写留痕）：
+
+      {ok, verdict, problems, config{key_source,base,base_source,model,...},
+       catalog{ok, ids, reason}, attempts[{model, ok, ms, error, targets, field_ok}]}
+
+    ``ok=True`` 的含义是「这一栏现在能出内容」：至少一个模型返回了结构合法的 JSON
+    （targets 覆盖探活样本里的 code、p_up 在 0.05~0.95 之间）。
+    """
+    cfg = config if config is not None else llm_config()
+    problems = []
+    if not cfg.get("enabled"):
+        key_names = "、".join(ENV_KEY_NAMES)
+        return {"ok": False, "problems": [f"未配置大模型 API Key（可用变量名：{key_names}）"],
+                "verdict": "未配置 Key → AI 七日港股走势分析概率整栏缺席",
+                "config": _probe_config_view(cfg), "catalog": {"ok": False, "ids": [], "reason": ""},
+                "attempts": []}
+    catalog = list_models(cfg, get_json=get_json)
+    chain = list(models) if models else list(model_chain(cfg, catalog.get("ids")))
+    post = post_json or http_post_json
+    url = f"{str(cfg.get('base') or DEFAULT_BASE_URL).rstrip('/')}/chat/completions"
+    headers = {"Authorization": f"Bearer {cfg.get('key') or ''}"}
+    timeout = int(cfg.get("timeout") or DEFAULT_TIMEOUT)
+    attempts = []
+    for model in chain:
+        started = datetime.now(CST)
+        row = {"model": str(model), "ok": False, "ms": 0, "error": "", "targets": [],
+               "field_ok": False}
+        try:
+            data = post(url, build_request(cfg, model, PROBE_CONTEXT), headers, timeout)
+            payload, err = _read_completion(data)
+        except Exception as exc:
+            payload, err = None, f"{type(exc).__name__}: {exc}"
+        row["ms"] = int((datetime.now(CST) - started).total_seconds() * 1000)
+        if payload is None:
+            row["error"] = str(err)
+            attempts.append(row)
+            if not _model_fault(err):
+                break                      # 不是「模型名不对」——换个名字也一样失败
+            continue
+        targets = [t for t in (payload.get("targets") or []) if isinstance(t, dict)]
+        row["targets"] = [str(t.get("code") or "") for t in targets]
+        row["field_ok"] = bool(targets) and all(
+            t.get("p_up") is not None and PROB_FLOOR <= float(t["p_up"]) <= PROB_CAP
+            for t in targets if str(t.get("code") or "").upper() == "^HSI")
+        covers = any(str(t.get("code") or "").upper() == "^HSI" for t in targets)
+        row["ok"] = bool(targets) and covers
+        if not covers:
+            row["error"] = "返回 JSON 里没有探活样本的 ^HSI"
+        attempts.append(row)
+        if row["ok"]:
+            break
+    ok = any(a["ok"] for a in attempts)
+    if not ok:
+        problems.append("候选模型都没能返回合法的 JSON（见下表最后一条错误）")
+    if catalog.get("ok") and models and all(a["model"] not in catalog["ids"] for a in attempts):
+        problems.append("尝试的模型名不在 /models 目录里")
+    good = next((a["model"] for a in attempts if a["ok"]), "")
+    return {
+        "ok": ok,
+        "problems": problems,
+        "verdict": (f"就绪：模型 {good} 返回合法 JSON，这一栏可以出内容"
+                    if ok else "不可用：这一栏会按降级口径处理（见 problems）"),
+        "config": _probe_config_view(cfg),
+        "catalog": catalog,
+        "attempts": attempts,
+    }
+
+
+def _probe_config_view(config):
+    """探活报告里的配置视图：只报「哪一个变量名生效」与不敏感的字面值，绝不回显 Key。"""
+    cfg = config or {}
+    return {"key_source": str(cfg.get("key_source") or ("(直接传入)" if cfg.get("key") else "")),
+            "key_len": len(str(cfg.get("key") or "")),
+            "base": str(cfg.get("base") or ""),
+            "base_source": str(cfg.get("base_source") or ""),
+            "model": str(cfg.get("model") or ""),
+            "model_source": str(cfg.get("model_source") or ""),
+            "model_explicit": bool(cfg.get("model_explicit")),
+            "max_tokens": int(cfg.get("max_tokens") or 0),
+            "timeout": int(cfg.get("timeout") or DEFAULT_TIMEOUT),
+            "fallback": str(cfg.get("fallback") or "auto")}
 
 
 # ------------------------------------------------------------
@@ -1243,8 +1515,10 @@ def run_seven_day(fetch_json=None, *, history_path=None, extra=None, post_json=N
     # 2) 大模型研判（可选，第一优先）
     prompt_ctx = _context_for_prompt(contexts, cleaned_extra)
     llm_payload, llm_error = (None, "未配置大模型 API Key")
+    llm_trace = {"model": "", "tried": []}
     if config.get("enabled"):
-        llm_payload, llm_error = call_llm(config, prompt_ctx, post_json=post_json)
+        llm_payload, llm_error = call_llm(config, prompt_ctx, post_json=post_json,
+                                          trace=llm_trace)
 
     # 2b) Jev 类型化决策（第三引擎）：只有大模型没有给出结果、且端点已配置时才调用。
     #      概率与量化基准按同一份常量对账（>20pp 收敛 / 5%~95% 夹边），模型不产文本；
@@ -1396,7 +1670,7 @@ def run_seven_day(fetch_json=None, *, history_path=None, extra=None, post_json=N
     crosses = [c for c in (merged.get(c2["symbol"], {}).get("cross_note")
                            for c2 in contexts) if c]
     if engine == "llm":
-        engine_label = f"大模型 · {config.get('model')}"
+        engine_label = f"大模型 · {llm_trace.get('model') or config.get('model')}"
     elif engine == "jev":
         engine_label = (f"Jev 本地模型 · {jev_info.get('model') or '类型化决策'}"
                         f" · 概率已按基准收敛")
@@ -1414,7 +1688,9 @@ def run_seven_day(fetch_json=None, *, history_path=None, extra=None, post_json=N
         "horizon": HORIZON,
         "engine": engine,
         "engine_label": engine_label,
-        "llm_model": config.get("model") if engine == "llm" else None,
+        "llm_model": (llm_trace.get("model") or config.get("model")) if engine == "llm" else None,
+        "llm_models_tried": list(llm_trace.get("tried") or []),
+        "llm_key_source": str(config.get("key_source") or ""),
         "llm_reason": "" if engine == "llm" else str(llm_error or "未配置大模型 API Key"),
         "targets": out_targets,
         "journal": stats,
