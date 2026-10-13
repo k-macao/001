@@ -1,0 +1,92 @@
+name: 🧪 LLM 探活（临时 · 用真实 Secret 回答「这一栏能不能出内容」）
+
+# 本作业是本次改动的一次性验证装置（临时文件，验证完即删）：
+#   ① 报「Key 配在哪个变量名上」（只报有没有，不回显值）；
+#   ② 跑 output/pipeline.py --llm-check：配置 / /models 目录 / 逐个候选模型发一次真实 JSON 请求；
+#   ③ 跑 output/pipeline.py --hk7-only：用真实行情 + 真实 Key 走一遍该栏目（研究模式，不推送）；
+#   ④ 跑一次完整 --no-push 流水线，把生成的日报里「AI 七日港股」那一段摘出来。
+# 结论写进 output/llm_probe_tmp.txt 并推回本次分支（沙箱读不到 Actions 日志，所以用文件带回来）。
+on:
+  push:
+    branches:
+      - arena/1ed464f9-02
+    paths-ignore:
+      - "output/llm_probe_tmp.txt"     # 结果文件本身不触发（否则自我循环）
+
+permissions:
+  contents: write
+
+concurrency:
+  group: llm-probe-tmp
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: 📥 检出仓库
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 安装依赖
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip --quiet
+          pip install --quiet requests
+
+      - name: 🧪 探活（只报变量名，绝不回显 Key）
+        env:
+          OCTOPUS_LLM_API_KEY: ${{ secrets.OCTOPUS_LLM_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
+          OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
+        run: |
+          set -uo pipefail
+          OUT=output/llm_probe_tmp.txt
+          {
+            echo "# 🧪 LLM 探活结果（临时文件 · 自动生成）"
+            echo "run: $GITHUB_RUN_ID · $(TZ='Asia/Macau' date +'%Y-%m-%d %H:%M') · ref: $GITHUB_REF_NAME"
+            echo
+            echo "## 0) Secret 有无（只报有没有，绝不回显值）"
+            for name in OCTOPUS_LLM_API_KEY DEEPSEEK_API_KEY OPENAI_API_KEY; do
+              if [ -n "${!name:-}" ]; then echo "  $name = SET"; else echo "  $name = (empty)"; fi
+            done
+            echo "  OCTOPUS_LLM_BASE_URL = ${OCTOPUS_LLM_BASE_URL:-(empty)}"
+            echo "  OCTOPUS_LLM_MODEL = ${OCTOPUS_LLM_MODEL:-(empty)}"
+            echo
+            echo "## 1) pipeline --llm-check"
+            python3 output/pipeline.py --llm-check
+            echo "(exit=$?)"
+            echo
+            echo "## 2) pipeline --hk7-only（真实行情 + 真实 Key）"
+            python3 output/pipeline.py --hk7-only
+            echo "(exit=$?)"
+            echo
+            echo "## 3) 完整流水线 --no-push 后，日报里「AI 七日港股」那一段"
+            python3 output/pipeline.py --no-push
+            echo "(exit=$?)"
+          } > /tmp/llm_probe.txt 2>&1
+          cp /tmp/llm_probe.txt "$OUT"
+          echo "--- 摘录：生成的日报里 AI 七日港股一段 ---" >> "$OUT"
+          LATEST=$(ls -t output/daily_report_*.html | head -1)
+          echo "文件：$LATEST" >> "$OUT"
+          if grep -q "AI 七日港股" "$LATEST"; then
+            echo "结论：日报里出现了「AI 七日港股」栏目" >> "$OUT"
+          else
+            echo "结论：日报里没有「AI 七日港股」栏目（整栏缺席）" >> "$OUT"
+          fi
+          grep -o "大模型 · [^<]*" "$LATEST" | head -3 >> "$OUT" || true
+          grep -o "AI 七日港股[^<]\{0,60\}" "$LATEST" | head -5 >> "$OUT" || true
+          git config user.name octopus-bot
+          git config user.email bot@octopus.ai
+          git add -f "$OUT"
+          git commit -qm "🧪 LLM 探活结果（临时文件）"
+          git push origin HEAD:"${GITHUB_REF_NAME}"
