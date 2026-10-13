@@ -4952,6 +4952,9 @@ def fetch_hk_seven_day(data=None):
         print(f"  ℹ️ Jev 本地模型在用：{jev_note}")
     elif res.get("engine") != "llm":
         print(f"  ⚠️ 大模型降级原因：{res.get('llm_reason')} · Jev：{jev_note}")
+        hint = _hk7.llm_error_hint(res.get("llm_reason"))
+        if hint:
+            print(f"  🛠 下一步：{hint}")
     return _source_result(
         HK7_SOURCE_NAME, "success", is_today=res.get("is_today", False),
         content_date=res.get("asof"), result=res,
@@ -15683,6 +15686,9 @@ def hk7_only_report():
         print(f"  Jev 状态：{_hk7_jev_note(r)}")
     elif r.get("engine") != "llm":
         print(f"  大模型降级原因：{r.get('llm_reason')} · Jev：{_hk7_jev_note(r)}")
+        hint = _hk7.llm_error_hint(r.get("llm_reason"))
+        if hint:
+            print(f"  🛠 下一步：{hint}")
     print("─" * 60)
     for t in r.get("targets") or []:
         print(f"\n  {t['name']}（{t['code']}） {t['label']}")
@@ -15758,6 +15764,8 @@ def llm_check_report():
         print(f"  {mark} {row.get('model')} · {row.get('ms')} ms{extra}")
         if row.get("error"):
             print(f"      错误：{row['error']}")
+        if row.get("hint"):
+            print(f"      提示：{row['hint']}")
     for p in probe.get("problems") or []:
         print(f"  ⚠️ {p}")
     print(f"\n{'✅' if probe.get('ok') else '❌'} 结论：{probe.get('verdict')}")

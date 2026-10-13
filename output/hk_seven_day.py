@@ -47,6 +47,7 @@ import json
 import math
 import os
 import re
+import urllib.error
 import urllib.request
 from datetime import date, datetime, timedelta, timezone
 
@@ -118,6 +119,7 @@ DEFAULT_MODEL = "deepseek-chat"
 MODEL_FALLBACKS = ("deepseek-flash", "deepseek-v4-flash", "deepseek-chat",
                    "deepseek-reasoner", "deepseek-v4-pro")
 MODEL_ATTEMPTS_MAX = 3       # 单次运行最多换几个模型名（只有「模型名不对」才换，见 _model_fault）
+MODEL_PROBE_MAX = 5          # --llm-check 探活最多试几个模型（含 /models 目录里的其余模型）
 DEFAULT_TIMEOUT = 60
 USER_AGENT = "octopus-ai-daily/1.0 (+hk-seven-day)"
 
@@ -629,22 +631,69 @@ def _model_fault(err):
                                                          "permission denied", "401", "403", "404"))
 
 
+def http_error_message(exc):
+    """HTTPError → 带服务端原话的一句话（裸「HTTP Error 402」看不出是余额不足还是模型名不对）。"""
+    code = getattr(exc, "code", "")
+    reason = getattr(exc, "reason", "") or ""
+    body = ""
+    try:
+        body = exc.read().decode("utf-8", "replace").strip()
+    except Exception:                             # 响应体读不到就只用状态行
+        body = ""
+    body = re.sub(r"\s+", " ", body)[:300]
+    return f"HTTP {code} {reason}".strip() + (f"：{body}" if body else "")
+
+
+def llm_error_hint(reason):
+    """把大模型错误翻译成「下一步做什么」（可空串）：写进日志与探活报告，不写进日报正文。"""
+    text = str(reason or "").lower()
+    if not text:
+        return ""
+    if any(k in text for k in ("402", "insufficient", "balance", "quota", "欠费", "余额")):
+        return ("402 余额/额度不足 → 到 DeepSeek 控制台充值，或换一把有额度的 Key"
+                "（充值后重跑 --llm-check 即可确认）")
+    if any(k in text for k in ("401", "invalid api key", "authentication", "unauthorized")):
+        return "401 鉴权失败 → 检查 Secret 里的 Key（前后不能带空格或换行）"
+    if "403" in text:
+        return "403 无权限 → 该 Key 被限制调用这个模型（换 Key 或换 OCTOPUS_LLM_MODEL）"
+    if any(k in text for k in ("429", "rate limit", "too many requests")):
+        return "429 触发限流 → 稍后重试，或调大 OCTOPUS_LLM_TIMEOUT"
+    if "model" in text and any(k in text for k in ("not exist", "not found", "invalid",
+                                                   "unsupported", "unknown")):
+        return "模型名不存在 → 用 --llm-check 看 /models 目录，或显式设置 OCTOPUS_LLM_MODEL"
+    if any(k in text for k in ("timed out", "timeout")):
+        return "请求超时 → 调大 OCTOPUS_LLM_TIMEOUT（默认 60 秒）"
+    if "json" in text:
+        return "回复不是合法 JSON → 调大 OCTOPUS_LLM_MAX_TOKENS（如 2048），或换更稳的模型"
+    return ""
+
+
+def _http_json(url, payload=None, headers=None, timeout=DEFAULT_TIMEOUT, method=None):
+    """标准库 HTTP → 解析 JSON；任何异常直接抛出，由调用方降级（不静默）。
+
+    HTTPError 会被换成带响应体原话的 RuntimeError：402/401/模型名不对这些排障关键信息
+    都在响应体里，只抛「HTTP Error 402」等于让人再去猜一遍。
+    """
+    body = None if payload is None else json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    req = urllib.request.Request(
+        url, data=body, method=method or ("POST" if body is not None else "GET"),
+        headers={"User-Agent": USER_AGENT, **headers})
+    try:
+        with urllib.request.urlopen(req, timeout=timeout) as resp:
+            return json.loads(resp.read().decode("utf-8", "replace"))
+    except urllib.error.HTTPError as exc:
+        raise RuntimeError(http_error_message(exc)) from exc
+
+
 def http_post_json(url, payload, headers, timeout=DEFAULT_TIMEOUT):
     """标准库 POST → 解析 JSON；任何异常直接抛出，由调用方降级（不静默）。"""
-    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
-    req = urllib.request.Request(
-        url, data=body, method="POST",
-        headers={"User-Agent": USER_AGENT, "Content-Type": "application/json", **headers})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8", "replace"))
+    return _http_json(url, payload=payload, timeout=timeout,
+                      headers={"Content-Type": "application/json", **headers})
 
 
 def http_get_json(url, headers, timeout=DEFAULT_TIMEOUT):
     """标准库 GET → 解析 JSON（读 /models 目录用）；异常直接抛出，由调用方决定降级口径。"""
-    req = urllib.request.Request(url, method="GET",
-                                 headers={"User-Agent": USER_AGENT, **headers})
-    with urllib.request.urlopen(req, timeout=timeout) as resp:
-        return json.loads(resp.read().decode("utf-8", "replace"))
+    return _http_json(url, headers=headers, timeout=timeout, method="GET")
 
 
 def list_models(config, get_json=None):
@@ -836,7 +885,11 @@ def llm_probe(config=None, get_json=None, post_json=None, models=None):
                 "config": _probe_config_view(cfg), "catalog": {"ok": False, "ids": [], "reason": ""},
                 "attempts": []}
     catalog = list_models(cfg, get_json=get_json)
+    # 探活要的是「到底哪个能通」：候选链之外，把目录里剩下的模型也一并试掉（上限 MODEL_PROBE_MAX）。
     chain = list(models) if models else list(model_chain(cfg, catalog.get("ids")))
+    for mid in catalog.get("ids") or []:
+        if mid not in chain and len(chain) < MODEL_PROBE_MAX:
+            chain.append(mid)
     post = post_json or http_post_json
     url = f"{str(cfg.get('base') or DEFAULT_BASE_URL).rstrip('/')}/chat/completions"
     headers = {"Authorization": f"Bearer {cfg.get('key') or ''}"}
@@ -854,9 +907,12 @@ def llm_probe(config=None, get_json=None, post_json=None, models=None):
         row["ms"] = int((datetime.now(CST) - started).total_seconds() * 1000)
         if payload is None:
             row["error"] = str(err)
+            row["hint"] = llm_error_hint(err)
             attempts.append(row)
-            if not _model_fault(err):
-                break                      # 不是「模型名不对」——换个名字也一样失败
+            # 探活要把范围量出来：HTTP 层面的错误（402 余额 / 401 鉴权 / 404 模型名…）继续试下一个，
+            # 传输层面的错误（超时 / 连不上）换名字也一样，立即收手省时间。
+            if "http " not in str(err).lower():
+                break
             continue
         targets = [t for t in (payload.get("targets") or []) if isinstance(t, dict)]
         row["targets"] = [str(t.get("code") or "") for t in targets]
@@ -871,16 +927,19 @@ def llm_probe(config=None, get_json=None, post_json=None, models=None):
         if row["ok"]:
             break
     ok = any(a["ok"] for a in attempts)
+    hint = next((a.get("hint") for a in attempts if a.get("hint")), "")
     if not ok:
-        problems.append("候选模型都没能返回合法的 JSON（见下表最后一条错误）")
-    if catalog.get("ok") and models and all(a["model"] not in catalog["ids"] for a in attempts):
-        problems.append("尝试的模型名不在 /models 目录里")
+        problems.append("候选模型都没能返回合法的 JSON（逐条错误见下）")
+    if catalog.get("ok") and attempts and all(a["model"] not in catalog["ids"] for a in attempts):
+        problems.append("尝试的模型名都不在 /models 目录里")
+    if hint:
+        problems.append("下一步：" + hint)
     good = next((a["model"] for a in attempts if a["ok"]), "")
     return {
         "ok": ok,
         "problems": problems,
         "verdict": (f"就绪：模型 {good} 返回合法 JSON，这一栏可以出内容"
-                    if ok else "不可用：这一栏会按降级口径处理（见 problems）"),
+                    if ok else f"不可用：这一栏会按降级口径处理（{hint or '见 problems'}）"),
         "config": _probe_config_view(cfg),
         "catalog": catalog,
         "attempts": attempts,
