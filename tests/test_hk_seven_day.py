@@ -485,8 +485,11 @@ class PipelineWiringTests(unittest.TestCase):
         self.assertIn("SECTOR ROTATION", pipeline._SECTION_ICON_META)
         self.assertLess(pipeline.REPORT_SECTION_ORDER.index("WEEKLY FORECAST"),
                         pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"))
+        # 2026-10-14 重排：板块轮动属「④我们该怎么办」，位于总结之前、①发生了什么之后
         self.assertLess(pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"),
-                        pipeline.REPORT_SECTION_ORDER.index("MARKET REVIEW"))
+                        pipeline.REPORT_SECTION_ORDER.index("SUMMARY"))
+        self.assertLess(pipeline.REPORT_SECTION_ORDER.index("MARKET REVIEW"),
+                        pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"))
         self.assertTrue((OUTPUT_DIR / "octopus_quant" / "sector_rotation.py").exists())
 
 

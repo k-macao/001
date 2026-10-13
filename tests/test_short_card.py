@@ -454,8 +454,9 @@ class CardRenderingTests(unittest.TestCase):
             self.assertEqual(sections[-1][0], "SHORT CARD")
             self.assertEqual(sections[-1][1], self.pipeline.SECTION_TITLE_SHORT_CARD)
             titles = [section[1] for section in sections]
-            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_STRATEGY),
-                            titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW))
+            # 2026-10-14 重排：行情复盘（①）先于策略研判（④）
+            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
+                            titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
                             titles.index("总结"))
             # 2026-10-13：今日预判置顶，总结仍在速查卡之前

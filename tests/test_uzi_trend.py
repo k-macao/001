@@ -330,7 +330,8 @@ class PipelineIntegrationTest(unittest.TestCase):
         self.assertIn("UZI TREND", pipeline.REPORT_ANALYSIS_SECTIONS)
         order = pipeline.REPORT_ANALYSIS_SECTIONS
         self.assertLess(order.index("STRATEGY READ"), order.index("UZI TREND"))
-        self.assertLess(order.index("UZI TREND"), order.index("QUANT FORECAST"))
+        # 2026-10-14 重排：UZI 趋势与策略研判同属「④我们该怎么办」，位于板块轮动之前
+        self.assertLess(order.index("UZI TREND"), order.index("SECTOR ROTATION"))
         self.assertIn("UZI TREND", pipeline.REPORT_SECTION_ORDER)
 
     def test_render_helper_respects_availability(self):

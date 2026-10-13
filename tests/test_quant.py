@@ -652,8 +652,9 @@ class RenderIntegrationTests(unittest.TestCase):
                         kickers.index("HK PROBABILITY"))
         self.assertLess(kickers.index("HK PROBABILITY"),
                         kickers.index("LIQUIDITY FLOW"))
-        self.assertLess(kickers.index("QUANT FORECAST"),
-                        kickers.index("MARKET REVIEW"))
+        # 2026-10-14 重排：量化预测（③可能会怎样）位于行情复盘（①发生了什么）之后
+        self.assertLess(kickers.index("MARKET REVIEW"),
+                        kickers.index("QUANT FORECAST"))
 
     def test_generated_html_has_quant_sections(self):
         with tempfile.TemporaryDirectory() as tmp:
