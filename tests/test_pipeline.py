@@ -571,7 +571,9 @@ class RetroPixelVisualTests(unittest.TestCase):
         self.assertIn(marker("MARKET REVIEW"), html)
         self.assertIn("// POLICY SHOCK", html)
         self.assertLess(kickers.index("STRATEGY READ"), kickers.index("MARKET REVIEW"))
-        self.assertLess(kickers.index("SUMMARY"), kickers.index("FORECAST"))
+        self.assertEqual(kickers[0], "FORECAST")  # 今日预判置顶
+        self.assertLess(kickers.index("SUMMARY"), kickers.index("SHORT CARD")
+                        if "SHORT CARD" in kickers else len(kickers))
         if "SHORT CARD" in kickers:
             self.assertLess(kickers.index("FORECAST"), kickers.index("SHORT CARD"))
             self.assertIn(marker("SHORT CARD"), html)
@@ -585,7 +587,9 @@ class RetroPixelVisualTests(unittest.TestCase):
         self.assertNotIn("明细数值见「AI 行情复盘」", html)  # 说明性脚注已移除
         # 逐指数 compact 徽标只在行情数据栏出现一次，不在专业分析栏重复
         self.assertEqual(html.count("▼ -2.50%"), 1)
-        self.assertLess(html.find(marker("MARKET REVIEW")), html.find("▼ -2.50%"))
+        # 2026-10-13 起今日预判置顶，紧凑徽标的唯一出现位置在其内（最前）
+        self.assertLess(html.find(marker("FORECAST")), html.find("▼ -2.50%"))
+        self.assertLess(html.find("▼ -2.50%"), html.find(marker("MARKET REVIEW")))
         self.assertIn("▲ 涨 / UP", html)    # 页首方向图例
         self.assertIn("▼ 跌 / DOWN", html)
         self.assertNotIn("<style", html)     # 微信 / PushPlus 仍保持全内联样式
@@ -2319,7 +2323,8 @@ class PolicyFactorTests(unittest.TestCase):
         html = pipeline.generate_report(
             self._policy_data(), "2026年8月2日 · 周日", "20260802", theme="pixel")
         # 版面从首个有数据的正文栏目开始；本夹具没有 Reddit / StockTwits 样本，情绪栏缺席。
-        self.assertIn("LVL 00 // STRATEGY READ", html)
+        self.assertIn("LVL 00 // FORECAST", html)      # 今日预判置顶
+        self.assertIn("LVL 01 // STRATEGY READ", html)
         self.assertIn("// POLICY SHOCK", html)
         self.assertLess(html.find("// STRATEGY READ"), html.find("// POLICY SHOCK"))
         self.assertLess(html.find("// POLICY SHOCK"), html.find("// MARKET REVIEW"))
@@ -2340,7 +2345,7 @@ class PolicyFactorTests(unittest.TestCase):
         market_head = f"{pipeline.SECTION_TITLE_MARKET_REVIEW}</h2>"
         self.assertLess(html.find(strategy_head), html.find(policy_head))
         self.assertLess(html.find(policy_head), html.find(market_head))
-        self.assertLess(html.find(market_head), html.find("【回游金枪鱼】今日预判</h2>"))
+        self.assertLess(html.find("【回游金枪鱼】今日预判</h2>"), html.find(strategy_head))
         self.assertIn("PSI +2", html)
         self.assertIn("6 条（近 15 日）", html)
         self.assertIn("政策冲击强度榜", html)
@@ -2486,12 +2491,12 @@ class SectionReadingOrderTests(unittest.TestCase):
     # guizang 栏目标题统一以 </h2> 收尾，用它定位真实栏目头，避免命中
     # 策略研判内部的「→ 「全球头条」第N条」等跨栏目引用文字。
     GUIZANG_ORDER = [
+        f"{pipeline.SECTION_TITLE_FORECAST}</h2>",
         f"{pipeline.SECTION_TITLE_STRATEGY}</h2>",
         f"{pipeline.SECTION_TITLE_POLICY}</h2>",
         f"{pipeline.SECTION_TITLE_MARKET_REVIEW}</h2>",
         f"{pipeline.SECTION_TITLE_NEWS_SENTIMENT}</h2>",
         "总结</h2>",
-        f"{pipeline.SECTION_TITLE_FORECAST}</h2>",
         f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>",
     ]
 
@@ -2523,8 +2528,8 @@ class SectionReadingOrderTests(unittest.TestCase):
     def test_pixel_lvl_numbering_follows_reading_order(self):
         data = self._full_data()
         html = pipeline.generate_report(data, "2026年8月2日 · 周日", "20260802", theme="pixel")
-        kickers = ["STRATEGY READ", "POLICY SHOCK", "MARKET REVIEW",
-                   "NEWS SENTIMENT", "SUMMARY", "FORECAST", "SHORT CARD"]
+        kickers = ["FORECAST", "STRATEGY READ", "POLICY SHOCK", "MARKET REVIEW",
+                   "NEWS SENTIMENT", "SUMMARY", "SHORT CARD"]
         order, index = self._lvl_markers(data, kickers)
         self.assertEqual(len(order), len(kickers), "存在未渲染的栏目")
         positions = [html.find(s) for s in order]
@@ -2539,10 +2544,11 @@ class SectionReadingOrderTests(unittest.TestCase):
         # 正文分析 → 数据 → 结论，短线速查卡在最终结论之后收尾。
         self.assertEqual([index[k] for k in kickers], sorted(index[k] for k in kickers))
         self.assertNotIn("AI DIGEST", index)
+        self.assertEqual(index["FORECAST"], 0)  # 今日预判置顶
         if "RETAIL SENTIMENT" in index:
-            self.assertEqual(index["RETAIL SENTIMENT"], 0)
+            self.assertEqual(index["RETAIL SENTIMENT"], 1)
         if "SHORT CARD" in index:
-            self.assertGreater(index["SHORT CARD"], index["FORECAST"])
+            self.assertGreater(index["SHORT CARD"], index["SUMMARY"])
 
     def test_order_skips_missing_sections_without_shifting_rest(self):
         # 无新闻/无政策/无情绪归因（缺席栏目）时，剩余栏目顺序与编号仍正确
@@ -2555,7 +2561,7 @@ class SectionReadingOrderTests(unittest.TestCase):
         html = pipeline.generate_report(
             data, "2026年8月2日 · 周日", "20260802", theme="pixel")
         order, _index = self._lvl_markers(
-            data, ["STRATEGY READ", "MARKET REVIEW", "SUMMARY", "FORECAST"])
+            data, ["FORECAST", "STRATEGY READ", "MARKET REVIEW", "SUMMARY"])
         positions = [html.find(s) for s in order]
         self.assertNotIn(-1, positions, "缺席栏目后剩余关卡渲染不完整")
         self.assertEqual(positions, sorted(positions))
@@ -2587,11 +2593,13 @@ class ConciseLayoutTests(unittest.TestCase):
         self.assertGreaterEqual(strategy, 0)
         self.assertLess(strategy, market)
         self.assertLess(market, recap)
-        self.assertLess(recap, forecast)
-        self.assertLess(forecast, short_card)
+        self.assertLess(recap, short_card)
+        # 2026-10-13：今日预判置顶，位于策略研判之前
+        self.assertLess(forecast, strategy)
         sections = pipeline._collect_report_parts(
             self._data(), pipeline.GUIZANG_KIT, date_str="20260802")["sections"]
-        self.assertEqual(sections[0][0], "STRATEGY READ")
+        self.assertEqual(sections[0][0], "FORECAST")
+        self.assertEqual(sections[1][0], "STRATEGY READ")
         self.assertNotIn("AI DIGEST", [section[0] for section in sections])
         self.assertIn("结论 · 重点", html)
         self.assertIn("核心判断", html)
@@ -3222,19 +3230,19 @@ class EconCalendarTests(unittest.TestCase):
             kickers = [s[0] for s in pipeline._collect_report_parts(
                 data, pipeline.PIXEL_KIT, date_str="20260928")["sections"]]
         pixel_markers = [f"LVL {kickers.index(k):02d} // {k}"
-                         for k in ("ECON CALENDAR", "MARKET REVIEW", "SUMMARY",
-                                   "FORECAST", "SHORT CARD") if k in kickers]
+                         for k in ("FORECAST", "ECON CALENDAR", "MARKET REVIEW", "SUMMARY",
+                                   "SHORT CARD") if k in kickers]
         for theme, markers in (
-            ("guizang", ["【探照安康鱼】时间节点量化预测</h2>",
+            ("guizang", ["【回游金枪鱼】今日预判</h2>", "【探照安康鱼】时间节点量化预测</h2>",
                          "【及时秋刀鱼】AI 行情复盘</h2>", "总结</h2>",
-                         "【回游金枪鱼】今日预判</h2>", f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>"]),
+                         f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>"]),
             ("pixel", pixel_markers),
         ):
             html = self._report(data, theme=theme)
             positions = [html.find(m) for m in markers]
             self.assertNotIn(-1, positions, f"{theme} 栏目缺失: {markers}")
             self.assertEqual(positions, sorted(positions),
-                             f"{theme} 顺序必须为专业分析 → 数据显示 → 结论")
+                             f"{theme} 顺序必须为今日预判 → 专业分析 → 数据显示 → 总结 → 速查卡")
 
     def test_section_body_carries_window_summary_and_star_levels(self):
         res, _ = self._fetch()
@@ -3473,13 +3481,16 @@ class SectionRenameBatch2Tests(unittest.TestCase):
 
     def test_reading_order_is_analysis_then_data_then_conclusion(self):
         order = pipeline.REPORT_SECTION_ORDER
-        self.assertEqual(order[0], "RETAIL SENTIMENT")
+        self.assertEqual(order[0], "FORECAST")
+        self.assertEqual(order[1], "RETAIL SENTIMENT")
         self.assertLess(order.index("RETAIL SENTIMENT"), order.index("STRATEGY READ"))
         self.assertLess(order.index("STRATEGY READ"), order.index("WEEKLY FORECAST"))
         self.assertLess(order.index("WEEKLY FORECAST"), order.index("POLICY SHOCK"))
         self.assertLess(order.index("POLICY SHOCK"), order.index("TREND TRACKING"))
         self.assertLess(order.index("TREND TRACKING"), order.index("NEWS SENTIMENT"))
-        self.assertLess(order.index("SUMMARY"), order.index("FORECAST"))
+        # 2026-10-13：今日预判置顶，总结仍在末尾
+        self.assertEqual(order[0], "FORECAST")
+        self.assertEqual(order[-1], "SUMMARY")
         # 2026-10-02 起两个资讯栏目退出正文顺序表（与 EASTMONEY WIRE 同口径）
         for kick in self.HIDDEN_KICKERS:
             self.assertNotIn(kick, order)

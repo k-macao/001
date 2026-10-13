@@ -8269,7 +8269,7 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
 # 2026-10-10 更名：原「新闻情绪」；数据源键名、审计标签与 kicker（NEWS SENTIMENT）不变。
 SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
 
-# 正文顺序：专业分析 → 数据显示 → 结论。
+# 正文顺序：今日预判（2026-10-13 按用户要求置顶）→ 专业分析 → 数据显示 → 总结。
 # 社区情绪因子使用当次 Reddit / StockTwits 样本；没有可用样本时该栏缺席。
 REPORT_ANALYSIS_SECTIONS = (
     "RETAIL SENTIMENT", "STRATEGY READ", "UZI TREND",
@@ -8288,11 +8288,14 @@ REPORT_DATA_SECTIONS = (
     "MAINLAND HOTLIST",
     "NEWS SENTIMENT",
 )
-REPORT_CONCLUSION_SECTIONS = ("SUMMARY", "FORECAST")
+# 2026-10-13 起「今日预判」（FORECAST）按用户要求放在正文最开头；「总结」仍在末尾。
+REPORT_HEAD_SECTIONS = ("FORECAST",)
+REPORT_TAIL_SECTIONS = ("SUMMARY",)
 REPORT_SECTION_ORDER = (
+    *REPORT_HEAD_SECTIONS,
     *REPORT_ANALYSIS_SECTIONS,
     *REPORT_DATA_SECTIONS,
-    *REPORT_CONCLUSION_SECTIONS,
+    *REPORT_TAIL_SECTIONS,
 )
 
 
