@@ -1,5 +1,5 @@
 # 🧪 LLM 探活结果（临时文件 · 自动生成）
-run: 38464753202 · 2026-10-14 04:41 · ref: arena/1ed464f9-02
+run: 38465678032 · 2026-10-14 04:48 · ref: arena/1ed464f9-02
 
 ## 0) Secret 有无（只报有没有，绝不回显值）
   OCTOPUS_LLM_API_KEY = (empty)
@@ -23,7 +23,7 @@ run: 38464753202 · 2026-10-14 04:41 · ref: arena/1ed464f9-02
   可选模型：deepseek-flash、deepseek-v4-pro
 
 【逐模型探活】共 1 次请求
-  ❌ deepseek-flash · 796 ms
+  ❌ deepseek-flash · 679 ms
       错误：HTTPError: HTTP Error 402: Payment Required
   ⚠️ 候选模型都没能返回合法的 JSON（见下表最后一条错误）
 
@@ -81,209 +81,17 @@ run: 38464753202 · 2026-10-14 04:41 · ref: arena/1ed464f9-02
 ✅ 研究模式不推送
 (exit=0)
 
-## 3) 完整流水线 --no-push 后，日报里「AI 七日港股」那一段
-🐙 ================================================
-   章鱼 AI · 上水日报 ·「每日上水，新鲜活泼」· 全网多模型协同 · 每日财经日报（每日自动模式）
-🐙 ================================================
-   运行时间: 2026-10-14 04:41:15
-   推送主题: lime（OCTOPUS_PUSH_THEME / --theme 可切换）
-   版面模式: 入门版（精简 + 不出说明文字 / 过程文字；短线速查卡 ≤600 字；--notes 找回说明文字，--full 回全量长版）
-🧹 已清理历史 HTML 报告: 74 份 daily_report_*.html, latest.html
-
-==================================================
-🔍 开始全网数据采集
-==================================================
-
-📜 【诗泉 · 随机一首诗】《商州（题拟）》 — 〔唐〕李涉 · 其他
-   宫址蔓生草，洞门低枕泉。
-   废兴人目击，何处是神仙？
-   （《记纂渊海》卷二四）。
-   🔗 来源: GitHub 诗泉 (https://github.com/palemoky/chinese-poetry-api)
-📡 正在抓取全球/A股实时行情...
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=5d&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=5d&interval=1d
-  ✅ 备用源2（东方财富行情快照）顶上：创业板指、科创50
-  ✅ 成功抓取 11/12 个实时行情（数据日期 美股 2026-10-13 / A股 2026-10-13 / 港股 2026-10-13 / 商品 2026-10-13）
-  ℹ️ Yahoo 日线暂缺刚收盘 K 线，已用 meta 最新报价补齐：上证指数(10-13)、深证成指(10-13)、恒生指数(10-13)
-📡 正在抓取 A股大盘全景（指数/涨跌家数/成交额/北向/板块）...
-  ✅ 全景复盘：指数 8 只 / 涨跌家数 齐 / 板块 5+5 / 南北向 ✓
-
-🇭🇰 正在抓取港股境外数据源（Yahoo / Stooq / HKEX / 可选浏览器）...
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=5d&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=5d&interval=1d
-  ⚠️ 请求失败 [https://www.hkex.com.hk/Market-Data/Statistics/Securities-Ma...]: 404 Client Error: Not Found for url: https://www.hkex.com.hk/Market-Data/Statistics/Securities-Market-Statistics/Daily-Market-Report?sc_lang=en
-  ✅ 港股境外数据源：指数 2 / 个股 8 项 · 行情日 2026-10-13
-  ⚠️ 未取到：恒生科技（^HSTECH）主备均未取到
-📡 正在抓取中国政府网·最新政策（政策因子官方源）...
-  ✅ 中国政府网抓取 5 条最新政策（最新发布 2026-10-08）
-📡 正在抓取港股名家频道...
-  ⚠️ 请求失败 [https://rsshub.app/bilibili/user/video/613310838...]: 403 Client Error: Forbidden for url: https://rsshub.app/bilibili/user/video/613310838
-  ⚠️ 请求失败 [https://rsshub.rssforever.com/bilibili/user/video/613310838...]: 503 Server Error: Service Unavailable for url: https://rsshub.rssforever.com/bilibili/user/video/613310838
-  ⚠️ 请求失败 [https://rsshub.pseudoyu.com/bilibili/user/video/613310838...]: HTTPSConnectionPool(host='rsshub.pseudoyu.com', port=443): Max retries exceeded with url: /bilibili/user/video/613310838 (Caused by NameResolutionError("HTTPSConnection(host='rsshub.pseudoyu.com', port=443): Failed to resolve 'rsshub.pseudoyu.com' ([Errno -5] No address associated with hostname)"))
-  ✅ 成功抓取 6/20 个频道（最新内容日期 2026-10-13）
-  🕐 14 个频道需登录/未配置，标注暂缺：曾廣標（股票分析）、陸羽仁（金融肉搏戰）、青姐（胡孟青）、智通財經App（微信公众号）、港股那點事（格隆匯）（微信公众号）、球友大白（雪球 KOL）、香港投資筆記（Medium）、港股策略通訊（Substack）、港股交易員（微博大V）、紅猴（Red Monkey）、米高（Michael）的財經頻道、小斯財經、智富同學會、港股研究社（Bilibili）
-📡 正在抓取 Google News 全球头条...
-  ✅ 成功抓取 12 条全球头条（中文源，最新 2026-10-14）
-📡 正在抓取美联储趋势专题（Google News 查询）...
-  ✅ 成功抓取 8 条Google News·美联储查询（最新 2026-10-13）
-📡 正在抓取地缘政治趋势专题（Google News 查询）...
-  ✅ 成功抓取 8 条Google News·地缘查询（最新 2026-10-14）
-📡 正在抓取东方财富快讯...
-  ✅ 备用源2（新浪财经 7×24）顶上：东财快讯接口不可用
-  ✅ 成功抓取 10 条快讯（新浪备用）（最新 2026-10-14）
-📡 正在抓取 A股/港股/美股成交量前5...
-  ✅ A股成交量前5: 5 只
-  ✅ 港股成交量前5: 5 只
-  ✅ 美股成交量前5: 5 只
-  ✅ 热门榜单抓取完成（数据为最近交易日收盘后）
-📡 正在运行港股量化引擎（恒指/恒科日线 · 港股蓝筹 · 沪深港通 · 港股成交）...
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/^HSCEI...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSCEI?range=1y&interval=1d
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/^HSTECH...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=1y&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/^HSCEI...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSCEI?range=1y&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/^HSTECH...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=1y&interval=1d
-  ✅ 量化预测：恒生指数 24,345 · ■ 中性 55% · 5日 95% 区间 23,264–25,388 · 波动率 27% 分位 · 流动性紧张（25/100） · 模型近 186 日方向命中 52% · 预测留痕 10 次命中 30%；个股池 18 只中 28% 近 20 日上涨
-  ✅ 流动性综合分 25/100（流动性紧张）
-📡 正在计算 MACD 量化策略（市场库 → 已有日线 → Yahoo/东财免费源）...
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/^HSTECH...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=1y&interval=1d
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/^HSCEI...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSCEI?range=1y&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/^HSTECH...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=1y&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/^HSCEI...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSCEI?range=1y&interval=1d
-  ✅ MACD：7/9 只 · 收盘日 2026-10-13 ~ 2026-10-13 · 金叉 1 / 死叉 1
-📡 正在计算 UZI 多流派趋势分析（7 只标的 · 评委 livermore/minervini/darvas/gann/simons）...
-  ✅ UZI 趋势：7/9 只 · 收盘日 2026-10-13~2026-10-13 · 5 位评委 × 14 条规则 · 定调 up=3、base=2、down=2 · 未取到 恒生科技,国企指数
-
-📅 正在抓取「时间节点」· 未来 30 天影响经济时间点（东方财富财经日历）...
-  📅 财经日历：原始 571 条 → 命中 323 条 → 正文 60 条（版面裁掉 263 条）（2026-10-14 ~ 2026-11-13 · 未来 30 天）
-📡 正在计算【嗜血大白鲨】逐日走势量化预测（恒生指数 · 未来 7 个交易日逐日 · 无未来函数）...
-  ✅ 七日整段：■ 中性（略偏涨）· P(7日涨) 53%（锚定 2026-10-08 收盘 → 未来 7 个交易日）
-  ✅ 逐日表格：7 行（2026-10-14 ~ 2026-10-22） · 看涨 0 / 看跌 0 / 中性 7 · 事件日提醒 4 天
-  ✅ 滚动样本外：430 期 · 命中 51%（基准 58%）· Brier 0.263
-  ✅ 预测留痕：已结算 1 次（样本 <10，只报样本量）
-
-📰 正在采集趋势跟踪（多平台信息员：Reddit + StockTwits + TradingView + Bogleheads；另有全网 36 个新闻源头港股挖掘 + 内地财经媒体 18 家标题池）...
-  ⚠️ 请求失败 [https://www.reddit.com/r/stocks/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/stocks/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/wallstreetbets/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/wallstreetbets/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/wallstreet/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/wallstreet/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/options/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/options/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/pennystocks/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/pennystocks/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/ValueInvesting/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/ValueInvesting/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/investing/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/investing/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/personalfinance/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/personalfinance/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/economics/hot/.rss?limit=10...]: 429 Client Error: Too Many Requests for url: https://www.reddit.com/r/economics/hot/.rss?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/pennystocks/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Fpennystocks%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/investing/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Finvesting%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/wallstreetbets/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Fwallstreetbets%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/stocks/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Fstocks%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/wallstreet/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Fwallstreet%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/personalfinance/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Fpersonalfinance%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/economics/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Feconomics%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/ValueInvesting/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2FValueInvesting%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://old.reddit.com/r/options/hot/.rss?limit=10...]: 404 Client Error: Not Found for url: https://old.reddit.com/login/?reason=lor2&dest=https%3A%2F%2Fold.reddit.com%2Fr%2Foptions%2Fhot%2F.rss%3Flimit%3D10
-  ⚠️ 请求失败 [https://www.reddit.com/r/pennystocks/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/pennystocks/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/investing/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/investing/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/wallstreetbets/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/wallstreetbets/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/wallstreet/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/wallstreet/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/personalfinance/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/personalfinance/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/investing/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/investing/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/pennystocks/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/pennystocks/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/options/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/options/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/wallstreetbets/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/wallstreetbets/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/ValueInvesting/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/ValueInvesting/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/wallstreet/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/wallstreet/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/economics/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/economics/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/personalfinance/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/personalfinance/hot.json?limit=10
-  ⚠️ 请求失败 [https://www.reddit.com/r/stocks/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://www.reddit.com/r/stocks/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/options/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/options/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/stocks/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/stocks/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/ValueInvesting/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/ValueInvesting/hot.json?limit=10
-  ⚠️ 请求失败 [https://old.reddit.com/r/economics/hot.json?limit=10...]: 403 Client Error: Blocked for url: https://old.reddit.com/r/economics/hot.json?limit=10
-  ✅ Reddit: 5 条公开样本
-  ✅ StockTwits: 8 条公开样本
-  ✅ TradingView: 10 条公开样本
-  ✅ Bogleheads: 10 条公开样本
-📡 正在采集趋势跟踪 · 全网 36 个新闻源头（港股挖掘）...
-  ⚠️ 请求失败 [https://rsshub.app/gelonghui/live...]: 403 Client Error: Forbidden for url: https://rsshub.app/gelonghui/live
-  ⚠️ 请求失败 [https://rsshub.app/zhitongcaijing...]: 403 Client Error: Forbidden for url: https://rsshub.app/zhitongcaijing
-  ⚠️ 请求失败 [https://rsshub.app/cls/telegraph...]: 403 Client Error: Forbidden for url: https://rsshub.app/cls/telegraph
-  ⚠️ 请求失败 [https://rsshub.app/now/news...]: 403 Client Error: Forbidden for url: https://rsshub.app/now/news
-  ⚠️ 请求失败 [https://rsshub.app/tvb/news...]: 403 Client Error: Forbidden for url: https://rsshub.app/tvb/news
-  ⚠️ 请求失败 [https://hongkongfp.com/feed/...]: 403 Client Error: Forbidden for url: https://hongkongfp.com/feed/
-  ⚠️ 请求失败 [https://www.hket.com/rss/finance...]: 405 Client Error: Not Allowed for url: https://www.hket.com/rss/finance
-  ⚠️ 请求失败 [https://rsshub.app/stcn/article/list/kx...]: 403 Client Error: Forbidden for url: https://rsshub.app/stcn/article/list/kx
-  ⚠️ 请求失败 [https://rsshub.app/10jqka/realtimenews...]: 403 Client Error: Forbidden for url: https://rsshub.app/10jqka/realtimenews
-  ⚠️ 请求失败 [https://rsshub.app/eastmoney/report/strategyreport...]: 403 Client Error: Forbidden for url: https://rsshub.app/eastmoney/report/strategyreport
-  ✅ 32/36 个源头窗口内有更新 · 扫描 354 条 · 港股相关 45 条 · 多空 13/18 · 热点 AI/科技、汇率/货币、IPO/上市
-  🕐 4 个源头暂缺：Now 新闻、格隆汇·实时快讯、北京商报、金融投资报
-📡 正在采集内地财经媒体源头 18 家（官方订阅 / 站内检索 → 标题池：新闻情绪 + 政策因子）...
-  ✅ 内地财经媒体 17/18 家窗口内有更新 · 扫描 183 条 · 进标题池 43 条（跨源同题合并 6 条）
-  🕐 1 家暂缺：北京商报（北京商报网）
-📡 正在做 AI 七日港股走势分析概率（恒指 / 恒科 / 国企 · 未来 7 个交易日）...
-  ⚠️ 请求失败 [https://query1.finance.yahoo.com/v8/finance/chart/^HSTECH...]: 404 Client Error: Not Found for url: https://query1.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=2y&interval=1d
-  ⚠️ 请求失败 [https://query2.finance.yahoo.com/v8/finance/chart/^HSTECH...]: 404 Client Error: Not Found for url: https://query2.finance.yahoo.com/v8/finance/chart/%5EHSTECH?range=2y&interval=1d
-  ✅ AI 七日港股：锚定 2026-10-13 收盘 · 量化多因子规则（无大模型 Key 或调用失败已降级）
-     · 恒生指数 P(7日涨) 53%（量化基准 53%）
-     · 国企指数 P(7日涨) 57%（量化基准 57%）
-  ⚠️ 部分标的日线不可用：恒生科技
-  ⚠️ 大模型降级原因：deepseek-flash → HTTPError: HTTP Error 402: Payment Required · Jev：端点未配置（OCTOPUS_JEV_BASE_URL）
-📡 正在抓取 A股概念库并计算港股板块轮动（五维评分 + 三策略投票）...
-  ✅ 概念库 100 项 · 关键词命中 6 项 · 总分可用 5 项 · 港股行情样本 11/11
-📡 正在计算申万一级行业轮动（31 个行业 · 周度评分 + 月度纯多头组合）...
-  ✅ 行业轮动：锚点 2026-10-13 · 有效 31/31 个行业 · 月度持仓沿用（复权口径 fqt=1 · 日线来源 eastmoney=31）
-
-🕐 正在检查全栏目数据新鲜度...
-  新鲜 23/24 源（20 当天 + 3 快照），1 过期，0 不可用；过期：国家政策
-📅 数据新鲜度检查（2026-10-14）：新鲜 23/24 源（20 当天 + 3 快照），1 过期，0 不可用；过期：国家政策
-
-各源详情：
-⚠️ 国家政策：expired（滞后 6 天，阈值 3 天）- 过期 6 天（阈值 3 天，中国政府网，官方政策）
-✅ AI 七日港股走势分析概率：fresh（滞后 1 天，阈值 3 天）- 近 1 天内（通用，3 天内）
-✅ A股大盘全景：fresh（滞后 1 天，阈值 3 天）- 近 1 天内（东财 A股全景，交易日收盘后），含周末/假期，视为新鲜
-✅ Bogleheads：fresh（滞后 0 天，阈值 3 天）- 当天内容（Bogleheads 论坛，72h 窗口）
-✅ MACD量化策略：fresh（滞后 1 天，阈值 4 天）- 近 1 天内（MACD 已收盘日线；按有效标的中最早收盘日保守检查），含周末/假期，视为新鲜
-✅ Reddit：fresh（滞后 0 天，阈值 3 天）- 当天内容（Reddit 热帖，72h 窗口）
-✅ StockTwits：fresh（滞后 0 天，阈值 3 天）- 当天内容（StockTwits 趋势榜，实时）
-✅ TradingView：fresh（滞后 0 天，阈值 3 天）- 当天内容（TradingView Ideas，72h 窗口）
-✅ UZI多流派趋势分析：fresh（滞后 1 天，阈值 3 天）- 近 1 天内（通用，3 天内）
-✅ 东财快讯：fresh（滞后 0 天，阈值 1 天）- 当天内容（东财快讯，要求当天）
-✅ 全球头条：fresh（滞后 0 天，阈值 1 天）- 当天内容（Google News 头条，要求当天）
-✅ 内地财经媒体源头：fresh（滞后 0 天，阈值 3 天）- 当天内容（18 家内地财经媒体，72h 窗口）
-✅ 地缘政治趋势：fresh（滞后 0 天，阈值 2 天）- 当天内容（地缘政治专题，Google News 查询）
-✅ 实时行情：fresh（滞后 1 天，阈值 3 天）- 近 1 天内（Yahoo 行情，交易日收盘数据），含周末/假期，视为新鲜
-✅ 板块轮动量化策略：fresh（滞后 1 天，阈值 4 天）- 近 1 天内（A股概念快照与港股日线/快照；以结果中最近数据日期检查），含周末/假期，视为新鲜
-✅ 每周走势预测：fresh（滞后 1 天，阈值 3 天）- 近 1 天内（通用，3 天内）
-✅ 港股名家频道：fresh（滞后 1 天，阈值 7 天）- 近 1 天内（YouTube/RSS 频道，允许一周内）
-✅ 港股新闻源头：fresh（滞后 0 天，阈值 3 天）- 当天内容（36 家新闻源，72h 窗口）
-✅ 热门榜单：fresh（滞后 0 天，阈值 3 天）- 当天内容（东财热门榜，交易日收盘后）
-✅ 申万一级行业轮动策略：fresh（滞后 1 天，阈值 5 天）- 近 1 天内（申万一级 31 行业日线（东财板块指数 / 申万官方兜底）），含周末/假期，视为新鲜
-✅ 美联储趋势：fresh（滞后 1 天，阈值 2 天）- 近 1 天内（美联储专题，Google News 查询）
-📸 港股境外数据源：snapshot（滞后 0 天，阈值 3 天）- 今日抓取快照（境外港股行情（Yahoo/Stooq/HKEX），交易日收盘数据）
-📸 港股量化：snapshot（滞后 0 天，阈值 3 天）- 今日抓取快照（通用，3 天内）
-📸 财经日历：snapshot（滞后 0 天，阈值 1 天）- 今日抓取快照（财经日历，今日抓取快照）
-
-🔍 正在执行跨栏目去重合并（相似度阈值 70%）...
-  去重合并：120 条 → 118 条（合并 2 条重复）；各栏目合并：港股名家频道 1 条、内地财经媒体源头 1 条
-
-🔄 数据线主备：19 条数据线，每条 1 主源 + 2 备用源（python3 output/pipeline.py --sources 查看明细）
-  🔁 本次备用源顶上：实时行情 · Yahoo 日线快照→备用源2（东方财富 行情快照）、国家政策 · 中国政府网→备用源1（政府网 政策首页）、东方财富 快讯→备用源2（新浪财经 7×24 快讯）、日线序列 · 港股量化 / 每周预测 / 板块轮动 / MACD→备用源2（东方财富 日K）、港股新闻源头 · 36 家媒体 RSS→备用源1（Bing News 站内检索 RSS）
-
-✅ 数据采集完成！
-  🗂 新闻标题存档 +31 条（累计 1242 条）
-  📊 政策因子：近15日窗口内检出政策及宏观数据类新闻 75 条（占窗口资讯 75/1011），覆盖维度：货币收紧×20、财政发力×13、产业扶持×12、宏观数据×12、监管收紧×7、贸易壁垒×7、货币宽松×6、政策发布×2、开放准入×1；大盘政策冲击指数 PSI +11（偏暖）。其中中国政府网官方发布 2 条。受益居前：基建链+26（13条）、银行+14（26条）、有色金属+12（12条）。承压居前：证券-30（27条）、地产链-28（26条）、科技成长-12（27条）。
-
-📝 正在生成日报...
-  ✅ 日报生成完成
-💾 日报已原子保存: /home/runner/work/02/02/output/daily_report_20261014.html
-💾 最新副本已同步: /home/runner/work/02/02/output/latest.html
-📊 数据源状态: 24/28 可用（不可用项已在报告中标注）
-  💾 情绪历史已更新: /home/runner/work/02/02/output/sentiment_history.json（51 只个股有基线）
-  💾 新闻标题存档已更新: /home/runner/work/02/02/output/news_history.json（1224 条在窗口内）
-
-⏭️ 已跳过推送（--no-push）。当天检验: 当天检验通过：12/28 个来源含当天内容或今日抓取快照（其中 4 个仅为今日抓取快照，非当日发布）
-   日报已保存: /home/runner/work/02/02/output/daily_report_20261014.html
-
-🎉 全部完成！
-(exit=0)
---- 摘录：生成的日报里 AI 七日港股一段 ---
-文件：output/daily_report_20261014.html
-结论：日报里出现了「AI 七日港股」栏目
-AI 七日港股走势分析概率
+## 3) 枚举：目录里的每个模型 × 三种请求形态（状态码 + 服务端原话）
+Key 来源：DEEPSEEK_API_KEY（值不回显）
+Traceback (most recent call last):
+  File "<stdin>", line 33, in <module>
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/json/__init__.py", line 346, in loads
+    return _default_decoder.decode(s)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/json/decoder.py", line 337, in decode
+    obj, end = self.raw_decode(s, idx=_w(s, 0).end())
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/opt/hostedtoolcache/Python/3.11.17/x64/lib/python3.11/json/decoder.py", line 353, in raw_decode
+    obj, end = self.scan_once(s, idx)
+               ^^^^^^^^^^^^^^^^^^^^^^
+json.decoder.JSONDecodeError: Unterminated string starting at: line 1 column 300 (char 299)
