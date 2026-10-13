@@ -1,11 +1,7 @@
 name: 🧪 LLM 探活（临时 · 用真实 Secret 回答「这一栏能不能出内容」）
 
-# 本作业是本次改动的一次性验证装置（临时文件，验证完即删）：
-#   ① 报「Key 配在哪个变量名上」（只报有没有，不回显值）；
-#   ② 跑 output/pipeline.py --llm-check：配置 / /models 目录 / 逐个候选模型发一次真实 JSON 请求；
-#   ③ 跑 output/pipeline.py --hk7-only：用真实行情 + 真实 Key 走一遍该栏目（研究模式，不推送）；
-#   ④ 跑一次完整 --no-push 流水线，把生成的日报里「AI 七日港股」那一段摘出来。
-# 结论写进 output/llm_probe_tmp.txt 并推回本次分支（沙箱读不到 Actions 日志，所以用文件带回来）。
+# 一次性验证装置（临时文件，验证完即删）：结论写进 output/llm_probe_tmp.txt 并推回本分支，
+# 因为沙箱读不到 Actions 日志（results-receiver 出网被拦），只能靠仓库文件把结论带回来。
 on:
   push:
     branches:
@@ -49,8 +45,7 @@ jobs:
           OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
           OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
         run: |
-          # GitHub Actions 的 run 默认是 bash -e：把它关掉，探活失败（例如没配 Key 时
-          # --llm-check 退出码 1）不该让整步中止——失败原因本身就是要带回来的结论。
+          # GitHub Actions 的 run 默认是 bash -e：关掉它——探活的失败原因本身就是要带回来的结论
           set +e
           set -uo pipefail
           OUT=output/llm_probe_tmp.txt
@@ -72,24 +67,80 @@ jobs:
             echo "## 2) pipeline --hk7-only（真实行情 + 真实 Key）"
             python3 output/pipeline.py --hk7-only
             echo "(exit=$?)"
-            echo
-            echo "## 3) 完整流水线 --no-push 后，日报里「AI 七日港股」那一段"
-            python3 output/pipeline.py --no-push
-            echo "(exit=$?)"
           } > /tmp/llm_probe.txt 2>&1
           cp /tmp/llm_probe.txt "$OUT"
-          echo "--- 摘录：生成的日报里 AI 七日港股一段 ---" >> "$OUT"
-          LATEST=$(ls -t output/daily_report_*.html | head -1)
-          echo "文件：$LATEST" >> "$OUT"
-          if grep -q "AI 七日港股" "$LATEST"; then
-            echo "结论：日报里出现了「AI 七日港股」栏目" >> "$OUT"
-          else
-            echo "结论：日报里没有「AI 七日港股」栏目（整栏缺席）" >> "$OUT"
-          fi
-          grep -o "大模型 · [^<]*" "$LATEST" | head -3 >> "$OUT" || true
-          grep -o "AI 七日港股[^<]\{0,60\}" "$LATEST" | head -5 >> "$OUT" || true
+
+      - name: 🔬 枚举「模型 × 请求形态」——定位 402 的范围
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OCTOPUS_LLM_API_KEY: ${{ secrets.OCTOPUS_LLM_API_KEY }}
+        run: |
+          set +e
+          set -uo pipefail
+          OUT=output/llm_probe_tmp.txt
+          {
+            echo
+            echo "## 3) 枚举：目录里的每个模型 × 三种请求形态（状态码 + 服务端原话）"
+            python3 - <<'PY'
+          import json, os, urllib.request, urllib.error
+
+          key = ""
+          for name in ("OCTOPUS_LLM_API_KEY", "DEEPSEEK_API_KEY", "OPENAI_API_KEY"):
+              if (os.environ.get(name) or "").strip():
+                  key = os.environ[name].strip()
+                  print(f"Key 来源：{name}（值不回显）")
+                  break
+          else:
+              print("没有 Key，跳过枚举")
+              raise SystemExit(0)
+
+          BASE = "https://api.deepseek.com/v1"
+
+
+          def call(method, path, body=None):
+              req = urllib.request.Request(
+                  BASE + path,
+                  data=json.dumps(body).encode() if body is not None else None,
+                  method=method,
+                  headers={"Authorization": f"Bearer {key}", "Content-Type": "application/json",
+                           "User-Agent": "octopus-llm-probe/1.0"})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return r.status, r.read().decode("utf-8", "replace")[:300]
+              except urllib.error.HTTPError as e:
+                  return e.code, e.read().decode("utf-8", "replace")[:300]
+              except Exception as e:
+                  return "ERR", f"{type(e).__name__}: {e}"
+
+
+          status, body = call("GET", "/models")
+          ids = [it.get("id") for it in (json.loads(body).get("data") or [])] if status == 200 else []
+          print(f"/models → {status} · {ids or body}")
+
+          variants = {
+              "plain（最小请求）": lambda m: {"model": m, "messages": [{"role": "user", "content": "hi"}],
+                                              "max_tokens": 4},
+              "json_object": lambda m: {"model": m, "messages": [{"role": "user", "content": '回复 JSON {"ok":true}'}],
+                                        "max_tokens": 32, "response_format": {"type": "json_object"}},
+              "temperature=0.2": lambda m: {"model": m, "temperature": 0.2,
+                                            "messages": [{"role": "user", "content": "hi"}], "max_tokens": 4},
+          }
+          for mid in ids:
+              for label, build in variants.items():
+                  st, bd = call("POST", "/chat/completions", build(mid))
+                  print(f"  {mid:<20} {label:<18} → HTTP {st} · {bd[:180]}")
+          for alias in ("deepseek-chat", "deepseek-reasoner", "deepseek-v4-flash"):
+              st, bd = call("POST", "/chat/completions",
+                            {"model": alias, "messages": [{"role": "user", "content": "hi"}], "max_tokens": 4})
+              print(f"  {alias:<20} {'历史别名':<18} → HTTP {st} · {bd[:180]}")
+          PY
+          } >> "$OUT" 2>&1
+
+      - name: 📤 提交探活结果
+        run: |
+          set -euo pipefail
           git config user.name octopus-bot
           git config user.email bot@octopus.ai
-          git add -f "$OUT"
+          git add -f output/llm_probe_tmp.txt
           git commit -qm "🧪 LLM 探活结果（临时文件）" || true
           git push origin HEAD:"${GITHUB_REF_NAME}"
