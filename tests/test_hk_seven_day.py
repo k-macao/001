@@ -11,6 +11,7 @@
     原「行业轮动」栏目与模块已彻底下线。
 """
 import importlib.util
+import io
 import json
 import random
 import re
@@ -18,6 +19,7 @@ import sys
 import tempfile
 import types
 import unittest
+import urllib.error
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
@@ -273,6 +275,52 @@ class LLMTests(unittest.TestCase):
         empty = hk7.llm_probe(hk7.llm_config({}))
         self.assertFalse(empty["ok"])
         self.assertIn("整栏缺席", empty["verdict"])
+
+    def test_http_error_message_keeps_server_words(self):
+        """裸「HTTP Error 402」看不出是余额还是模型名；带上服务端响应体原话才可排障。"""
+        exc = urllib.error.HTTPError(
+            "https://api.deepseek.com/v1/chat/completions", 402, "Payment Required", {},
+            io.BytesIO(b'{"error":{"message":"Insufficient Balance","type":"unknown_error"}}'))
+        msg = hk7.http_error_message(exc)
+        self.assertIn("HTTP 402", msg)
+        self.assertIn("Insufficient Balance", msg)
+        self.assertIn("充值", hk7.llm_error_hint(msg))
+        # 其他常见失败各自给出下一步动作
+        self.assertIn("Secret", hk7.llm_error_hint("HTTP 401 Unauthorized: invalid api key"))
+        self.assertIn("限流", hk7.llm_error_hint("HTTP 429 Too Many Requests"))
+        self.assertIn("模型名不存在", hk7.llm_error_hint("HTTP 400：Model Not Exist"))
+        self.assertIn("超时", hk7.llm_error_hint("RuntimeError: urlopen error timed out"))
+        self.assertEqual(hk7.llm_error_hint(""), "")
+        self.assertEqual(hk7.llm_error_hint(None), "")
+
+    def test_probe_enumerates_catalog_models_beyond_the_chain(self):
+        """探活要把「目录里有、候选链里没有」的模型也试掉，否则量不出可用范围。"""
+        cfg = hk7.llm_config({"DEEPSEEK_API_KEY": "k"})
+
+        def fake_get(url, headers, timeout):
+            # 目录里多出一个候选链之外的新模型（官方改名 / 上新的情形）
+            return {"data": [{"id": "deepseek-flash"}, {"id": "deepseek-next-gen"}]}
+
+        def fake_post(url, payload, headers, timeout):
+            model = payload["model"]
+            if model != "deepseek-next-gen":
+                raise RuntimeError(f'HTTP 400 Bad Request：{{"error":{{"message":"Model Not Exist: {model}"}}}}')
+            body = {"targets": [{"code": "^HSI", "p_up": 0.55, "summary": "探活",
+                                 "drivers": [], "risks": []}]}
+            return {"choices": [{"message": {"content": json.dumps(body, ensure_ascii=False)}}]}
+
+        probe = hk7.llm_probe(cfg, get_json=fake_get, post_json=fake_post)
+        self.assertTrue(probe["ok"])
+        self.assertEqual([a["model"] for a in probe["attempts"]],
+                         ["deepseek-flash", "deepseek-next-gen"])     # 链外的目录模型也试了
+        self.assertEqual(probe["attempts"][-1]["model"], "deepseek-next-gen")
+        self.assertTrue(probe["attempts"][0]["hint"])                # 失败条目带下一步动作
+        # 目录与候选链有交集时，先试交集（顺序跟候选链一致），不再重复试链外名字
+        cfg2 = hk7.llm_config({"DEEPSEEK_API_KEY": "k"})
+        probe2 = hk7.llm_probe(cfg2, get_json=fake_get, post_json=fake_post,
+                               models=["deepseek-flash"])
+        self.assertEqual([a["model"] for a in probe2["attempts"]],
+                         ["deepseek-flash", "deepseek-next-gen"])
 
     def test_extract_json_tolerates_fences_and_noise(self):
         self.assertEqual(hk7._extract_json('```json\n{"a": 1}\n```'), {"a": 1})

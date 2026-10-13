@@ -1,13 +1,20 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""临时：OpenAI 兼容的假大模型端点（只为验证 pipeline 的接线，验证完删除）。
+"""OpenAI 兼容的假大模型端点（联调 / 排障用，不参与日报生成）。
 
-用途：真实 DeepSeek Key 目前返回 402（余额），无法用来证明「Key → 环境变量 → 研判 → 日报栏目」
-这条链路是通的。本服务在 127.0.0.1 上实现 /v1/models 与 /v1/chat/completions 两个接口，
-返回结构合法的 JSON（数字全部取自请求里的探活/预测因子块，不编造），于是可以在 CI 里跑：
-    OCTOPUS_LLM_BASE_URL=http://127.0.0.1:8899/v1 python3 output/pipeline.py --hk7-only
-    OCTOPUS_LLM_BASE_URL=http://127.0.0.1:8899/v1 python3 output/pipeline.py --no-push
-只在本机回环，不出网，不写任何文件。
+用途：把「大模型这一栏」的接线问题与供应商问题**分开**验证。真实 Key 可能因为余额、
+限流、模型改名而失败，这时看不出是代码接线错了还是供应商那边的问题；把端点换成本地
+假服务，就能单独回答「Key → 环境变量 → 研判引擎 → 日报栏目」这条链路通不通：
+
+    python3 tools/llm_mock_server.py 8899 &
+    OCTOPUS_LLM_API_KEY=mock OCTOPUS_LLM_BASE_URL=http://127.0.0.1:8899/v1 \\
+        python3 output/pipeline.py --llm-check     # 探活
+    OCTOPUS_LLM_API_KEY=mock OCTOPUS_LLM_BASE_URL=http://127.0.0.1:8899/v1 \\
+        OCTOPUS_LLM_MODEL=deepseek-flash python3 output/pipeline.py --hk7-only
+
+实现 /v1/models 与 /v1/chat/completions 两个接口：目录里只有 deepseek-flash / deepseek-v4-pro，
+其他模型名一律回 400 Model Not Exist（于是候选链换名的行为也能在这里被看到）。
+返回的 JSON 结构合法、数字全部取自请求里的因子块（不编造）。只监听 127.0.0.1、不出网、不写文件。
 """
 from __future__ import annotations
 

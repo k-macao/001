@@ -223,6 +223,8 @@
 | 强制推旧文件 | `python3 output/pipeline.py --force-push-old` | 允许推送无新鲜度标记的旧文件，不推荐 |
 | 列出日报 | `python3 output/pipeline.py --list` | 查看已生成日报 |
 | 查看备用源清单 | `python3 output/pipeline.py --sources` | 离线打印主源与备用源 |
+| 大模型 API 探活 | `python3 output/pipeline.py --llm-check` | 读配置、列 `{base}/models` 目录、逐个候选模型发一次真实 JSON 请求；只报「Key 来自哪个变量名」，不回声 Key；不抓行情、不生成日报、不写留痕 |
+| 假端点联调 | `python3 tools/llm_mock_server.py 8899` + `OCTOPUS_LLM_BASE_URL=http://127.0.0.1:8899/v1 python3 output/pipeline.py --hk7-only` | 把「接线问题」与「供应商问题（余额 / 限流 / 改名）」分开验证；只监听回环、不出网 |
 | 切换主题 | `python3 output/pipeline.py --theme lime` / `--theme pixel` / `--theme forum` / `--theme dossier` / `--theme guizang` | 临时选择 Lime 白底圆角卡片、Pixel DOS 复古监视器、forum 暗色社区、德国档案风或归藏白底；默认 `lime` |
 | 精简 + 说明文字 | `python3 output/pipeline.py --notes` | 保留精简版面，找回口径 / 来源 / 方法论等说明文字（默认入门版不出） |
 | 恢复完整长版 | `python3 output/pipeline.py --full` | 关闭短线速查卡与全篇精简，说明文字全部回来 |
@@ -237,6 +239,7 @@
 | 只跑七日预测 | `--weekly-only` / `--no-weekly` | 前者为研究模式；后者跳过七日预测 |
 | 只跑财经日历 | `--calendar-only [天数]` | 例如 `--calendar-only 7`；只打印日历结果 |
 | 只跑 AI 七日港股分析 | `--hk7-only` / `--no-hk7` | 前者为研究模式；后者关闭该子块 |
+| 只探活大模型 API | `--llm-check` | 与工作流「只探活大模型 API」勾选项同一个入口 |
 | 只关闭AI帮你提鲜 | `--no-ren` | 不影响其他栏目 |
 | 日历窗口 | `OCTOPUS_CALENDAR_DAYS=14 OCTOPUS_CALENDAR_ROWS=30` | 设置窗口天数与全量模式正文行数上限；默认值分别为 30 天、60 行 |
 | 关闭财经日历 | `OCTOPUS_CALENDAR=0` | 不采集时间节点栏目 |
@@ -266,8 +269,10 @@
 | 量化 | `OCTOPUS_QUANT_STOCKS=0` | 跳过逐只个股概率，只算指数与流动性 |
 | 量化 | `OCTOPUS_WEEKLY_SYMBOL='^HSTECH'` | 更换七日预测标的，默认 `^HSI` |
 | 量化 | `OCTOPUS_HK7_FALLBACK=1` / `=0` | `1`：无 Key 也展示量化基准；默认 `auto`：无 Key 时子块缺席、已配置 Key 但调用失败时回退；`0`：大模型不可用时子块缺席 |
-| 大模型 | `OCTOPUS_LLM_API_KEY` | 可选；支持 OpenAI 兼容接口。默认地址 `https://api.deepseek.com/v1`、模型 `deepseek-chat` |
-| 大模型 | `OCTOPUS_LLM_BASE_URL`、`OCTOPUS_LLM_MODEL`、`OCTOPUS_LLM_TIMEOUT` | 自定义接口、模型与超时；超时默认 60 秒 |
+| 大模型 | `OCTOPUS_LLM_API_KEY`（回落 `OCTOPUS_HK7_LLM_KEY` / `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` / `MOONSHOT_API_KEY` / `DASHSCOPE_API_KEY`） | 可选；支持 OpenAI 兼容接口。**既有配置不必改名换值**：仓库里已经配好的 `DEEPSEEK_API_KEY` 会按顺序回落取用；三个工作流都按原名透传，日志只报「实际生效的变量名」，绝不回显 Key |
+| 大模型 | `OCTOPUS_LLM_BASE_URL`（回落 `DEEPSEEK_BASE_URL` / `OPENAI_BASE_URL`） | 自定义端点；默认 `https://api.deepseek.com/v1` |
+| 大模型 | `OCTOPUS_LLM_MODEL`（回落 `DEEPSEEK_MODEL` / `OPENAI_MODEL`） | 显式指定则只用它；**留空 = 走候选链** `deepseek-flash → deepseek-v4-flash → deepseek-chat → deepseek-reasoner → deepseek-v4-pro`，遇到「模型名不存在」才换下一个（DeepSeek 会滚动别名，写死一个名字迟早失效） |
+| 大模型 | `OCTOPUS_LLM_TIMEOUT`、`OCTOPUS_LLM_MAX_TOKENS` | 超时默认 60 秒（夹 5~180）；`max_tokens` 留空用服务端默认，JSON 被截断时调大（如 2048） |
 | Jev 本地模型 | `OCTOPUS_JEV_BASE_URL`（或 `TYPESAFE_BASE_URL`） | 可选；指向任一本地的 Jev 协议服务（如 `edgejev serve --model ./jev-int8`）。留空 = 该层缺席，行为与现在完全一致 |
 | Jev 本地模型 | `OCTOPUS_JEV_API_KEY`（或 `TYPESAFE_API_KEY`） | 可选；本地服务一般不需要；远端服务需与服务端 `--api-key` 一致 |
 | Jev 本地模型 | `OCTOPUS_JEV_TIMEOUT`、`OCTOPUS_JEV_MODE` | 超时默认 30 秒（夹 3~180）；`MODE=always` 表示端点为必需项，不可用就整栏缺席而不回退 |
@@ -464,6 +469,7 @@
 | GitHub 开源 Jev 类模型能否接入 | [接入可行性验证](./Jev开源模型-接入可行性验证.md) |
 | 日报大纲与跨栏内容重复率核对（同子栏合并） | [大纲与重复率核对](./大纲-栏目重复率核对.md) |
 | 内地财经媒体源头（18 家）接入 | [接入说明](./内地财经媒体源头-接入说明.md) · [时效核查与热点榜栏目](./内地财经媒体源头-时效核查与热点榜栏目.md) |
+| 「AI 七日港股」大模型栏目整栏缺席（已有 DeepSeek Key 未接线） | [原因诊断](./AI七日港股-大模型栏目-原因诊断.md) |
 
 ## 版权与免责声明
 
