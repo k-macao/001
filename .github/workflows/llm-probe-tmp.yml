@@ -135,8 +135,10 @@ jobs:
               print(f"  {alias:<20} {'历史别名':<18} → HTTP {st} · {bd[:180]}")
           PY
           } >> "$OUT" 2>&1
+          true          # 枚举失败也要让结论（含错误原文）被带回去，不能让这步标红
 
       - name: 📤 提交探活结果
+        if: always()
         run: |
           set -euo pipefail
           git config user.name octopus-bot
