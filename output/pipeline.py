@@ -204,7 +204,7 @@
       OCTOPUS_LLM_BASE_URL / OCTOPUS_LLM_MODEL）只在给定数据内做合成研判：Key / 地址 /
       模型三组变量都支持厂商通用名回落（DEEPSEEK_API_KEY、DEEPSEEK_BASE_URL、DEEPSEEK_MODEL
       等），既有的 DeepSeek 配置不必改名；未显式指定模型时按 DeepSeek 档位/版本别名候选链
-      （deepseek-flash → deepseek-v4-flash → deepseek-chat …）逐个尝试，只有「模型名不对」
+      （deepseek-flash → deepseek-v4-pro → deepseek-chat …）逐个尝试，只有「模型名不对」
       才换下一个；--llm-check 可单独探活（Key 来源 / /models 目录 / JSON 合同）。
       概率偏离量化
       基准 >20pp 即收敛、文案数字必须能在本次数据里溯源、绝对化措辞与编造数字一律回退

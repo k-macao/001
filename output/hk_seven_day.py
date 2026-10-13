@@ -116,8 +116,8 @@ DEFAULT_MODEL = "deepseek-chat"
 # 未显式指定模型名时按序尝试的候选链：DeepSeek 官方把「版本名」与「档位别名」都收在
 # /models 目录里，别名随版本滚动（deepseek-chat / deepseek-reasoner 是历史别名，
 # deepseek-flash / deepseek-v4-flash 是现行档位）——只写死一个名字，官方改名那天整栏就没了。
-MODEL_FALLBACKS = ("deepseek-flash", "deepseek-v4-flash", "deepseek-chat",
-                   "deepseek-reasoner", "deepseek-v4-pro")
+MODEL_FALLBACKS = ("deepseek-flash", "deepseek-v4-pro", "deepseek-chat",
+                   "deepseek-reasoner", "deepseek-v4-flash")
 MODEL_ATTEMPTS_MAX = 3       # 单次运行最多换几个模型名（只有「模型名不对」才换，见 _model_fault）
 MODEL_PROBE_MAX = 5          # --llm-check 探活最多试几个模型（含 /models 目录里的其余模型）
 DEFAULT_TIMEOUT = 60

@@ -48,7 +48,7 @@
 |---:|---|---|
 | 01 | `.github/workflows/octopus-daily.yml` | Key 按原名透传（`OCTOPUS_LLM_API_KEY` / `DEEPSEEK_API_KEY` / `OPENAI_API_KEY`），由代码按「本仓专用名 → 厂商通用名」回落选择；日志改成打印**实际生效的变量名**；补上 `OCTOPUS_LLM_MAX_TOKENS`；去掉从未被代码读取的 `OCTOPUS_LLM_THINKING`。 |
 | 02 | `.github/workflows/manual.yml` · `output/manual_push_workflow.yml.example` | 「手动抓取推送」此前**一个 Key 都不传**，补齐同一套；否则手动跑出来的日报这一栏永远是缺的。 |
-| 03 | `output/hk_seven_day.py` | ① Key/地址/模型三组变量支持厂商通用名回落（`DEEPSEEK_API_KEY`、`DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL`…）；② 未显式指定模型名时走候选链 `deepseek-flash → deepseek-v4-flash → deepseek-chat → …`，**只有「模型名不对」才换下一个**（超时/限流换名字没意义），显式指定则绝不替换；③ `HTTPError` 现在带上服务端响应体原话（裸「HTTP Error 402」看不出是余额还是模型名）；④ 新增 `llm_error_hint()`：402/401/403/429/超时/模型名不存在各自给出下一步动作；⑤ 新增 `llm_probe()` 探活。 |
+| 03 | `output/hk_seven_day.py` | ① Key/地址/模型三组变量支持厂商通用名回落（`DEEPSEEK_API_KEY`、`DEEPSEEK_MODEL`、`DEEPSEEK_BASE_URL`…）；② 未显式指定模型名时走候选链 `deepseek-flash → deepseek-v4-pro → deepseek-chat → …`，**只有「模型名不对」才换下一个**（超时/限流换名字没意义），显式指定则绝不替换；③ `HTTPError` 现在带上服务端响应体原话（裸「HTTP Error 402」看不出是余额还是模型名）；④ 新增 `llm_error_hint()`：402/401/403/429/超时/模型名不存在各自给出下一步动作；⑤ 新增 `llm_probe()` 探活。 |
 | 04 | `output/pipeline.py` | 补上工作流引用却不存在的 **`--llm-check`**（读配置 → 列 `/models` → 逐个候选模型发一次真实 JSON 请求 → 给结论）；降级日志统一追加 `🛠 下一步：…`。 |
 | 05 | `tools/llm_mock_server.py` | 本地假模型端点（回环、不出网、不写文件）：把接线问题与供应商问题分开验证。 |
 | 06 | `tests/test_hk_seven_day.py` | 新增 3 组离线用例：厂商通用名回落与候选链、只有模型名错误才换名、探活报告只报来源不回声 Key（并断言报告里不出现 Key 本身）。 |

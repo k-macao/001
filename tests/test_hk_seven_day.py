@@ -217,7 +217,7 @@ class LLMTests(unittest.TestCase):
         self.assertEqual(hk7.model_chain({"base": "https://api.deepseek.com/v1",
                                           "model": "deepseek-chat"},
                                          catalog=["deepseek-v4-pro", "deepseek-chat"]),
-                         ("deepseek-chat", "deepseek-v4-pro"))
+                         ("deepseek-v4-pro", "deepseek-chat"))   # 目录过滤后仍按候选链顺序
 
     def test_call_llm_switches_model_only_on_model_fault(self):
         """模型名不对 → 换下一个名字；网络 / 超时错误 → 不换（换了也一样失败，白烧预算）。"""
@@ -226,7 +226,7 @@ class LLMTests(unittest.TestCase):
 
         def fake_post(url, payload, headers, timeout):
             seen.append(payload["model"])
-            if payload["model"] != "deepseek-v4-flash":
+            if payload["model"] != "deepseek-v4-pro":        # 候选链里的第二个名字
                 raise RuntimeError("Error code: 400 - model does not exist")
             return {"choices": [{"message": {"content": "{\"targets\": []}"}}]}
 
@@ -234,8 +234,8 @@ class LLMTests(unittest.TestCase):
         payload, err = hk7.call_llm(cfg, hk7.PROBE_CONTEXT, post_json=fake_post, trace=trace)
         self.assertEqual(payload, {"targets": []})
         self.assertEqual(err, "")
-        self.assertEqual(trace["model"], "deepseek-v4-flash")
-        self.assertEqual(seen, ["deepseek-flash", "deepseek-v4-flash"])
+        self.assertEqual(trace["model"], "deepseek-v4-pro")
+        self.assertEqual(seen, ["deepseek-flash", "deepseek-v4-pro"])
 
         seen.clear()
 

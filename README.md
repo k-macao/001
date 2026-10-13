@@ -271,7 +271,7 @@
 | 量化 | `OCTOPUS_HK7_FALLBACK=1` / `=0` | `1`：无 Key 也展示量化基准；默认 `auto`：无 Key 时子块缺席、已配置 Key 但调用失败时回退；`0`：大模型不可用时子块缺席 |
 | 大模型 | `OCTOPUS_LLM_API_KEY`（回落 `OCTOPUS_HK7_LLM_KEY` / `DEEPSEEK_API_KEY` / `OPENAI_API_KEY` / `MOONSHOT_API_KEY` / `DASHSCOPE_API_KEY`） | 可选；支持 OpenAI 兼容接口。**既有配置不必改名换值**：仓库里已经配好的 `DEEPSEEK_API_KEY` 会按顺序回落取用；三个工作流都按原名透传，日志只报「实际生效的变量名」，绝不回显 Key |
 | 大模型 | `OCTOPUS_LLM_BASE_URL`（回落 `DEEPSEEK_BASE_URL` / `OPENAI_BASE_URL`） | 自定义端点；默认 `https://api.deepseek.com/v1` |
-| 大模型 | `OCTOPUS_LLM_MODEL`（回落 `DEEPSEEK_MODEL` / `OPENAI_MODEL`） | 显式指定则只用它；**留空 = 走候选链** `deepseek-flash → deepseek-v4-flash → deepseek-chat → deepseek-reasoner → deepseek-v4-pro`，遇到「模型名不存在」才换下一个（DeepSeek 会滚动别名，写死一个名字迟早失效） |
+| 大模型 | `OCTOPUS_LLM_MODEL`（回落 `DEEPSEEK_MODEL` / `OPENAI_MODEL`） | 显式指定则只用它；**留空 = 走候选链** `deepseek-flash → deepseek-v4-pro → deepseek-chat → deepseek-reasoner → deepseek-v4-flash`，遇到「模型名不存在」才换下一个（DeepSeek 会滚动别名，写死一个名字迟早失效） |
 | 大模型 | `OCTOPUS_LLM_TIMEOUT`、`OCTOPUS_LLM_MAX_TOKENS` | 超时默认 60 秒（夹 5~180）；`max_tokens` 留空用服务端默认，JSON 被截断时调大（如 2048） |
 | Jev 本地模型 | `OCTOPUS_JEV_BASE_URL`（或 `TYPESAFE_BASE_URL`） | 可选；指向任一本地的 Jev 协议服务（如 `edgejev serve --model ./jev-int8`）。留空 = 该层缺席，行为与现在完全一致 |
 | Jev 本地模型 | `OCTOPUS_JEV_API_KEY`（或 `TYPESAFE_API_KEY`） | 可选；本地服务一般不需要；远端服务需与服务端 `--api-key` 一致 |
