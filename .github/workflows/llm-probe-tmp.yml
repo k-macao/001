@@ -49,6 +49,9 @@ jobs:
           OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
           OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
         run: |
+          # GitHub Actions 的 run 默认是 bash -e：把它关掉，探活失败（例如没配 Key 时
+          # --llm-check 退出码 1）不该让整步中止——失败原因本身就是要带回来的结论。
+          set +e
           set -uo pipefail
           OUT=output/llm_probe_tmp.txt
           {
@@ -88,5 +91,5 @@ jobs:
           git config user.name octopus-bot
           git config user.email bot@octopus.ai
           git add -f "$OUT"
-          git commit -qm "🧪 LLM 探活结果（临时文件）"
+          git commit -qm "🧪 LLM 探活结果（临时文件）" || true
           git push origin HEAD:"${GITHUB_REF_NAME}"
