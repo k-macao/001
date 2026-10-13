@@ -395,23 +395,22 @@ class SentimentFactorTests(unittest.TestCase):
         with patch.object(pipeline, "AI_ANALYSIS_ENABLED", False):
             for kit in (pipeline.GUIZANG_KIT, pipeline.PIXEL_KIT):
                 titles = [s[1] for s in pipeline._collect_report_parts(data, kit)["sections"]]
-                # 正文顺序：专业分析 → 行情与资讯数据 → 今日结论收尾
+                # 正文顺序：今日预判（2026-10-13 置顶）→ 专业分析 → 行情与资讯数据 → 总结
                 # 2026-09-30 起「行情速览」+「全球大盘全景复盘」合并为「【及时秋刀鱼】AI 行情复盘」
                 review = pipeline.SECTION_TITLE_MARKET_REVIEW
+                self.assertEqual(titles[0], "【回游金枪鱼】今日预判")
                 self.assertLess(titles.index(review),
                                 titles.index(pipeline.SECTION_TITLE_TREND))
-                self.assertLess(titles.index(review),
-                                titles.index("【回游金枪鱼】今日预判"))
-                self.assertLess(titles.index("总结"),
-                                titles.index("【回游金枪鱼】今日预判"))
+                self.assertLess(titles.index("【回游金枪鱼】今日预判"),
+                                titles.index(review))
                 self.assertNotIn("行情速览", titles)            # 旧栏目名不得回潮
                 self.assertNotIn("全球大盘全景复盘", titles)
                 self.assertNotIn("每日量化策略趋势跟踪线索", titles)  # 旧栏目名不得回潮
-                self.assertLess(titles.index("总结"), titles.index(pipeline.SECTION_TITLE_FORECAST))
+                self.assertLess(titles.index(pipeline.SECTION_TITLE_FORECAST), titles.index("总结"))
                 if pipeline.SECTION_TITLE_SHORT_CARD in titles:
                     self.assertEqual(titles[-1], pipeline.SECTION_TITLE_SHORT_CARD)
                 else:
-                    self.assertEqual(titles[-1], pipeline.SECTION_TITLE_FORECAST)
+                    self.assertEqual(titles[-1], "总结")  # 今日预判已置顶，总结收尾
 
     def test_section_absent_and_failures_named_when_reddit_down(self):
         failed = {"Reddit": pipeline._public_site_result("Reddit", [], error="HTTP 403")}

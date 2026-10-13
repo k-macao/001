@@ -458,14 +458,17 @@ class CardRenderingTests(unittest.TestCase):
                             titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW))
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
                             titles.index("总结"))
-            self.assertLess(titles.index("总结"), titles.index(self.pipeline.SECTION_TITLE_FORECAST))
+            # 2026-10-13：今日预判置顶，总结仍在速查卡之前
+            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_FORECAST),
+                            titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
+            self.assertLess(titles.index("总结"), titles.index(self.pipeline.SECTION_TITLE_SHORT_CARD))
         for theme in ("guizang", "pixel"):
             html = self.pipeline.generate_report(data, "2026年8月2日 · 周日", "20260802",
                                                 theme=theme)
             self.assertIn(self.pipeline.SECTION_TITLE_SHORT_CARD, html)
-            self.assertLess(html.index(sections[0][1]),
-                            html.index(self.pipeline.SECTION_TITLE_FORECAST))
             self.assertLess(html.index(self.pipeline.SECTION_TITLE_FORECAST),
+                            html.index(sections[1][1]))
+            self.assertLess(html.index("总结<"),
                             html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
                             f"{theme} 速查卡必须作为结论后的收尾")
             self.assertIn("新手三句话", html)
