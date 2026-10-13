@@ -340,8 +340,9 @@ class PipelineAndFreshnessTests(unittest.TestCase):
         self.assertIn("SECTOR ROTATION", pipeline.REPORT_SECTION_ORDER)
         self.assertGreater(pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"),
                            pipeline.REPORT_SECTION_ORDER.index("WEEKLY FORECAST"))
+        # 2026-10-14 重排：板块轮动属「④我们该怎么办」，位于总结之前
         self.assertLess(pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"),
-                        pipeline.REPORT_SECTION_ORDER.index("MARKET REVIEW"))
+                        pipeline.REPORT_SECTION_ORDER.index("SUMMARY"))
 
         for theme, kit in (("guizang", pipeline.GUIZANG_KIT), ("pixel", pipeline.PIXEL_KIT)):
             with pipeline.notes_mode():          # 权重表 / 映射限制 / 方法参考属于说明文字
@@ -353,7 +354,9 @@ class PipelineAndFreshnessTests(unittest.TestCase):
             self.assertIn("MA 趋势模板", html)
             kicks = [row[0] for row in pipeline._collect_report_parts(data, kit)["sections"]]
             self.assertIn("SECTOR ROTATION", kicks)
-            self.assertLess(kicks.index("SECTOR ROTATION"), kicks.index("MARKET REVIEW"))
+            # 2026-10-14 重排：板块轮动（④）位于行情复盘（①）之后，即在 SUMMARY 之前
+            self.assertLess(kicks.index("MARKET REVIEW"), kicks.index("SECTOR ROTATION"))
+            self.assertLess(kicks.index("SECTOR ROTATION"), kicks.index("SUMMARY"))
             # 入门版（默认）：评分 / 篮子 / 行情日期在，权重表与方法论整段不出，只留一句提示
             plain_html = pipeline.generate_report(data, "2026年10月1日 · 周四", "20261001", theme=theme)
             self.assertIn("【滚滚翻车鱼】板块轮动量化策略", plain_html, theme)

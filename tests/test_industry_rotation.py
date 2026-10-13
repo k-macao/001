@@ -619,8 +619,9 @@ class SectionWiringTests(unittest.TestCase):
         # 排在港股板块轮动之后（同族栏目相邻），且在政策因子之前
         self.assertGreater(pipeline.REPORT_SECTION_ORDER.index("INDUSTRY ROTATION"),
                            pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"))
-        self.assertLess(pipeline.REPORT_SECTION_ORDER.index("INDUSTRY ROTATION"),
-                        pipeline.REPORT_SECTION_ORDER.index("POLICY SHOCK"))
+        # 2026-10-14 重排：行业轮动属「④我们该怎么办」，位于「③可能会怎样」之后
+        self.assertGreater(pipeline.REPORT_SECTION_ORDER.index("INDUSTRY ROTATION"),
+                           pipeline.REPORT_SECTION_ORDER.index("WEEKLY FORECAST"))
         for icon_map in (pipeline._SECTION_ICON_META, pipeline.DOSSIER_ICONS):
             self.assertIn("INDUSTRY ROTATION", icon_map)
         self.assertNotEqual(pipeline._SECTION_ICON_META["INDUSTRY ROTATION"],

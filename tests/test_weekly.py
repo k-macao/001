@@ -308,7 +308,8 @@ class WeeklyPipelineIntegrationTests(unittest.TestCase):
         self.assertIn("WEEKLY FORECAST", order)
         self.assertLess(order.index("LIQUIDITY FLOW"), order.index("WEEKLY FORECAST"))
         # 2026-09-30 起「行情速览」+「全球大盘全景复盘」合并为 MARKET REVIEW 一栏
-        self.assertLess(order.index("WEEKLY FORECAST"), order.index("MARKET REVIEW"))
+        # 2026-10-14 重排：MARKET REVIEW 属「①发生了什么」，先于「③可能会怎样」的 WEEKLY FORECAST
+        self.assertLess(order.index("MARKET REVIEW"), order.index("WEEKLY FORECAST"))
         self.assertLess(order.index("WEEKLY FORECAST"), order.index("SUMMARY"))
 
     def test_render_section_in_both_themes(self):
@@ -347,7 +348,7 @@ class WeeklyPipelineIntegrationTests(unittest.TestCase):
         self.assertNotIn("七日预测", html)          # 栏目缺席时最终结论也不出现
         self.assertNotIn("逐日表格", html)
 
-    def test_weekly_section_before_market_snapshot_in_html(self):
+    def test_market_snapshot_before_weekly_section_in_html(self):
         data = {"每周走势预测": self._source(),
                 "实时行情": {"source": "行情", "status": "success", "is_today": True,
                              "content_date": "2026-04-10",
@@ -367,7 +368,8 @@ class WeeklyPipelineIntegrationTests(unittest.TestCase):
         i_mk = _kicker_at(html, "MARKET REVIEW")
         self.assertGreater(i_wk, -1)
         self.assertGreater(i_mk, -1)
-        self.assertLess(i_wk, i_mk)
+        # 2026-10-14 重排：行情复盘（①）先于周度预测（③）
+        self.assertLess(i_mk, i_wk)
 
     def test_collect_report_parts_counts_weekly_source(self):
         parts = pipeline._collect_report_parts({"每周走势预测": self._source()},

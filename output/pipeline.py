@@ -7675,7 +7675,7 @@ def _calendar_block(res, date_str=None):
 
 
 # ============================================================
-# 精简排版：专业分析 → 数据显示 → 结论收尾
+# 精简排版：今日预判 → ①发生了什么 → ②传播得怎么样 → ③可能会怎样 → ④我们该怎么办 → 总结收尾
 # ——正文不展示重复推导过程，不出现「数据暂缺」占位行、
 #   抓取失败的来源与过期内容；来源状态只在「总结」里压成一行。
 # ============================================================
@@ -8269,24 +8269,39 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
 # 2026-10-10 更名：原「新闻情绪」；数据源键名、审计标签与 kicker（NEWS SENTIMENT）不变。
 SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
 
-# 正文顺序：今日预判（2026-10-13 按用户要求置顶）→ 专业分析 → 数据显示 → 总结。
-# 社区情绪因子使用当次 Reddit / StockTwits 样本；没有可用样本时该栏缺席。
-REPORT_ANALYSIS_SECTIONS = (
-    "RETAIL SENTIMENT", "STRATEGY READ", "UZI TREND",
-    "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
-    "WEEKLY FORECAST", "SECTOR ROTATION", "INDUSTRY ROTATION",
-    "POLICY SHOCK", "FED TREND", "GEO TREND",
+# 正文逻辑顺序（2026-10-14 按用户要求重排）：
+#   今日预判（置顶，用户要求保留在最前）
+#   → ① 发生了什么：核心事实、关键信息与背景脉络
+#   → ② 传播得怎么样：舆情声量、情感倾向、传播路径与关键节点
+#   → ③ 可能会怎样：走势预测、潜在风险与影响范围
+#   → ④ 我们该怎么办：分级处置、响应时间窗口与资源调配
+#   → 总结（末尾）
+# 各组内部顺序沿用重排前的相对次序；社区情绪因子使用当次 Reddit / StockTwits 样本，
+# 没有可用样本时该栏缺席。
+REPORT_FACT_SECTIONS = (                       # ① 发生了什么
+    "MARKET REVIEW", "HK QUOTES", "ECON CALENDAR",
+    "POLICY SHOCK", "FED TREND", "GEO TREND",  # 政策 / 美联储 / 地缘为背景脉络，置于行情与日程之后
+)
+REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
+    "RETAIL SENTIMENT", "TREND TRACKING",
+    # 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）紧跟趋势跟踪，「内地口径」与「港股口径」相邻。
+    "MAINLAND HOTLIST",
+    "NEWS SENTIMENT",
+)
+REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
+    "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW", "WEEKLY FORECAST",
+)
+REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
+    "STRATEGY READ", "UZI TREND", "SECTOR ROTATION", "INDUSTRY ROTATION",
 )
 # 2026-10-02 起 GLOBAL HEADLINES（【无敌帝王蟹】全球头条）与 HK GURU CHANNELS
 # （港股名家频道）按用户要求从页面隐藏，与此前隐藏的 EASTMONEY WIRE（东方财富快讯）
 # 同口径：kicker 不再进入正文顺序表，即使某处误建区块也不会渲染；
 # 抓取、审计、政策因子 / 策略研判 / 新闻情绪 / 逐栏 AI 研判的输入一律不变。
-REPORT_DATA_SECTIONS = (
-    "ECON CALENDAR", "MARKET REVIEW", "HK QUOTES", "TREND TRACKING",
-    # 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）：18 家内地媒体的标题按主题聚类，
-    # 紧跟在趋势跟踪（36 源港股挖掘）之后，让「内地口径」与「港股口径」前后相邻。
-    "MAINLAND HOTLIST",
-    "NEWS SENTIMENT",
+# 「专业分析」= 四组正文栏目的合集（保留原名供既有测试与引用使用）。
+REPORT_ANALYSIS_SECTIONS = (
+    *REPORT_FACT_SECTIONS, *REPORT_SPREAD_SECTIONS,
+    *REPORT_OUTLOOK_SECTIONS, *REPORT_ACTION_SECTIONS,
 )
 # 2026-10-13 起「今日预判」（FORECAST）按用户要求放在正文最开头；「总结」仍在末尾。
 REPORT_HEAD_SECTIONS = ("FORECAST",)
@@ -8294,7 +8309,6 @@ REPORT_TAIL_SECTIONS = ("SUMMARY",)
 REPORT_SECTION_ORDER = (
     *REPORT_HEAD_SECTIONS,
     *REPORT_ANALYSIS_SECTIONS,
-    *REPORT_DATA_SECTIONS,
     *REPORT_TAIL_SECTIONS,
 )
 
@@ -9796,7 +9810,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     today_n = sum(1 for _, s in source_items if s.get("is_today"))
     content_n = sum(1 for _, s in source_items if s.get("status") == "success")
 
-    # ---- 栏目拼版：专业分析 → 数据显示 → 结论收尾（有内容才渲染）----
+    # ---- 栏目拼版：今日预判 → ①②③④ 逻辑分组 → 总结收尾（有内容才渲染）----
     blocks = {}  # kicker -> (kicker_en, title, content, badge_html, caption)
     retail_sentiment_section = _senti_strategy.build_section(kit, data)
     if retail_sentiment_section:
@@ -10055,7 +10069,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                              backup_events=(data.get("_backup_info") or {}).get("events"))
     blocks["SUMMARY"] = ("SUMMARY", "总结", kit.kv(summary), "", "")
 
-    # 栏目顺序固定为专业分析 → 数据显示 → 结论；没有采集到社区样本时情绪因子缺席。
+    # 栏目顺序固定为：今日预判 → ①发生了什么 → ②传播得怎么样 → ③可能会怎样 → ④我们该怎么办 → 总结；
+    # 没有采集到社区样本时情绪因子缺席。
     sections = [blocks[k] for k in REPORT_SECTION_ORDER if k in blocks]
 
     # ⑧ 逐栏目 AI 研判：有实际数据的数据栏目末尾追加「⌁ AI 研判」行
@@ -10112,7 +10127,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             decorated.append((kick, title, content, badge, caption))
         sections = decorated
 
-    # 短线速查卡收尾呈现：正文按分析 → 数据 → 结论阅读后，再给行动要点。
+    # 短线速查卡收尾呈现：正文按 ①→④ 与总结阅读后，再给行动要点。
     # 取材全部是上面渲染正文用的同一批对象，缺数据自动缺席（LITE=0 / --full 整卡不出）。
     if LITE_ENABLED:
         card = _short_card_section({
