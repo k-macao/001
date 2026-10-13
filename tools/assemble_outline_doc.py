@@ -18,16 +18,14 @@ TMP_MD = "/tmp/outline_doc_generated.md"
 
 HEADER = """# 章鱼 AI·上水日报 · 栏目大纲与跨栏重复率核对
 
-> 需求原文：「给大纲，你核对内容重复率，重复就合并同子栏」。本文件即这次核对的交付：
-> ① 日报大纲（栏目 → 子栏）；② 跨栏重复率实测；③ 已执行的「同子栏合并」与未合并项的逐条理由。
-
-- 核对对象：`output/latest.html`（19 栏 / 53 个子栏 / 341 行 · 行情截至 2026-10-12 收盘）
-- 核对工具：`tools/report_outline.py`（离线只读 HTML，不联网、不修改产物，可对任一 `daily_report_*.html` 复跑）
-- 复现命令：`python3 tools/report_outline.py output/latest.html --md /tmp/outline.md --json /tmp/outline.json`
-- 判定口径：① 数字事实 = 带千分位 / 小数 / 单位（%、亿、万、倍）或 ≥3 位整数的数据点；
-  ② 跨栏重复行 = 两个栏目里同一批事实（共享 ≥2 个）且文本相似度 ≥70%；③ 重复子栏 = 事实重叠 ≥50% 且共享 ≥3 个事实。
-- 口径的局限（先说清楚）：数字事实是**纯文本指纹**，两个栏目里碰巧相同的数字（例如模型自检 45% 与某只个股 5 日概率 45%）也会被计进「重复率」。
-  所以合并决定一律以**逐行核对**为准（第 3 节），只合并「同一个子栏、同一批数据」的重复，绝不因为数字相同就删内容。
+| 核对维度 | 口径与说明 |
+|---|---|
+| 需求原文与交付 | 「给大纲，你核对内容重复率，重复就合并同子栏」：① 日报大纲（栏目 → 子栏）；② 跨栏重复率实测；③ 已执行的「同子栏合并」与未合并项的逐条理由 |
+| 核对对象 | `output/latest.html`（20 栏 / 53 个子栏 / 434 行 · 行情截至最新收盘） |
+| 核对工具 | `tools/report_outline.py`（离线只读 HTML，不联网、不修改产物，可对任一 `daily_report_*.html` 复跑） |
+| 复现命令 | `python3 tools/report_outline.py output/latest.html --md /tmp/outline.md --json /tmp/outline.json` |
+| 判定口径 | ① 数字事实 = 带千分位 / 小数 / 单位（%、亿、万、倍）或 ≥3 位整数的数据点；② 跨栏重复行 = 两个栏目里同一批事实（共享 ≥2 个）且文本相似度 ≥70%；③ 重复子栏 = 事实重叠 ≥50% 且共享 ≥3 个事实 |
+| 口径局限与决策准则 | 数字事实是**纯文本指纹**，两个栏目里碰巧相同的数字也会被计进「重复率」；因此合并决定一律以**逐行核对**为准（第 3 节），只合并「同一个子栏、同一批数据」的重复，绝不因为数字相同就删内容 |
 
 ## 一、结论摘要（先看这里）
 
@@ -112,29 +110,19 @@ UNMERGED_SECTION = """## 五、未合并项与逐条理由
 
 ## 六、复现与后续
 
-```bash
-# 1) 重新核对任一份日报的大纲与重复率（离线只读）
-python3 tools/report_outline.py output/latest.html --md /tmp/outline.md --json /tmp/outline.json
-
-# 2) 重新拼装本文件（数字段落全部来自上一步的产物）
-python3 tools/assemble_outline_doc.py
-
-# 3) 合并规则的回归测试
-python3 -m unittest tests.test_sub_merge -v
-
-# 4) 对照：关闭合并（旧版式）生成一次日报
-OCTOPUS_SUB_MERGE=0 python3 output/pipeline.py --no-push
-```
-
-后续若要扩展第五节里的「暂不合并」项（例如 00 ↔ 14 的 StockTwits 关注人数），
-同一套规则只需在 `SUB_MERGE_*` 常量区补一条口径 + 一个指针调用点，
-回归测试沿用 `tests/test_sub_merge.py` 里的四个断言模板即可。
+| 步骤 | 命令 / 操作 | 说明 |
+|---|---|---|
+| ① 重新核对大纲与重复率 | `python3 tools/report_outline.py output/latest.html --md /tmp/outline.md --json /tmp/outline.json` | 离线只读任一份日报 HTML，输出大纲与重复率 |
+| ② 重新拼装核对文档 | `python3 tools/assemble_outline_doc.py` | 把机器核对结果与人工结论拼装为本文件 |
+| ③ 运行合并规则回归测试 | `PYTHONPATH=tests python3 -m unittest tests.test_sub_merge -v` | 验证跨栏与栏内同子栏合并的 22 项回归用例 |
+| ④ 关闭合并对照旧版式 | `OCTOPUS_SUB_MERGE=0 python3 output/pipeline.py --no-push` | 对照关闭合并（旧版式）生成一次日报 |
+| ⑤ 后续扩展规则 | 在 `SUB_MERGE_*` 常量区补一条口径 + 一个指针调用点 | 沿用 `tests/test_sub_merge.py` 的四个断言模板即可扩展第五节中的「暂不合并」项 |
 """
 
 
 def main() -> int:
-    html = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_HTML
-    out_md = sys.argv[2] if len(sys.argv) > 2 else DEFAULT_OUT
+    html = sys.argv[1] if len(sys.argv[1:]) >= 1 else DEFAULT_HTML
+    out_md = sys.argv[2] if len(sys.argv[1:]) >= 2 else DEFAULT_OUT
     subprocess.run(
         [sys.executable, os.path.join(ROOT, "tools", "report_outline.py"), html, "--md", TMP_MD],
         check=True, cwd=ROOT,
@@ -161,9 +149,6 @@ def main() -> int:
         "",
         "## 二、大纲（栏目 → 子栏）",
         "",
-        "> 下表中的 ⚠ 标记 = 该子栏里有数字同时出现在别的栏目；括号里是「重复数 / 本子栏数字事实数」。",
-        "> 明细逐条见第三节，处置见第四、五节。",
-        "",
         outline,
         "",
         "## 三、跨栏重复率实测",
@@ -187,10 +172,6 @@ def main() -> int:
         "### 3.5 栏内重复（同一栏目里重复出现的标题 / 长句）",
         "",
         inner,
-        "",
-        "> 读法：15 栏的几条是**同一个现象的不同切面**（标题本体 / 标题后半段 / 证据行 / 来源行），",
-        "> 归并后就是「同一篇快讯被 3 只个股各贴一次」；07 栏几条是**两只港股观察篮子**分别被 3 个 / 2 个概念共用。",
-        "> 两处都已在生成端合并（见 4.4），下面这张表保留的是合并**前**的实测证据。",
         "",
         MERGE_SECTION.rstrip("\n"),
         "",

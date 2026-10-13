@@ -5734,33 +5734,13 @@ def _stacked_cells(headers, row, *, label_style=""):
 
 
 def _pixel_table(headers, rows, aligns=None, widths=None):
-    """pixel 主题的数据表：三列及以上改成单列条目（「字段：内容」逐行堆叠）。
-
-    2026-10-10 起正文统一单列：多列表格在手机上会把长句挤成竖排、数字挤成两行，
-    改为每行一个条目后既不分列也不横滑；两列表仍走紧凑的「标签 值」单行。
-    widths / aligns 仅在两列模式下仍有意义，单列模式忽略。
-    """
+    """pixel 主题的数据表：多行多列表格展示（含表头行与多列数据行）。"""
     rows = [list(r) for r in (rows or [])]
     if not rows:
         return ""
     n = len(headers) if headers else len(rows[0])
     if n <= 0:
         return ""
-    if n >= 3 and headers:
-        label_style = f"color:{C_CYAN}"
-        body = []
-        for row in rows:
-            inner = _stacked_cells(headers, row, label_style=label_style)
-            if not inner:
-                continue
-            body.append(f'<tr><td style="padding:3px 0;border-bottom:1px solid {C_HAIR};'
-                        f'font-size:11px;color:{C_INK};line-height:1.5;'
-                        f'font-family:{FONT_MONO};">{inner}</td></tr>')
-        if not body:
-            return ""
-        return (f'<table width="100%" cellpadding="0" cellspacing="0" '
-                f'style="width:100%!important;border-collapse:collapse;">'
-                f'{"".join(body)}</table>')
     aligns = list(aligns or (["left"] + ["right"] * (n - 1)))
     aligns = (aligns + ["left"] * n)[:n]
     widths = (list(widths) + [None] * n)[:n] if widths else [None] * n
@@ -6087,9 +6067,19 @@ def _gz_num(text):
 
 
 
-def _gz_flow_rows(pairs):
-    """微信正文的简单双列表：左侧项目，右侧内容。"""
+def _gz_flow_rows(pairs, headers=None):
+    """微信正文的多行双列表：左侧项目，右侧内容（仅 1 行或显式传表头时自动带表头行，确保多行多列）。"""
+    pairs = list(pairs or [])
+    if not pairs:
+        return ""
     rows = []
+    if headers or len(pairs) == 1:
+        h0 = _esc(headers[0]) if headers and len(headers) >= 1 else "项目"
+        h1 = _esc(headers[1]) if headers and len(headers) >= 2 else "内容"
+        rows.append(f'<tr><td width="28%" valign="top" style="border-bottom:1px solid {GZ_HAIR};'
+                    f'color:{GZ_FAINT}">{h0}</td>'
+                    f'<td valign="top" style="border-bottom:1px solid {GZ_HAIR};'
+                    f'color:{GZ_FAINT}">{h1}</td></tr>')
     for label, value in pairs:
         rows.append(f'<tr><td width="28%" valign="top" style="border-bottom:1px solid {GZ_HAIR};'
                     f'color:{GZ_META}">{label or ""}</td>'
@@ -6102,10 +6092,7 @@ def _gz_flow_rows(pairs):
 
 
 def gz_data_table(headers, rows, aligns=None, kv=False, row_anchors=None, widths=None):
-    """归藏简洁表：字号 / 颜色写一次在 <table> 上，单元格只写 padding 与对齐。
-
-    两列键值（kv=True）改走更省字的行式排版，长句在手机上也不会被窄列挤成竖排。
-    """
+    """归藏简洁表：多行多列表格展示；字号 / 颜色写一次在 <table> 上，单元格只写 padding 与对齐。"""
     rows = [list(r) for r in (rows or [])]
     if not rows:
         return ""
@@ -6113,27 +6100,8 @@ def gz_data_table(headers, rows, aligns=None, kv=False, row_anchors=None, widths
     if n <= 0:
         return ""
     if kv and n == 2:
-        return _gz_flow_rows([(r[0] if r else "", r[1] if len(r) > 1 else "") for r in rows])
-    if n >= 3 and headers:
-        # 2026-10-10 起正文统一单列：三列及以上拆成「字段：内容」逐行堆叠的条目，
-        # 不再分列（窄屏不会把长句挤成竖排），空值不占行。
-        anchors = list(row_anchors or [])
-        while len(anchors) < len(rows):
-            anchors.append(None)
-        trs = []
-        for ri, row in enumerate(rows):
-            inner = _stacked_cells(headers, row)
-            if not inner:
-                continue
-            attr = f' id="{_esc(anchors[ri])}"' if anchors[ri] else ""
-            trs.append(f'<tr><td{attr} style="padding:3px 0;'
-                       f'border-bottom:1px solid {GZ_HAIR}">{inner}</td></tr>')
-        if not trs:
-            return ""
-        return (f'<table width="100%" cellpadding="0" cellspacing="0" '
-                f'style="width:100%!important;border-collapse:collapse;'
-                f'font-size:{GZ_FS_TABLE}px;line-height:1.5;color:{GZ_INK};'
-                f'word-break:break-word">{"".join(trs)}</table>')
+        return _gz_flow_rows([(r[0] if r else "", r[1] if len(r) > 1 else "") for r in rows],
+                             headers=headers)
     if aligns is None:
         aligns = ["left"] + ["right"] * (n - 1) if n > 1 else ["left"]
     aligns = (list(aligns) + ["left"] * n)[:n]
@@ -6879,27 +6847,27 @@ def gz_ai_analysis_block(res, merge_boards=(), board_owner=""):
                                  + ("" if PLAIN() else "（价格60% + 资金30% + 舆情10%）")) + gz_data_table(
             ["板块", "趋势分", "涨跌", "主力净流入", "趋势", "信号"], rows))
         if merged_names:
-            out.append(gz_shell(
-                f'<div style="font-size:{GZ_FS_META}px;color:{GZ_FAINT};line-height:1.7;">'
-                f'{SUB_MERGE_POINTER} · {sub_merge_pointer_text(SUB_MERGE_NOTE_BOARD, board_owner)}'
-                f'（已合并：{"、".join(_esc(x) for x in merged_names)}）</div>',
-                bg=GZ_PAPER, pad="6px 0"))
+            out.append(gz_kv_table([
+                ("同子栏合并",
+                 f'<span style="font-size:{GZ_FS_META}px;color:{GZ_FAINT};line-height:1.7;">'
+                 f'{SUB_MERGE_POINTER} · {sub_merge_pointer_text(SUB_MERGE_NOTE_BOARD, board_owner)}'
+                 f'（已合并：{"、".join(_esc(x) for x in merged_names)}）</span>')]))
         weak = [s for s in sectors if (s.get("composite") or 0) < -0.5][:2]
         if weak:
-            out.append(gz_shell(
-                f'<div style="font-size:{GZ_FS_BODY}px;color:{GZ_DOWN};font-weight:700;line-height:1.6;">'
-                f'▼ 规避/弱势板块 · {" / ".join(_esc(s.get("name") or "") for s in weak)}</div>',
-                bg=GZ_PAPER, pad="8px 0"))
+            out.append(gz_kv_table([
+                (f'<span style="color:{GZ_DOWN};font-weight:700;">▼ 规避/弱势板块</span>',
+                 f'<span style="color:{GZ_DOWN};font-weight:700;">'
+                 f'{" / ".join(_esc(s.get("name") or "") for s in weak)}</span>')]))
     elif res.get("sectors_strong"):
         # 兼容：无全景板块数据时退化为舆情热度榜
         out.append(gz_subsection("板块热度（舆情）") + gz_data_table(
             ["板块", "提及"],
             [[_esc(sec), f"{cnt} 次"] for sec, cnt in res["sectors_strong"]]))
         if res.get("sectors_weak"):
-            out.append(gz_shell(
-                f'<div style="font-size:{GZ_FS_BODY}px;color:{GZ_DOWN};font-weight:700;line-height:1.6;">'
-                f'▼ 承压板块 · {" / ".join(_esc(s) for s in res["sectors_weak"])}</div>',
-                bg=GZ_PAPER, pad="12px 0"))
+            out.append(gz_kv_table([
+                (f'<span style="color:{GZ_DOWN};font-weight:700;">▼ 承压板块</span>',
+                 f'<span style="color:{GZ_DOWN};font-weight:700;">'
+                 f'{" / ".join(_esc(s) for s in res["sectors_weak"])}</span>')]))
     tech_stats = res.get("tech_stats") or {}
     if tech_stats.get("count"):
         band_palette = {"强势": GZ_UP, "偏强": GZ_UP, "震荡": GZ_WARN,
@@ -6924,9 +6892,7 @@ def gz_ai_analysis_block(res, merge_boards=(), board_owner=""):
             tech_pairs.append(("解读", _esc(res["tech_read"])))
         out.append(gz_subsection("指数动能 · 趋势过滤") + gz_kv_table(tech_pairs))
     if res.get("risk_note"):
-        out.append(gz_subsection("风险预算") + gz_shell(
-            f'<div style="color:{GZ_INK};line-height:1.85">{_esc(res["risk_note"])}</div>',
-            bg=GZ_PAPER, pad="8px 0"))
+        out.append(gz_subsection("风险预算") + gz_kv_table([("风险预算", _esc(res["risk_note"]))]))
     if res["risks"]:
         risk_cards = []
         risk_limit = LITE("risk_cards")
@@ -6945,11 +6911,11 @@ def gz_ai_analysis_block(res, merge_boards=(), board_owner=""):
             risk_cards.append(gz_item_row("!", main, sub))
         out.append(gz_subsection("风险提示 · 趋势跟踪止损") + "".join(risk_cards))
     if res.get("themes"):
-        out.append(gz_subsection("量化配置 · 趋势跟踪") + gz_shell(
-            f'<div style="color:{GZ_INK};font-weight:700;line-height:1.85">'
-            f'★ 趋势跟踪配置： {_esc(res["themes"])}'
-            + ("" if PLAIN() else " · 优选强势趋势板块，规避弱势/高风险板块")
-            + '</div>', bg=GZ_PAPER, pad="8px 0"))
+        out.append(gz_subsection("量化配置 · 趋势跟踪") + gz_kv_table([
+            ("★ 趋势跟踪配置",
+             f'<b>{_esc(res["themes"])}'
+             + ("" if PLAIN() else " · 优选强势趋势板块，规避弱势/高风险板块")
+             + "</b>")]))
     return "".join(out)
 
 
@@ -7809,7 +7775,7 @@ def _conclusion_pairs(kit, ai_result, market, pan, policy, quant=None, weekly=No
 
 
 def _conclusion_panel(kit, pairs):
-    """把核心判断做成收尾重点卡；次级数字仍按键值表显示。"""
+    """把核心判断做成收尾重点多行多列表格；次级数字同表或按键值表显示。"""
     pairs = list(pairs or [])
     if not pairs:
         return ""
@@ -7824,17 +7790,17 @@ def _conclusion_panel(kit, pairs):
         accent, background, ink = GZ_KLEIN, GZ_KLEIN_WASH, GZ_INK_STRONG
     else:
         accent, background, ink = C_LEMON, C_AI_BG, C_INK
+    lead_label = (f'<span style="font-size:11px;font-weight:900;letter-spacing:.08em;color:{accent};">'
+                  f'结论 · 重点</span>')
+    if primary_label != "核心判断":
+        lead_label += f'<br><span style="font-size:10px;color:{ink};">{_esc(primary_label)}</span>'
+    lead_val = (f'<div style="font-size:17px;line-height:1.6;font-weight:900;color:{ink};">'
+                f'{primary_value}</div>')
     body = (f'<div style="border-left:5px solid {accent};background:{background};'
             f'padding:10px 12px;margin:4px 0 8px;">'
-            f'<div style="font-size:11px;font-weight:900;letter-spacing:.08em;color:{accent};">'
-            f'结论 · 重点</div>'
-            f'<div style="font-size:17px;line-height:1.6;font-weight:900;color:{ink};padding-top:3px;">'
-            f'{primary_value}</div>')
-    if primary_label != "核心判断":
-        body += (f'<div style="font-size:10px;color:{ink};padding-top:2px;">'
-                 f'{_esc(primary_label)}</div>')
-    body += kit.kv(secondary)
-    return body + "</div>"
+            + kit.kv([(lead_label, lead_val), *secondary])
+            + "</div>")
+    return body
 
 
 # 正文不展示的数据源（底层仍供量化用）：总结「数据覆盖」与AI帮你提鲜的
@@ -8526,21 +8492,23 @@ def _ren_judgment_row(text, kit, meta=None):
         bar_fill_c, bar_empty_c = GZ_KLEIN, GZ_FAINT
         box = (f'border:1px solid {GZ_HAIR};border-left:4px solid {GZ_KLEIN};'
                f'background:{GZ_KLEIN_WASH};')
-        head_row = (f'<tr><td style="padding:8px 12px 2px;font-size:13px;font-weight:900;'
-                    f'color:{GZ_KLEIN};line-height:1.5;font-family:{FONT_MONO};">'
-                    f'█▓▒░ {_ren.REN_ICON} <span style="letter-spacing:1px;">{_esc(_ren.REN_TITLE)}</span> ░▒▓█'
-                    f' <span style="font-size:10px;font-weight:700;color:{GZ_FAINT};">'
-                    f'大白话翻译 · FRESH BOOST</span></td></tr>')
+        head_row = (f'<tr><td width="28%" valign="top" style="padding:8px 10px 4px;font-size:13px;font-weight:900;'
+                    f'color:{GZ_KLEIN};line-height:1.5;font-family:{FONT_MONO};border-bottom:1px solid {GZ_HAIR_SOFT};">'
+                    f'█▓▒░ {_ren.REN_ICON} <span style="letter-spacing:1px;">{_esc(_ren.REN_TITLE)}</span> ░▒▓█</td>'
+                    f'<td valign="top" style="padding:8px 10px 4px;font-size:10px;font-weight:700;color:{GZ_FAINT};'
+                    f'line-height:1.5;font-family:{FONT_MONO};border-bottom:1px solid {GZ_HAIR_SOFT};">'
+                    f'大白话翻译 · FRESH BOOST</td></tr>')
     else:
         ink, muted = C_INK, C_MUTED
         up_c, dn_c, mid_c = C_GREEN, C_RED, C_AMBER
         bar_empty_c = C_FAINT                # ░ 恒用暗灰；▓ 的颜色在方向分支里定
         box = f'border:1px solid {C_CYAN};background:#0A0E1D;box-shadow:5px 5px 0 #000;'
-        head_row = (f'<tr><td style="padding:5px 10px;background:{C_CYAN};color:{C_BG};'
+        head_row = (f'<tr><td width="28%" valign="top" style="padding:5px 10px;background:{C_CYAN};color:{C_BG};'
                     f'font-size:11px;font-weight:900;letter-spacing:1px;font-family:{FONT_MONO};">'
-                    f'█▓▒░ {_ren.REN_ICON} {_esc(_ren.REN_TITLE)} ░▒▓█'
-                    f' <span style="font-size:9px;letter-spacing:2px;">// 大白话翻译 · FRESH BOOST</span>'
-                    f'</td></tr>')
+                    f'█▓▒░ {_ren.REN_ICON} {_esc(_ren.REN_TITLE)} ░▒▓█</td>'
+                    f'<td valign="top" style="padding:5px 10px;background:{C_CYAN};color:{C_BG};'
+                    f'font-size:9px;font-weight:900;letter-spacing:2px;font-family:{FONT_MONO};">'
+                    f'// 大白话翻译 · FRESH BOOST</td></tr>')
 
     # 方向与上色：偏多 → 涨色 ▲、偏空 → 跌色 ▼、其余 → 中性色 ■（不只靠颜色区分）。
     if "偏多" in label:
@@ -8560,29 +8528,28 @@ def _ren_judgment_row(text, kit, meta=None):
         bar = (f'<span style="color:{bar_fill_c};">{"▓" * meter["filled"]}</span>'
                f'<span style="color:{bar_empty_c};">{"░" * meter["empty"]}</span>')
         meter_html = (
-            f'<tr><td style="padding:9px 12px 0;">'
-            f'<div style="font-size:9px;font-weight:900;letter-spacing:2px;color:{muted};'
-            f'font-family:{FONT_MONO};">涨跌概率 / 几率 ODDS METER</div>'
+            f'<tr><td width="28%" valign="top" style="padding:8px 10px 4px;font-size:9px;font-weight:900;'
+            f'letter-spacing:1px;color:{muted};font-family:{FONT_MONO};border-bottom:1px dashed {GZ_HAIR_SOFT if gz else C_HAIR};">'
+            f'涨跌概率 / 几率 ODDS METER</td>'
+            f'<td valign="top" style="padding:8px 10px 4px;border-bottom:1px dashed {GZ_HAIR_SOFT if gz else C_HAIR};">'
             f'<div style="font-size:17px;font-weight:900;color:{dir_c};line-height:1.35;'
-            f'font-family:{FONT_MONO};padding-top:2px;">{mark} 上涨概率 {p_int}%{label_html}</div>'
+            f'font-family:{FONT_MONO};">{mark} 上涨概率 {p_int}%{label_html}</div>'
             f'<div style="font-size:13px;font-weight:900;line-height:1.5;font-family:{FONT_MONO};'
             f'letter-spacing:3px;padding-top:1px;">{bar}'
             f'<span style="font-size:10px;font-weight:700;letter-spacing:0;color:{muted};">'
             f' 几率 {_esc(meter["odds"])} · 每格 10% · 与研判行同源</span></div></td></tr>')
 
-    divider = (f'<tr><td style="padding:0;"><div style="border-top:1px dashed '
-               f'{GZ_HAIR_SOFT if gz else C_HAIR};margin:8px 12px 0;"></div></td></tr>'
-               ) if meter_html else ""
     sub_html = (f'<div style="font-size:10px;color:{muted};letter-spacing:.3px;'
                 f'padding-top:6px;line-height:1.6;font-family:{FONT_MONO};">'
                 f'{_esc(_ren.DISCLAIMER)}</div>') if not PLAIN() else ""
-    return (f'<div style="margin-top:10px;">'
-            f'<table width="100%" cellpadding="0" cellspacing="0"'
-            f' style="width:100%!important;border-collapse:collapse;{box}">'
+    return (f'<table width="100%" cellpadding="0" cellspacing="0"'
+            f' style="width:100%!important;border-collapse:collapse;margin-top:10px;{box}">'
             f'{head_row}'
-            f'{meter_html}{divider}'
-            f'<tr><td style="padding:9px 12px 10px;font-size:12px;color:{ink};line-height:1.75;'
-            f'font-family:{FONT_MONO};">{_esc(text)}{sub_html}</td></tr></table></div>')
+            f'{meter_html}'
+            f'<tr><td width="28%" valign="top" style="padding:8px 10px 10px;font-size:11px;font-weight:700;'
+            f'color:{muted};line-height:1.75;font-family:{FONT_MONO};">提鲜解读</td>'
+            f'<td valign="top" style="padding:8px 10px 10px;font-size:12px;color:{ink};line-height:1.75;'
+            f'font-family:{FONT_MONO};">{_esc(text)}{sub_html}</td></tr></table>')
 
 
 def _weekly_daily_table(daily, kit):
@@ -9020,9 +8987,8 @@ def _short_card_section(card_ctx, kit, today_n, total):
         return None
     lead_color = GZ_INK_STRONG if _is_guizang_like(kit) else C_INK
     lead_size = GZ_FS_PRICE if _is_guizang_like(kit) else 15
-    html = (f'<div style="font-size:{lead_size}px;font-weight:700;color:{lead_color};'
-            f'line-height:1.5;margin:8px 0 14px;overflow-wrap:anywhere;">'
-            f'{_esc(card["lead"])}</div>')
+    lead_val = (f'<span style="font-size:{lead_size}px;font-weight:700;color:{lead_color};'
+                f'line-height:1.5;overflow-wrap:anywhere;">{_esc(card["lead"])}</span>')
     plain = PLAIN()
     pairs = card["pairs"]
     if plain:
@@ -9030,7 +8996,7 @@ def _short_card_section(card_ctx, kit, today_n, total):
         pairs = [(label, (value.split(" · 数字与下文各栏同源")[0]
                           if isinstance(value, str) and "数据底" in str(label) else value))
                  for label, value in pairs]
-    html += kit.kv([(_esc(label), value) for label, value in pairs])
+    html = kit.kv([("定调", lead_val), *[(_esc(label), value) for label, value in pairs]])
     html += kit.sub(_esc(_short.TIPS_TITLE_PLAIN if plain else _short.TIPS_TITLE))
     html += kit.kv([(_esc(label), _esc(text)) for label, text in card["tips"]])
     dropped = [d for d in (card.get("dropped") or [])]
@@ -11778,11 +11744,8 @@ def gz_sentiment_empty_block(res):
     else:
         cover = "热门榜单暂缺 → 无个股宇宙可归因"
     out = [
-        gz_shell(
-            f'<div style="font-size:{GZ_FS_BODY}px;font-weight:700;color:{GZ_INK};line-height:1.6;">'
-            f'■ 样本不足：{n_today} 条标题（近{SENTI_WINDOW_HOURS}h）均未点名榜单个股</div>',
-            pad="8px 0"),
         gz_kv_table([
+            ("状态说明", f'<b>■ 样本不足：{n_today} 条标题（近{SENTI_WINDOW_HOURS}h）均未点名榜单个股</b>'),
             ("窗口标题", f"{n_today} 条（近 {SENTI_WINDOW_HOURS}h，全部尝试归因）"),
             ("个股宇宙", f"{universe_n} 只（来自热门榜单）" if universe_n
              else "0 只（热门榜单暂缺）"),
@@ -13411,7 +13374,7 @@ def _lime_masthead(date_display, date_str, today_n, total, generated_at):
     pills = (
         lime_pill(f"当天源 {today_n}/{total}", lime=True)
         + lime_pill(str(date_display))
-        + lime_pill("单列 · 圆角卡片")
+        + lime_pill("多行多列表格 · 圆角卡片")
     )
     hero = (
         f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{L_BG}" '
@@ -13431,10 +13394,12 @@ def _lime_masthead(date_display, date_str, today_n, total, generated_at):
         f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{L_CARD}" '
         f'style="width:100%!important;border-collapse:collapse;background:{L_CARD};'
         f'border-radius:14px;color:{L_MUTED};">'
-        f'<tr><td style="padding:10px 14px;font-size:11px;color:{L_MUTED};line-height:1.6;">'
+        f'<tr><td width="28%" style="padding:10px 14px;font-size:11px;color:{L_MUTED};line-height:1.6;">'
         f'<span style="display:inline-block;padding:0 6px;margin-right:6px;border-radius:999px;'
         f'background:{L_LIME};color:{L_INK_STRONG};font-size:10px;font-weight:900;">■</span>'
-        f'条目底色交替 · 单列紧凑排版 · 涨 <b style="color:{L_LIME_INK};">▲</b> / '
+        f'多行多列表格</td>'
+        f'<td style="padding:10px 14px;font-size:11px;color:{L_MUTED};line-height:1.6;">'
+        f'条目底色交替 · 结构化分列排版 · 涨 <b style="color:{L_LIME_INK};">▲</b> / '
         f'跌 <b style="color:{L_RED_INK};">▼</b> / 平 <b style="color:{L_MUTED};">■</b>'
         f'</td></tr></table>'
     )

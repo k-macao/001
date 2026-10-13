@@ -273,10 +273,12 @@ def inner_duplicates(sections, min_sent=14):
 
 def render_md(sections, rows, spairs2, rpairs, spairs, fact_home, src_name, threshold, inner=()):
     out = [f"# 日报大纲 · 栏目 / 子栏与跨栏重复率核对\n",
-           f"> 核对对象：`{src_name}`（{len(sections)} 栏 / "
+           "| 核对项 | 内容说明 |",
+           "|---|---|",
+           f"| 核对对象 | `{src_name}`（{len(sections)} 栏 / "
            f"{sum(len(s['subs']) for s in sections)} 个子栏 / "
-           f"{sum(len(s['rows']) for s in sections)} 行）；"
-           f"重复判定：共享 ≥2 个数字事实且相似度 ≥ {threshold:.0%}。\n",
+           f"{sum(len(s['rows']) for s in sections)} 行） |",
+           f"| 重复判定口径 | 共享 ≥2 个数字事实且相似度 ≥ {threshold:.0%} |\n",
            "## 一、各栏目跨栏重复数字率\n",
            "| 栏目 | 行数 | 数字事实 | 跨栏重复 | 重复率 | 重复示例 |",
            "|---|---:|---:|---:|---:|---|"]
@@ -286,7 +288,10 @@ def render_md(sections, rows, spairs2, rpairs, spairs, fact_home, src_name, thre
     out.append("")
     out.append("## 二、栏目两两对照（A 栏事实中出现在 B 栏的比例 ≥15%）\n")
     if not spairs2:
-        out.append("_无。_\n")
+        out.append("| 栏目 A | 栏目 B | 共有事实 | 占 A 栏比例 | 共有事实示例 |")
+        out.append("|---|---|---:|---:|---|")
+        out.append("| — | — | 0 | 0% | 未发现达到该口径的栏目对 |")
+        out.append("| 判定阈值 | A 栏事实在 B 栏占比 ≥15% | 0 | 0% | — |\n")
     else:
         out.append("| 栏目 A | 栏目 B | 共有事实 | 占 A 栏比例 | 共有事实示例 |")
         out.append("|---|---|---:|---:|---|")
@@ -296,7 +301,10 @@ def render_md(sections, rows, spairs2, rpairs, spairs, fact_home, src_name, thre
         out.append("")
     out.append("## 三、重复子栏（跨栏，事实重叠 ≥50% 且共享 ≥3 个事实）\n")
     if not spairs:
-        out.append("_未发现达到该口径的重复子栏。_\n")
+        out.append("| 子栏 A | 子栏 B | 事实重叠率 | 文本相似度 | 共有事实 |")
+        out.append("|---|---|---:|---:|---|")
+        out.append("| — | — | 0% | 0.00 | 未发现达到该口径的重复子栏 |")
+        out.append("| 判定阈值 | 事实重叠 ≥50% 且共享 ≥3 个事实 | — | — | — |\n")
     else:
         out.append("| 子栏 A | 子栏 B | 事实重叠率 | 文本相似度 | 共有事实 |")
         out.append("|---|---|---:|---:|---|")
@@ -308,17 +316,25 @@ def render_md(sections, rows, spairs2, rpairs, spairs, fact_home, src_name, thre
     agg = defaultdict(list)
     for p in rpairs:
         agg[(p["a"], p["b"])].append(p)
+    out.append("| 栏目对 | 重复行数 | 行标签对照 | 共有事实与相似度 |")
+    out.append("|---|---:|---|---|")
     if not agg:
-        out.append("_未发现达到该口径的重复行。_\n")
+        out.append("| — | 0 | — | 未发现达到该口径的重复行 |")
+        out.append(f"| 判定阈值 | 0 | 共享 ≥2 个数字事实 | 相似度 ≥ {threshold:.0%} |")
     for (a, b), group in sorted(agg.items(), key=lambda kv: -len(kv[1]))[:20]:
-        out.append(f"- **{a}** ⇄ **{b}**：{len(group)} 行")
-        for p in group[:4]:
-            out.append(f"  - {p['a_label']} ｜ {p['b_label']} ｜ 共有 {'、'.join(p['shared'][:5])}"
-                       f"（文本 {p['sim']:.2f} / 标签 {p['label_sim']:.2f}）")
+        for idx_p, p in enumerate(group[:4]):
+            pair_col = f"**{a}** ⇄ **{b}**" if idx_p == 0 else "↳ 同上栏目对"
+            cnt_col = str(len(group)) if idx_p == 0 else "—"
+            lbl_col = f"{p['a_label']} ｜ {p['b_label']}".replace("|", "丨")
+            sim_col = f"共有 {'、'.join(p['shared'][:5])}（文本 {p['sim']:.2f} / 标签 {p['label_sim']:.2f}）".replace("|", "丨")
+            out.append(f"| {pair_col} | {cnt_col} | {lbl_col} | {sim_col} |")
     out.append("")
     out.append("## 五、栏内重复（同一栏目里重复出现的标题 / 长句）\n")
     if not inner:
-        out.append("_未发现栏内重复（同一栏目内没有同一篇标题或同一句长句出现两次）。_\n")
+        out.append("| 栏目 | 重复文案 | 次数 |")
+        out.append("|---|---|---:|")
+        out.append("| — | 未发现栏内重复（同一栏目内没有同一篇标题或同一句长句出现两次） | 0 |")
+        out.append("| 判定阈值 | 同一栏目内长句或标题出现 ≥2 次 | 2 |\n")
     else:
         out.append("| 栏目 | 重复文案 | 次数 |")
         out.append("|---|---|---:|")
@@ -327,16 +343,25 @@ def render_md(sections, rows, spairs2, rpairs, spairs, fact_home, src_name, thre
             out.append(f"| {num_title} | {safe} | {n} |")
         out.append("")
     out.append("## 六、大纲（栏目 → 子栏）\n")
+    out.append("| 栏目序号与名称 | Kicker / 行数 / 事实数 | 子栏名称 | 子栏数字事实与跨栏重复 |")
+    out.append("|---|---|---|---|")
     for s in sections:
-        out.append(f"### {s['num']} · {s['title']}")
-        out.append(f"- kicker `{s['kicker']}` · 行 {len(s['rows'])} · 数字事实 {len(s['facts'])}")
-        for sub in s["subs"]:
-            cross = sorted(f for f in sub["facts"] if len(fact_home[f]) > 1)
-            mark = ""
-            if sub["facts"] and len(cross) / len(sub["facts"]) >= 0.5:
-                mark = f" · ⚠ 跨栏重复 {len(cross)}/{len(sub['facts'])}"
-            out.append(f"  - {sub['label']}（数字事实 {len(sub['facts'])} 个{mark}）")
-        out.append("")
+        sec_label = f"**{s['num']} · {s['title']}**".replace("|", "丨")
+        sec_meta = f"`{s['kicker']}` · 行 {len(s['rows'])} · 数字事实 {len(s['facts'])}"
+        if not s["subs"]:
+            out.append(f"| {sec_label} | {sec_meta} | （正文直出） | 数字事实 {len(s['facts'])} 个 |")
+        else:
+            for idx_sub, sub in enumerate(s["subs"]):
+                cross = sorted(f for f in sub["facts"] if len(fact_home[f]) > 1)
+                mark = ""
+                if sub["facts"] and len(cross) / len(sub["facts"]) >= 0.5:
+                    mark = f" · ⚠ 跨栏重复 {len(cross)}/{len(sub['facts'])}"
+                c0 = sec_label if idx_sub == 0 else "↳ 同上栏目"
+                c1 = sec_meta if idx_sub == 0 else "—"
+                c2 = sub["label"].replace("|", "丨")
+                c3 = f"数字事实 {len(sub['facts'])} 个{mark}"
+                out.append(f"| {c0} | {c1} | {c2} | {c3} |")
+    out.append("")
     return "\n".join(out)
 
 
