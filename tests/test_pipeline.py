@@ -519,22 +519,29 @@ class RetroPixelVisualTests(unittest.TestCase):
     """Retro Pixel v3：大图标、明确涨跌与 AI 主结论必须稳定渲染。"""
 
     def test_pixel_table_stacks_into_single_column(self):
-        """单列排版（2026-10-10）：像素主题三列及以上同样拆成逐行堆叠的条目。"""
+        """多行多列排版：像素主题三列及以上按标准多行多列表格展示（含表头行 + 多列数据行）。"""
         html = pipeline._pixel_table(["日期", "事件", "重要度"],
                                      [["10-13", "美国 CPI", "★★★"]])
-        self.assertEqual(html.count("<tr>"), 1)
-        self.assertEqual(html.count("<td"), 1)
-        self.assertIn("<b>10-13</b>", html)
-        self.assertIn("事件</b> 美国 CPI", html)
-        self.assertIn("重要度</b> ★★★", html)
-        self.assertNotIn("table-layout:fixed", html)      # 单列不再按列宽切分
+        self.assertEqual(html.count("<tr>"), 2)            # 1 行表头 + 1 行数据 = 2 行
+        self.assertEqual(html.count("<td"), 6)             # 2 行 × 3 列 = 6 个单元格
+        self.assertIn("日期", html)
+        self.assertIn("事件", html)
+        self.assertIn("重要度", html)
+        self.assertIn("10-13", html)
+        self.assertIn("美国 CPI", html)
+        self.assertIn("★★★", html)
+        self.assertIn("table-layout:fixed", html)
 
     def test_pixel_table_keeps_empty_cells_off_but_dashes_on(self):
-        """空单元格不占行；占位短横「—」照常保留，缺数据要看得见。"""
+        """多行多列表格：表头与占位短横「—」保留在对应列单元格中。"""
         html = pipeline._pixel_table(["名称", "涨跌", "成交额"],
                                      [["腾讯控股", "—", ""]])
-        self.assertIn("涨跌</b> —", html)
-        self.assertNotIn("成交额", html)
+        self.assertEqual(html.count("<tr>"), 2)
+        self.assertIn("名称", html)
+        self.assertIn("涨跌", html)
+        self.assertIn("成交额", html)
+        self.assertIn("腾讯控股", html)
+        self.assertIn(">—</td>", html)
 
     def test_trend_badge_uses_color_arrow_and_text_triple_encoding(self):
         up = pipeline._trend_badge(1.25)
@@ -884,19 +891,21 @@ class GuizangThemeTests(unittest.TestCase):
         self.assertIn("<table", html)      # 多列数据仍用表格对齐
 
     def test_data_tables_stack_into_single_column(self):
-        """单列排版（2026-10-10）：三列及以上拆成「字段 内容」逐行堆叠，一行一条目。"""
+        """多行多列排版：三列及以上按标准多行多列表格渲染（表头行 + 多列数据行）。"""
         html = pipeline.gz_data_table(["名称", "最新价", "涨跌"],
                                       [["恒生指数", "26,881.4", "▼ -0.43%"]])
-        self.assertEqual(html.count("<tr>"), 1)            # 一条数据 = 一行，不再有表头行
-        self.assertEqual(html.count("<td"), 1)             # 单列：一行只有一个单元格
-        self.assertIn("<b>恒生指数</b>", html)              # 首列当条目标题
-        self.assertIn("<b>最新价</b> 26,881.4", html)       # 其余列「字段 内容」
-        self.assertIn("<b>涨跌</b> ▼ -0.43%", html)
-        self.assertEqual(html.count("<br>"), 2)            # 三列 → 三行，两个换行
+        self.assertEqual(html.count("<tr>"), 2)            # 1 行表头 + 1 行数据 = 2 行
+        self.assertEqual(html.count("<td"), 6)             # 2 行 × 3 列 = 6 个单元格
+        self.assertIn("名称</td>", html)
+        self.assertIn("最新价</td>", html)
+        self.assertIn("涨跌</td>", html)
+        self.assertIn("恒生指数</td>", html)
+        self.assertIn("26,881.4</td>", html)
+        self.assertIn("▼ -0.43%</td>", html)
         self.assertNotIn("<td style=\"padding:5px 8px", html)   # 旧写法：每格 20+ 字
 
     def test_two_column_kv_stays_one_line_per_pair(self):
-        """两列键值仍是「标签 值」单行：拆成两行只会把行数翻倍。"""
+        """两列键值仍是「标签 值」多行双列：含表头与键值行。"""
         html = pipeline.gz_data_table(["项目", "口径"], [["市场倾向", "中性"]], kv=True)
         self.assertIn("市场倾向</td>", html)
         self.assertIn("中性</td>", html)
@@ -916,8 +925,8 @@ class GuizangThemeTests(unittest.TestCase):
         html = pipeline.generate_report(data, "2026年8月1日 · 周六", "20260801",
                                         theme="guizang")
         self.assertIn("6,123", html)
-        # 单列排版后首列表头（名称）不再单独出头行，字段名随值走在同一行上
-        self.assertIn("<b>最新价</b>", html)
+        # 多行多列表格保留完整表头「名称」「最新价」「涨跌」
+        self.assertIn("最新价</td>", html)
 
     def test_minimal_news_card_leads_with_title_and_keeps_source(self):
         html = pipeline.gz_headline_row({

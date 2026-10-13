@@ -1,12 +1,19 @@
 # 开放 PR 合并检查（2026-09-30）
 
-> 检查对象：`k-macao/02` 当前 4 个开放 PR（#80 / #84 / #85 / #93）相对 `main`（`f5afedf`，09-30 05:42 自动日报）的可合并性。
-> 检查方式：本地 `git fetch --unshallow` 后取全history → 每个 PR 独立 `git worktree` 实际试合（`git merge --no-commit`）+ `git merge-tree` 复核；每个分支单独跑全量回归测试。
-> 说明：GitHub 页面上的 `mergeable` 现为 `UNKNOWN`（平台未计算），本报告是本地实算结论；4 个 PR 均无 CI 检查、无 review 状态（仓库的 Actions 只跑日报，不做 PR 校验）。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 检查对象 | `k-macao/02` 当前 4 个开放 PR（#80 / #84 / #85 / #93）相对 `main`（`f5afedf`，09-30 05:42 自动日报）的可合并性。 |
+| 02 | 检查方式 | 本地 `git fetch --unshallow` 后取全history → 每个 PR 独立 `git worktree` 实际试合（`git merge --no-commit`）+ `git merge-tree` 复核； |
+| 03 | 补充说明 | 每个分支单独跑全量回归测试。 |
+| 04 | 说明 | GitHub 页面上的 `mergeable` 现为 `UNKNOWN`（平台未计算），本报告是本地实算结论； |
+| 05 | 补充说明 | 4 个 PR 均无 CI 检查、无 review 状态（仓库的 Actions 只跑日报，不做 PR 校验）。 |
 
 ## 〇、执行结果（2026-09-30 当天已处理）
 
-按检查建议处理（用户确认「全部按建议处理」，但 **#84 保留开放、不动**），全部落在会话分支 `arena/01a0f0dc-02` 上：
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 正文说明 | 按检查建议处理（用户确认「全部按建议处理」，但 **#84 保留开放、不动**），全部落在会话分支 `arena/01a0f0dc-02` 上： |
+| 02 | 口径与适用范围 | 以上内容按结构化多行多列表格呈现，供核对与查阅 |
 
 | 步骤 | 结果 |
 |---|---|
@@ -15,17 +22,20 @@
 | ③ 合并 **#85**（推送页尽量合并 + 频率排队） | 把 `SECTION_BODY_MARK` 锚点移植到新版 guizang 栏目头；顺带修掉两个只有在版式升级后才暴露的真 bug（见下）；提交 `78bdbca`，全量回归 **Ran 415 · OK** |
 | ④ **#84** | 按用户决定**保持开放**，本分支不包含任何行业轮动相关改动 |
 
-**#85 移植时发现并修掉的两个真 bug**（都是「会真的影响推送」的那种）：
-
-1. `_find_text_cut()` 的正文中间切点没有夹到预算以内 —— 原实现可能返回超过 `limit` 的位置，让某一条**超过 PushPlus 单条上限**（平台侧会拒收/自己截断，排版崩坏）。现已夹紧，并补了回归断言（`test_parts_never_exceed_limit_and_keep_every_character`）。
-2. 新版 guizang 栏目头自带一个「由正文末尾闭合」的外层 `div`；原 `_split_fragment_once()` 在续片里把这个 div 又重开了一遍，导致续片嵌套两层、标签不平衡。新增 `_reopened_stack()`：续片只重开**栏目头之外**的父标签。
-
-**实测（本分支渲染的真实日报，离线 fixture）**：上限 10 万 → 1 条（一页推）；人为压到 9000 → 4 条 `[8861, 8930, 8535, 3054]`，每条 ≤ 上限、标签平衡、7 个栏目全部送达，且多出来的每一条都以「承接上条「栏目名」（续）」开头——与「不丢栏目、不超上限、不骗读者」三条口径一致。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 正文说明 | **#85 移植时发现并修掉的两个真 bug**（都是「会真的影响推送」的那种）： |
+| 02 | 要点说明 | `_find_text_cut()` 的正文中间切点没有夹到预算以内 —— 原实现可能返回超过 `limit` 的位置，让某一条**超过 PushPlus 单条上限**（平台侧会拒收/自己截断，排版崩坏）。现已夹紧，并补了回归断言（`test_parts_never_exceed_limit_and_keep_every_character`）。 |
+| 03 | 要点说明 | 新版 guizang 栏目头自带一个「由正文末尾闭合」的外层 `div`；原 `_split_fragment_once()` 在续片里把这个 div 又重开了一遍，导致续片嵌套两层、标签不平衡。新增 `_reopened_stack()`：续片只重开**栏目头之外**的父标签。 |
+| 04 | **实测（本分支渲染的真实日报，离线 fixture）** | 上限 10 万 → 1 条（一页推）；人为压到 9000 → 4 条 `[8861, 8930, 8535, 3054]`，每条 ≤ 上限、标签平衡、7 个栏目全部送达，且多出来的每一条都以「承接上条「栏目名」（续）」开头——与「不丢栏目、不超上限、不骗读者」三条口径一致。 |
 
 ## 一、总览
 
-**`main` 当前是绿的**：`python3 -m unittest discover -s tests -p "test_*.py"` → **Ran 348 tests · OK**（50s，exit 0）。
-（PR #80 描述里提到的 4 个 `is_today` 失败已被后续提交修掉，现在不复现。）
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | **`main` 当前是绿的** | `python3 -m unittest discover -s tests -p "test_*.py"` → **Ran 348 tests · OK**（50s，exit 0）。 |
+| 02 | 补充说明 | （PR #80 描述里提到的 4 个 `is_today` 失败已被后续提交修掉，现在不复现。 |
+| 03 | 补充说明 | ） |
 
 | PR | 标题 | 领先 / 落后 main | 试合冲突 | 建议 |
 |---|---|---|---|---|
@@ -34,7 +44,10 @@
 | **#85** | 🔀 推送页尽量合并（每条填满单条上限） | +1 / −36 | `output/pipeline.py` ×1 处（语义）、`README.md` ×2 处 | ⚠️ 功能未被取代，但**要移植到新的 guizang 渲染层** |
 | **#84** | 行业轮动：股票池改申万一级 31 行业 | +1 / −36 | `README.md`、`output/pipeline.py`、`output/backup_sources.py` + **4 个 modify/delete** | ⛔ **已被 main 取代，建议关闭**（或需明确决定复活该栏目） |
 
-各分支自身测试（在各自 merge-base 上跑）：
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 正文说明 | 各分支自身测试（在各自 merge-base 上跑）： |
+| 02 | 口径与适用范围 | 以上内容按结构化多行多列表格呈现，供核对与查阅 |
 
 | 分支 | 结果 |
 |---|---|
@@ -46,7 +59,10 @@
 ## 二、逐个详情
 
 ### PR #93 —— 值得合，冲突是「两处语义 + 一处样例文件」
-提交：`2a91ba0` 第二批改名 → `28152a6` 七日逐日表格 + 合并 AI 七日港股 → `27a0d0e` 活鲜词库。14 文件 +2234/−312。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 提交 | `2a91ba0` 第二批改名 → `28152a6` 七日逐日表格 + 合并 AI 七日港股 → `27a0d0e` 活鲜词库。 |
+| 02 | 补充说明 | 14 文件 +2234/−312。 |
 
 | 冲突 | 性质 | 解决办法 |
 |---|---|---|
@@ -56,43 +72,50 @@
 | `README.md` | — | 无冲突，自动合并 |
 
 ### PR #85 —— 功能仍需要，但代码要重移植
-提交：`c132a07`。它想在栏目内部「在完整标签边界续接」，为此给 `gz_section()` 加了 `SECTION_BODY_MARK` 锚点、并新增 `_pack_section_units` / `_split_fragment_once`、`_wait_push_rate_limit` 限频。
-
-- `output/pipeline.py` 唯一冲突正是 `gz_section()`：main 在 09-29 之后把这一段重写成 gz_shell 结构（新主题、新灰线），pr85 基于旧结构改。**合并必须在新渲染器上重新挂锚点**，不能直接取一边。
-- 已确认 main 上 **没有** 任何 `PUSHPLUS_RATE` / `_pack_section_units` / `SECTION_BODY_MARK` 代码 → 该 PR 的「每条填满上限 + 频率排队」价值仍在，没有被 #86/#87 取代。
-- `README.md` 的两处冲突是文档新旧版本差异（pr85 的段落基于更早的 README），以 main 文案为准、把「栏目可在完整标签边界续接」那半句补进 main 的对应条目即可。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 提交 | `c132a07`。它想在栏目内部「在完整标签边界续接」，为此给 `gz_section()` 加了 `SECTION_BODY_MARK` 锚点、并新增 `_pack_section_units` / `_split_fragment_once`、`_wait_push_rate_limit` 限频。 |
+| 02 | 要点说明 | `output/pipeline.py` 唯一冲突正是 `gz_section()`：main 在 09-29 之后把这一段重写成 gz_shell 结构（新主题、新灰线），pr85 基于旧结构改。**合并必须在新渲染器上重新挂锚点**，不能直接取一边。 |
+| 03 | 要点说明 | 已确认 main 上 **没有** 任何 `PUSHPLUS_RATE` / `_pack_section_units` / `SECTION_BODY_MARK` 代码 → 该 PR 的「每条填满上限 + 频率排队」价值仍在，没有被 #86/#87 取代。 |
+| 04 | 要点说明 | `README.md` 的两处冲突是文档新旧版本差异（pr85 的段落基于更早的 README），以 main 文案为准、把「栏目可在完整标签边界续接」那半句补进 main 的对应条目即可。 |
 
 ### PR #84 —— 已被 main 取代，建议关闭
-提交：`a5d3889`（09-28 20:42）。它想修「行业轮动」栏目的股票池，但 main 在 09-29 10:48 已经用 PR #88 把该栏目整体换成「AI 七日港股走势分析概率」：
-
-- main 已删除 `output/sector_rotation.py`、`output/probe_sector_rotation.py`、`tests/test_sector_rotation.py`、`tests/test_sector_rotation_push.py` → 与 pr84 构成 **4 个 modify/delete 冲突**，合并会把 4 个已删除文件「复活」；
-- 另有 `README.md` / `output/pipeline.py` / `output/backup_sources.py` 三处内容冲突（都因为 main 已移除该栏目）。
-- 仓库里已有 `行业轮动栏目-推送核查.md` 记录该栏目 0/58 未进推送的核查结论。**除非要重新上线「行业轮动」栏目，否则应直接关闭该 PR**（若确实要复活，需要先把 #88 的移除决定回滚，属于产品决策，不是冲突解决）。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 提交 | `a5d3889`（09-28 20:42）。它想修「行业轮动」栏目的股票池，但 main 在 09-29 10:48 已经用 PR #88 把该栏目整体换成「AI 七日港股走势分析概率」： |
+| 02 | 要点说明 | main 已删除 `output/sector_rotation.py`、`output/probe_sector_rotation.py`、`tests/test_sector_rotation.py`、`tests/test_sector_rotation_push.py` → 与 pr84 构成 **4 个 modify/delete 冲突**，合并会把 4 个已删除文件「复活」； |
+| 03 | 要点说明 | 另有 `README.md` / `output/pipeline.py` / `output/backup_sources.py` 三处内容冲突（都因为 main 已移除该栏目）。 |
+| 04 | 要点说明 | 仓库里已有 `行业轮动栏目-推送核查.md` 记录该栏目 0/58 未进推送的核查结论。**除非要重新上线「行业轮动」栏目，否则应直接关闭该 PR**（若确实要复活，需要先把 #88 的移除决定回滚，属于产品决策，不是冲突解决）。 |
 
 ### PR #80 —— 可直接合并
-新增 `output/probe_factor_cap.py`（只读、离线、确定性）+ 根目录 `因子软压缩-数据核查.md`，不改任何生产逻辑。试合**零冲突**；脚本在当前 main 上跑出的结论与 PR 描述一致（TRD 平均削幅 41.6%、FLOW 实际上限 ≈1.27、综合分二次压缩仅兜底）。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 正文说明 | 新增 `output/probe_factor_cap.py`（只读、离线、确定性）+ 根目录 `因子软压缩-数据核查.md`，不改任何生产逻辑。 |
+| 02 | 补充说明 | 试合**零冲突**； |
+| 03 | 补充说明 | 脚本在当前 main 上跑出的结论与 PR 描述一致（TRD 平均削幅 41.6%、FLOW 实际上限 ≈1.27、综合分二次压缩仅兜底）。 |
 
 ## 三、建议的合并顺序与风险
 
-1. **#80** → 干净合并，风险最低（可选：合并后跑一次全量测试）。
-2. **#93** → 解 2 处语义冲突；合并后必须跑全量测试（main 348 + pr93 新增用例 ≈ 400+）。重点回归：
-   - `tests/test_pipeline.py::test_no_washy_text_colors`（09-30 新增的对比度硬门禁，解冲突时最容易误伤）；
-   - `tests/test_lexicon.py` / `tests/test_weekly.py` / `tests/test_hk_seven_day.py`。
-3. **#85** → 先把 `SECTION_BODY_MARK` 锚点挂到 main 的新 `gz_section()` 上，再跑 `tests/test_push_split.py`（21 用例）与全量；注意别把 09-30 的两个推送页修复（字体栈 / 灰阶加深）覆盖掉。
-4. **#84** → 关闭（推荐）或先做产品决策再复活。
-
-**共同风险提示**：main 在 09-29～09-30 集中改了两块「容易连锁」的地方——① 推送页灰阶 / 字体栈（含硬门禁测试），② 每周量化走势的渲染与口径文案。#85 和 #93 的冲突都落在这两块上，解冲突时**原则是「以 main 的新版为底，把功能改动叠回去」**，而不是整段取某一边。
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | **#80** → 干净合并，风险最低（可选 | 合并后跑一次全量测试）。 |
+| 02 | 要点说明 | **#93** → 解 2 处语义冲突；合并后必须跑全量测试（main 348 + pr93 新增用例 ≈ 400+）。重点回归： |
+| 03 | `tests/test_pipeline.py | :test_no_washy_text_colors`（09-30 新增的对比度硬门禁，解冲突时最容易误伤）； |
+| 04 | 要点说明 | `tests/test_lexicon.py` / `tests/test_weekly.py` / `tests/test_hk_seven_day.py`。 |
+| 05 | 要点说明 | **#85** → 先把 `SECTION_BODY_MARK` 锚点挂到 main 的新 `gz_section()` 上，再跑 `tests/test_push_split.py`（21 用例）与全量；注意别把 09-30 的两个推送页修复（字体栈 / 灰阶加深）覆盖掉。 |
+| 06 | 要点说明 | **#84** → 关闭（推荐）或先做产品决策再复活。 |
+| 07 | **共同风险提示** | main 在 09-29～09-30 集中改了两块「容易连锁」的地方——① 推送页灰阶 / 字体栈（含硬门禁测试），② 每周量化走势的渲染与口径文案。#85 和 #93 的冲突都落在这两块上，解冲突时**原则是「以 main 的新版为底，把功能改动叠回去」**，而不是整段取某一边。 |
 
 ## 四、本次检查的实际执行记录
 
-```bash
-git fetch --unshallow origin                       # 补齐历史（原仓库是 shallow，缺 08 月历史）
-for n in 93 85 84 80; do git fetch origin pull/$n/head:pr$n; done
-git merge-base origin/main prN                     # 逐个算共同祖先
-git merge-tree --write-tree origin/main prN        # 冲突预演
-git worktree add /tmp/mN origin/main && git merge --no-commit prN   # 真实试合，读冲突块
-python3 -m unittest discover -s tests -p "test_*.py"   # main / pr93 / pr85 各跑一遍
-python3 output/probe_factor_cap.py                     # pr80 脚本在 pr80 与 main 上各跑一遍
-```
+| 序号 | 维度 / 条目 | 详细内容与说明 |
+|---:|---|---|
+| 01 | 代码/命令 L1 (`bash`) | `git fetch --unshallow origin` — 补齐历史（原仓库是 shallow，缺 08 月历史） |
+| 02 | 代码/命令 L2 (`bash`) | `for n in 93 85 84 80; do git fetch origin pull/$n/head:pr$n; done` |
+| 03 | 代码/命令 L3 (`bash`) | `git merge-base origin/main prN` — 逐个算共同祖先 |
+| 04 | 代码/命令 L4 (`bash`) | `git merge-tree --write-tree origin/main prN` — 冲突预演 |
+| 05 | 代码/命令 L5 (`bash`) | `git worktree add /tmp/mN origin/main && git merge --no-commit prN` — 真实试合，读冲突块 |
+| 06 | 代码/命令 L6 (`bash`) | `python3 -m unittest discover -s tests -p "test_*.py"` — main / pr93 / pr85 各跑一遍 |
+| 07 | 代码/命令 L7 (`bash`) | `python3 output/probe_factor_cap.py` — pr80 脚本在 pr80 与 main 上各跑一遍 |
+| 08 | 结果 | main **348 OK**；pr93 **390 OK**；pr85 **317 OK**；pr80 两次输出一致；试合冲突如上表。 |
 
-结果：main **348 OK**；pr93 **390 OK**；pr85 **317 OK**；pr80 两次输出一致；试合冲突如上表。
