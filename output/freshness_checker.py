@@ -276,7 +276,7 @@ def check_all_freshness(data: Dict, today=None) -> Dict:
     stale_sources = []
     
     for name, src_data in data.items():
-        if not isinstance(src_data, dict):
+        if str(name).startswith("_") or not isinstance(src_data, dict):
             continue
         result = check_single_freshness(name, src_data, today=today)
         details.append(result)

@@ -463,8 +463,12 @@ import freshness_checker as _freshness  # noqa: E402
 import backup_sources as _backup  # noqa: E402
 import dedup as _dedup  # noqa: E402
 import hk_overseas as _hkx  # noqa: E402  # 🇭🇰 港股境外数据源（Yahoo / Stooq / HKEX / 可选 stealth 浏览器）
+import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首古诗词
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
+# 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首诗开关：OCTOPUS_SHIQUAN=0 可关闭。
+SHIQUAN_ENABLED = _shiquan.is_enabled()
+SHIQUAN_META_KEY = _shiquan.SHIQUAN_META_KEY
 # 量化引擎开关：OCTOPUS_QUANT=0 或 --no-quant 可整体跳过（离线/赶时间时用）
 HK_QUANT_ENABLED = str(os.environ.get("OCTOPUS_QUANT", "1")).strip().lower() not in ("0", "false", "no")
 # 是否逐只跑个股概率（关掉后只出指数与流动性，明显更快）
@@ -5267,6 +5271,11 @@ def collect_all_data():
     print("=" * 50)
 
     data = {}
+    if SHIQUAN_ENABLED and _shiquan.is_enabled():
+        poem = _shiquan.fetch_random_poem(allow_network=True)
+        if poem is not None:
+            data[SHIQUAN_META_KEY] = poem
+            print("\n" + _shiquan.format_cli_banner(poem))
     data["实时行情"] = fetch_market_snapshot()
     time.sleep(0.5)
     data["A股大盘全景"] = fetch_market_panorama()
@@ -9766,13 +9775,24 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         }, kit, today_n, total)
         if card:
             sections.append(card)
+    poem = _shiquan.get_opening_poem(data, allow_network=False) if (SHIQUAN_ENABLED and _shiquan.is_enabled()) else None
     return {
         "sections": sections,
         "total": total,
         "today_n": today_n,
         "content_n": content_n,
         "market": market,
+        "poem": poem,
     }
+
+
+def _opening_poem_section_prefix(data, parts, theme):
+    """生成刊头之后、第一栏目之前的「诗泉 · 随机一首诗」开篇块（含分条标记）。"""
+    if not (SHIQUAN_ENABLED and _shiquan.is_enabled()):
+        return ""
+    poem = (parts or {}).get("poem") or _shiquan.get_opening_poem(data, allow_network=False)
+    card = _shiquan.render_opening_poem_html(poem, theme=theme)
+    return f"{ card }\n{PART_BREAK_MARK}" if card else ""
 
 
 # ============================================================
@@ -12794,7 +12814,7 @@ def generate_report_dossier(data, date_display, date_str, sentiment_history=None
         content_html = "".join(
             PART_BREAK_MARK + DOSSIER_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
             for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
-        first_section = DOSSIER_KIT.section("00", *sections[0])
+        first_section = _opening_poem_section_prefix(data, parts, "dossier") + DOSSIER_KIT.section("00", *sections[0])
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -13167,7 +13187,7 @@ def generate_report_forum(data, date_display, date_str, sentiment_history=None,
         content_html = "".join(
             PART_BREAK_MARK + FORUM_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
             for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
-        first_section = FORUM_KIT.section("00", *sections[0])
+        first_section = _opening_poem_section_prefix(data, parts, "forum") + FORUM_KIT.section("00", *sections[0])
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -13481,7 +13501,7 @@ def generate_report_lime(data, date_display, date_str, sentiment_history=None,
         content_html = "".join(
             PART_BREAK_MARK + LIME_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
             for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
-        first_section = LIME_KIT.section("00", *sections[0])
+        first_section = _opening_poem_section_prefix(data, parts, "lime") + LIME_KIT.section("00", *sections[0])
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -13778,6 +13798,7 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
     sections = parts["sections"]
     total = parts["total"]
     today_n = parts["today_n"]
+    first_section = _opening_poem_section_prefix(data, parts, "guizang") + GUIZANG_KIT.section("00", *sections[0])
     content_html = "".join(
         PART_BREAK_MARK + GUIZANG_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
         for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
@@ -13821,7 +13842,7 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
 
 {masthead}
 
-{PART_BREAK_MARK}{GUIZANG_KIT.section("00", *sections[0])}
+{PART_BREAK_MARK}{first_section}
 <div id="report"></div>
 {content_html}
 
@@ -13859,7 +13880,8 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
 
     # 6. 拼版：栏目编号按渲染顺序生成（只在场的栏目占用编号）
     # 每个栏目前都插入分条标记（含第一栏），供超长日报按完整栏目分条推送
-    content_html = "".join(
+    poem_prefix = _opening_poem_section_prefix(data, parts, "pixel")
+    content_html = (f"{PART_BREAK_MARK}{poem_prefix[:-len(PART_BREAK_MARK)]}" if poem_prefix else "") + "".join(
         PART_BREAK_MARK + PIXEL_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
         for i, (kicker, title, content, badge, caption) in enumerate(sections, 0))
 

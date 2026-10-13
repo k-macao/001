@@ -1,0 +1,4301 @@
+[
+  {
+    "id": 1,
+    "title": "蜀先主庙",
+    "content": [
+      "天地英雄气，千秋尚凛然。",
+      "势分三足鼎，业复五铢钱。",
+      "得相能开国，生儿不象贤。",
+      "凄凉蜀故伎，来舞魏宫前。"
+    ],
+    "author": {
+      "id": 1,
+      "name": "刘禹锡"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 2,
+    "title": "新嫁娘",
+    "content": [
+      "三日入厨下，洗手作羹汤。",
+      "未谙姑食性，先遣小姑尝。"
+    ],
+    "author": {
+      "id": 2,
+      "name": "王建"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 3,
+    "title": "田家行",
+    "content": [
+      "男声欣欣女颜悦，人家不怨言语别。",
+      "五月虽热麦风清，檐头索索缲车鸣。",
+      "野蚕作茧人不取，叶间扑扑秋蛾生。",
+      "麦收上场绢在轴，的知输得官家足。",
+      "不望入口复上身，且免向城卖黄犊。",
+      "田家衣食无厚薄，不见县门身即乐。"
+    ],
+    "author": {
+      "id": 2,
+      "name": "王建"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 11,
+      "name": "其他",
+      "category": "其他",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "古体诗及杂言诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 4,
+    "title": "野老歌",
+    "content": [
+      "老农家贫在山住，耕种山田三四亩。",
+      "苗疏税多不得食，输入官仓化为土。",
+      "岁暮锄犁傍空室，呼儿登山收橡实。",
+      "西江贾客珠百斛，船中养犬长食肉。"
+    ],
+    "author": {
+      "id": 3,
+      "name": "张籍"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 7,
+      "name": "七言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 7,
+      "description": "八句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 5,
+    "title": "没蕃故人",
+    "content": [
+      "前年戍月支，城下没全师。",
+      "蕃汉断消息，死生长别离。",
+      "无人收废帐，归马识残旗。",
+      "欲祭疑君在，天涯哭此时。"
+    ],
+    "author": {
+      "id": 3,
+      "name": "张籍"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 6,
+    "title": "游子吟",
+    "content": [
+      "慈母手中线，游子身上衣。",
+      "临行密密缝，意恐迟迟归。",
+      "谁言寸草心，报得三春晖。"
+    ],
+    "author": {
+      "id": 4,
+      "name": "孟郊"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 7,
+    "title": "暖川",
+    "content": [
+      "胡风冻合鸊鹈泉，牛马千群逐暖川。",
+      "塞外征行无尽日，年年移帐雪中天。"
+    ],
+    "author": {
+      "id": 5,
+      "name": "李益"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 8,
+    "title": "从军北征",
+    "content": [
+      "天山雪后海风寒，横笛偏吹《行路难》。",
+      "碛里征人三十万，一时回首月中看。"
+    ],
+    "author": {
+      "id": 5,
+      "name": "李益"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 9,
+    "title": "夜上受降城闻笛",
+    "content": [
+      "回乐烽前沙似雪，受降城外月如霜。",
+      "不知何处吹芦管，一夜征人尽望乡。"
+    ],
+    "author": {
+      "id": 5,
+      "name": "李益"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 10,
+    "title": "水宿闻雁",
+    "content": [
+      "早雁忽为双，惊秋风水凉。",
+      "夜长人自起，星月满空江。"
+    ],
+    "author": {
+      "id": 5,
+      "name": "李益"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 11,
+    "title": "江南曲",
+    "content": [
+      "嫁得瞿塘贾，朝朝误妾期。",
+      "早知潮有信，嫁与弄潮儿。"
+    ],
+    "author": {
+      "id": 5,
+      "name": "李益"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 12,
+    "title": "送李端",
+    "content": [
+      "故关衰草遍，离别正堪悲。",
+      "路出寒云外，人归暮雪时。",
+      "少孤为客早，多难识君迟。",
+      "掩泣空相向，风尘何所期。"
+    ],
+    "author": {
+      "id": 6,
+      "name": "卢纶"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 13,
+    "title": "晚次鄂州",
+    "content": [
+      "云开远见洛阳城，犹见孤帆一日程。",
+      "估客昼眠知浪静，舟人夜语觉潮生。"
+    ],
+    "author": {
+      "id": 6,
+      "name": "卢纶"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 14,
+    "title": "塞下曲",
+    "content": [
+      "林暗草惊风，将军夜引弓。",
+      "平明寻白羽，没在石棱中。"
+    ],
+    "author": {
+      "id": 6,
+      "name": "卢纶"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 15,
+    "title": "寄李儋元锡",
+    "content": [
+      "去年花里逢君别，今日花开又一年。",
+      "世事茫茫难自料，春愁黯黯独成眠。",
+      "身多疾病思田里，邑有流亡愧俸钱。",
+      "闻道欲来相问讯，西楼望月几回圆。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 7,
+      "name": "七言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 7,
+      "description": "八句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 16,
+    "title": "赋得暮雨送李曹",
+    "content": [
+      "楚江微雨里，建业暮钟时。",
+      "漠漠帆来重，冥冥鸟去迟。",
+      "海门深不见，浦树远含滋。",
+      "相送情无限，沾襟比散丝。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 17,
+    "title": "夕次盱眙县",
+    "content": [
+      "落帆逗淮镇，停舫临孤驿。",
+      "浩浩风起波，冥冥日沉夕。",
+      "人归山郭暗，雁下芦洲白。",
+      "独夜忆秦关，听钟未眠客。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 18,
+    "title": "长安遇冯著",
+    "content": [
+      "客从东方来，衣上灞陵雨。",
+      "问客何为来，采山因买斧。",
+      "冥冥花正开，飏飏燕新乳。",
+      "昨别今已春，鬓丝生几缕。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 19,
+    "title": "初发杨子寄元大校书",
+    "content": [
+      "凄凄去亲爱，泛泛入烟雾。",
+      "归棹洛阳人，残钟广陵树。",
+      "今朝此为别，何处还相遇。",
+      "世事波上舟，沿洄安得住？",
+      "。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 11,
+      "name": "其他",
+      "category": "其他",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "古体诗及杂言诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 20,
+    "title": "滁州西涧",
+    "content": [
+      "独怜幽草涧边生，上有黄鹂深树鸣。",
+      "春潮带雨晚来急，野渡无人舟自横。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 21,
+    "title": "秋夜寄邱员外",
+    "content": [
+      "怀君属秋夜，散步咏凉天。",
+      "空山松子落，幽人应未眠。"
+    ],
+    "author": {
+      "id": 7,
+      "name": "韦应物"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 22,
+    "title": "江乡故人偶集客舍",
+    "content": [
+      "天秋月又满，城阙夜千重。",
+      "还作江南会，翻疑梦里逢。",
+      "风枝惊暗鹊，露草泣寒虫。",
+      "羁旅长堪醉，相留畏晓钟。"
+    ],
+    "author": {
+      "id": 8,
+      "name": "戴叔伦"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 23,
+    "title": "题三闾大夫庙",
+    "content": [
+      "沅湘流不尽，屈子怨何深。",
+      "日暮秋风起，萧萧枫树林。"
+    ],
+    "author": {
+      "id": 8,
+      "name": "戴叔伦"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 24,
+    "title": "凉州曲",
+    "content": [
+      "关山万里远征人，一望关山泪满巾。",
+      "青海戍头空有月，黄沙碛里本无春。"
+    ],
+    "author": {
+      "id": 9,
+      "name": "柳中庸"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 25,
+    "title": "征人怨",
+    "content": [
+      "岁岁金河复玉关，朝朝马策与刀环。",
+      "三春白雪归青冢，万里黄河绕黑山。"
+    ],
+    "author": {
+      "id": 9,
+      "name": "柳中庸"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 26,
+    "title": "宫词",
+    "content": [
+      "玉楼天半起笙歌，风送宫嫔笑语和。",
+      "月殿影开闻夜漏，水精帘卷近秋河。"
+    ],
+    "author": {
+      "id": 10,
+      "name": "顾况"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 27,
+    "title": "过山农家",
+    "content": [
+      "板桥人渡泉声，茅檐日午鸡鸣。",
+      "莫嗔焙茶烟暗，却喜晒谷天晴。"
+    ],
+    "author": {
+      "id": 10,
+      "name": "顾况"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 11,
+      "name": "其他",
+      "category": "其他",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "古体诗及杂言诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 28,
+    "title": "石窦泉",
+    "content": [
+      "吹沙复喷石，曲折仍圆旋。",
+      "野客漱流时，杯粘落花片。"
+    ],
+    "author": {
+      "id": 10,
+      "name": "顾况"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 29,
+    "title": "欹松漪",
+    "content": [
+      "湛湛碧涟漪，老松欹侧卧。",
+      "悠扬绿萝影，下拂波纹破。"
+    ],
+    "author": {
+      "id": 10,
+      "name": "顾况"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 30,
+    "title": "石上藤",
+    "content": [
+      "空山无鸟迹，何物如人意。",
+      "委曲结绳文，离披草书字。"
+    ],
+    "author": {
+      "id": 10,
+      "name": "顾况"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 31,
+    "title": "宿石涧店闻妇人哭",
+    "content": [
+      "山店门前一妇人，哀哀夜哭向秋云。",
+      "自说夫因征战死，朝来逢着旧将军。"
+    ],
+    "author": {
+      "id": 11,
+      "name": "李端"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 32,
+    "title": "芜城",
+    "content": [
+      "风吹城上树，草没城边路。",
+      "城里月明时，精灵自来去。"
+    ],
+    "author": {
+      "id": 11,
+      "name": "李端"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 33,
+    "title": "听筝",
+    "content": [
+      "鸣筝金粟柱，素手玉房前。",
+      "欲得周郎顾，时时误拂弦。"
+    ],
+    "author": {
+      "id": 11,
+      "name": "李端"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 34,
+    "title": "秋晚宿破山寺",
+    "content": [
+      "秋风落叶满空山，古寺残灯石壁间。",
+      "昔日经行人尽去，寒云夜夜自飞还。"
+    ],
+    "author": {
+      "id": 12,
+      "name": "皎然"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 35,
+    "title": "寻陆鸿渐不遇",
+    "content": [
+      "移家虽带郭，野径入桑麻。",
+      "近种篱边菊，秋来未著花。",
+      "扣门无犬吠，欲去问西家。",
+      "报道山中去，归时每日斜。"
+    ],
+    "author": {
+      "id": 12,
+      "name": "皎然"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 36,
+    "title": "江村即事",
+    "content": [
+      "钓罢归来不系船，江村月落正堪眠。",
+      "纵然一夜风吹去，只在芦花浅水边。"
+    ],
+    "author": {
+      "id": 13,
+      "name": "司空曙"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 37,
+    "title": "云阳馆与韩绅宿别",
+    "content": [
+      "故人江海别，几度隔山川。",
+      "乍见翻疑梦，相悲各问年。",
+      "孤灯寒照雨，深竹暗浮烟。",
+      "更有明朝恨，离杯惜共传。"
+    ],
+    "author": {
+      "id": 13,
+      "name": "司空曙"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 38,
+    "title": "喜外弟卢纶见宿",
+    "content": [
+      "静夜四无邻，荒居旧业贫。",
+      "雨中黄叶树，灯下白头人。",
+      "以我独沉久，愧君相见频。",
+      "平生自有分，况是蔡家亲。"
+    ],
+    "author": {
+      "id": 13,
+      "name": "司空曙"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 39,
+    "title": "留卢秦卿",
+    "content": [
+      "知有前期在，难分此夜中。",
+      "无将故人酒，不及石尤风。"
+    ],
+    "author": {
+      "id": 13,
+      "name": "司空曙"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 40,
+    "title": "酬李甫见赠",
+    "content": [
+      "杜甫天才颇绝伦，每寻诗卷似情亲。",
+      "怜渠直道当时语，不着心源傍古人。"
+    ],
+    "author": {
+      "id": 14,
+      "name": "元稹"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 41,
+    "title": "闻乐天授江州司马",
+    "content": [
+      "残灯无焰影幢幢，此夕闻君谪九江。",
+      "垂死病中惊坐起，暗风吹雨入寒窗。"
+    ],
+    "author": {
+      "id": 14,
+      "name": "元稹"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 42,
+    "title": "古筑城曲（二首）",
+    "content": [
+      "筑城须努力，城高遮得贼。",
+      "但恐贼路多，有城遮不得。"
+    ],
+    "author": {
+      "id": 14,
+      "name": "元稹"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 43,
+    "title": "寒食",
+    "content": [
+      "春城无处不飞花，寒食东风御柳斜。",
+      "日暮汉宫传蜡烛，轻烟散入五侯家。"
+    ],
+    "author": {
+      "id": 15,
+      "name": "韩竑"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 44,
+    "title": "枫桥夜泊",
+    "content": [
+      "月落乌啼霜满天，江枫渔火对愁眠。",
+      "姑苏城外寒山寺，夜半钟声到客船。"
+    ],
+    "author": {
+      "id": 16,
+      "name": "张继"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 45,
+    "title": "行宫",
+    "content": [
+      "寥落古行宫，宫花寂寞红。",
+      "白头宫女在，闲坐说玄宗。"
+    ],
+    "author": {
+      "id": 14,
+      "name": "元稹"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 46,
+    "title": "渔翁",
+    "content": [
+      "渔翁夜傍西岩宿，晓汲清湘燃楚竹。",
+      "烟销日出不见人，欸乃一声山水绿。",
+      "回看天际下中流，岩上无心云相逐。"
+    ],
+    "author": {
+      "id": 17,
+      "name": "柳宗元"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 11,
+      "name": "其他",
+      "category": "其他",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "古体诗及杂言诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 47,
+    "title": "江雪",
+    "content": [
+      "千山鸟飞绝，万径人踪灭。",
+      "孤舟蓑笠翁，独钓寒江雪。"
+    ],
+    "author": {
+      "id": 17,
+      "name": "柳宗元"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 48,
+    "title": "将牛何处去（二首）",
+    "content": [
+      "将牛何处去，耕彼故城东。",
+      "相伴有田父，相欢惟牧童。"
+    ],
+    "author": {
+      "id": 18,
+      "name": "元结"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 49,
+    "title": "月夜",
+    "content": [
+      "更深月色半人家，北斗阑干南斗斜。",
+      "今夜偏知春气暖，虫声新透绿窗纱。"
+    ],
+    "author": {
+      "id": 19,
+      "name": "刘方平"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 50,
+    "title": "采莲曲",
+    "content": [
+      "落日清江里，荆歌艳楚腰。",
+      "采莲从小惯，十五即乘潮。"
+    ],
+    "author": {
+      "id": 19,
+      "name": "刘方平"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 51,
+    "title": "春雪",
+    "content": [
+      "飞雪带春风，徘徊乱绕空。",
+      "君看似花处，偏在洛城东。"
+    ],
+    "author": {
+      "id": 19,
+      "name": "刘方平"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 52,
+    "title": "逢入京使",
+    "content": [
+      "故园东望路漫漫，双袖龙钟泪不干。",
+      "马上相逢无纸笔，凭君传语报平安。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 53,
+    "title": "苜蓿峰寄家人",
+    "content": [
+      "苜蓿峰边逢立春，葫芦河上泪沾巾。",
+      "闺中只是空相忆，不见沙场愁杀人。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 54,
+    "title": "碛中作",
+    "content": [
+      "走马西来欲到天，辞家见月两回圆。",
+      "今夜未知何处宿，平沙万里绝人烟。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 55,
+    "title": "山房春事",
+    "content": [
+      "梁园日暮乱飞鸦，极目箫条三两家。",
+      "庭树不知人去尽，春来还发旧时花。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 5,
+      "name": "七言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 7,
+      "description": "四句七言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 56,
+    "title": "行军九日思长安故园",
+    "content": [
+      "强欲登高去，无人送酒来。",
+      "遥怜故园菊，应傍战场开。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 57,
+    "title": "暮秋山行（节选）",
+    "content": [
+      "疲马卧长坂，夕阳下通津。",
+      "山风吹空林，飒飒如有人。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 58,
+    "title": "题三会寺仓颉造字台",
+    "content": [
+      "野寺荒台晚，寒天古木悲。",
+      "空阶有鸟迹，犹似造书时。"
+    ],
+    "author": {
+      "id": 20,
+      "name": "岑参"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 4,
+      "name": "五言绝句",
+      "category": "唐诗",
+      "lines": 4,
+      "chars_per_line": 5,
+      "description": "四句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 59,
+    "title": "送李中丞归汉阳别业",
+    "content": [
+      "流落征南将，曾驱十万师。",
+      "罢归无旧业，老去恋明时。",
+      "独立三边静，轻生一剑知。",
+      "茫茫江汉上，日暮欲何之。"
+    ],
+    "author": {
+      "id": 21,
+      "name": "刘长卿"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 60,
+    "title": "秋日登吴公台上寺远眺",
+    "content": [
+      "古台摇落后，秋入望乡心。",
+      "野寺来人少，云峰隔水深。",
+      "夕阳依旧垒，寒磬满空林。",
+      "惆怅南朝事，长江独至今。"
+    ],
+    "author": {
+      "id": 21,
+      "name": "刘长卿"
+    },
+    "dynasty": {
+      "id": 6,
+      "name": "唐",
+      "name_en": "Tang",
+      "start_year": 618,
+      "end_year": 907
+    },
+    "type": {
+      "id": 6,
+      "name": "五言律诗",
+      "category": "唐诗",
+      "lines": 8,
+      "chars_per_line": 5,
+      "description": "八句五言近体诗"
+    },
+    "dataset_key": "shuimotangshi"
+  },
+  {
+    "id": 61,
+    "title": "湘春夜月",
+    "content": [
+      "近清明。",
+      "翠禽枝上消魂。",
+      "可惜一片清歌，都付与黄昏。",
+      "欲共柳花低诉，怕柳花轻薄，不解伤春。",
+      "念楚乡旅宿，柔情别绪，谁与温存。",
+      "空樽夜泣，青山不语，残月当门。",
+      "翠玉楼前，惟是有、一波湘水，摇荡湘云。",
+      "天长梦短，问甚时、重见桃根。",
+      "这次第，算人间没个并刀，翦断心上愁痕。"
+    ],
+    "author": {
+      "id": 22,
+      "name": "黄孝迈"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 62,
+    "title": "渡江云三犯・渡江云",
+    "content": [
+      "羞红颦浅恨，晚风为落，片绣点重茵。",
+      "旧堤分燕尾，桂棹轻鸥，宝勒倚残云。",
+      "千丝怨碧，渐路入、仙坞迷津。",
+      "肠漫回，隔花时见，背面楚腰身。",
+      "逡巡。",
+      "题门惆怅，堕履牵萦，数幽期难准。",
+      "还始觉、留情缘眼，宽带因春。",
+      "明朝事与孤烟冷，做满湖、风雨愁人。",
+      "山黛暝，尘波澹绿无痕。"
+    ],
+    "author": {
+      "id": 23,
+      "name": "吴文英"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 63,
+    "title": "宴清都",
+    "content": [
+      "绣幄鸳鸯柱。",
+      "红情密，腻云低护秦树。",
+      "芳根兼倚，花梢钿合，锦屏人妒。",
+      "东风睡足交枝，正梦花、瑶钗燕股。",
+      "障滟蜡、满照欢丛，嫠蟾冷落羞度。",
+      "人间万感幽单，华清惯浴，春盎风露。",
+      "连鬟并暖，同心共结，向承恩处。",
+      "凭谁为歌长恨，暗殿锁、秋灯夜语。",
+      "叙旧期、不负春盟，红朝翠暮。"
+    ],
+    "author": {
+      "id": 23,
+      "name": "吴文英"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 64,
+    "title": "齐天乐",
+    "content": [
+      "烟波桃叶西陵路，十年断魂潮尾。",
+      "古柳重攀，轻鸥聚别，陈迹危亭独倚。",
+      "凉颸乍起。",
+      "渺烟碛飞帆，暮山横翠。",
+      "但有江花，共临秋镜照憔悴。",
+      "华堂烛暗送客，眼波回盼处，芳艳流水。",
+      "素骨凝冰，柔葱蘸雪，犹忆分瓜深意。",
+      "清尊未洗。",
+      "梦不湿行云，漫沾残泪。",
+      "可惜秋宵，乱蛩疏雨里。"
+    ],
+    "author": {
+      "id": 23,
+      "name": "吴文英"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 65,
+    "title": "风入松",
+    "content": [
+      "听风听雨过清明。",
+      "愁草瘗花铭。",
+      "楼前绿暗分携路，一丝柳、一寸柔情。",
+      "料峭春寒中酒，交加晓梦啼莺。",
+      "西园日日扫林亭。",
+      "依旧赏新晴。",
+      "黄蜂频扑秋千索，有当时、纤手香凝。",
+      "惆怅双鸳不到，幽阶一夜苔生。"
+    ],
+    "author": {
+      "id": 23,
+      "name": "吴文英"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 66,
+    "title": "卜算子",
+    "content": [
+      "驿外断桥边，寂寞开无主。",
+      "已是黄昏独自愁，更著风和雨。",
+      "无意苦争春，一任群芳妒。",
+      "零落成泥碾作尘，只有香如故。"
+    ],
+    "author": {
+      "id": 24,
+      "name": "陆游"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 67,
+    "title": "凤箫吟・芳草",
+    "content": [
+      "锁离愁，连绵无际，来时陌上初熏。",
+      "绣帏人念远，暗垂珠泪，泣送征轮。",
+      "长亭长在眼，更重重、远水孤云。",
+      "但望极楼高，尽日目断王孙。",
+      "消魂。",
+      "池塘别後，曾行处、绿妒轻裙。",
+      "恁时携素手，乱花飞絮里，缓步香。",
+      "朱颜空自改，向年年、芳意长新。",
+      "遍绿野，嬉游醉眠，莫负青春。"
+    ],
+    "author": {
+      "id": 25,
+      "name": "韩缜"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 68,
+    "title": "桂枝香",
+    "content": [
+      "登临送目。",
+      "正故国晚秋，天气初肃。",
+      "千里澄江似练，翠峰如簇。",
+      "归帆去棹残阳里，背西风、酒旗斜矗。",
+      "彩舟云淡，星河鹭起，画图难足。",
+      "念往昔、繁华竞逐。",
+      "叹门外楼头，悲恨相续。",
+      "千古凭高，对此漫嗟荣辱。",
+      "六朝旧事随流水，但寒烟、芳草凝绿。",
+      "至今商女，时时犹唱，後庭遗曲。"
+    ],
+    "author": {
+      "id": 26,
+      "name": "王安石"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 69,
+    "title": "清平乐",
+    "content": [
+      "留春不住。",
+      "费尽莺儿语。",
+      "满地残红宫锦污。",
+      "昨夜南园风雨。",
+      "小怜初上琵琶。",
+      "晓来思绕天涯。",
+      "不肯画堂朱户，春风自在杨花。"
+    ],
+    "author": {
+      "id": 26,
+      "name": "王安石"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 70,
+    "title": "千秋岁引",
+    "content": [
+      "别馆寒砧，孤城画角。",
+      "一派秋声入寥廓。",
+      "东归燕从海上去，南来雁向沙头落。",
+      "楚台风，庾楼月，宛如昨。",
+      "无奈被些名利缚。",
+      "无奈被他情担阁。",
+      "可惜风流总闲却。",
+      "当初漫留华表语，而今误我秦楼约。",
+      "梦阑时，酒醒後，思量著。"
+    ],
+    "author": {
+      "id": 26,
+      "name": "王安石"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 71,
+    "title": "清平乐",
+    "content": [
+      "留春不住。",
+      "费尽莺儿语。",
+      "满地残红宫锦污。",
+      "昨夜南园风雨。",
+      "小怜初上琵琶。",
+      "晓来思绕天涯。",
+      "不肯画堂朱户，春风自在梨花。"
+    ],
+    "author": {
+      "id": 27,
+      "name": "王安国"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 72,
+    "title": "临江仙",
+    "content": [
+      "梦後楼台高锁，酒醒帘幕低垂。",
+      "去年春恨却来时。",
+      "落花人独立，微雨燕双飞。",
+      "记得小苹初见，两重心字罗衣。",
+      "琵琶弦上说相思。",
+      "当时明月在，曾照彩云归。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 73,
+    "title": "蝶恋花",
+    "content": [
+      "卷絮风头寒欲尽。",
+      "坠粉飘红，日日香成阵。",
+      "新酒又添残酒困。",
+      "今春不减前春恨。",
+      "蝶去莺飞无处问。",
+      "隔水高楼，望断双鱼信。",
+      "恼乱层波横一寸。",
+      "斜阳只与黄昏近。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 74,
+    "title": "蝶恋花",
+    "content": [
+      "醉别西楼醒不记。",
+      "春梦秋云，聚散真容易。",
+      "斜月半窗还少睡。",
+      "画屏闲展吴山翠。",
+      "衣上酒痕诗里字。",
+      "点点行行，总是凄凉意。",
+      "红烛自怜无好计。",
+      "夜寒空替人垂泪。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 75,
+    "title": "蝶恋花",
+    "content": [
+      "梦入江南烟水路。",
+      "行尽江南，不与离人遇。",
+      "睡里消魂无说处。",
+      "觉来惆怅消魂误。",
+      "欲尽此情书尺素。",
+      "浮雁沈鱼，终了无凭据。",
+      "却倚缓弦歌别绪。",
+      "断肠移破秦筝柱。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 76,
+    "title": "鹧鸪天",
+    "content": [
+      "彩袖殷勤捧玉锺。",
+      "当年拼却醉颜红。",
+      "舞低杨柳楼心月，歌尽桃花扇影风。",
+      "从别後，忆相逢。",
+      "几回魂梦与君同。",
+      "今宵剩把银釭照，犹恐相逢是梦中。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 77,
+    "title": "生查子",
+    "content": [
+      "关山魂梦长，鱼雁音尘少。",
+      "两鬓可怜青，只为相思老。",
+      "归梦碧纱窗，说与人人道。",
+      "真个别离难，不似相逢好。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 78,
+    "title": "清平乐",
+    "content": [
+      "留人不住。",
+      "醉解兰舟去。",
+      "一棹碧涛春水路。",
+      "过尽晓莺啼处。",
+      "渡头杨柳青青。",
+      "枝枝叶叶离情。",
+      "此後锦书休寄，画楼云雨无凭。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 79,
+    "title": "木兰花・玉楼春",
+    "content": [
+      "秋千院落重帘暮。",
+      "彩笔闲来题绣户。",
+      "墙头丹杏雨馀花，门外绿杨风後絮。",
+      "朝云信断知何处。",
+      "应作襄王春梦去。",
+      "紫骝认得旧游踪，嘶过画桥东畔路。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 80,
+    "title": "菩萨蛮",
+    "content": [
+      "哀筝一弄湘江曲。",
+      "声声写尽湘波绿。",
+      "纤指十三弦。",
+      "细将幽恨传。",
+      "当筵秋水慢。",
+      "玉柱斜飞雁。",
+      "弹到断肠时。",
+      "春山眉黛低。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 81,
+    "title": "玉楼春",
+    "content": [
+      "东风又作无情计。",
+      "艳粉娇红吹满地。",
+      "碧楼帘影不遮愁，还似去年今日意。",
+      "谁知错管春残事。",
+      "到处登临曾费泪。",
+      "此时金盏直须深，看尽落花能几醉。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 82,
+    "title": "阮郎归",
+    "content": [
+      "旧香残粉似当初。",
+      "人情恨不如。",
+      "一春犹有数行书。",
+      "秋来书更疏。",
+      "衾凤冷，枕鸳孤。",
+      "愁肠待酒舒。",
+      "梦魂纵有也成虚。",
+      "那堪和梦无。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 83,
+    "title": "阮郎归",
+    "content": [
+      "天边金掌露成霜。",
+      "云随雁字长。",
+      "绿杯红袖称重阳。",
+      "人情似故乡。",
+      "兰佩紫，菊簪黄。",
+      "殷勤理旧狂。",
+      "欲将沈醉换悲凉。",
+      "清歌莫断肠。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 84,
+    "title": "六么令",
+    "content": [
+      "绿阴春尽，飞絮绕香阁。",
+      "晚来翠眉宫样，巧把远山学。",
+      "一寸狂心未说，已向横波觉。",
+      "画帘遮币。",
+      "新翻曲妙，暗许闲人带偷掏。",
+      "前度书多隐语，意浅愁难答。",
+      "昨夜诗有回纹，韵险还慵押。",
+      "都待笙歌散了，记取留时霎。",
+      "不消红蜡。",
+      "闲云归後，月在庭花旧阑角。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 85,
+    "title": "御街行",
+    "content": [
+      "街南绿树春饶絮。",
+      "雪满游春路。",
+      "树头花艳杂娇云，树底人家朱户。",
+      "北楼闲上，疏帘高卷，直见街南树。",
+      "阑干倚尽犹慵去。",
+      "几度黄昏雨。",
+      "晚春盘马踏青苔，曾傍绿阴深驻。",
+      "落花犹在，香屏空掩，人面知何处。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 86,
+    "title": "虞美人",
+    "content": [
+      "曲阑干外天如水。",
+      "昨夜还曾倚。",
+      "初将明月比佳期。",
+      "长向月圆时候、望人归。",
+      "罗衣著破前香在。",
+      "旧意谁教改。",
+      "一春离恨懒调弦。",
+      "犹有两行闲泪、宝筝前。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 87,
+    "title": "留春令",
+    "content": [
+      "画屏天畔，梦回依约，十洲云水。",
+      "手拈红笺寄人书，写无限、伤春事。",
+      "别浦高楼曾漫倚。",
+      "对江南千里。",
+      "楼下分流水声中，有当日、凭高泪。"
+    ],
+    "author": {
+      "id": 28,
+      "name": "晏几道"
+    },
+    "dynasty": {
+      "id": 8,
+      "name": "宋",
+      "name_en": "Song",
+      "start_year": 960,
+      "end_year": 1279
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "songci"
+  },
+  {
+    "id": 88,
+    "title": "短歌行 其一",
+    "content": [
+      "对酒当歌，人生几何！",
+      "譬如朝露，去日苦多。",
+      "慨当以慷，忧思难忘。",
+      "何以解忧？",
+      "唯有杜康。",
+      "青青子衿，悠悠我心。",
+      "但为君故，沉吟至今。",
+      "呦呦鹿鸣，食野之苹。",
+      "我有嘉宾，鼓瑟吹笙。",
+      "明明如月，何时可掇？",
+      "忧从中来，不可断绝。",
+      "越陌度阡，枉用相存。",
+      "契阔谈讌，心念旧恩。",
+      "月明星稀，乌鹊南飞。",
+      "绕树三匝，何枝可依？",
+      "山不厌高，海不厌深。",
+      "周公吐哺，天下归心。"
+    ],
+    "author": {
+      "id": 29,
+      "name": "曹操"
+    },
+    "dynasty": {
+      "id": 3,
+      "name": "魏晋",
+      "name_en": "Wei-Jin",
+      "start_year": 220,
+      "end_year": 420
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "caocao"
+  },
+  {
+    "id": 89,
+    "title": "观沧海",
+    "content": [
+      "东临碣石，以观沧海。",
+      "水何澹澹，山岛竦峙。",
+      "树木丛生，百草丰茂。",
+      "秋风萧瑟，洪波涌起。",
+      "日月之行，若出其中；",
+      "星汉灿烂，若出其里。",
+      "幸甚至哉，歌以咏志。"
+    ],
+    "author": {
+      "id": 29,
+      "name": "曹操"
+    },
+    "dynasty": {
+      "id": 3,
+      "name": "魏晋",
+      "name_en": "Wei-Jin",
+      "start_year": 220,
+      "end_year": 420
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "caocao"
+  },
+  {
+    "id": 90,
+    "title": "龟虽寿",
+    "content": [
+      "神龟虽寿，犹有竟时。",
+      "腾蛇乘雾，终为土灰。",
+      "老骥伏枥，志在千里。",
+      "烈士暮年，壮心不已。",
+      "盈缩之期，不但在天；",
+      "养怡之福，可得永年。",
+      "幸甚至哉，歌以咏志。"
+    ],
+    "author": {
+      "id": 29,
+      "name": "曹操"
+    },
+    "dynasty": {
+      "id": 3,
+      "name": "魏晋",
+      "name_en": "Wei-Jin",
+      "start_year": 220,
+      "end_year": 420
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "caocao"
+  },
+  {
+    "id": 91,
+    "title": "蒿里行",
+    "content": [
+      "关东有义士，兴兵讨群凶。",
+      "初期会盟津，乃心在咸阳。",
+      "军合力不齐，踌躇而雁行。",
+      "势利使人争，嗣还自相戕。",
+      "淮南弟称号，刻玺於北方。",
+      "铠甲生虮虱，万姓以死亡。",
+      "白骨露於野，千里无鸡鸣。",
+      "生民百遗一，念之断人肠。"
+    ],
+    "author": {
+      "id": 29,
+      "name": "曹操"
+    },
+    "dynasty": {
+      "id": 3,
+      "name": "魏晋",
+      "name_en": "Wei-Jin",
+      "start_year": 220,
+      "end_year": 420
+    },
+    "type": {
+      "id": 3,
+      "name": "乐府诗",
+      "category": "唐诗",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "汉魏六朝及唐代乐府旧题或新题诗歌"
+    },
+    "dataset_key": "caocao"
+  },
+  {
+    "id": 92,
+    "title": "应天长·一钩初月临妆镜",
+    "content": [
+      "一钩初月临妆镜，蝉鬓凤钗慵不整。",
+      "重帘静，层楼迥，惆怅落花风不定。",
+      "柳堤芳草径，梦断辘轳金井。",
+      "昨夜更阑酒醒，春愁过却病。"
+    ],
+    "author": {
+      "id": 30,
+      "name": "李璟"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 93,
+    "title": "望远行·碧砌花光照眼",
+    "content": [
+      "碧砌花光照眼明，朱扉长日镇长扃。",
+      "馀寒欲去梦难成，炉香烟冷自亭亭。",
+      "辽阳月、秣陵砧，不传消息但传情。",
+      "黄金台下忽然惊，徵人归日二毛生！"
+    ],
+    "author": {
+      "id": 30,
+      "name": "李璟"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 94,
+    "title": "摊破浣溪沙·手卷真珠上玉钩",
+    "content": [
+      "手卷真珠上玉钩，依前春恨锁重楼。",
+      "风里落花谁是主？",
+      "思悠悠。",
+      "青鸟不传云外信，丁香空结雨中愁。",
+      "回首绿波三楚暮，接天流。"
+    ],
+    "author": {
+      "id": 30,
+      "name": "李璟"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 95,
+    "title": "摊破浣溪沙·菡萏香销翠叶残",
+    "content": [
+      "菡萏香销翠叶残，西风愁起绿波间。",
+      "还与韶光共憔悴，不堪看！",
+      "细雨梦回鸡塞远，小楼吹彻玉笙寒。",
+      "多少泪珠无限恨，倚栏杆。"
+    ],
+    "author": {
+      "id": 30,
+      "name": "李璟"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 96,
+    "title": "虞美人·春花秋月何时了",
+    "content": [
+      "春花秋月何时了，往事知多少？",
+      "小楼昨夜又东风，故国不堪回首月明中。",
+      "雕栏玉砌应犹在，只是朱颜改。",
+      "问君能有几多愁？",
+      "恰似一江春水向东流。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 97,
+    "title": "乌夜啼·昨夜风兼雨",
+    "content": [
+      "昨夜风兼雨，帘帏飒飒秋声。",
+      "烛残漏断频攲枕，起坐不能平。",
+      "世事漫随流水，算来一梦浮生。",
+      "醉乡路稳宜频到，此外不堪行。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 98,
+    "title": "一斛珠·晓妆初过",
+    "content": [
+      "晓妆初过，沈檀轻注些儿个。",
+      "向人微露丁香颗。",
+      "一曲清歌，暂引樱桃破。",
+      "罗袖裛残殷色可，杯深旋被香醪涴。",
+      "绣床斜凭娇无那。",
+      "烂嚼红茸，笑向檀郎唾。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 99,
+    "title": "子夜歌·人生愁恨何能免",
+    "content": [
+      "人生愁恨何能免，销魂独我情何限。",
+      "故国梦重归，觉来双泪垂。",
+      "高楼谁与上？",
+      "长记秋晴望。",
+      "往事已成空，还如一梦中。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 100,
+    "title": "临江仙·樱桃落尽春归去",
+    "content": [
+      "樱桃落尽春归去，蝶翻轻粉双飞。",
+      "子规啼月小楼西。",
+      "玉钩罗幕，惆怅暮烟垂。",
+      "别巷寂寥人散后，望残烟草低迷。",
+      "炉香闲袅凤凰儿。",
+      "空持罗带，回首恨依依。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 101,
+    "title": "望江南·多少泪",
+    "content": [
+      "多少泪，断脸复横颐。",
+      "心事莫将和泪说，凤笙休向泪时吹。",
+      "肠断更无疑。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 102,
+    "title": "望江南·多少恨",
+    "content": [
+      "多少恨，昨夜梦魂中。",
+      "还似旧时游上苑，车如流水马如龙。",
+      "花月正春风。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 103,
+    "title": "清平乐·别来春半",
+    "content": [
+      "别来春半，触目愁肠断。",
+      "砌下落梅如雪乱，拂了一身还满。",
+      "雁来音信无凭，路遥归梦难成。",
+      "离恨恰如春草，更行更远还生。"
+    ],
+    "author": {
+      "id": 31,
+      "name": "李煜"
+    },
+    "dynasty": {
+      "id": 7,
+      "name": "五代",
+      "name_en": "Five Dynasties",
+      "start_year": 907,
+      "end_year": 960
+    },
+    "type": {
+      "id": 8,
+      "name": "五代词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "五代十国时期词作"
+    },
+    "dataset_key": "wudai-nantang"
+  },
+  {
+    "id": 104,
+    "title": "国风·周南·关雎",
+    "content": [
+      "关关雎鸠，在河之洲。",
+      "窈窕淑女，君子好逑。",
+      "参差荇菜，左右流之。",
+      "窈窕淑女，寤寐求之。",
+      "求之不得，寤寐思服。",
+      "悠哉悠哉，辗转反侧。",
+      "参差荇菜，左右采之。",
+      "窈窕淑女，琴瑟友之。",
+      "参差荇菜，左右芼之。",
+      "窈窕淑女，钟鼓乐之。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 105,
+    "title": "国风·周南·葛覃",
+    "content": [
+      "葛之覃兮，施于中谷，维叶萋萋。",
+      "黄鸟于飞，集于灌木，其鸣喈喈。",
+      "葛之覃兮，施于中谷，维叶莫莫。",
+      "是刈是濩，为絺为绤，服之无斁。",
+      "言告师氏，言告言归。",
+      "薄污我私，薄浣我衣。",
+      "害浣害否，归宁父母。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 106,
+    "title": "国风·周南·卷耳",
+    "content": [
+      "采采卷耳，不盈顷筐。",
+      "嗟我怀人，置彼周行。",
+      "陟彼崔嵬，我马虺隤。",
+      "我姑酌彼金罍，维以不永怀。",
+      "陟彼高冈，我马玄黄。",
+      "我姑酌彼兕觥，维以不永伤。",
+      "陟彼砠矣，我马瘏矣，我仆痡矣，云何吁矣。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 107,
+    "title": "国风·周南·樛木",
+    "content": [
+      "南有樛木，葛藟累之。",
+      "乐只君子，福履绥之。",
+      "南有樛木，葛藟荒之。",
+      "乐只君子，福履将之。",
+      "南有樛木，葛藟萦之。",
+      "乐只君子，福履成之。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 108,
+    "title": "国风·周南·螽斯",
+    "content": [
+      "螽斯羽，诜诜兮。",
+      "宜尔子孙，振振兮。",
+      "螽斯羽，薨薨兮。",
+      "宜尔子孙。",
+      "绳绳兮。",
+      "螽斯羽，揖揖兮。",
+      "宜尔子孙，蛰蛰兮。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 109,
+    "title": "国风·周南·桃夭",
+    "content": [
+      "桃之夭夭，灼灼其华。",
+      "之子于归，宜其室家。",
+      "桃之夭夭，有蕡其实。",
+      "之子于归，宜其家室。",
+      "桃之夭夭，其叶蓁蓁。",
+      "之子于归，宜其家人。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 110,
+    "title": "国风·周南·兔罝",
+    "content": [
+      "肃肃兔罝，椓之丁丁。",
+      "赳赳武夫，公侯干城。",
+      "肃肃兔罝，施于中逵。",
+      "赳赳武夫，公侯好仇。",
+      "肃肃免罝，施于中林。",
+      "赳赳武夫，公侯腹心。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 111,
+    "title": "国风·周南·芣苡",
+    "content": [
+      "采采芣苡，薄言采之。",
+      "采采芣苡，薄言有之。",
+      "采采芣苡，薄言掇之。",
+      "采采芣苡，薄言捋之。",
+      "采采芣苡，薄言袺之。",
+      "采采芣苡，薄言襭之。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 112,
+    "title": "国风·周南·汉广",
+    "content": [
+      "南有乔木，不可休息。",
+      "汉有游女，不可求思。",
+      "汉之广矣，不可泳思。",
+      "江之永矣，不可方思。",
+      "翘翘错薪，言刈其楚。",
+      "之子于归，言秣其马。",
+      "汉之广矣，不可泳思。",
+      "江之永矣，不可方思。",
+      "翘翘错薪，言刈其蒌。",
+      "之子于归。",
+      "言秣其驹。",
+      "汉之广矣，不可泳思。",
+      "江之永矣，不可方思。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 113,
+    "title": "国风·周南·汝坟",
+    "content": [
+      "遵彼汝坟，伐其条枚。",
+      "未见君子，惄如调饥。",
+      "遵彼汝坟，伐其条肄。",
+      "既见君子，不我遐弃。",
+      "鲂鱼赪尾，王室如毁。",
+      "虽则如毁，父母孔迩。"
+    ],
+    "author": {
+      "id": 32,
+      "name": "佚名"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 1,
+      "name": "诗经",
+      "category": "诗经",
+      "lines": null,
+      "chars_per_line": 4,
+      "description": "中国最早的诗歌总集，多为四言诗"
+    },
+    "dataset_key": "shijing"
+  },
+  {
+    "id": 114,
+    "title": "离骚",
+    "content": [
+      "帝高阳之苗裔兮，朕皇考曰伯庸。",
+      "摄提贞于孟陬兮，惟庚寅吾以降。",
+      "皇览揆余初度兮，肇锡余以嘉名：",
+      "名余曰正则兮，字余曰灵均。",
+      "纷吾既有此内美兮，又重之以修能。",
+      "扈江离与辟芷兮，纫秋兰以为佩。"
+    ],
+    "author": {
+      "id": 33,
+      "name": "屈原"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 2,
+      "name": "楚辞",
+      "category": "楚辞",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "战国时期屈原等人创立的新诗体"
+    },
+    "dataset_key": "chuci"
+  },
+  {
+    "id": 115,
+    "title": "东皇太一",
+    "content": [
+      "吉日兮辰良，穆将愉兮上皇",
+      "抚长剑兮玉珥，璆锵鸣兮琳琅",
+      "瑶席兮玉瑱，盍将把兮琼芳",
+      "蕙肴蒸兮兰藉，奠桂酒兮椒浆",
+      "扬枹兮拊鼓，疏缓节兮安歌",
+      "陈竽瑟兮浩倡"
+    ],
+    "author": {
+      "id": 33,
+      "name": "屈原"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 2,
+      "name": "楚辞",
+      "category": "楚辞",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "战国时期屈原等人创立的新诗体"
+    },
+    "dataset_key": "chuci"
+  },
+  {
+    "id": 116,
+    "title": "云中君",
+    "content": [
+      "浴兰汤兮沐芳，华采衣兮若英",
+      "灵连蜷兮既留，烂昭昭兮未央",
+      "謇将憺兮寿宫，与日月兮齐光",
+      "龙驾兮帝服，聊翱游兮周章",
+      "灵皇皇兮既降，猋远举兮云中",
+      "览冀洲兮有余，横四海兮焉穷"
+    ],
+    "author": {
+      "id": 33,
+      "name": "屈原"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 2,
+      "name": "楚辞",
+      "category": "楚辞",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "战国时期屈原等人创立的新诗体"
+    },
+    "dataset_key": "chuci"
+  },
+  {
+    "id": 117,
+    "title": "湘君",
+    "content": [
+      "君不行兮夷犹，蹇谁留兮中洲",
+      "美要眇兮宜修，沛吾乘兮桂舟",
+      "令沅湘兮无波，使江水兮安流",
+      "望夫君兮未来，吹参差兮谁思",
+      "驾飞龙兮北征，邅吾道兮洞庭",
+      "薜荔柏兮蕙绸，荪桡兮兰旌"
+    ],
+    "author": {
+      "id": 33,
+      "name": "屈原"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 2,
+      "name": "楚辞",
+      "category": "楚辞",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "战国时期屈原等人创立的新诗体"
+    },
+    "dataset_key": "chuci"
+  },
+  {
+    "id": 118,
+    "title": "湘夫人",
+    "content": [
+      "帝子降兮北渚，目眇眇兮愁予",
+      "袅袅兮秋风，洞庭波兮木叶下",
+      "登白薠兮骋望，与佳期兮夕张",
+      "鸟何萃兮苹中，罾何为兮木上？",
+      "沅有茝兮醴有兰，思公子兮未敢言",
+      "荒忽兮远望，观流水兮潺湲"
+    ],
+    "author": {
+      "id": 33,
+      "name": "屈原"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 2,
+      "name": "楚辞",
+      "category": "楚辞",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "战国时期屈原等人创立的新诗体"
+    },
+    "dataset_key": "chuci"
+  },
+  {
+    "id": 119,
+    "title": "大司命",
+    "content": [
+      "广开兮天门，纷吾乘兮玄云",
+      "令飘风兮先驱，使涷雨兮洒尘",
+      "君回翔兮以下，逾空桑兮从女",
+      "纷总总兮九州，何寿夭兮在予",
+      "高飞兮安翔，乘清气兮御阴阳",
+      "吾与君兮齐速，导帝之兮九坑"
+    ],
+    "author": {
+      "id": 33,
+      "name": "屈原"
+    },
+    "dynasty": {
+      "id": 1,
+      "name": "先秦",
+      "name_en": "Pre-Qin",
+      "start_year": -2070,
+      "end_year": -221
+    },
+    "type": {
+      "id": 2,
+      "name": "楚辞",
+      "category": "楚辞",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "战国时期屈原等人创立的新诗体"
+    },
+    "dataset_key": "chuci"
+  },
+  {
+    "id": 120,
+    "title": "长相思·山一程",
+    "content": [
+      "山一程，水一程，身向榆关那畔行，夜深千帐灯",
+      "风一更，雪一更，聒碎乡心梦不成，故园无此声"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 121,
+    "title": "木兰花令·拟古决绝词",
+    "content": [
+      "人生若只如初见，何事秋风悲画扇",
+      "等闲变却故人心，却道故心人易变",
+      "骊山语罢清宵半，泪雨霖铃终不怨",
+      "何如薄幸锦衣郎，比翼连枝当日愿"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 122,
+    "title": "点绛唇·咏风兰",
+    "content": [
+      "别样幽芬，更无浓艳催开处",
+      "凌波欲去，且为东风住",
+      "忒煞萧疏，争奈秋如许",
+      "还留取，冷香半缕，第一湘江雨"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 123,
+    "title": "画堂春·一生一代一双人",
+    "content": [
+      "一生一代一双人，争教两处销魂",
+      "相思相望不相亲，天为谁春",
+      "浆向蓝桥易乞，药成碧海难奔",
+      "若容相访饮牛津，相对忘贫"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 124,
+    "title": "忆秦娥·长飘泊",
+    "content": [
+      "长飘泊，多愁多病心情恶",
+      "心情恶",
+      "模糊一片，强分哀乐",
+      "拟将欢笑排离索，镜中无奈颜非昨",
+      "颜非昨",
+      "才华尚浅，因何福薄"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 125,
+    "title": "酒泉子·谢却荼蘼",
+    "content": [
+      "谢却荼蘼，一片月明如水",
+      "篆香消，犹未睡，早鸦啼",
+      "嫩寒无赖罗衣薄，休傍阑干角",
+      "最愁人，灯欲落，雁还飞"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 126,
+    "title": "菩萨蛮·问君何事轻离别",
+    "content": [
+      "问君何事轻离别，一年能几团圆月",
+      "杨柳乍如丝",
+      "故园春尽时",
+      "春归归不得，两桨松花隔",
+      "旧事逐寒潮，啼鹃恨未消"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 127,
+    "title": "生查子·东风不解愁",
+    "content": [
+      "东风不解愁，偷展湘裙衩",
+      "独夜背纱笼，影著纤腰画",
+      "爇尽水沉烟，露滴鸳鸯瓦",
+      "花骨冷宜香，小立樱桃下"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 128,
+    "title": "浣溪沙·谁念西风独自凉",
+    "content": [
+      "谁念西风独自凉，萧萧黄叶闭疏窗，沉思往事立残阳",
+      "被酒莫惊春睡重，赌书消得泼茶香，当时只道是寻常"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 129,
+    "title": "浣溪沙·郊游联句",
+    "content": [
+      "出郭寻春春已阑(陈维崧)，东风吹面不成寒(秦松龄)，青村几曲到西山(严绳孙)",
+      "并马未须愁路远(姜宸英)，看花且莫放杯闲(朱彝尊)，人生别易会常难(纳兰性德)"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 130,
+    "title": "采桑子·谁翻乐府凄凉曲",
+    "content": [
+      "谁翻乐府凄凉曲",
+      "风也萧萧，雨也萧萧，瘦尽灯花又一宵",
+      "不知何事萦怀抱，醒也无聊，醉也无聊，梦也何曾到谢桥"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 131,
+    "title": "生查子·短焰剔残花",
+    "content": [
+      "短焰剔残花，夜久边声寂",
+      "倦舞却闻鸡，暗觉青绫湿",
+      "天水接冥蒙，一角西南白",
+      "欲渡浣花溪，远梦轻无力"
+    ],
+    "author": {
+      "id": 34,
+      "name": "纳兰性德"
+    },
+    "dynasty": {
+      "id": 10,
+      "name": "清",
+      "name_en": "Qing",
+      "start_year": 1644,
+      "end_year": 1912
+    },
+    "type": {
+      "id": 9,
+      "name": "宋词",
+      "category": "词",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "词牌体裁作品"
+    },
+    "dataset_key": "nalanxingde"
+  },
+  {
+    "id": 132,
+    "title": "诈妮子调风月・仙吕/点绛唇",
+    "content": [
+      "半世为人，不曾教大人心困。",
+      "虽是搽胭粉，只争不裹头巾，将那等不做人的婆娘恨。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 133,
+    "title": "诈妮子调风月・那吒令",
+    "content": [
+      "等不得水温，一声要面盆；恰递与面盆，一声要手巾；却执与手巾，一声解纽门。",
+      "使的人无淹润、百般支分！"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 134,
+    "title": "诈妮子调风月・元和令",
+    "content": [
+      "无男儿只一身，担寂寞受孤闷；有男儿呓梦入劳魂，心肠百处分。",
+      "知得有情人不曾来问肯，便待要成眷姻。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 135,
+    "title": "诈妮子调风月・上马娇",
+    "content": [
+      "自勘婚，自说亲，也是\"贱媳妇责媒人\"。",
+      "往常我冰清玉洁难亲近，是他亲，子管教话儿亲。",
+      "我煞待嗔，我便恶相闻。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 136,
+    "title": "诈妮子调风月・胜葫芦",
+    "content": [
+      "怕不依随蒙君一夜恩，争奈忒达地、忒知根，兼上亲上成亲好对门。",
+      "觑了他兀的模样，这般身分。",
+      "若脱过这好郎君。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 137,
+    "title": "诈妮子调风月・幺篇",
+    "content": [
+      "教人道\"眼里无珍一世贫\"；成就了又怕辜恩。",
+      "若往常烈焰飞腾情性紧，若一遭儿恩爱，再来不问，枉侵了这百年恩。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 138,
+    "title": "诈妮子调风月・柳叶儿",
+    "content": [
+      "一个个背槽抛粪，一个个负义忘恩，自来鱼雁无音信。",
+      "自思忖，不审得话儿真，枉葫芦提了\"燕尔新婚。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 139,
+    "title": "诈妮子调风月・中吕/粉蝶儿",
+    "content": [
+      "年例寒食，邻姬每斗来邀会，去年时没人将我拘管收拾。",
+      "打秋千，闲斗草，直到个昏天黑地；今年个不敢来迟，有一个未拿着性儿女婿。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 140,
+    "title": "诈妮子调风月・朱履曲",
+    "content": [
+      "莫不是郊外去逢着甚邪祟？",
+      "又不疯又不呆痴，面没罗、呆答孩、死堆灰。",
+      "这烦恼在谁身上？",
+      "莫不在我根底，打听得些闲是非？"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  },
+  {
+    "id": 141,
+    "title": "诈妮子调风月・满庭芳",
+    "content": [
+      "见我这般微微喘息，语言恍惚，脚步儿查梨。",
+      "慢松松胸带儿频那系，裙腰儿空闲里偷提。",
+      "见我这般气丝丝偏斜了髟。"
+    ],
+    "author": {
+      "id": 35,
+      "name": "关汉卿"
+    },
+    "dynasty": {
+      "id": 9,
+      "name": "元",
+      "name_en": "Yuan",
+      "start_year": 1271,
+      "end_year": 1368
+    },
+    "type": {
+      "id": 10,
+      "name": "元曲",
+      "category": "曲",
+      "lines": null,
+      "chars_per_line": null,
+      "description": "元代散曲与杂剧唱词"
+    },
+    "dataset_key": "yuanqu"
+  }
+]
