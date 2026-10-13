@@ -418,7 +418,7 @@ from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 from html import escape as _html_escape, unescape as _html_unescape
 from html.parser import HTMLParser
-from urllib.parse import quote, urljoin, urlparse
+from urllib.parse import quote, urljoin, urlparse, parse_qs, unquote
 from datetime import datetime, timezone, timedelta
 
 try:
@@ -1180,7 +1180,9 @@ MAINLAND_NEWS_SOURCES = (
      "desc": "新华社《经济参考报》官网，宏观政策与产业经济"},
     {"name": "IT之家", "region": "内地",
      "url": "https://www.ithome.com/",
-     "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     # 2026-10-13 实测官方订阅可用（https://www.ithome.com/rss/，最新条目比站内检索新约 11 小时）；
+     # 官方源挂了才回退站内检索（记为备用源事件）。
+     "feed": "https://www.ithome.com/rss/",
      "hosts": ("ithome.com", "www.ithome.com", "m.ithome.com"),
      "desc": "科技产业资讯（消费电子 / 半导体 / 互联网平台动态）"},
     {"name": "券商中国", "region": "内地",
@@ -1206,7 +1208,10 @@ MAINLAND_NEWS_SOURCES = (
     {"name": "证券之星", "region": "内地",
      "url": "https://www.stockstar.com/",
      "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
-     "hosts": ("stockstar.com", "www.stockstar.com", "m.stockstar.com"),
+     # 2026-10-13 实测：站内检索返回的多是 wap / hk 两个子域的原文链接，
+     # 旧白名单不认这两个主机，条目会被整条剔掉，故补齐子域。
+     "hosts": ("stockstar.com", "www.stockstar.com", "m.stockstar.com",
+               "wap.stockstar.com", "hk.stockstar.com"),
      "desc": "证券之星，行情 / 基金 / 个股资讯与数据服务"},
     {"name": "证券时报网", "region": "内地",
      "url": "https://www.stcn.com/",
@@ -1216,7 +1221,10 @@ MAINLAND_NEWS_SOURCES = (
     {"name": "和讯网", "region": "内地",
      "url": "https://www.hexun.com/",
      "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
-     "hosts": ("hexun.com", "www.hexun.com", "news.hexun.com", "stock.hexun.com"),
+     # 2026-10-13 实测：站内检索的原文链接分布在 bank / auto / futures 等频道子域，
+     # 旧白名单只认 news / stock，故补齐频道子域。
+     "hosts": ("hexun.com", "www.hexun.com", "news.hexun.com", "stock.hexun.com",
+               "bank.hexun.com", "auto.hexun.com", "futures.hexun.com"),
      "desc": "和讯网，股票 / 基金 / 财经综合资讯"},
     {"name": "金融投资报", "region": "内地",
      "url": "https://www.jrtzb.com.cn/",
@@ -1236,6 +1244,9 @@ MAINLAND_NEWS_SOURCES = (
     {"name": "凤凰网财经", "region": "内地",
      "url": "https://finance.ifeng.com/",
      "feed": "",          # 官方订阅地址（有就填这里；留空 = 走站内检索 RSS）
+     # 2026-10-13 实测：site:ifeng.com 抓回来的 12 条里只有 1 条是财经（其余是资讯 /
+     # 地方 / 汽车频道），改检索 finance.ifeng.com 后 12 条全为财经频道内容。
+     "site": "finance.ifeng.com",
      "hosts": ("ifeng.com", "finance.ifeng.com", "www.ifeng.com"),
      "desc": "凤凰网财经频道，市场资讯与公司报道"},
 )
@@ -3599,6 +3610,70 @@ def _news_url(raw, hosts):
     return str(raw).strip()
 
 
+# 只提供 http 原文的站点：本仓库**逐站实测确认 https 版可访问**后才放进这里，
+# 放行后链接从「平台跳转」升级为「原文直达」。没实测过的站一个都不放——
+# 与其猜一个可能打不开的链接，不如退回平台跳转（或如实剔除）。
+# 已实测：jjckb.cn（2026-10-13 打开 https 首页正常）；zqrb.cn 实测 https 打不开，故不列入。
+_SEARCH_HTTP_UPGRADE_HOSTS = ("jjckb.cn", "www.jjckb.cn")
+
+
+def _https_upgrade(raw, hosts):
+    """http 原文链接 → https（仅限 ``_SEARCH_HTTP_UPGRADE_HOSTS`` 里实测过的主机）。"""
+    u = str(raw or "").strip()
+    if not u.lower().startswith("http://"):
+        return ""
+    try:
+        host = (urlparse(u).hostname or "").lower()
+    except ValueError:
+        return ""
+    if host not in _SEARCH_HTTP_UPGRADE_HOSTS:
+        return ""
+    return _news_url("https" + u[4:], hosts)
+
+
+def _resolve_search_link(raw, hosts):
+    """检索平台跳转链接 → 可渲染的外链（站内检索路径专用）。
+
+    2026-10-13 修：Bing News 站内检索 RSS 的 <link> 是
+    ``http://www.bing.com/news/apiclick.aspx?...&url=<原文链接>``——明文 http +
+    跳转域名，直接交给 ``_news_url``（要求 https + 白名单主机）会被整条拒掉，
+    于是**所有依赖站内检索的源头天天 0 条**（内地财经媒体 18 家即为此列队，
+    自 2026-10-12 上线起每份日报都写成「暂缺」）。
+
+    两步还原，任一步都保持「不猜、不降级放行」的旧口径：
+      ① 解出跳转地址 ``url=`` 参数指向的原文链接（https + 媒体自己的域名）→ 直达原文；
+      ② 解不出来、或原文链接不过白名单（例如该站只提供 http 原文）→ 把跳转链接
+         自身升级为 https 再校验一次（Bing / Google News 均支持 https 跳转）；
+      ③ 仍不过 → 返回空，该条目整条剔除（与 _news_url 完全同口径）。
+
+    非跳转链接（官方订阅里的原文直链）第一步就原样返回，行为与旧版一致。
+    """
+    direct = _news_url(raw, hosts) or _https_upgrade(raw, hosts)
+    if direct:
+        return direct
+    raw_s = str(raw or "").strip()
+    try:
+        parsed = urlparse(raw_s)
+    except ValueError:
+        return ""
+    if not parsed.hostname:
+        return ""
+    host = parsed.hostname.lower()
+    if host == "bing.com" or host.endswith(".bing.com") or host.endswith("news.google.com"):
+        # ① Bing 把原文地址百分号编码在 url= 参数里（可能是 https，也可能是只提供
+        #    http 原文的老站）——解出来过白名单就用它（直达原文，体验最好）。
+        cand = (parse_qs(parsed.query or "").get("url") or [""])[0]
+        if cand:
+            cand = unquote(cand).strip()
+            resolved = _news_url(cand, hosts) or _https_upgrade(cand, hosts)
+            if resolved:
+                return resolved
+        # ② 原文链接不可用（如该站只提供 http 原文）→ 平台跳转链接自身升级为 https。
+        if parsed.scheme == "http":
+            return _news_url("https" + raw_s[4:], hosts)
+    return ""
+
+
 def _hk_theme_hits(word, text):
     """主题词命中计数：ASCII 词按字母边界（避免 rate 命中 generate），中文按子串。"""
     if all(ord(c) < 128 for c in word):
@@ -3676,7 +3751,15 @@ _HK_NEWS_BACKUP_LINK_HOSTS = ("www.bing.com", "bing.com", "news.google.com")
 
 
 def _hk_news_site_host(cfg):
-    """新闻源头用于 site: 检索的主域名：取 hosts 里最短的一个（如 hket.com）。"""
+    """新闻源头用于 site: 检索的主域名：取 hosts 里最短的一个（如 hket.com）。
+
+    2026-10-13 起支持 ``site`` 字段显式指定：凤凰网财经这类「财经频道挂在泛资讯
+    大域下」的媒体，检索最短域（ifeng.com）抓回来的多是资讯 / 地方 / 汽车频道，
+    财经条目的占比低到没法用；指定 finance.ifeng.com 才检索到财经频道本身。
+    """
+    override = str(cfg.get("site") or "").strip()
+    if override:
+        return override
     hosts = [h for h in (cfg.get("hosts") or ()) if h]
     if not hosts:
         try:
@@ -3704,71 +3787,88 @@ def fetch_hk_news_sources():
 
     def _fetch_one(cfg):
         # 数据线 hk_news_rss：主源 媒体官方订阅 → 备用源1 Bing 站内检索 RSS → 备用源2 Google News 站内检索 RSS
+        # 2026-10-13 修：候选源逐个试到「有可用条目」为止（与内地财经媒体同口径）——
+        # 旧版停在第一个「解析得出条目」的源，Bing 检索 RSS 的明文 http 跳转链接会被
+        # 白名单整条拒掉，导致配了官方订阅却取不到的源头（24 家里的一大半）直接判空，
+        # 后面能用的 Google News 备用源根本轮不到。
         site_host = _hk_news_site_host(cfg)
         hk_urls = [cfg["feed"]] + _backup.get_news_site_backup_urls(site_host)
-        xml_text, served_url, _ = safe_request_with_fallback(
-            hk_urls, is_json=False, timeout=10,
-            validate=lambda t: bool(_parse_rss_items(t, limit=HK_NEWS_SCAN_LIMIT)))
-        parsed = _parse_rss_items(xml_text, limit=HK_NEWS_SCAN_LIMIT) if xml_text else []
-        via_backup = bool(served_url) and served_url != cfg["feed"]
-        allowed_hosts = tuple(cfg.get("hosts") or ())
-        if via_backup:
-            _note_backup_served("hk_news_rss", served_url, feed=cfg["feed"], host=site_host)
-            # 备用源条目的链接经检索平台跳转：放行该平台主机名（仍要求 https）
-            allowed_hosts = allowed_hosts + _HK_NEWS_BACKUP_LINK_HOSTS
+        base_hosts = tuple(cfg.get("hosts") or ())
         rec = {"name": cfg.get("name", "?"), "region": cfg.get("region", ""),
-               "url": cfg.get("url", ""), "hosts": tuple(cfg.get("hosts") or ()),
+               "url": cfg.get("url", ""), "hosts": base_hosts,
                "desc": cfg.get("desc", ""), "feed": cfg.get("feed", ""),
                "status": "fail", "scanned": 0, "today": 0, "newest": None,
-               "items": [], "hk_titles": [], "hk_n": 0, "note": "",
-               "served_by": ("备用源" if via_backup else "主源")}
-        if not parsed:
-            rec["note"] = "自动抓取失败（源可能需登录/被限流，或订阅地址变化），暂缺"
+               "items": [], "hk_titles": [], "hk_n": 0, "note": "", "served_by": "—"}
+        tried, last_parsed_empty = 0, None
+        for _url in hk_urls:
+            xml_text, served_url, _ = safe_request_with_fallback(
+                [_url], is_json=False, timeout=10,
+                validate=lambda t: bool(_parse_rss_items(t, limit=HK_NEWS_SCAN_LIMIT)))
+            parsed = _parse_rss_items(xml_text, limit=HK_NEWS_SCAN_LIMIT) if xml_text else []
+            if not parsed:
+                continue
+            tried += 1
+            via_backup = bool(served_url) and served_url != cfg["feed"]
+            allowed_hosts = base_hosts
+            if via_backup:
+                # 备用源条目的链接经检索平台跳转：放行该平台主机名（仍要求 https）
+                allowed_hosts = base_hosts + _HK_NEWS_BACKUP_LINK_HOSTS
+            fresh, newest, fresh_today = [], None, 0
+            for row in parsed:
+                raw_date = str(row.get("published") or "").strip()
+                # 没有显式时区就不能确定自然日，拒绝用运行机器的本地时区猜测（与 Reddit 源同口径）。
+                if not re.search(r"(?:Z|[+-]\d{2}:?\d{2}|\bGMT|\bUTC)$", raw_date, re.I):
+                    continue
+                try:
+                    dt = datetime.strptime(str(row.get("published_cst") or ""),
+                                           "%Y-%m-%d %H:%M").replace(tzinfo=CST)
+                except ValueError:
+                    continue
+                if not _public_recent(dt, now, HK_NEWS_WINDOW_HOURS):
+                    continue
+                url = (_news_url(row.get("url"), allowed_hosts) if not via_backup
+                       else _resolve_search_link(row.get("url"), allowed_hosts))
+                title = _public_text(row.get("title"), 160)
+                if via_backup and " - " in title:
+                    title = title.rsplit(" - ", 1)[0].strip() or title   # 检索平台附加的「 - 媒体名」
+                if not (url and title):
+                    continue
+                fresh.append({"title": title, "url": url,
+                              "published_cst": dt.strftime("%Y-%m-%d %H:%M"),
+                              "is_today": dt.date() == now.date(),
+                              "relevant": bool(_HK_NEWS_KW_RE.search(title))})
+                if not newest or dt > newest:
+                    newest = dt
+                if dt.date() == now.date():
+                    fresh_today += 1
+            if not fresh:
+                # 解析成功但 0 条可用（例如检索源链接全被拒）→ 换下一个候选源再试。
+                last_parsed_empty = served_url or _url
+                continue
+            if via_backup:
+                _note_backup_served("hk_news_rss", served_url, feed=cfg["feed"], host=site_host)
+            hk_all = [it for it in fresh if it["relevant"]]
+            hk_items = hk_all[:HK_NEWS_PER_SOURCE]
+            for it in hk_items:
+                it["detail"] = f"发布于 {it['published_cst']}（北京时间）"
+            rec.update({
+                "status": "ok", "scanned": len(fresh), "today": fresh_today,
+                "newest": newest.strftime("%Y-%m-%d"), "items": hk_items,
+                "hk_titles": [it["title"] for it in hk_all],
+                "hk_n": len(hk_all),
+                "served_by": ("备用源" if via_backup else "主源"),
+            })
+            if via_backup:
+                rec["note"] = ("官方订阅不可用，本次经站内检索备用源"
+                               f"（{'Bing' if 'bing.com' in served_url else 'Google News'}）取得")
             return rec
-        fresh, newest, fresh_today = [], None, 0
-        for row in parsed:
-            raw_date = str(row.get("published") or "").strip()
-            # 没有显式时区就不能确定自然日，拒绝用运行机器的本地时区猜测（与 Reddit 源同口径）。
-            if not re.search(r"(?:Z|[+-]\d{2}:?\d{2}|\bGMT|\bUTC)$", raw_date, re.I):
-                continue
-            try:
-                dt = datetime.strptime(str(row.get("published_cst") or ""),
-                                       "%Y-%m-%d %H:%M").replace(tzinfo=CST)
-            except ValueError:
-                continue
-            if not _public_recent(dt, now, HK_NEWS_WINDOW_HOURS):
-                continue
-            url = _news_url(row.get("url"), allowed_hosts)
-            title = _public_text(row.get("title"), 160)
-            if via_backup and " - " in title:
-                title = title.rsplit(" - ", 1)[0].strip() or title   # 检索平台附加的「 - 媒体名」
-            if not (url and title):
-                continue
-            fresh.append({"title": title, "url": url,
-                          "published_cst": dt.strftime("%Y-%m-%d %H:%M"),
-                          "is_today": dt.date() == now.date(),
-                          "relevant": bool(_HK_NEWS_KW_RE.search(title))})
-            if not newest or dt > newest:
-                newest = dt
-            if dt.date() == now.date():
-                fresh_today += 1
-        if not fresh:
+        rec["note"] = (f"近 {HK_NEWS_WINDOW_HOURS} 小时窗口内无可验证发布时间的新内容"
+                       f"（已试 {tried} 路候选源" +
+                       (f"，最后一路 {last_parsed_empty}）" if last_parsed_empty else "）")
+                      if tried else
+                      "自动抓取失败（源可能需登录/被限流，或订阅地址变化），暂缺")
+        if tried:
             rec["status"] = "empty"
-            rec["note"] = f"近 {HK_NEWS_WINDOW_HOURS} 小时窗口内无可验证发布时间的新内容"
-            return rec
-        hk_all = [it for it in fresh if it["relevant"]]
-        hk_items = hk_all[:HK_NEWS_PER_SOURCE]
-        for it in hk_items:
-            it["detail"] = f"发布于 {it['published_cst']}（北京时间）"
-        rec.update({
-            "status": "ok", "scanned": len(fresh), "today": fresh_today,
-            "newest": newest.strftime("%Y-%m-%d"), "items": hk_items,
-            "hk_titles": [it["title"] for it in hk_all],
-            "hk_n": len(hk_all),
-        })
-        if via_backup:
-            rec["note"] = ("官方订阅不可用，本次经站内检索备用源"
-                           f"（{'Bing' if 'bing.com' in served_url else 'Google News'}）取得")
         return rec
 
     records = [None] * len(HK_NEWS_SOURCES)
@@ -3848,77 +3948,102 @@ def fetch_mainland_news_sources():
         official_feed = str(cfg.get("feed") or "").strip()
         search_urls = _backup.get_mainland_news_site_urls(site_host)
         urls = ([official_feed] + search_urls) if official_feed else search_urls
-        xml_text, served_url, _ = safe_request_with_fallback(
-            urls, is_json=False, timeout=10,
-            validate=lambda t: bool(_parse_rss_items(t, limit=MAINLAND_NEWS_SCAN_LIMIT)))
-        parsed = _parse_rss_items(xml_text, limit=MAINLAND_NEWS_SCAN_LIMIT) if xml_text else []
-        via_official = bool(official_feed) and served_url == official_feed
-        via_backup = bool(official_feed) and bool(served_url) and not via_official
-        via_search = (not official_feed) and bool(served_url)
-        if via_backup:
-            # 只在该媒体「配了官方订阅却没取到」时记备用源事件；无官方订阅的站内检索是常规路径。
-            _note_backup_served("mainland_news_rss", served_url, feed=official_feed, host=site_host)
-        allowed_hosts = tuple(cfg.get("hosts") or ())
-        if via_backup or via_search:
-            allowed_hosts = allowed_hosts + _HK_NEWS_BACKUP_LINK_HOSTS
+        base_hosts = tuple(cfg.get("hosts") or ())
         rec = {"name": cfg.get("name", "?"), "region": cfg.get("region", ""),
-               "url": cfg.get("url", ""), "hosts": tuple(cfg.get("hosts") or ()),
+               "url": cfg.get("url", ""), "hosts": base_hosts,
                "desc": cfg.get("desc", ""), "feed": official_feed,
                "status": "fail", "scanned": 0, "today": 0, "newest": None,
-               "items": [], "titles": [], "note": "",
-               "served_by": ("官方订阅" if via_official else
-                             ("备用源（站内检索）" if via_backup else
-                              ("站内检索" if via_search else "—")))}
-        if not parsed:
+               "items": [], "titles": [], "note": "", "served_by": "—",
+               # 时效体检字段（2026-10-13 新增，供「内地财经热点榜」的源头体检行使用）
+               "newest_cst": None, "lag_hours": None, "state": "暂缺", "via": "—"}
+        # 2026-10-13 修：候选源逐个试，直到拿到**可用条目**为止。
+        # 旧版只试第一个「解析得出条目」的源——Bing 检索 RSS 解析没问题，但条目链接
+        # 全是明文 http 跳转、会被白名单整条拒掉，于是停在 Bing 上永远 0 条，
+        # 后面真正能用的 Google News 备用源根本轮不到。解析成功但 0 条可用 → 继续下一个。
+        tried, last_parsed_empty = 0, None
+        for _url in urls:
+            xml_text, served_url, _ = safe_request_with_fallback(
+                [_url], is_json=False, timeout=10,
+                validate=lambda t: bool(_parse_rss_items(t, limit=MAINLAND_NEWS_SCAN_LIMIT)))
+            parsed = _parse_rss_items(xml_text, limit=MAINLAND_NEWS_SCAN_LIMIT) if xml_text else []
+            if not parsed:
+                continue
+            tried += 1
+            via_official = bool(official_feed) and served_url == official_feed
+            via_backup = bool(official_feed) and bool(served_url) and not via_official
+            via_search = (not official_feed) and bool(served_url)
+            allowed_hosts = base_hosts
+            if via_backup or via_search:
+                allowed_hosts = base_hosts + _HK_NEWS_BACKUP_LINK_HOSTS
+            fresh, newest, fresh_today = [], None, 0
+            for row in parsed:
+                raw_date = str(row.get("published") or "").strip()
+                # 没有显式时区就不确定自然日，拒绝用运行机器的本地时区猜测（与港股新闻源头同口径）。
+                if not re.search(r"(?:Z|[+-]\d{2}:?\d{2}|\bGMT|\bUTC)$", raw_date, re.I):
+                    continue
+                try:
+                    dt = datetime.strptime(str(row.get("published_cst") or ""),
+                                           "%Y-%m-%d %H:%M").replace(tzinfo=CST)
+                except ValueError:
+                    continue
+                if not _public_recent(dt, now, MAINLAND_NEWS_WINDOW_HOURS):
+                    continue
+                # 检索源的链接是平台跳转（Bing 还是明文 http），交给 _resolve_search_link 还原
+                url = (_news_url(row.get("url"), allowed_hosts) if via_official
+                       else _resolve_search_link(row.get("url"), allowed_hosts))
+                title = _public_text(row.get("title"), 160)
+                if not via_official and " - " in title:
+                    title = title.rsplit(" - ", 1)[0].strip() or title   # 检索平台附加的「 - 媒体名」
+                if not (url and title):
+                    continue
+                fresh.append({"title": title, "url": url,
+                              "published_cst": dt.strftime("%Y-%m-%d %H:%M"),
+                              "date": dt.strftime("%Y-%m-%d"),
+                              "is_today": dt.date() == now.date()})
+                if not newest or dt > newest:
+                    newest = dt
+                if dt.date() == now.date():
+                    fresh_today += 1
+            if not fresh:
+                # 解析得出条目、但过滤后 0 条可用：记一笔，换下一个候选源再试。
+                last_parsed_empty = served_url or _url
+                continue
+            if via_backup:
+                # 只在该媒体「配了官方订阅却没取到」时记备用源事件；无官方订阅的站内检索是常规路径。
+                _note_backup_served("mainland_news_rss", served_url,
+                                    feed=official_feed, host=site_host)
+            items = fresh[:MAINLAND_NEWS_PER_SOURCE]
+            for it in items:
+                it["detail"] = f"发布于 {it['published_cst']}（北京时间）"
+            # 时钟抖动（抓取时刻略早于条目时间，偶发几秒）不允许出现负滞后。
+            lag_hours = max(0.0, round((now - newest).total_seconds() / 3600.0, 1))
+            rec.update({
+                "status": "ok", "scanned": len(fresh), "today": fresh_today,
+                "newest": newest.strftime("%Y-%m-%d"), "items": items,
+                "titles": [it["title"] for it in fresh],
+                "newest_cst": newest.strftime("%Y-%m-%d %H:%M"), "lag_hours": lag_hours,
+                "state": ("当天" if newest.date() == now.date() else "窗口内滞后"),
+                "via": ("官方订阅" if via_official else
+                        ("Bing 站内检索" if "bing.com" in (served_url or "")
+                         else "Google 站内检索")),
+                "served_by": ("官方订阅" if via_official else
+                              ("备用源（站内检索）" if via_backup else
+                               ("站内检索" if via_search else "—")))})
+            if via_backup:
+                rec["note"] = ("官方订阅不可用，本次经站内检索备用源"
+                               f"（{'Bing' if 'bing.com' in served_url else 'Google News'}）取得")
+            elif via_search:
+                rec["note"] = "该媒体无可用官方订阅，本次经站内检索 RSS 取得公开标题"
+            return rec
+        if tried:
+            rec["status"] = "empty"
+            rec["note"] = (f"近 {MAINLAND_NEWS_WINDOW_HOURS} 小时窗口内无可验证发布时间的新内容"
+                           f"（已试 {tried} 路候选源" +
+                           (f"，最后一路 {last_parsed_empty}）" if last_parsed_empty else "）"))
+        else:
             rec["note"] = ("自动抓取失败（源可能被限流、订阅地址变化，或站内检索无结果），暂缺"
                            if official_feed else
                            "站内检索未返回结果（可能被限流或该站未被检索平台收录），暂缺")
-            return rec
-        fresh, newest, fresh_today = [], None, 0
-        for row in parsed:
-            raw_date = str(row.get("published") or "").strip()
-            # 没有显式时区就不确定自然日，拒绝用运行机器的本地时区猜测（与港股新闻源头同口径）。
-            if not re.search(r"(?:Z|[+-]\d{2}:?\d{2}|\bGMT|\bUTC)$", raw_date, re.I):
-                continue
-            try:
-                dt = datetime.strptime(str(row.get("published_cst") or ""),
-                                       "%Y-%m-%d %H:%M").replace(tzinfo=CST)
-            except ValueError:
-                continue
-            if not _public_recent(dt, now, MAINLAND_NEWS_WINDOW_HOURS):
-                continue
-            url = _news_url(row.get("url"), allowed_hosts)
-            title = _public_text(row.get("title"), 160)
-            if not via_official and " - " in title:
-                title = title.rsplit(" - ", 1)[0].strip() or title   # 检索平台附加的「 - 媒体名」
-            if not (url and title):
-                continue
-            fresh.append({"title": title, "url": url,
-                          "published_cst": dt.strftime("%Y-%m-%d %H:%M"),
-                          "date": dt.strftime("%Y-%m-%d"),
-                          "is_today": dt.date() == now.date()})
-            if not newest or dt > newest:
-                newest = dt
-            if dt.date() == now.date():
-                fresh_today += 1
-        if not fresh:
-            rec["status"] = "empty"
-            rec["note"] = (f"近 {MAINLAND_NEWS_WINDOW_HOURS} 小时窗口内"
-                           "无可验证发布时间的新内容")
-            return rec
-        items = fresh[:MAINLAND_NEWS_PER_SOURCE]
-        for it in items:
-            it["detail"] = f"发布于 {it['published_cst']}（北京时间）"
-        rec.update({
-            "status": "ok", "scanned": len(fresh), "today": fresh_today,
-            "newest": newest.strftime("%Y-%m-%d"), "items": items,
-            "titles": [it["title"] for it in fresh],
-        })
-        if via_backup:
-            rec["note"] = ("官方订阅不可用，本次经站内检索备用源"
-                           f"（{'Bing' if 'bing.com' in served_url else 'Google News'}）取得")
-        elif via_search:
-            rec["note"] = "该媒体无可用官方订阅，本次经站内检索 RSS 取得公开标题"
         return rec
 
     records = [None] * MAINLAND_NEWS_TOTAL
@@ -3963,8 +4088,25 @@ def fetch_mainland_news_sources():
     today_n = sum(int(r.get("today") or 0) for r in records)
     newest = max((r["newest"] for r in records if r.get("newest")), default=None)
     missing = [r["name"] for r in records if r.get("status") != "ok"]
+    # 时效体检（2026-10-13 新增）：逐源记「窗口内条数 / 最新条目北京时间 / 滞后小时数 /
+    # 当天还是滞后」，供【沸腾花蛤】内地财经热点榜的体检行与总结的数据覆盖共用。
+    health = [{"name": r.get("name", "?"), "status": r.get("status", "fail"),
+               "items": len([it for it in (r.get("items") or []) if isinstance(it, dict)]),
+               "newest_cst": r.get("newest_cst"), "lag_hours": r.get("lag_hours"),
+               "state": r.get("state") or "暂缺", "via": r.get("via") or "—"}
+              for r in records]
+    newest_cst = max((r["newest_cst"] for r in records if r.get("newest_cst")), default=None)
+    lag_hours = None
+    if newest_cst:
+        try:
+            lag_hours = max(0.0, round(
+                (now - datetime.strptime(newest_cst, "%Y-%m-%d %H:%M")
+                 .replace(tzinfo=CST)).total_seconds() / 3600.0, 1))
+        except ValueError:
+            lag_hours = None
     analysis = {"scanned": scanned, "ok_n": ok_n, "today_n": today_n,
-                "newest": newest, "items_n": len(headlines), "merged": merged}
+                "newest": newest, "items_n": len(headlines), "merged": merged,
+                "health": health, "newest_cst": newest_cst, "lag_hours": lag_hours}
     note = (f"只收录 {MAINLAND_NEWS_TOTAL} 家内地财经媒体公开信息源"
             "（官方订阅优先，无官方订阅的走站内检索 RSS）的标题、发布时间与原文链接（北京时间）；"
             "不做港股过滤，供新闻情绪因子 / 政策因子 / 策略研判共用标题池；"
@@ -3989,6 +4131,216 @@ def fetch_mainland_news_sources():
         is_today=today_n > 0, content_date=newest,
         sources=records, headlines=headlines, analysis=analysis, note=note,
         partial=bool(missing), error=None)
+
+
+# ============================================================
+# 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）
+#   内地 18 家财经媒体的窗口内标题 → 按主题词表聚类成热点榜，并附每家的时效体检。
+#   规则合成、确定性、可复现：同一批标题永远得到同一份榜；未命中的进「其他 / 未归类」，
+#   绝不按热度猜、不复制正文、不给买卖建议。
+# ============================================================
+SECTION_TITLE_MAINLAND_HOTLIST = "【沸腾花蛤】内地财经热点榜"
+MAINLAND_HOTLIST_ENABLED = _env_flag("OCTOPUS_MAINLAND_HOTLIST", True)
+MAINLAND_HOTLIST_THEME_MAX = 8          # 全量版最多列几个主题（按条数降序）
+MAINLAND_HOTLIST_THEME_MAX_PLAIN = 5    # 入门版
+MAINLAND_HOTLIST_ITEMS_PER_THEME = 3    # 每个主题列几条代表标题
+MAINLAND_HOTLIST_ITEMS_PER_THEME_PLAIN = 1
+MAINLAND_HOT_OTHER_LABEL = "其他 / 未归类"
+
+# 主题词表：**按顺序**命中第一个就算归类（一词多家命中不重复计数）。
+# 纯 ASCII 关键词走大小写敏感匹配（避免 AI 命中 said / chain 之类），中文走子串匹配。
+MAINLAND_HOT_THEMES = (
+    ("政策与监管", ("政策", "监管", "证监会", "央行", "国常会", "发改委", "财政部", "税务总局",
+                  "工信部", "商务部", "金融监管总局", "新规", "征求意见", "管理办法", "条例",
+                  "座谈会", "约谈", "处罚", "立案", "调查", "反垄断", "反内卷", "降准", "降息",
+                  "退税", "补贴", "以旧换新", "试点", "整治", "合规", "问询", "自律")),
+    ("宏观与数据", ("GDP", "CPI", "PPI", "PMI", "通胀", "进出口", "外贸", "社融", "信贷", "M2",
+                  "经济", "增长", "失业", "人口", "统计局", "IMF", "世界银行", "诺贝尔",
+                  "制造业", "景气", "逆回购", "公开市场")),
+    ("A股盘面", ("A股", "沪指", "上证", "深成", "创业板", "科创", "北交所", "两市", "涨停", "跌停",
+                "板块", "概念", "大盘", "收盘", "开盘", "午评", "收评", "主力", "北向", "沪深",
+                "定增", "回购", "IPO", "新股", "退市", "个股", "异动", "成交额", "注册制")),
+    ("港股与外围", ("港股", "恒生", "恒指", "恒科", "H股", "美股", "纳指", "道指", "标普", "日股",
+                  "韩股", "欧股", "隔夜", "中概", "金龙指数", "KOSPI", "日经", "牛熊证")),
+    ("半导体与算力", ("芯片", "半导体", "晶圆", "存储", "算力", "GPU", "CPU", "光刻", "封装",
+                    "AI", "人工智能", "大模型", "数据中心", "光模块", "CPO", "PCB", "覆铜板",
+                    "电子布", "服务器", "机器人", "具身智能", "液冷", "智能眼镜")),
+    ("新能源与汽车", ("新能源", "汽车", "车企", "电动", "电池", "锂", "光伏", "硅料", "储能",
+                    "充电", "智驾", "车展", "特斯拉", "比亚迪", "固态电池", "整车", "产销",
+                    "轨道交通")),
+    ("消费与医药", ("消费", "白酒", "食品", "饮料", "零售", "餐饮", "旅游", "免税", "医药",
+                  "创新药", "医疗", "集采", "生物", "医美", "短剧", "潮玩", "宠物")),
+    ("大宗与商品", ("黄金", "原油", "油价", "铜", "铝", "铁矿", "煤炭", "稀土", "商品", "期货",
+                  "大宗", "天然气", "金价", "钢材")),
+    ("地产与金融", ("地产", "房地产", "楼市", "房贷", "银行", "保险", "券商", "基金", "公募",
+                  "私募", "信托", "理财", "存款", "利率", "LPR", "汇率", "贷款", "分红",
+                  "金融街论坛")),
+    ("公司动态", ("业绩", "预告", "净利", "增持", "减持", "收购", "并购", "重组", "中标", "订单",
+                "公告", "分拆", "高管", "股权", "股东", "融资", "扩产", "投产", "涨价", "回应",
+                "诉讼", "重整")),
+)
+
+
+def _mainland_theme_hit(keywords, title):
+    """标题是否命中某主题（中文子串 / ASCII 大小写敏感）。"""
+    text = str(title or "")
+    up = text.upper()
+    for kw in keywords:
+        if kw.isascii():
+            if kw.upper() in up:
+                return True
+        elif kw in text:
+            return True
+    return False
+
+
+def build_mainland_hotlist(mainland):
+    """内地财经媒体标题池 → 热点榜（规则合成，确定性）。
+
+    返回 None 表示该源头不可用 / 窗口内 0 条（栏目整栏缺席，不占位）。
+    每条标题只归一个主题（按 MAINLAND_HOT_THEMES 的顺序命中第一个），
+    因此各主题条数之和恒等于进榜总条数——榜单里不会出现「加起来对不上」。
+    """
+    if not isinstance(mainland, dict) or mainland.get("status") != "success":
+        return None
+    headlines = [h for h in (mainland.get("headlines") or []) if isinstance(h, dict)]
+    headlines = [h for h in headlines if str(h.get("title") or "").strip()
+                 and str(h.get("url") or "").strip()]
+    if not headlines:
+        return None
+
+    def _sort_key(h):
+        return str(h.get("published_cst") or "")
+
+    buckets, used = [], set()
+    for order, (label, keywords) in enumerate(MAINLAND_HOT_THEMES):
+        # 已归类过的不再参与后面的主题（保证「一条只算一次」）：少了这一步，
+        # 一条同时命中两个词的标题会被数两次，各主题条数之和就会大于进榜总数。
+        hits = [h for h in headlines
+                if id(h) not in used and _mainland_theme_hit(keywords, h.get("title"))]
+        if not hits:
+            continue
+        for h in hits:
+            used.add(id(h))
+        media = sorted({str(h.get("source") or "") for h in hits if h.get("source")})
+        buckets.append({"label": label, "order": order, "count": len(hits),
+                        "media": media, "media_n": len(media),
+                        "items": sorted(hits, key=_sort_key, reverse=True),
+                        "today_n": sum(1 for h in hits if h.get("is_today"))})
+    rest = [h for h in headlines if id(h) not in used]
+    if rest:
+        media = sorted({str(h.get("source") or "") for h in rest if h.get("source")})
+        buckets.append({"label": MAINLAND_HOT_OTHER_LABEL, "order": len(MAINLAND_HOT_THEMES),
+                        "count": len(rest), "media": media, "media_n": len(media),
+                        "items": sorted(rest, key=_sort_key, reverse=True),
+                        "today_n": sum(1 for h in rest if h.get("is_today"))})
+    if not buckets:
+        return None
+    buckets.sort(key=lambda b: (-b["count"], b["order"]))
+    analysis = mainland.get("analysis") or {}
+    health = [h for h in (analysis.get("health") or []) if isinstance(h, dict)]
+    # 时效体检汇总：当天 / 窗口内滞后 / 暂缺 各几家（入门版也显示，压缩成一行）
+    today_src = [h for h in health if h.get("state") == "当天"]
+    lag_src = [h for h in health if h.get("state") == "窗口内滞后"]
+    return {
+        # status / is_today 是为了让「🦑 AI帮你提鲜」的活鲜度判断与其他栏目同口径
+        # （octopus_ren._garnish_available 读 status，读不到就当缺席，不加解读块）。
+        "status": "success",
+        "today_sources": len(today_src),
+        "lag_sources": len(lag_src),
+        "themes": buckets,
+        "total": len(headlines),
+        "theme_n": len(buckets),
+        "max_count": max(b["count"] for b in buckets),
+        "ok_n": int(analysis.get("ok_n") or 0),
+        "total_sources": MAINLAND_NEWS_TOTAL,
+        "scanned": int(analysis.get("scanned") or 0),
+        "merged": int(analysis.get("merged") or 0),
+        "newest_cst": analysis.get("newest_cst"),
+        "lag_hours": analysis.get("lag_hours"),
+        "today_n": int(analysis.get("today_n") or 0),
+        "health": health,
+        "missing": [h.get("name") for h in health if h.get("status") != "ok"],
+        "is_today": bool(mainland.get("is_today")),
+    }
+
+
+def _mainland_hotlist_block(res, kit):
+    """热点榜正文：源头时效体检行 + 主题榜（条数 / 占比条 / 涉及媒体 / 代表标题）。"""
+    if not res or not res.get("themes"):
+        return ""
+    rows = []
+    newest = str(res.get("newest_cst") or "")
+    lag = res.get("lag_hours")
+    head_bits = [f'<b>内地财经媒体 ×{res["total_sources"]}</b>',
+                 f'{res["ok_n"]} 家窗口内有更新',
+                 f'进榜 {res["total"]} 条']
+    if newest:
+        head_bits.append(f'最新 {_esc(newest[5:])}')
+        if lag is not None:
+            head_bits.append(f'滞后 {lag:g} 小时')
+    head_bits.append(f'今日 {res["today_n"]} 条')
+    rows.append(kit.item_row("", " · ".join(head_bits) + " " + kit.source_badge(
+        {"status": "success", "is_today": res.get("is_today")}), ""))
+    # 源头时效体检（非入门版）：每家「窗口内条数 + 最新时间（滞后小时）」压成一行，
+    # 谁当天、谁滞后、谁暂缺一眼看全；入门版只报暂缺名单。
+    if not PLAIN():
+        cover = []
+        for h in (res.get("health") or []):
+            if h.get("status") != "ok":
+                continue
+            cell = f'{_esc(str(h.get("name") or ""))} {int(h.get("items") or 0)}'
+            nw = str(h.get("newest_cst") or "")
+            if nw:
+                cell += f' · {_esc(nw[5:])}'
+                if h.get("lag_hours") is not None:
+                    cell += f'（滞后 {float(h["lag_hours"]):g}h）'
+            cover.append(cell)
+        if cover:
+            rows.append(kit.item_row("▤", "<b>时效体检</b>（内地源头 · 窗口内条数 · 最新 / 滞后）",
+                                     _esc(" ｜ ".join(cover))))
+    else:
+        # 入门版：逐家清单太长，压成一行「当天 / 滞后 / 暂缺 各几家」+ 最滞后的那家。
+        bits = [f'当天 {res.get("today_sources", 0)} 家',
+                f'窗口内滞后 {res.get("lag_sources", 0)} 家',
+                f'暂缺 {len(res.get("missing") or [])} 家']
+        worst = [h for h in (res.get("health") or [])
+                 if h.get("status") == "ok" and h.get("lag_hours") is not None]
+        if worst:
+            w = max(worst, key=lambda h: float(h.get("lag_hours") or 0))
+            bits.append(f'最滞后 {_esc(str(w.get("name") or ""))}'
+                        f'（{float(w["lag_hours"]):g} 小时）')
+        rows.append(kit.item_row("▤", "<b>时效体检</b>", _esc(" · ".join(bits))))
+    if res.get("missing"):
+        rows.append(kit.item_row("🕐", "<b>暂缺</b>",
+                                 _esc(f'{len(res["missing"])} 家：' + "、".join(res["missing"]))))
+    theme_max = MAINLAND_HOTLIST_THEME_MAX_PLAIN if PLAIN() else MAINLAND_HOTLIST_THEME_MAX
+    per_theme = (MAINLAND_HOTLIST_ITEMS_PER_THEME_PLAIN if PLAIN()
+                 else MAINLAND_HOTLIST_ITEMS_PER_THEME)
+    shown_themes = res["themes"][:theme_max]
+    for i, b in enumerate(shown_themes, 1):
+        pct = (b["count"] / res["total"] * 100) if res["total"] else 0.0
+        left = (f'<b>{_esc(b["label"])}</b> {kit.meter(b["count"], res["max_count"])}'
+                f' <span style="font-size:11px;">{b["count"]} 条 · {pct:.0f}%</span>')
+        rows.append(kit.item_row(f"{i:02d}", left,
+                                 _esc(f'{b["media_n"]} 家' +
+                                      (f' · {"、".join(b["media"][:3])}'
+                                       + (" 等" if b["media_n"] > 3 else "") if b["media"] else ""))))
+        for it in b["items"][:per_theme]:
+            url = str(it.get("url") or "")
+            title = _public_text(it.get("title"), 120)
+            link = (f'<a href="{_esc(url)}" style="color:{kit.ok_color}">{_esc(title)}</a>'
+                    if url else _esc(title))
+            stamp = str(it.get("published_cst") or "")
+            bits = [str(it.get("source") or "")]
+            if stamp:
+                bits.append(stamp[5:])
+                bits.append("今日" if it.get("is_today") else "昨日及更早")
+            rows.append(kit.item_row("↳", link, _esc(" · ".join(x for x in bits if x))))
+    if len(res["themes"]) > theme_max:
+        rows.append(kit.item_row("…", f'另有 {len(res["themes"]) - theme_max} 个主题未展开',
+                                 _esc("按条数降序，完整的只在全量版（--full）显示")))
+    return kit.rows("".join(rows)) if rows else ""
 
 
 # ============================================================
@@ -5688,6 +6040,8 @@ _SECTION_ICON_META = {
     "INDUSTRY ROTATION": ("◑", "INDUST", C_LEMON, C_FLAT_BG),
     # 港股行情（2026-10-02 新增）：境外数据源（Yahoo / Stooq / HKEX / 可选浏览器）
     "HK QUOTES": ("◍", "HK-MKT", C_CYAN, "#092836"),
+    # 内地财经热点榜（2026-10-13 新增）：18 家内地财经媒体的主题热度榜，✦ = 热度
+    "MAINLAND HOTLIST": ("✦", "CN-HOT", C_AMBER, C_FLAT_BG),
 }
 
 
@@ -7929,6 +8283,9 @@ REPORT_ANALYSIS_SECTIONS = (
 # 抓取、审计、政策因子 / 策略研判 / 新闻情绪 / 逐栏 AI 研判的输入一律不变。
 REPORT_DATA_SECTIONS = (
     "ECON CALENDAR", "MARKET REVIEW", "HK QUOTES", "TREND TRACKING",
+    # 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）：18 家内地媒体的标题按主题聚类，
+    # 紧跟在趋势跟踪（36 源港股挖掘）之后，让「内地口径」与「港股口径」前后相邻。
+    "MAINLAND HOTLIST",
     "NEWS SENTIMENT",
 )
 REPORT_CONCLUSION_SECTIONS = ("SUMMARY", "FORECAST")
@@ -9642,6 +9999,28 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             blocks["TREND TRACKING"] = (
                 "TREND TRACKING", SECTION_TITLE_TREND, digest, "", "")
 
+    # ⑤b 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）：18 家内地财经媒体窗口内标题
+    #     按主题词表聚类（规则合成、确定性），并附每家的时效体检（条数 / 最新时间 /
+    #     滞后小时数 / 暂缺点名）。源头整源不可用或窗口内 0 条 → 整栏缺席，不占位。
+    hotlist_res = None      # 结果对象留存，供「🦑 AI帮你提鲜」复用同一份数字
+    if MAINLAND_HOTLIST_ENABLED:
+        mainland_src = data.get(MAINLAND_NEWS_SOURCE_NAME) or {}
+        hotlist_res = build_mainland_hotlist(mainland_src)
+        if hotlist_res:
+            hot_html = _mainland_hotlist_block(hotlist_res, kit)
+            if hot_html:
+                caption = ""
+                if not PLAIN():
+                    bits = [f'{hotlist_res["total_sources"]} 家内地财经媒体 · 72 小时窗口 · '
+                            f'扫描 {hotlist_res["scanned"]} 条 · 进榜 {hotlist_res["total"]} 条']
+                    if hotlist_res.get("merged"):
+                        bits.append(f'跨源同题合并 {hotlist_res["merged"]} 条')
+                    bits.append("主题按固定词表命中（第一条命中的主题，不重复计数）")
+                    caption = " ｜ ".join(bits)
+                blocks["MAINLAND HOTLIST"] = (
+                    "MAINLAND HOTLIST", SECTION_TITLE_MAINLAND_HOTLIST, hot_html,
+                    kit.badge("内地资讯", "ok"), caption)
+
     # ⑥ 资讯：三个资讯栏目（东方财富快讯 / 【无敌帝王蟹】全球头条 / 港股名家频道）
     #    自 2026-10-02 起全部在页面隐藏（用户要求），不再单独渲染为栏目；
     #    原始抓取数据照旧保留，仅作为 政策因子 / 策略研判 / 新闻情绪 / 逐栏 AI 研判 /
@@ -9702,6 +10081,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     ren_ctx = None
     if REN_ENABLED:
         ren_ctx = {
+            # 【沸腾花蛤】内地财经热点榜：与正文 blocks["MAINLAND HOTLIST"] 同一份结果
+            "hotlist": hotlist_res,
             "date_str": date_str or _today_str(),
             "notes": judge_notes,
             "market": market, "pan": pan, "policy": policy, "ai": ai_result,

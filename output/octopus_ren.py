@@ -576,6 +576,44 @@ def _ren_trend(ctx):
     return text
 
 
+def _ren_mainland_hotlist(ctx):
+    """【沸腾花蛤】内地财经热点榜（2026-10-13 新增）：把 18 家内地媒体的主题热度讲成人话。
+
+    数字全部来自 build_mainland_hotlist() 的同一份结果（不另算一套）；
+    只陈述谁在说、说多少、多新，不做多空判断——热点榜没有概率口径，几率条整条缺席。
+    """
+    res = ctx.get("hotlist") or {}
+    themes = list(res.get("themes") or [])
+    if not themes:
+        return ""
+    seed = f"{ctx.get('date_str') or ''}|MAINLAND HOTLIST"
+    top = themes[0]
+    total = int(res.get("total") or 0)
+    share = (top["count"] / total * 100) if total else 0.0
+    bits = [f"{_int(res.get('ok_n'))}/{_int(res.get('total_sources'))} 家内地媒体在 72 小时窗口里更新了，"
+            f"进榜 {_int(total)} 条"]
+    if total:
+        bits.append(f"最热的是「{top['label']}」{_int(top['count'])} 条（占 {share:.0f}%"
+                    f"，{_int(top.get('media_n'))} 家在说）")
+        if len(themes) > 1:
+            bits.append("接着是" + "、".join(f"「{t['label']}」{_int(t['count'])} 条"
+                                           for t in themes[1:3]))
+    newest = str(res.get("newest_cst") or "")
+    if newest:
+        bit = f"最新一条 {newest[5:]}"
+        lag = res.get("lag_hours")
+        if isinstance(lag, (int, float)):
+            bit += f"，落后现在 {lag:g} 小时"
+        bits.append(bit)
+    bits.append(f"其中当天 {_int(res.get('today_sources'))} 家、窗口内滞后 "
+                f"{_int(res.get('lag_sources'))} 家、暂缺 {len(res.get('missing') or [])} 家")
+    text = "；".join(bits) + "。"
+    text += ("翻译：热点榜只数「谁在说、说了多少」，不数谁说得对——同一件事十家一起喊，"
+             "也不等于它就真要发生；标题是线索，不是结论。"
+             f"今天的姿势：{_tip(seed)}。")
+    return text
+
+
 def _ren_headlines(ctx):
     """全球头条 / 东财快讯：把新闻列表讲成「热搜拼盘」。"""
     kind = ctx.get("_wire_kind") or ""
@@ -718,6 +756,8 @@ _GENERATORS = {
     "EASTMONEY WIRE": _ren_eastmoney_wire,
     "HK GURU CHANNELS": _ren_guru,
     "NEWS SENTIMENT": _ren_sentiment,
+    # 内地财经热点榜（2026-10-13 新增）：18 家内地媒体的主题热度榜
+    "MAINLAND HOTLIST": _ren_mainland_hotlist,
     "HK 7D PROB": _ren_hk7,
     "SUMMARY": _ren_summary,
 }
@@ -749,7 +789,8 @@ def _lexicon():
 # 抓取型内容栏目：新鲜度看 is_today（内容有发布 / 收盘日）；其余为「本次现算」的
 # 分析栏目：available 即视为当天活鲜（现杀现做），无需 is_today 标记。
 _FETCHED_KICKERS = {"MARKET REVIEW", "ECON CALENDAR", "GLOBAL HEADLINES",
-                    "EASTMONEY WIRE", "HK GURU CHANNELS", "TREND TRACKING"}
+                    "EASTMONEY WIRE", "HK GURU CHANNELS", "TREND TRACKING",
+                    "MAINLAND HOTLIST"}
 
 
 def _garnish_obj(kicker, ctx):
@@ -774,6 +815,7 @@ def _garnish_obj(kicker, ctx):
         "EASTMONEY WIRE": ctx.get("em"),
         "HK GURU CHANNELS": ctx.get("yt"),
         "NEWS SENTIMENT": ctx.get("senti"),
+        "MAINLAND HOTLIST": ctx.get("hotlist"),
     }
     return table.get(kicker) or {}
 

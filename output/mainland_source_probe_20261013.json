@@ -1,0 +1,33 @@
+{
+  "_说明": "2026-10-13 沙箱实测：逐源走代码里的真实取数路径（Bing News site: 检索 RSS）与官方订阅探测。checked_cst = 2026-10-13 11:57（北京时间）。",
+  "_采集路径": "https://www.bing.com/news/search?q=site%3A{host}&format=rss —— 与 output/backup_sources.py 的 mainland_news_rss 主备源模板逐字一致",
+  "sources": [
+    {"媒体": "中证网（中国证券报）", "site_host": "cs.com.cn", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 13:22:00 GMT", "折算北京时间": "2026-10-12 21:22", "是否当天": false, "原文链接形态": "apiclick 跳转，url= 参数为 https://www.cs.com.cn/...", "原文链接过白名单": true, "备注": "URL 日期为 10-13，Bing 时间戳落后约 14.6 小时"},
+    {"媒体": "证券日报网 / 证券日报之声", "site_host": "zqrb.cn", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 18:47:00 GMT", "折算北京时间": "2026-10-13 02:47", "是否当天": true, "原文链接形态": "apiclick 跳转，url= 参数为 http://www.zqrb.cn/...（明文 http）", "原文链接过白名单": false, "备注": "同域两源共用一次检索，跨源同题去重"},
+    {"媒体": "中国基金报", "site_host": "chnfund.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 16:54:00 GMT", "折算北京时间": "2026-10-13 00:54", "是否当天": true, "原文链接形态": "https://www.chnfund.com/article/...", "原文链接过白名单": true, "备注": "混有 2024/2025 年旧条目，会被 72 小时窗口过滤"},
+    {"媒体": "财闻", "site_host": "caiwennews.com", "返回条数": 13, "最新pubDate_GMT": "Mon, 12 Oct 2026 15:20:00 GMT", "折算北京时间": "2026-10-12 23:20", "是否当天": false, "原文链接形态": "https://www.caiwennews.com/article/...", "原文链接过白名单": true, "备注": ""},
+    {"媒体": "经济参考网", "site_host": "jjckb.cn", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 17:01:00 GMT", "折算北京时间": "2026-10-13 01:01", "是否当天": true, "原文链接形态": "http://www.jjckb.cn/...（明文 http；实测 https 可访问）", "原文链接过白名单": false, "备注": ""},
+    {"媒体": "IT之家", "site_host": "ithome.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 17:01:00 GMT", "折算北京时间": "2026-10-13 01:01", "是否当天": true, "原文链接形态": "https://www.ithome.com/...", "原文链接过白名单": true, "备注": "官方订阅 https://www.ithome.com/rss/ 实测可用，最新条目 13 Oct 04:29 GMT = 12:29 北京时间，比检索源新约 11.5 小时"},
+    {"媒体": "券商中国 / 证券时报网", "site_host": "stcn.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 21:27:00 GMT", "折算北京时间": "2026-10-13 05:27", "是否当天": true, "原文链接形态": "https://www.stcn.com/article/detail/...", "原文链接过白名单": true, "备注": "两源共用一次检索；https://www.stcn.com/rss/ 实测 404，无官方订阅"},
+    {"媒体": "每日经济新闻", "site_host": "nbd.com.cn", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 17:01:00 GMT", "折算北京时间": "2026-10-13 01:01", "是否当天": true, "原文链接形态": "https://m.nbd.com.cn/articles/...", "原文链接过白名单": true, "备注": ""},
+    {"媒体": "北京商报（北京商报网）", "site_host": "bbtonline.com.cn", "返回条数": 0, "最新pubDate_GMT": null, "折算北京时间": null, "是否当天": false, "原文链接形态": "—", "原文链接过白名单": false, "备注": "Bing News 未收录该域名；备用域名 bbtnews.com.cn 同样 0 条（36 源池用的也是这个域）"},
+    {"媒体": "21世纪经济报道", "site_host": "21jingji.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 17:01:00 GMT", "折算北京时间": "2026-10-13 01:01", "是否当天": true, "原文链接形态": "https://m.21jingji.com/article/...", "原文链接过白名单": true, "备注": ""},
+    {"媒体": "证券之星", "site_host": "stockstar.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 17:01:00 GMT", "折算北京时间": "2026-10-13 01:01", "是否当天": true, "原文链接形态": "https://wap.stockstar.com/... 与 https://hk.stockstar.com/...", "原文链接过白名单": false, "备注": "白名单缺 wap / hk 两个子域，原文链接会被拒，需补 hosts"},
+    {"媒体": "和讯网", "site_host": "hexun.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 20:12:00 GMT", "折算北京时间": "2026-10-13 04:12", "是否当天": true, "原文链接形态": "https://bank.hexun.com / auto.hexun.com / futures.hexun.com / news.hexun.com / stock.hexun.com", "原文链接过白名单": "部分（news / stock 通过，bank / auto / futures 被拒）", "备注": "需补 hosts"},
+    {"媒体": "金融投资报", "site_host": "jrtzb.com.cn", "返回条数": 0, "最新pubDate_GMT": null, "折算北京时间": null, "是否当天": false, "原文链接形态": "—", "原文链接过白名单": false, "备注": "Bing News 未收录该域名"},
+    {"媒体": "时代财经", "site_host": "tfcaijing.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 15:47:00 GMT", "折算北京时间": "2026-10-12 23:47", "是否当天": false, "原文链接形态": "https://www.tfcaijing.com/article/page/...", "原文链接过白名单": true, "备注": "混有 2025 年旧条目，会被 72 小时窗口过滤"},
+    {"媒体": "经济观察网", "site_host": "eeo.com.cn", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 21:27:00 GMT", "折算北京时间": "2026-10-13 05:27", "是否当天": true, "原文链接形态": "https://m.eeo.com.cn/... 与 https://www.eeo.com.cn/...", "原文链接过白名单": true, "备注": ""},
+    {"媒体": "凤凰网财经", "site_host": "ifeng.com", "返回条数": 12, "最新pubDate_GMT": "Mon, 12 Oct 2026 14:35:00 GMT", "折算北京时间": "2026-10-12 22:35", "是否当天": false, "原文链接形态": "https://news.ifeng.com / jx.ifeng.com / auto.ifeng.com", "原文链接过白名单": false, "备注": "site:ifeng.com 抓回来大多是资讯 / 地方频道，财经只有 1 条；改 site:finance.ifeng.com 后 12 条全为财经，最新 12 Oct 15:28 GMT"}
+  ],
+  "官方订阅探测": [
+    {"媒体": "IT之家", "地址": "https://www.ithome.com/rss/", "结果": "可用", "最新条目": "Tue, 13 Oct 2026 04:29:43 GMT（13 Oct 12:29 北京时间）"},
+    {"媒体": "证券时报网", "地址": "https://www.stcn.com/rss/", "结果": "404，无官方订阅"},
+    {"媒体": "Google News site: 检索", "地址": "https://news.google.com/rss/search?q=site%3Acs.com.cn&hl=zh-CN&gl=CN&ceid=CN:zh-Hans", "结果": "能解析但内容是站内老页面（2016–2026 的导航页 / 路演中心 / 电子报纸），最新仅 2026-09-17，救不了当天的量"}
+  ],
+  "结论": {
+    "有检索结果": "16 个主域名中 14 个有结果（13 家媒体）；北京商报网、金融投资报两家 Bing News 未收录 → 如实暂缺",
+    "会被判成当天": "10 家（证券日报网 / 之声、中国基金报、经济参考网、IT之家、券商中国 / 证券时报网、每经、21世纪、证券之星、和讯、经济观察网）",
+    "会判成滞后但仍进 72 小时窗口": "4 家（中证网、财闻、时代财经、凤凰网财经）",
+    "根因": "Bing 站内检索 RSS 的条目链接是 http://www.bing.com/news/apiclick.aspx?...（明文 + 跳转域），被 _news_url 的「https + 白名单主机」整条拒绝 → 依赖检索的源头天天 0 条"
+  }
+}
