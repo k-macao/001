@@ -5,13 +5,16 @@
   - 顺序装箱（_pack_section_units）：整栏装箱、切栏续接、碎片保护、条数取最小；
   - 整页拆分（_split_html_for_push）：每条 ≤ 单条上限、外壳与页脚齐全、标签平衡、
     正文一个字不丢、横幅如实标注「承接上条（续）」「本条未完」；
-  - PushPlus「1 分钟 N 次请求」排队（_push_rate_wait / _wait_push_rate_limit）。
+  - PushPlus「1 分钟 N 次请求」排队（_push_rate_wait / _wait_push_rate_limit）；
+  - 微信推送标题（build_push_title）：[OCTOPUS] 关键词前缀、(强制) / (状态) 标记位置、
+    时间戳永远在末尾、四条推送路径共用一个出口、分条 (i/N) 不挤掉推送时刻。
 """
 import importlib.util
 import re
 import sys
 import types
 import unittest
+from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
 from unittest.mock import patch
@@ -391,6 +394,87 @@ class PushRateLimitTests(unittest.TestCase):
             for _ in range(20):
                 pipeline._wait_push_rate_limit()
         self.assertEqual(clock.slept, [])
+
+
+class PushTitleTests(unittest.TestCase):
+    """微信推送标题（2026-10-13 改版）：[OCTOPUS] 前缀 + 刊头 + 「- 日期时间」。
+
+    标题是用户在微信消息列表里唯一能看到的字段，格式必须稳定：
+      - 前缀是 [OCTOPUS] 关键词，不再是 emoji（emoji 会被部分客户端与转发链路裁掉）；
+      - 日期时间永远在末尾，(强制) / (状态) 紧跟刊头，分条 (i/N) 接在时间之后；
+      - 只改推送标题：刊头与页面 <title> 用的 REPORT_TITLE 不带 [OCTOPUS]；
+      - 「日报未推送提醒」「日报推送失败提醒」两条告警仍带 🐙，不混进关键词。
+    """
+
+    STAMP = datetime(2026, 10, 13, 23, 42, tzinfo=pipeline.CST)
+
+    def test_prefix_is_the_octopus_keyword(self):
+        self.assertEqual(pipeline.PUSH_TITLE_PREFIX, "[OCTOPUS] 章鱼 AI · 上水日报")
+        self.assertNotIn("🐙", pipeline.PUSH_TITLE_PREFIX)
+
+    def test_time_format_constant_is_the_one_used(self):
+        self.assertEqual(pipeline.PUSH_TITLE_TIME_FMT, "%m/%d %H:%M")
+
+    def test_title_layout(self):
+        self.assertEqual(pipeline.build_push_title(when=self.STAMP),
+                         "[OCTOPUS] 章鱼 AI · 上水日报 - 10/13 23:42")
+
+    def test_mode_marker_sits_before_the_timestamp(self):
+        for mode in ("(强制)", "(状态)"):
+            title = pipeline.build_push_title(mode, when=self.STAMP)
+            self.assertEqual(title, f"[OCTOPUS] 章鱼 AI · 上水日报{mode} - 10/13 23:42")
+            self.assertTrue(title.endswith("- 10/13 23:42"), title)
+
+    def test_default_when_uses_beijing_now(self):
+        """when 留空取北京时间当前时刻：整体格式仍是「前缀 - MM/DD HH:MM」。"""
+        title = pipeline.build_push_title()
+        self.assertRegex(title, re.escape(pipeline.PUSH_TITLE_PREFIX) + r" - \d{2}/\d{2} \d{2}:\d{2}$")
+
+    def test_page_title_keeps_the_plain_name(self):
+        """只改推送标题：刊头与页面 <title> 用的 REPORT_TITLE 不带 [OCTOPUS]。"""
+        self.assertEqual(pipeline.REPORT_TITLE, "章鱼 AI · 上水日报")
+        self.assertNotIn("[OCTOPUS]", pipeline.REPORT_TITLE)
+
+    def test_all_push_paths_share_one_builder(self):
+        """四条推送路径（--push-only / 常规 / 强制 / 状态）都走 build_push_title，
+        不再各自拼 PUSH_TITLE_PREFIX，避免哪天只改了一处、标题分叉。"""
+        src = Path(pipeline.__file__).read_text(encoding="utf-8")
+        call_sites = [line for line in src.splitlines()
+                      if line.strip().startswith("title = build_push_title(")]
+        self.assertEqual(len(call_sites), 4, f"推送路径数变了：{call_sites}")
+        stray = [line for line in src.splitlines()
+                 if re.search(r"^\s*title\s*=.*PUSH_TITLE_PREFIX", line)]
+        self.assertEqual(stray, [], "推送标题必须由 build_push_title 统一拼装")
+
+    def test_alert_titles_stay_emoji_and_bypass_the_builder(self):
+        """两条纯文本告警是提醒而非日报本体：标题仍带 🐙，不带 [OCTOPUS] 关键词。"""
+        src = Path(pipeline.__file__).read_text(encoding="utf-8")
+        for name in ("日报未推送提醒", "日报推送失败提醒"):
+            lines = [line for line in src.splitlines()
+                     if name in line and line.strip().startswith("title = ")]
+            self.assertTrue(lines, f"找不到 {name} 的标题拼装行")
+            for line in lines:
+                self.assertIn("🐙", line)
+                self.assertNotIn("[OCTOPUS]", line)
+
+    def test_multipart_suffix_follows_the_timestamp(self):
+        """超长分条：每条标题为「… - MM/DD HH:MM (i/N)」，推送时刻不被 (i/N) 挤掉。"""
+        html = _report([_section("01", "行情速览", "<p>" + "甲" * 12000 + "</p>"),
+                        _section("02", "全球头条", "<p>" + "乙" * 12000 + "</p>")])
+        sent = []
+        title = pipeline.build_push_title(when=self.STAMP)
+        with (patch.object(pipeline, "PUSHPLUS_MAX_CONTENT_CHARS", 10000),
+              patch.object(pipeline, "PUSHPLUS_MULTIPART", True),
+              patch.object(pipeline, "PUSHPLUS_PART_DELAY", 0),
+              patch.object(pipeline, "_push_one_message",
+                           lambda t, c, **kw: sent.append(t) or True)):
+            self.assertTrue(pipeline.push_to_wechat(title, html, token="test-token",
+                                                    report_name="daily_report_test.html"))
+        self.assertGreater(len(sent), 1)
+        for index, sent_title in enumerate(sent, 1):
+            self.assertTrue(sent_title.startswith(title), sent_title)
+            self.assertIn("- 10/13 23:42", sent_title)
+            self.assertTrue(sent_title.endswith(f"({index}/{len(sent)})"), sent_title)
 
 
 if __name__ == "__main__":

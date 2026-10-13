@@ -75,8 +75,9 @@
      token 失效、内容违规」等重试无意义的错误不重试、立即失败。日报多次推送仍失败时
      会再发一条纯文本「推送失败」告警（含 PushPlus 返回的 code/msg 与处理建议），
      让微信侧也能感知原因，而不是只看到 Actions 变红。
-  7. 推送标题带当日时分（如 08/01 18:30）：同一天多次手动推送不会因标题完全重复
-     触发反垃圾/去重拦截，也便于区分每一次推送。
+  7. 推送标题固定为「[OCTOPUS] 章鱼 AI · 上水日报 - 08/01 18:30」：前缀是过滤关键词，
+     末尾带当日时分（北京时间），同一天多次手动推送不会因标题完全重复
+     触发反垃圾/去重拦截，也便于区分每一次推送（2026-10-13 起，见 28）。
   7.1 页面风格：复古像素游戏（RETRO PIXEL MARKET QUEST v3）——
      暗色街机终端底、霓虹青 / 电光蓝 / 像素黄 / 品红，纯直角像素块 + 3px 硬描边 + 实色阴影；
      等宽字体栈（Courier New / Lucida Console / monospace，回退苹方/雅黑）。刊头含纯 HTML 8-bit
@@ -361,6 +362,29 @@
       非入门版另列「覆盖面（内地源头 · 窗口内条数）」——**不在这里重复列标题**，
       标题只在被引用处出现，避免跨栏重复展示）；② 新闻情绪证据行 / 政策因子引用行
       （标题 + 媒体名 + 原文链接）；③ 总结「数据覆盖」行（缺失时按 18 家点名）。
+  28. 微信推送标题改版（2026-10-13 按用户要求，只改标题文字，推送内容 / 分条 / 门禁不动）：
+      · 新格式：`[OCTOPUS] 章鱼 AI · 上水日报 - MM/DD HH:MM`（强制推送为
+        `...(强制) - MM/DD HH:MM`，状态报告为 `...(状态) - ...`，超长分条仍追加 ` (i/N)`）；
+      · 前缀由 emoji「🐙」换成方括号关键词「[OCTOPUS]」：emoji 在部分微信客户端与转发链路
+        会被裁掉，关键词既能在消息列表里一眼认出、也能直接用作消息过滤规则；
+      · 只影响 PushPlus 的 title 字段：刊头、页面 `<title>`、正文与归档文件名仍用
+        REPORT_TITLE「章鱼 AI · 上水日报」，不加 [OCTOPUS]；
+      · 集中定义在 PUSH_TITLE_PREFIX / PUSH_TITLE_TIME_FMT，--push-only / 常规 / 强制 /
+        状态四条推送路径统一走 build_push_title()，标题不会各写各的
+        （回归测试 tests/test_push_split.py::PushTitleTests 按源码数调用点，漏改会红）；
+      · 「日报未推送提醒」「日报推送失败提醒」两条纯文本告警的标题保持原样
+        （仍带 🐙）：它们是提醒而非日报本体，不与 [OCTOPUS] 关键词混在一起。
+  29. 【游资剑鱼】UZI 多流派趋势分析接入「🦑 AI帮你提鲜」（2026-10-13）：该栏目此前是
+      正文表格里唯一没有大白话解读的分析栏（octopus_ren._GENERATORS 缺 "UZI TREND" 条目）。
+      · 解读生成器 octopus_ren._ren_uzi_trend 只引用 run_trend() 结果里已有的数字
+        （算出结果的标的数 / 评委数 / 规则数 / 票型 / 均分 / 定调分布 / 被门禁撤下的评委 /
+        缺席标的），定调用语直接取 items 自带的 tone 文案，不另写一份翻译、不新造读数；
+      · ctx["uzi"] 走 pipeline._uzi_result(data) 单一出口，与正文 blocks["UZI TREND"]
+        渲染用的是同一份对象（同 _trend_section_stats 的「不另算一套」口径）；
+      · 本栏没有概率口径 → _garnish_dir 返回 (None, None)，几率条整条缺席（不硬凑一个
+        涨跌概率）；活鲜度点缀按「本次现算的分析栏」计活鲜，与其它分析栏一致；
+      · available=False / items 为空 → 返回空串，栏目自动不加解读；
+        OCTOPUS_REN=0 / --no-ren 与其它栏目同一开关。回归测试 tests/test_ren.py。
 
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
@@ -5470,8 +5494,29 @@ GZ_PRIMARY_LIGHT = GZ_KLEIN_WASH
 REPORT_TITLE = "章鱼 AI · 上水日报"
 # 说明（副标题）：刊头标题下方一行，页面 <meta name="description"> 与控制台同用
 REPORT_TAGLINE = "每日上水，新鲜活泼"
-# 微信推送标题前缀：与刊头同名，后接 MM/DD HH:MM（分条时再加 (i/n)）
-PUSH_TITLE_PREFIX = f"🐙 {REPORT_TITLE}"
+# 微信推送标题前缀（2026-10-13 改版，见模块说明 28）：「[OCTOPUS] + 刊头同名」，
+# 原为「🐙 + 刊头」。只用于 PushPlus 的 title 字段；页面刊头 / <title> / 归档文件名
+# 仍是不带前缀的 REPORT_TITLE（emoji 在部分微信客户端与转发链路会被裁掉，方括号关键词
+# 既能在消息列表里一眼认出、也能直接用作消息过滤规则）。
+PUSH_TITLE_PREFIX = f"[OCTOPUS] {REPORT_TITLE}"
+# 推送标题的时间戳格式：排在「- 」之后、分条 (i/N) 之前，同一天多次推送靠它区分
+PUSH_TITLE_TIME_FMT = "%m/%d %H:%M"
+
+
+def build_push_title(mode="", when=None):
+    """拼装微信推送标题：``[OCTOPUS] 章鱼 AI · 上水日报(模式) - MM/DD HH:MM``。
+
+    - mode 留空是常规日报；「(强制)」「(状态)」这类标记紧跟刊头，不与日期时间黏在一起，
+      微信窄列表里先看到栏目名、后看到推送时刻；
+    - 时间戳永远排在最后，超长分条追加的 (i/N) 接在其后仍读得出推送时刻；
+    - 四条推送路径（--push-only / 常规 / 强制 / 状态）统一走这里，标题不会各写各的；
+    - 「日报未推送提醒」「日报推送失败提醒」两条纯文本告警不经过本函数（仍带 🐙）：
+      它们是提醒而非日报本体，不与 [OCTOPUS] 关键词混在一起；
+    - when 仅供测试注入固定时刻，生产调用留空取北京时间当前时刻。
+    """
+    stamp = (when or datetime.now(CST)).strftime(PUSH_TITLE_TIME_FMT)
+    return f"{PUSH_TITLE_PREFIX}{mode} - {stamp}"
+
 # 字体：系统无衬线栈（不加载远程字体）；整页只在容器上写一次，其余元素继承
 GZ_FONT = ("-apple-system,BlinkMacSystemFont,'PingFang SC','Hiragino Sans GB',"
            "'Microsoft YaHei',sans-serif")
@@ -9289,6 +9334,22 @@ def _industry_rotation_block(res, kit):
                                   '不含滑点/费用，非投资建议；历史胜率不是未来成功概率。'))
     out.append(kit.rows("".join(hold_rows)))
     return "".join(out)
+
+
+def _uzi_result(data):
+    """【游资剑鱼】UZI 多流派趋势分析的结果字典（正文渲染与「🦑 AI帮你提鲜」共用同一份）。
+
+    与 _trend_section_stats 同一口径：解读层引用的数字必须来自渲染正文用的同一批实参，
+    不允许两处各算一套。数据源缺席 / status 非 success / result 不是字典 → 返回 {}，
+    解读层读到空对象自然缺席（不硬编、不用旧数据充数）。
+    """
+    src = (data or {}).get(UZI_TREND_SOURCE_NAME)
+    if not isinstance(src, dict) or src.get("status") != "success":
+        return {}
+    res = src.get("result")
+    return res if isinstance(res, dict) else {}
+
+
 def _render_uzi_trend(source, kit):
     """两套主题共用：【游资剑鱼】UZI 多流派趋势分析。
 
@@ -9580,10 +9641,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # ④b 【游资剑鱼】UZI 多流派趋势分析（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
     #     评委规则打分。日线复用 MACD 栏目同一批；规则引擎缺席或日线不足 → 整栏缺席。
     uzi_src = data.get(UZI_TREND_SOURCE_NAME) or {}
+    uzi_res = _uzi_result(data)      # 正文与「🦑 AI帮你提鲜」共用同一份结果（不另算一套）
     if isinstance(uzi_src, dict) and uzi_src.get("status") == "success":
         uzi_html = _render_uzi_trend(uzi_src, kit)
         if uzi_html:
-            uzi_res = uzi_src.get("result") or {}
             uzi_panel = uzi_res.get("panel") or {}
             uzi_caption = ("" if PLAIN() else
                            f"{uzi_panel.get('investors', 0)} 位评委 × "
@@ -9673,6 +9734,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "fed": fed_res, "geo": geo_res, "senti": senti_result,
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
+            # 【游资剑鱼】：与正文 blocks["UZI TREND"] 用的同一份 run_trend() 结果
+            "uzi": uzi_res,
             "coverage": {
                 "today": today_n, "total": total,
                 "missing": _missing_source_names(source_items),
@@ -15498,7 +15561,7 @@ def main():
             print("   请重新生成，或使用 --force-push 强制推送。")
             return 1
 
-        title = f"{PUSH_TITLE_PREFIX} {datetime.now(CST).strftime('%m/%d %H:%M')}"
+        title = build_push_title()
         if push_to_wechat(title, html, report_name=os.path.basename(push_path)):
             print("\n🎉 全部完成！")
             return 0
@@ -15619,7 +15682,7 @@ def main():
 
     if can_push:
         print(f"\n📤 当天检验通过：{reason}")
-        title = f"{PUSH_TITLE_PREFIX} {datetime.now(CST).strftime('%m/%d %H:%M')}"
+        title = build_push_title()
         print(f"📎 正在推送本次生成的 HTML: {output_path}")
         if push_to_wechat(title, push_html, report_name=os.path.basename(output_path)):
             return _finish(True)
@@ -15631,7 +15694,7 @@ def main():
     if args.force_push:
         print(f"\n⚠️ 当天检验未通过，但检测到 --force-push，强制推送！")
         print(f"   原因: {reason}")
-        title = f"{PUSH_TITLE_PREFIX}(强制) {datetime.now(CST).strftime('%m/%d %H:%M')}"
+        title = build_push_title("(强制)")
         if push_to_wechat(title, push_html, report_name=os.path.basename(output_path)):
             return _finish(True)
         push_failure_alert("强制推送的日报被 PushPlus 拒绝（详见上方 code/msg）",
@@ -15641,7 +15704,7 @@ def main():
     if args.allow_incomplete_push:
         print(f"\n⚠️ 全部数据源不可用，但检测到 --allow-incomplete-push，推送状态报告。")
         print(f"   原因: {reason}")
-        title = f"{PUSH_TITLE_PREFIX}(状态) {datetime.now(CST).strftime('%m/%d %H:%M')}"
+        title = build_push_title("(状态)")
         if push_to_wechat(title, push_html, report_name=os.path.basename(output_path)):
             return _finish(True)
         push_failure_alert("状态报告推送被 PushPlus 拒绝（详见上方 code/msg）",

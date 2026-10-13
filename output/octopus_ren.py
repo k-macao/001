@@ -22,6 +22,7 @@ ctx 约定（键全部可选，缺了就降级）：
   notes     build_section_ai_notes 的结果（与页面 ⌁ AI 研判行同源的方向定调）
   market/pan/policy/ai/quant/weekly/hk7/fed/geo/senti/cal/yt/google/em
             与 _collect_report_parts 里渲染正文用的同一批对象
+  uzi       _uzi_result(data) 的结果（【游资剑鱼】UZI 多流派趋势分析，与正文同一份）
   trend     _trend_section_stats(data) 的结果（趋势跟踪共享统计）
   coverage  {today, total, missing: [...]}（总结栏数据覆盖同源）
 """
@@ -446,6 +447,102 @@ def _ren_strategy(ctx):
     return text
 
 
+def _ren_uzi_trend(ctx):
+    """【游资剑鱼】UZI 多流派趋势分析：把「一套公开规则逐条打分」讲成面试现场。
+
+    只引用 uzi_trend.run_trend() 结果里已有的数字——过门禁的标的数 / 评委数 / 规则数 /
+    票型 / 均分 / 定调分布 / 被门禁撤下的评委 / 缺席标的，一个都不新造；定调用语直接取
+    items 自带的 tone 文案（与正文同一套 _verdict 口径，这里不另写一份翻译）。
+    数据不足（available=False / 没有 item）→ 返回空串，栏目自动不加解读。
+    """
+    uzi = ctx.get("uzi") or {}
+    if not uzi.get("available"):
+        return ""
+    items = [row for row in (uzi.get("items") or []) if isinstance(row, dict)]
+    if not items:
+        return ""
+    cov, panel = uzi.get("coverage") or {}, uzi.get("panel") or {}
+    seed = f"{ctx.get('date_str') or ''}|UZI TREND"
+    valid, total = int(cov.get("valid") or 0), int(cov.get("total") or 0)
+    investors = int(panel.get("investors") or 0)
+    rules_used, rules_all = int(uzi.get("rules_enabled") or 0), int(uzi.get("rules_total") or 0)
+    bull, bear = int(panel.get("bullish") or 0), int(panel.get("bearish") or 0)
+    neutral = int(panel.get("neutral") or 0)
+
+    bits = []
+    if total:
+        # coverage 是「标的级」计数（有没有合格已收盘日线、指标算不算得出来），
+        # 与下面「评委级」的准入门禁是两道不同的门，措辞不能混。
+        bits.append(f"观察池 {total} 只里 {valid} 只这次算出了结果")
+    if investors:
+        rule_txt = (f"{investors} 位方法评委按 {rules_used} 条规则投票" if rules_used
+                    else f"{investors} 位方法评委投票")
+        # 如实交代「为什么只有这几条」：主要是评委范围（默认只放价格类规则能评估的几位上场），
+        # 其次才是上场后缺数据的规则整条出局——不能把范围限制说成缺数据。
+        roster = int((uzi.get("engine") or {}).get("investors_total") or 0)
+        if rules_all and roster > investors:
+            rule_txt += (f"（评委库 {roster} 位 / {rules_all} 条规则，本栏只放这几位上场，"
+                         f"上场后缺数据的规则整条出局）")
+        bits.append(rule_txt)
+    if bull or bear or neutral:
+        bits.append(f"看多 {bull} / 看空 {bear} / 中性 {neutral}")
+    avg = _f(panel.get("avg_score"), 1)
+    if avg:
+        bits.append(f"均分 {avg}")
+    text = ("趋势评审团：" + "，".join(bits) + "。") if bits else "趋势评审团："
+
+    # 定调分布：按固定顺序数 tones，标签用 items 自带的 tone 文案（与正文同源，不另翻译）
+    tones = uzi.get("tones") or {}
+    tone_bits = []
+    for key in ("up", "mixed", "base", "top", "down", "unknown"):
+        n = int(tones.get(key) or 0)
+        if n <= 0:
+            continue
+        label = next((str(row.get("tone") or "").strip() for row in items
+                      if row.get("tone_key") == key and str(row.get("tone") or "").strip()), "")
+        tone_bits.append(f"{label or '阶段未定'} {n} 只")
+    if tone_bits:
+        text += "定调：" + "、".join(tone_bits) + "。"
+
+    # 最高分那只：均分排序，同分按 items 原顺序取第一只（可复现，不随机）
+    scored = [(i, row) for i, row in enumerate(items)
+              if isinstance(row.get("score_avg"), (int, float))]
+    if scored:
+        _, lead = min(scored, key=lambda pair: (-float(pair[1]["score_avg"]), pair[0]))
+        lead_avg = _f(lead.get("score_avg"), 1)
+        if lead_avg:
+            text += (f"最高分：{lead.get('label') or '—'}（均分 {lead_avg}"
+                     + (f" · {lead['tone']}" if lead.get("tone") else "") + "）。")
+
+    # 被准入门禁撤下的评委 / 没算出来的标的：如实点名，不粉饰成「中性」
+    dropped = uzi.get("dropped") or {}
+    if dropped:
+        names = [str(name) for name in list(dropped)[:2]]
+        text += (f"{len(dropped)} 位评委没过准入门禁被整位撤下（{'、'.join(names)}"
+                 f"{'等' if len(dropped) > 2 else ''}）——他们不是弃权，是真的缺数据。")
+    missing = [row for row in (uzi.get("missing") or []) if isinstance(row, dict)]
+    if missing:
+        names = [str(row.get("label") or "").strip() for row in missing[:3]]
+        names = [name for name in names if name]
+        who = ("、".join(names) + ("等" if len(missing) > len(names) else "")) if names \
+            else f"{len(missing)} 只标的"
+        text += f"{who}这次没算出来，整只缺席，不拿旧数据顶（逐只原因见正文「暂缺」行）。"
+
+    # 翻译：票型决定说法，但一律不落到买卖建议
+    if bear > bull:
+        tone = _pick(["翻译：空头票更多，这些方法眼下都在防守，别把「分低」当成抄底信号",
+                      "翻译：看空票占上风，评审团的态度是「先看戏」，不是「快上车」"], seed)
+    elif bull > bear:
+        tone = _pick(["翻译：多头票占上风，但趋势分只是规则打分，不是预言，更别当买入键",
+                      "翻译：这几套方法难得投了同一边，热度上来了，手别比脑子快"], seed)
+    elif bull or bear:
+        tone = _pick(["翻译：多空打平，谁都说服不了谁——这种时候「数据全不全」比「跟谁」更重要",
+                      "翻译：五五开的评审团，结论就是没有结论，别硬读出一个方向"], seed)
+    else:
+        tone = "翻译：全是中性票，等于评审团集体说「看不出来」，看不出来就别装懂"
+    return text + tone + "。规则打分不含交易成本，非投资建议。"
+
+
 def _ren_trend(ctx):
     """趋势跟踪：把海外论坛 / 36 家媒体讲成「吃瓜前线」。"""
     trend = ctx.get("trend") or {}
@@ -615,6 +712,7 @@ _GENERATORS = {
     "FED TREND": _ren_fed,
     "GEO TREND": _ren_geo,
     "STRATEGY READ": _ren_strategy,
+    "UZI TREND": _ren_uzi_trend,
     "TREND TRACKING": _ren_trend,
     "GLOBAL HEADLINES": _ren_global_headlines,
     "EASTMONEY WIRE": _ren_eastmoney_wire,
@@ -670,6 +768,7 @@ def _garnish_obj(kicker, ctx):
         "FED TREND": ctx.get("fed"),
         "GEO TREND": ctx.get("geo"),
         "STRATEGY READ": ctx.get("ai"),
+        "UZI TREND": ctx.get("uzi"),
         "TREND TRACKING": ctx.get("trend"),
         "GLOBAL HEADLINES": ctx.get("google"),
         "EASTMONEY WIRE": ctx.get("em"),
