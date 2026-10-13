@@ -21,6 +21,7 @@ import unittest
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from unittest.mock import patch
+from urllib.parse import urlparse
 
 sys.modules.setdefault("requests", types.SimpleNamespace())
 
@@ -55,8 +56,11 @@ EXPECTED_HOSTS = {
 
 
 def _rss(items):
-    body = "".join(f"<item><title>{t}</title><link>{u}</link><pubDate>{p}</pubDate></item>"
-                   for t, u, p in items)
+    # 真实 RSS 会把 & 转义成 &amp;（Bing 的跳转链接里全是 &），夹具同口径，
+    # 否则 ElementTree 直接解析失败，测的就不是我们要测的东西了。
+    from xml.sax.saxutils import escape as _esc_xml
+    body = "".join(f"<item><title>{_esc_xml(t)}</title><link>{_esc_xml(u)}</link>"
+                   f"<pubDate>{p}</pubDate></item>" for t, u, p in items)
     return f'<?xml version="1.0"?><rss version="2.0"><channel><title>t</title>{body}</channel></rss>'
 
 
@@ -97,7 +101,19 @@ class RegistryTests(unittest.TestCase):
                 self.assertTrue(cfg["hosts"], "必须有链接白名单域名")
                 self.assertTrue(cfg["desc"])
                 self.assertIn("feed", cfg)          # 结构完整：官方订阅地址留空也要显式声明
-                self.assertFalse(cfg["feed"], "默认没有官方 RSS：应留空并走站内检索")
+                # 2026-10-13：多数媒体仍无官方订阅（feed 留空 → 走站内检索）；
+                # 少数实测可用的官方订阅已填上（如 IT之家 https://www.ithome.com/rss/）。
+                # 填了的必须 https 且主机在自己的白名单里，否则抓取时会被外链校验拒掉。
+                feed = str(cfg.get("feed") or "").strip()
+                if feed:
+                    self.assertTrue(feed.startswith("https://"), f"{cfg['name']} 官方订阅必须 https")
+                    self.assertIn(urlparse(feed).hostname, cfg["hosts"],
+                                  f"{cfg['name']} 官方订阅主机不在白名单里")
+                # site 覆盖（凤凰网财经 = finance.ifeng.com）：给了就必须是白名单里的主机
+                site = str(cfg.get("site") or "").strip()
+                if site:
+                    self.assertIn(site, cfg["hosts"],
+                                  f"{cfg['name']} 的 site: 检索域不在白名单里")
 
     def test_domains_match_the_media(self):
         for user_name, host in EXPECTED_HOSTS.items():
@@ -429,3 +445,286 @@ class CollectorWiringTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+# ======================================================================
+# ⑤ 取数修复（2026-10-13）：检索源链接还原 + 候选源回退
+#    根因：Bing News 站内检索 RSS 的 <link> 是明文 http 的平台跳转地址，
+#    被「https + 白名单主机」整条拒绝 → 依赖站内检索的源头天天 0 条。
+# ======================================================================
+class SearchLinkTests(unittest.TestCase):
+    CS_HOSTS = ("cs.com.cn", "www.cs.com.cn") + pipeline._HK_NEWS_BACKUP_LINK_HOSTS
+    ZQ_HOSTS = ("zqrb.cn", "www.zqrb.cn") + pipeline._HK_NEWS_BACKUP_LINK_HOSTS
+
+    def test_bing_http_redirect_resolves_to_original_article(self):
+        link = ("http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=t"
+                "&url=https%3a%2f%2fwww.cs.com.cn%2fa%2f1.html&c=1&mkt=en-us")
+        self.assertEqual(pipeline._news_url(link, self.CS_HOSTS), "",
+                         "旧口径：明文 http 跳转链接必然被拒（这正是 18 家长期暂缺的原因）")
+        self.assertEqual(pipeline._resolve_search_link(link, self.CS_HOSTS),
+                         "https://www.cs.com.cn/a/1.html")
+
+    def test_http_only_original_falls_back_to_platform_https_redirect(self):
+        link = ("http://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=t"
+                "&url=http%3a%2f%2fwww.zqrb.cn%2fa%2f1.html&c=1&mkt=en-us")
+        got = pipeline._resolve_search_link(link, self.ZQ_HOSTS)
+        self.assertTrue(got.startswith("https://www.bing.com/news/apiclick.aspx"), got)
+        self.assertIn("http%3a%2f%2fwww.zqrb.cn", got)
+
+    def test_verified_http_host_is_upgraded_to_https(self):
+        """已实测支持 https 的站（jjckb.cn）：http 原文升级成 https 直达，不用跳转。"""
+        link = ("http://www.bing.com/news/apiclick.aspx?ref=FexRss&tid=t"
+                "&url=http%3a%2f%2fwww.jjckb.cn%2f2026%2fa.html&c=1&mkt=en-us")
+        self.assertEqual(
+            pipeline._resolve_search_link(link, ("jjckb.cn", "www.jjckb.cn")
+                                          + pipeline._HK_NEWS_BACKUP_LINK_HOSTS),
+            "https://www.jjckb.cn/2026/a.html")
+
+    def test_unverified_http_host_is_not_guessed(self):
+        """没实测过的站不猜 https：原文直链被拒，但平台跳转链接仍可升级后使用。"""
+        hosts = ("zqrb.cn", "www.zqrb.cn") + pipeline._HK_NEWS_BACKUP_LINK_HOSTS
+        self.assertEqual(pipeline._resolve_search_link("http://www.zqrb.cn/a.html", hosts), "")
+        got = pipeline._resolve_search_link(
+            "http://www.bing.com/news/apiclick.aspx?tid=t"
+            "&url=http%3a%2f%2fwww.zqrb.cn%2fa.html&c=1", hosts)
+        self.assertTrue(got.startswith("https://www.bing.com/news/apiclick.aspx"), got)
+
+    def test_direct_https_link_is_untouched(self):
+        url = "https://www.cs.com.cn/a/1.html"
+        self.assertEqual(pipeline._resolve_search_link(url, self.CS_HOSTS), url)
+
+    def test_non_whitelisted_and_junk_links_are_rejected(self):
+        for bad in ("https://evil.example.com/a.html", "javascript:alert(1)",
+                    "http://www.cs.com.cn:8080/a.html", "", None):
+            self.assertEqual(pipeline._resolve_search_link(bad, self.CS_HOSTS), "", bad)
+
+
+class CandidateFallbackTests(unittest.TestCase):
+    def _run(self, feeds, calls=None):
+        def fake(url, headers=None, params=None, timeout=15, is_json=True):
+            if calls is not None:
+                calls.append(url)
+            return feeds.get(url)
+        with patch.object(pipeline, "safe_request", side_effect=fake):
+            return pipeline.fetch_mainland_news_sources()
+
+    def test_unusable_first_candidate_falls_through_to_the_next(self):
+        """解析得出条目、但链接全被拒（0 条可用）→ 继续试下一路候选源。
+
+        旧版只试第一个「解析成功」的源，于是停在 Bing 上永远 0 条，
+        后面真正能用的 Google News 根本轮不到——18 家因此天天判暂缺。
+        """
+        now = datetime.now(pipeline.CST)
+        fresh = _rfc(now - timedelta(hours=2))
+        cfg = _cfg("财闻")
+        calls = []
+        with patch.object(pipeline, "MAINLAND_NEWS_SOURCES", (cfg,)):
+            res = self._run({
+                bk.get_mainland_news_site_urls(_cfg("财闻")["hosts"][0])[0]: _rss([
+                    ("第一路全是拿不到可用链接的条目 - 财闻",
+                     "http://www.caiwennews.com/article/0.shtml", fresh)]),
+                bk.get_mainland_news_site_urls(_cfg("财闻")["hosts"][0])[1]: _rss([
+                    ("Google 备用源顶上 - 财闻", "https://www.caiwennews.com/article/1.shtml",
+                     fresh)]),
+            }, calls=calls)
+        self.assertEqual(len(calls), 2, "第一路 0 条可用后应继续尝试第二路")
+        rec = res["sources"][0]
+        self.assertEqual(rec["status"], "ok")
+        self.assertEqual(rec["items"][0]["title"], "Google 备用源顶上")
+        self.assertIn("Google", rec["via"])
+
+    def test_zero_usable_from_all_candidates_is_reported_honestly(self):
+        now = datetime.now(pipeline.CST)
+        fresh = _rfc(now - timedelta(hours=2))
+        cfg = _cfg("财闻")
+        with patch.object(pipeline, "MAINLAND_NEWS_SOURCES", (cfg,)):
+            res = self._run({
+                bk.get_mainland_news_site_urls("caiwennews.com")[0]: _rss([
+                    ("外站注入 - 财闻", "https://evil.example.com/a.html", fresh)]),
+                bk.get_mainland_news_site_urls("caiwennews.com")[1]: _rss([
+                    ("外站注入 - 财闻", "https://evil.example.com/b.html", fresh)]),
+            })
+        rec = res["sources"][0]
+        self.assertEqual(rec["status"], "empty")
+        self.assertIn("已试 2 路候选源", rec["note"])
+        self.assertEqual(rec["state"], "暂缺")
+
+    def test_bing_redirect_links_enter_the_pool_after_fix(self):
+        """真实 Bing 报文（明文 http 跳转）如今能解出原文链接并进标题池。"""
+        now = datetime.now(pipeline.CST)
+        fresh = _rfc(now - timedelta(hours=3))
+        cfg = _cfg("中证网")
+        with patch.object(pipeline, "MAINLAND_NEWS_SOURCES", (cfg,)):
+            res = self._run({_bing_of("中证网"): _rss([
+                ("IMF上调2026年世界经济增长预期至3.1% - 中证网",
+                 "http://www.bing.com/news/apiclick.aspx?ref=FexRss&tid=t"
+                 "&url=https%3a%2f%2fwww.cs.com.cn%2fxwzx%2f01%2f2026%2f10%2f13%2fd1.html&c=1&mkt=en-us",
+                 fresh)])})
+        self.assertEqual(res["status"], "success")
+        self.assertEqual(res["headlines"][0]["url"],
+                         "https://www.cs.com.cn/xwzx/01/2026/10/13/d1.html",
+                         "解出的是原文直达链接，不是平台跳转")
+
+    def test_health_metrics_are_recorded_per_source(self):
+        now = datetime.now(pipeline.CST)
+        fresh = _rfc(now - timedelta(hours=5))
+        with patch.object(pipeline, "MAINLAND_NEWS_SOURCES", (_cfg("中证网"),)):
+            res = self._run({_bing_of("中证网"): _rss([
+                ("央行宣布降准 - 中证网", "https://www.cs.com.cn/a/1.html", fresh)])})
+        an = res["analysis"]
+        self.assertIsNotNone(an["newest_cst"])
+        self.assertGreaterEqual(float(an["lag_hours"]), 4.5)
+        self.assertLessEqual(float(an["lag_hours"]), 6.0)
+        self.assertEqual(len(an["health"]), 1)
+        self.assertEqual(an["health"][0]["state"], "当天")
+        self.assertEqual(an["health"][0]["via"], "Bing 站内检索")
+
+
+# ======================================================================
+# ⑥ 【沸腾花蛤】内地财经热点榜（2026-10-13 新增栏目）
+# ======================================================================
+def _hotlist_data(entries=(), missing=("北京商报（北京商报网）",), ok_n=2):
+    """构造一份「内地财经媒体源头」结果：entries = (标题, 媒体, 链接, 北京时间)。"""
+    items, records = [], []
+    for i, (title, src, url, cst) in enumerate(entries):
+        item = {"title": title, "source": src, "section": pipeline.MAINLAND_NEWS_SECTION,
+                "url": url, "published_cst": cst, "date": cst[:10], "is_today": True}
+        items.append(item)
+        records.append({"name": src, "status": "ok", "items": [item], "scanned": 1,
+                        "today": 1, "newest": cst[:10], "newest_cst": cst,
+                        "lag_hours": 2.0 + i, "state": "当天", "via": "Bing 站内检索"})
+    for name in missing:
+        records.append({"name": name, "status": "empty", "items": [], "scanned": 0,
+                        "today": 0, "newest": None, "newest_cst": None,
+                        "lag_hours": None, "state": "暂缺", "via": "—"})
+    newest = max((r["newest_cst"] for r in records if r.get("newest_cst")), default=None)
+    return {pipeline.MAINLAND_NEWS_SOURCE_NAME: pipeline._source_result(
+        pipeline.MAINLAND_NEWS_SOURCE_NAME, "success", is_today=True,
+        content_date="2026-10-13", sources=records, headlines=items,
+        analysis={"scanned": len(items), "ok_n": ok_n, "today_n": len(items),
+                  "items_n": len(items), "merged": 0, "newest_cst": newest,
+                  "lag_hours": 2.0,
+                  "health": [{"name": r["name"], "status": r["status"],
+                              "items": len(r.get("items") or []),
+                              "newest_cst": r.get("newest_cst"),
+                              "lag_hours": r.get("lag_hours"),
+                              "state": r["state"], "via": r["via"]} for r in records]})}
+
+
+_HOT_ENTRIES = (
+    ("A股三大指数集体低开 创业板指跌超2%", "经济观察网",
+     "https://www.eeo.com.cn/2026/1013/1.shtml", "2026-10-13 05:27"),
+    ("半导体企业频频披露大订单 A股板块年营收有望破万亿", "和讯网",
+     "https://stock.hexun.com/2026-10-12/1.html", "2026-10-12 09:28"),
+    ("证监会主席吴清将出席金融街论坛并作演讲", "凤凰网财经",
+     "https://finance.ifeng.com/c/1", "2026-10-12 23:28"),
+    ("3年期大额存单利率重回2% 部分中小银行逆势上调存款利率", "证券日报网",
+     "http://www.zqrb.cn/jrjg/1.html", "2026-10-13 02:35"),
+    ("存储芯片供给紧张、需求旺盛格局没有变化", "财闻",
+     "https://www.caiwennews.com/article/1.shtml", "2026-10-12 23:16"),
+    ("今天天气不错，饭很好吃", "时代财经",
+     "https://www.tfcaijing.com/article/page/1", "2026-10-12 23:47"),
+)
+
+
+class HotlistBuildTests(unittest.TestCase):
+    def test_theme_counts_sum_to_the_pool_size(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        self.assertEqual(sum(t["count"] for t in hot["themes"]), hot["total"])
+        self.assertEqual(hot["total"], len(_HOT_ENTRIES))
+
+    def test_headlines_are_classified_and_sorted(self):
+        hot = pipeline.build_mainland_hotlist(
+            _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        labels = [t["label"] for t in hot["themes"]]
+        self.assertIn("A股盘面", labels)
+        self.assertIn("政策与监管", labels)            # 「证监会」命中
+        self.assertIn("半导体与算力", labels)          # 「芯片 / 半导体 / A股」按序命中
+        self.assertIn(pipeline.MAINLAND_HOT_OTHER_LABEL, labels,
+                      "未命中词表的标题进「其他 / 未归类」，不静默丢弃")
+        counts = [t["count"] for t in hot["themes"]]
+        self.assertEqual(counts, sorted(counts, reverse=True), "按条数降序")
+        first = [t for t in hot["themes"] if t["label"] == "A股盘面"][0]
+        self.assertEqual(first["items"][0]["published_cst"], "2026-10-13 05:27",
+                         "主题内按时间倒序，最新的一条在最前")
+
+    def test_is_deterministic(self):
+        data = _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME]
+        a = pipeline.build_mainland_hotlist(data)
+        b = pipeline.build_mainland_hotlist(data)
+        self.assertEqual([(t["label"], t["count"]) for t in a["themes"]],
+                         [(t["label"], t["count"]) for t in b["themes"]])
+
+    def test_health_and_missing_are_carried(self):
+        hot = pipeline.build_mainland_hotlist(
+            _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        self.assertEqual(hot["missing"], ["北京商报（北京商报网）"])
+        self.assertEqual(hot["today_sources"], 6)
+        self.assertEqual(hot["lag_sources"], 0)
+        self.assertEqual(hot["newest_cst"], "2026-10-13 05:27")
+        self.assertEqual(hot["status"], "success")
+
+    def test_absent_when_source_is_unavailable_or_empty(self):
+        for src in (
+            pipeline._source_result(pipeline.MAINLAND_NEWS_SOURCE_NAME, "unavailable",
+                                    sources=[], headlines=[], analysis=None, error="offline"),
+            pipeline._source_result(pipeline.MAINLAND_NEWS_SOURCE_NAME, "success",
+                                    sources=[], headlines=[], analysis={"items_n": 0}),
+            None, {},
+        ):
+            self.assertIsNone(pipeline.build_mainland_hotlist(src))
+
+
+class HotlistRenderTests(unittest.TestCase):
+    def test_renders_in_all_five_themes(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        for theme, kit in (("lime", pipeline.LIME_KIT), ("pixel", pipeline.PIXEL_KIT),
+                           ("forum", pipeline.FORUM_KIT), ("dossier", pipeline.DOSSIER_KIT),
+                           ("guizang", pipeline.GUIZANG_KIT)):
+            with self.subTest(theme=theme):
+                html = pipeline.generate_report(data, "2026年10月13日 · 周二", "20261013",
+                                                theme=theme)
+                self.assertIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
+                self.assertIn("A股盘面", html)
+                self.assertIn("北京商报（北京商报网）", html, "暂缺的媒体要在栏目里点名")
+        hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        self.assertEqual(len([t for t in hot["themes"]]), len(set(
+            t["label"] for t in hot["themes"])), "主题不重复")
+
+    def test_block_shows_health_and_missing(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertIn("时效体检", block)
+        self.assertIn("滞后", block)
+        self.assertIn("暂缺", block)
+        self.assertIn("https://www.eeo.com.cn/2026/1013/1.shtml", block,
+                      "代表标题要带可点原文链接")
+        self.assertIn(pipeline.MAINLAND_HOT_OTHER_LABEL, block)
+
+    def test_plain_mode_keeps_a_compact_health_row(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        with patch.object(pipeline, "LITE_ENABLED", True):
+            block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+            self.assertIn("时效体检", block, "入门版也要报时效，只是压成一行")
+            self.assertIn("当天 6 家", block)
+            self.assertNotIn("窗口内条数 · 最新 / 滞后", block, "入门版不展开逐家清单")
+
+    def test_section_absent_without_data(self):
+        with patch.object(pipeline, "AI_ANALYSIS_ENABLED", False):
+            html = pipeline.generate_report(
+                {pipeline.MAINLAND_NEWS_SOURCE_NAME: pipeline._source_result(
+                    pipeline.MAINLAND_NEWS_SOURCE_NAME, "unavailable", sources=[],
+                    headlines=[], analysis=None, error="offline")},
+                "2026年10月13日 · 周二", "20261013")
+        self.assertNotIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
+
+    def test_switch_off_removes_only_the_column(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        with patch.object(pipeline, "MAINLAND_HOTLIST_ENABLED", False):
+            with patch.object(pipeline, "AI_ANALYSIS_ENABLED", False):
+                html = pipeline.generate_report(data, "2026年10月13日 · 周二", "20261013")
+        self.assertNotIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
+        self.assertIn(pipeline.SECTION_TITLE_TREND, html, "趋势跟踪栏目不受影响")

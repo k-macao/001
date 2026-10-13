@@ -296,7 +296,8 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "mainland_news_rss": {
         "name": "内地财经媒体 · 18 家（官方订阅 / 站内检索 RSS）",
-        "used_by": ("【亮亮灯光鱿鱼】新闻情绪因子量化分析",
+        "used_by": ("【沸腾花蛤】内地财经热点榜",
+                    "【亮亮灯光鱿鱼】新闻情绪因子量化分析",
                     "【深海肥蓝鲸】政策因子",
                     "策略研判 / 逐栏 AI 研判（标题池）"),
         "primary": ("各媒体官方 RSS / Atom（若有）", "{feed}"),
@@ -306,7 +307,11 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
             ("Google News 站内检索 RSS（同格式 RSS，链接经 news.google.com 跳转）",
              "https://news.google.com/rss/search?q=site%3A{host}&hl=zh-CN&gl=CN&ceid=CN:zh-Hans", True),
         ),
-        "note": ("这 18 家媒体多数在 2022 年后下线或从未提供官方 RSS，"
+        "note": ("2026-10-13 取数修复：站内检索返回的条目链接是明文 http 的平台跳转地址，"
+                 "会在外链白名单处被整条拒绝，18 家因此长期 0 条；现在先解出跳转地址里的"
+                 "原文链接（直达原文），解不出才把跳转链接自身升级为 https，"
+                 "候选源也改成「拿到可用条目才停」（第一路 0 条可用继续试下一路）。"
+                 "这 18 家媒体多数在 2022 年后下线或从未提供官方 RSS，"
                  "默认直接走「站内检索 RSS（Bing → Google News）」按站点取公开标题；"
                  "任一媒体若拿到官方订阅地址，填进 MAINLAND_NEWS_SOURCES 的 feed 即自动优先走官方源。"
                  "只收标题 / 发布时间 / 原文链接，不复制正文，不绕过付费墙。"),
