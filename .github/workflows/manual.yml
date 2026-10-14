@@ -49,6 +49,15 @@ jobs:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
           OCTOPUS_MACD: ${{ vars.OCTOPUS_MACD || '1' }}
           OCTOPUS_MACD_SYMBOLS: ${{ vars.OCTOPUS_MACD_SYMBOLS }}
+          # ◧ AI 七日港股走势分析概率的大模型 Key：与「每日自动推送」同一套口径
+          # （本仓专用名 → 厂商通用名回落，既有的 DEEPSEEK_API_KEY 直接可用）。
+          # 手动抓取推送此前完全不传 Key，导致「手动跑出来的日报这一栏永远是缺的」。
+          OCTOPUS_LLM_API_KEY: ${{ secrets.OCTOPUS_LLM_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
+          OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
+          OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
         run: |
           set -euo pipefail
           NO_PUSH="${{ github.event.inputs.no_push || 'false' }}"
