@@ -174,7 +174,7 @@ class ShiquanClassifierAndProtocolTests(unittest.TestCase):
 
 
 class ShiquanPipelineIntegrationTests(unittest.TestCase):
-    """验证每次日报生成和采集最开始均加入诗泉随机一首诗，且五套主题与分条推送全部兼容。"""
+    """验证诗选与卦象共用卷首栏，五套主题及微信分条推送均兼容。"""
 
     def _sample_data(self):
         return {
@@ -193,7 +193,7 @@ class ShiquanPipelineIntegrationTests(unittest.TestCase):
             ),
         }
 
-    def test_opening_poem_is_placed_at_very_beginning_across_all_five_themes(self):
+    def test_poem_and_bagua_share_one_opening_section_across_all_themes(self):
         for theme in pipeline.PUSH_THEMES:
             data = self._sample_data()
             data[pipeline.SHIQUAN_META_KEY] = {
@@ -205,31 +205,53 @@ class ShiquanPipelineIntegrationTests(unittest.TestCase):
                 "type": {"id": 4, "name": "五言绝句", "category": "唐诗"},
             }
             html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme=theme)
-            self.assertIn("诗泉", html, f"{theme} 主题缺少诗泉标识")
+            self.assertEqual(html.count(pipeline.SECTION_TITLE_POETRY_SEA), 1)
+            self.assertIn("诗泉", html, f"{theme} 主题缺少诗泉来源标识")
+            self.assertIn("今日一首诗", html)
             self.assertIn("《终南望余雪》", html, f"{theme} 主题缺少诗题")
             self.assertIn("终南阴岭秀，积雪浮云端。", html, f"{theme} 主题缺少诗句")
+            self.assertIn("☯", html)
+            self.assertIn("今日八卦运程与利忌", html)
+            self.assertNotIn("开篇随机一首诗", html)  # 原栏目名不再单独出现
 
-            # 必须在第一栏（RETAIL SENTIMENT）之前出现
-            poem_pos = html.index("《终南望余雪》")
-            first_sec_pos = html.index("RETAIL SENTIMENT")
-            self.assertLess(
-                poem_pos, first_sec_pos,
-                f"{theme} 主题中诗泉诗词必须位于第一栏 RETAIL SENTIMENT 之前",
-            )
+            # 一个栏目、两个子块，紧挨刊头且排在首个市场栏目（今日预判）之前。
+            opening = html.split(pipeline.PART_BREAK_MARK)[1]
+            self.assertIn("今日一首诗", opening)
+            self.assertIn("今日八卦运程与利忌", opening)
+            self.assertEqual(opening.count(pipeline.SECTION_BODY_MARK), 1)
+            self.assertLess(html.index(pipeline.SECTION_TITLE_POETRY_SEA),
+                            html.index("《终南望余雪》"))
+            self.assertLess(html.index("《终南望余雪》"), html.index("今日八卦运程与利忌"))
+            self.assertLess(html.index("今日八卦运程与利忌"),
+                            html.index(pipeline.SECTION_TITLE_FORECAST))
 
     def test_generate_report_auto_picks_random_poem_when_data_has_no_cached_poem(self):
         data = self._sample_data()
         parts = pipeline._collect_report_parts(data, pipeline.LIME_KIT, date_str="20261011")
         self.assertIsNotNone(parts.get("poem"))
         html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme="lime")
-        self.assertIn("SHIQUAN · 开篇随机一首诗", html)
-        self.assertLess(html.index("SHIQUAN · 开篇随机一首诗"), html.index("RETAIL SENTIMENT"))
+        self.assertIn(pipeline.SECTION_TITLE_POETRY_SEA, html)
+        self.assertIn("今日一首诗", html)
+        self.assertIn("今日八卦运程与利忌", html)
+        self.assertLess(html.index("今日一首诗"), html.index(pipeline.SECTION_TITLE_FORECAST))
 
     def test_shiquan_can_be_disabled_via_env(self):
         data = self._sample_data()
         with patch.dict(os.environ, {"OCTOPUS_SHIQUAN": "0"}):
             html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme="lime")
-        self.assertNotIn("SHIQUAN · 开篇随机一首诗", html)
+        self.assertNotIn("今日一首诗", html)
+        self.assertIn(pipeline.SECTION_TITLE_POETRY_SEA, html)
+        self.assertIn("今日八卦运程与利忌", html)  # 八卦开关独立
+
+    def test_both_features_off_hide_opening_without_changing_market_sections(self):
+        data = self._sample_data()
+        with (patch.dict(os.environ, {"OCTOPUS_SHIQUAN": "0"}),
+              patch.object(pipeline._bagua, "ENABLED", False)):
+            html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme="lime")
+        self.assertNotIn(pipeline.SECTION_TITLE_POETRY_SEA, html)
+        self.assertNotIn("今日一首诗", html)
+        self.assertNotIn('aria-label="算卦"', html)
+        self.assertIn(pipeline.SECTION_TITLE_FORECAST, html)
 
     def test_multipart_split_retains_opening_poem_in_first_part(self):
         data = self._sample_data()
@@ -242,10 +264,17 @@ class ShiquanPipelineIntegrationTests(unittest.TestCase):
             "type": {"id": 4, "name": "五言绝句", "category": "唐诗"},
         }
         html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme="guizang")
-        parts = pipeline._split_html_for_push(html, 6000, max_parts=10)
-        self.assertIsNotNone(parts)
-        self.assertIn("《江雪》", parts[0])
-        self.assertIn("孤舟蓑笠翁，独钓寒江雪。", parts[0])
+        opening = html.split(pipeline.PART_BREAK_MARK)[1]
+        self.assertIn("《江雪》", opening)
+        self.assertIn("孤舟蓑笠翁，独钓寒江雪。", opening)
+        self.assertIn("今日八卦运程与利忌", opening)
+        self.assertNotIn("FORECAST", opening)
+        # 分条推送仍保留完整栏目头与卦象图标；即使栏目超额切为续片也不丢内容。
+        pieces = pipeline._split_html_for_push(html, 9000, max_parts=20)
+        self.assertIsNotNone(pieces)
+        self.assertIn(pipeline.SECTION_TITLE_POETRY_SEA, pieces[0])
+        self.assertIn("《江雪》", pieces[0])
+        self.assertIn("今日八卦运程与利忌", "".join(pieces))
 
 
 if __name__ == "__main__":
