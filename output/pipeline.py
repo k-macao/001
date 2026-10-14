@@ -469,6 +469,7 @@ import backup_sources as _backup  # noqa: E402
 import dedup as _dedup  # noqa: E402
 import hk_overseas as _hkx  # noqa: E402  # 🇭🇰 港股境外数据源（Yahoo / Stooq / HKEX / 可选 stealth 浏览器）
 import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首古诗词
+import finance_analysis as _finance  # noqa: E402  # 💰 财经概念映射与利好利空概率模型（内地财经热点榜增强）
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
 # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首诗开关：OCTOPUS_SHIQUAN=0 可关闭。
@@ -4205,6 +4206,8 @@ def build_mainland_hotlist(mainland):
     返回 None 表示该源头不可用 / 窗口内 0 条（栏目整栏缺席，不占位）。
     每条标题只归一个主题（按 MAINLAND_HOT_THEMES 的顺序命中第一个），
     因此各主题条数之和恒等于进榜总条数——榜单里不会出现「加起来对不上」。
+    
+    💰 新增：财经概念映射与利好利空概率分析（2026-10-14）
     """
     if not isinstance(mainland, dict) or mainland.get("status") != "success":
         return None
@@ -4213,6 +4216,15 @@ def build_mainland_hotlist(mainland):
                  and str(h.get("url") or "").strip()]
     if not headlines:
         return None
+
+    # 💰 新增：为每个 headline 添加财经分析
+    for headline in headlines:
+        if isinstance(headline, dict) and "title" in headline:
+            if "finance_analysis" not in headline:
+                headline["finance_analysis"] = _finance.analyze_finance_item(
+                    headline.get("title", ""), 
+                    headline.get("content", "")
+                )
 
     def _sort_key(h):
         return str(h.get("published_cst") or "")
@@ -4247,6 +4259,10 @@ def build_mainland_hotlist(mainland):
     # 时效体检汇总：当天 / 窗口内滞后 / 暂缺 各几家（入门版也显示，压缩成一行）
     today_src = [h for h in health if h.get("state") == "当天"]
     lag_src = [h for h in health if h.get("state") == "窗口内滞后"]
+    
+    # 💰 新增：计算整体财经分析统计
+    finance_summary = _calculate_finance_summary(headlines)
+    
     return {
         # status / is_today 是为了让「🦑 AI帮你提鲜」的活鲜度判断与其他栏目同口径
         # （octopus_ren._garnish_available 读 status，读不到就当缺席，不加解读块）。
@@ -4267,6 +4283,69 @@ def build_mainland_hotlist(mainland):
         "health": health,
         "missing": [h.get("name") for h in health if h.get("status") != "ok"],
         "is_today": bool(mainland.get("is_today")),
+        # 💰 新增：财经分析统计
+        "finance_summary": finance_summary,
+    }
+
+
+from typing import List, Dict
+
+def _calculate_finance_summary(headlines: List[Dict]) -> Dict:
+    """计算财经分析整体统计（2026-10-14 新增）"""
+    if not headlines:
+        return {"enabled": False}
+    
+    all_concepts = Counter()
+    sentiment_scores = []
+    sentiment_classes = Counter()
+    
+    for headline in headlines:
+        fa = headline.get("finance_analysis", {})
+        if not fa:
+            continue
+        
+        # 统计概念
+        for concept, score in fa.get("concepts", {}).items():
+            all_concepts[concept] += score
+        
+        # 统计情感
+        score = fa.get("sentiment_score")
+        if score is not None:
+            sentiment_scores.append(score)
+        
+        class_ = fa.get("sentiment_class", "中性")
+        sentiment_classes[class_] += 1
+    
+    if not sentiment_scores:
+        return {"enabled": True, "has_data": False}
+    
+    # 计算平均情感
+    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores)
+    
+    # 计算概率
+    if avg_sentiment > 0:
+        overall_pos_prob = round(min(abs(avg_sentiment) * 100, 95), 2)
+        overall_neg_prob = round(100 - overall_pos_prob, 2)
+    elif avg_sentiment < 0:
+        overall_neg_prob = round(min(abs(avg_sentiment) * 100, 95), 2)
+        overall_pos_prob = round(100 - overall_neg_prob, 2)
+    else:
+        overall_pos_prob = 50.0
+        overall_neg_prob = 50.0
+    
+    # 主要概念排序
+    top_concepts = sorted(all_concepts.items(), key=lambda x: x[1], reverse=True)[:5]
+    
+    return {
+        "enabled": True,
+        "has_data": True,
+        "overall_sentiment_score": round(avg_sentiment, 4),
+        "overall_sentiment_class": _finance.sentiment_analyzer.classify_sentiment(avg_sentiment),
+        "overall_positive_probability": overall_pos_prob,
+        "overall_negative_probability": overall_neg_prob,
+        "sentiment_distribution": dict(sentiment_classes),
+        "top_concepts": [{"concept": c, "score": round(s, 4)} for c, s in top_concepts],
+        "total_analyzed": len(sentiment_scores)
     }
 
 
@@ -4341,10 +4420,38 @@ def _mainland_hotlist_block(res, kit):
             if stamp:
                 bits.append(stamp[5:])
                 bits.append("今日" if it.get("is_today") else "昨日及更早")
+            
+            # 💰 新增：展示财经分析（如果有）
+            fa = it.get("finance_analysis", {})
+            if fa and fa.get("top_concepts"):
+                concepts_str = ", ".join([c["concept"] for c in fa["top_concepts"][:2]])
+                sentiment_str = fa.get("sentiment_class", "")
+                if sentiment_str:
+                    bits.append(f"[{sentiment_str}]")
+                    bits.append(f"概念:{concepts_str}")
+            
             rows.append(kit.item_row("↳", link, _esc(" · ".join(x for x in bits if x))))
     if len(res["themes"]) > theme_max:
         rows.append(kit.item_row("…", f'另有 {len(res["themes"]) - theme_max} 个主题未展开',
                                  _esc("按条数降序，完整的只在全量版（--full）显示")))
+    
+    # 💰 新增：整体财经分析统计展示
+    finance_summary = res.get('finance_summary', {})
+    if finance_summary.get('has_data'):
+        fs = finance_summary
+        sentiment_label = fs.get('overall_sentiment_class', '中性')
+        pos_prob = fs.get('overall_positive_probability', 0)
+        neg_prob = fs.get('overall_negative_probability', 0)
+        top_concepts = fs.get('top_concepts', [])
+        
+        if top_concepts:
+            concepts_str = ", ".join([c["concept"] for c in top_concepts[:3]])
+        else:
+            concepts_str = "无"
+        
+        finance_row = f'<b>财经分析</b>：{sentiment_label} (利好概率: {pos_prob}% | 利空概率: {neg_prob}%) | 主要概念: {concepts_str}'
+        rows.append(kit.item_row("💰", finance_row, ""))
+    
     return kit.rows("".join(rows)) if rows else ""
 
 
