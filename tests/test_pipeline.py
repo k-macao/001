@@ -1241,18 +1241,24 @@ class CleanOldReportsTests(unittest.TestCase):
             self.assertTrue((Path(directory) / "notes.txt").exists())
             self.assertTrue((Path(directory) / "data.json").exists())
 
-    def test_main_normal_flow_calls_clean_before_collect(self):
-        """main() 正常流程：必须在 collect_all_data 之前调用 clean_old_html_reports。"""
+    def test_main_normal_flow_cleans_only_after_report_saved(self):
+        """main() 正常流程：清理必须在新报告保存之后执行，且保留本次日报。
+
+        回归 2026-10-14 事故：旧的「采集前清理」让崩溃后工作区没有任何日报，
+        workflow 的 git add 把整批历史日报当作删除提交。
+        """
         with tempfile.TemporaryDirectory() as directory:
             self._seed_reports(directory)
             old_report_dir = pipeline.REPORT_DIR
             call_order = []
+            clean_kwargs = []
 
             original_collect = pipeline.collect_all_data
             original_clean = pipeline.clean_old_html_reports
 
             def tracking_clean(*a, **kw):
                 call_order.append("clean")
+                clean_kwargs.append(kw)
                 return original_clean(*a, **kw)
 
             def tracking_collect():
@@ -1260,6 +1266,7 @@ class CleanOldReportsTests(unittest.TestCase):
                 return original_collect()
 
             def fake_save(html, output_path=None, data=None):
+                call_order.append("save")
                 p = Path(directory) / "daily_report_test.html"
                 p.write_text(html, encoding="utf-8")
                 return str(p)
@@ -1276,11 +1283,77 @@ class CleanOldReportsTests(unittest.TestCase):
                      patch.object(pipeline, "save_report", side_effect=fake_save), \
                      patch.object(pipeline, "push_to_wechat", return_value=True):
                     pipeline.main()
+                new_report_exists = (Path(directory) / "daily_report_test.html").exists()
+                old_report_exists = (Path(directory) / "daily_report_20260801.html").exists()
             finally:
                 pipeline.REPORT_DIR = old_report_dir
 
-            self.assertEqual(call_order, ["clean", "collect"],
-                             "清理必须在采集之前执行，避免最新报告被旧文件污染")
+            self.assertEqual(call_order, ["collect", "save", "clean"],
+                             "清理必须在采集和保存新报告之后执行")
+            self.assertTrue(new_report_exists, "本次日报必须保留")
+            self.assertFalse(old_report_exists, "旧日报应在新报告保存后被清理")
+            self.assertEqual(clean_kwargs[0].get("keep"),
+                             (str(Path(directory) / "daily_report_test.html"),))
+
+    def test_main_collect_crash_keeps_old_reports(self):
+        """采集阶段崩溃：旧日报必须原封不动（不能先清空再崩溃）。"""
+        with tempfile.TemporaryDirectory() as directory:
+            self._seed_reports(directory)
+            old_report_dir = pipeline.REPORT_DIR
+            try:
+                pipeline.REPORT_DIR = directory
+                with patch.object(sys, "argv", ["pipeline.py"]), \
+                     patch.object(pipeline, "collect_all_data",
+                                  side_effect=RuntimeError("boom")):
+                    with self.assertRaises(RuntimeError):
+                        pipeline.main()
+            finally:
+                pipeline.REPORT_DIR = old_report_dir
+
+            self.assertTrue((Path(directory) / "daily_report_20260801.html").exists())
+            self.assertTrue((Path(directory) / "latest.html").exists())
+            self.assertEqual((Path(directory) / "latest.html").read_text(encoding="utf-8"),
+                             "OLD-CONTENT-latest.html")
+
+    def test_main_generate_crash_keeps_old_reports(self):
+        """生成阶段崩溃（如 Counter NameError）：旧日报必须保留，工作区不得变空。"""
+        with tempfile.TemporaryDirectory() as directory:
+            self._seed_reports(directory)
+            old_report_dir = pipeline.REPORT_DIR
+            try:
+                pipeline.REPORT_DIR = directory
+                with patch.object(sys, "argv", ["pipeline.py"]), \
+                     patch.object(pipeline, "collect_all_data", return_value={}), \
+                     patch.object(pipeline, "generate_report",
+                                  side_effect=NameError("name 'Counter' is not defined")):
+                    with self.assertRaises(NameError):
+                        pipeline.main()
+            finally:
+                pipeline.REPORT_DIR = old_report_dir
+
+            remaining = sorted(p.name for p in Path(directory).glob("daily_report_*.html"))
+            self.assertEqual(remaining, ["daily_report_20260801.html",
+                                         "daily_report_20260802_20260802_069.html",
+                                         "daily_report_20260802_20260802_098.html",
+                                         "daily_report_20260802_20260802_243.html"])
+
+    def test_clean_old_html_reports_keep_preserves_given_path(self):
+        """keep 参数：指定路径不被删除，其余历史日报照常清理。"""
+        with tempfile.TemporaryDirectory() as directory:
+            self._seed_reports(directory)
+            keep_path = str(Path(directory) / "daily_report_20260802_20260802_098.html")
+            old_report_dir = pipeline.REPORT_DIR
+            try:
+                pipeline.REPORT_DIR = directory
+                deleted, latest_deleted = pipeline.clean_old_html_reports(
+                    keep_latest=True, keep=(keep_path,))
+            finally:
+                pipeline.REPORT_DIR = old_report_dir
+
+            self.assertEqual(deleted, 3)
+            self.assertFalse(latest_deleted)
+            self.assertTrue(Path(keep_path).exists())
+            self.assertTrue((Path(directory) / "latest.html").exists())
 
     def test_main_dry_run_skips_clean(self):
         """--dry-run 模式：不清理（不写文件，清理无意义且会产生空目录警告）。"""
@@ -4456,6 +4529,27 @@ class LimeThemeTests(unittest.TestCase):
             self.assertIn('name="octopus-theme" content="lime"', part)
             self.assertIn(pipeline.L_CARD, part)
             self.assertIn(pipeline.L_LIME, part)
+
+
+class FinanceSummaryRegressionTests(unittest.TestCase):
+    """回归 2026-10-14 事故：_calculate_finance_summary 用 Counter 却未导入，生成阶段 NameError。"""
+
+    def test_finance_summary_runs_with_finance_analysis_headlines(self):
+        headlines = [
+            {"finance_analysis": {"concepts": {"AI": 2, "芯片": 1},
+                                  "sentiment_score": 0.4,
+                                  "sentiment_class": "正面"}},
+            {"finance_analysis": {"concepts": {"AI": 1},
+                                  "sentiment_score": -0.1,
+                                  "sentiment_class": "负面"}},
+            {"title": "无财经分析的标题"},
+        ]
+        summary = pipeline._calculate_finance_summary(headlines)
+        self.assertTrue(summary["enabled"])
+        self.assertTrue(summary["has_data"])
+        self.assertEqual(summary["total_analyzed"], 2)
+        self.assertEqual(summary["top_concepts"][0]["concept"], "AI")
+        self.assertEqual(summary["sentiment_distribution"], {"正面": 1, "负面": 1})
 
 
 if __name__ == "__main__":

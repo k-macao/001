@@ -419,7 +419,7 @@ import glob
 import json
 import threading
 import xml.etree.ElementTree as ET
-from collections import deque
+from collections import Counter, deque
 from concurrent.futures import ThreadPoolExecutor
 from html import escape as _html_escape, unescape as _html_unescape
 from html.parser import HTMLParser
@@ -15566,24 +15566,29 @@ def list_reports():
 # ============================================================
 # 清理旧的 HTML 报告
 # ============================================================
-def clean_old_html_reports(keep_latest=False):
-    """清理 output/ 目录下的所有旧 HTML 报告（daily_report_*.html + latest.html）。
+def clean_old_html_reports(keep_latest=False, keep=()):
+    """清理 output/ 目录下的旧 HTML 报告（daily_report_*.html + latest.html）。
 
-    在手动/自动推送前调用，确保本次生成的日报是"最新且唯一"的内容，
-    避免历史残留文件（特别是含旧版本特征的报告）被误推或被 latest.html 引用。
+    必须在新报告已成功保存之后调用（main() 第 4 步之后），确保推送的日报是"最新且唯一"的内容。
+    若在生成之前清理，采集/生成一旦崩溃，工作区里就没有任何日报，workflow 的 git add
+    会把空 glob 当作删除整批历史日报提交（2026-10-14 事故）。
 
     参数:
         keep_latest: True 时保留 latest.html（仅清 daily_report_*.html）；
                      默认 False：两个都清。
+        keep: 需要保留的路径序列（如刚保存的本次日报），不会被删除。
     返回:
         (删除的 daily_report 数, 是否删了 latest.html)
     """
     deleted = 0
     latest_deleted = False
+    keep_set = {os.path.abspath(p) for p in keep}
 
     # 1) 清理 daily_report_*.html
     pattern = os.path.join(REPORT_DIR, "daily_report_*.html")
     for filepath in glob.glob(pattern):
+        if os.path.abspath(filepath) in keep_set:
+            continue
         try:
             os.remove(filepath)
             deleted += 1
@@ -16154,11 +16159,9 @@ def main():
          f"精简 + 说明文字（短线速查卡 ≤{_short.CARD_CHAR_BUDGET} 字 + 全篇瘦身；--full 回全量长版）")
         if LITE_ENABLED else "全量长版（--full / OCTOPUS_LITE=0）"))
 
-    # 0. 清理历史 HTML 报告（手动/自动推送前必做）：
-    #    避免历史残留文件（含旧版本特征的报告）被推送或被 latest.html 引用。
-    #    --dry-run 不写文件，所以跳过清理。
-    if not args.dry_run:
-        clean_old_html_reports()
+    # 注意：历史 HTML 清理放在第 4 步「新报告保存之后」（见下方），
+    # 不能在采集/生成之前清理——否则中途崩溃会让工作区没有任何日报，
+    # 导致 workflow 把整批历史日报当作删除提交（2026-10-14 事故）。
 
     # 1. 采集数据
     data = collect_all_data()
@@ -16204,6 +16207,10 @@ def main():
 
     # 4. 保存文件
     output_path = save_report(html, args.output, data)
+    # 4.1 清理历史 HTML：新报告与 latest.html 已写好之后才清理，保留本次日报；
+    #     --dry-run 已在上方返回，不会走到这里。
+    #     latest.html 刚被 save_report 覆盖为新内容，故 keep_latest=True。
+    clean_old_html_reports(keep_latest=True, keep=(output_path,))
     # 4.5 历史落盘：把今日个股情绪计数并入跨日基线、把本次标题并入标题存档
     #     （同日多次运行按日期键/日期+标题覆盖去重，幂等；失败只告警，不影响推送）
     try:
