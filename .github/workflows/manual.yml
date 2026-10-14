@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip --quiet
-          pip install --quiet requests
+          python -m pip install --quiet -r requirements.txt
 
       - name: 🐙 抓取最新动态数据并推送
         env:
