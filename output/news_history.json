@@ -8731,22 +8731,47 @@
  ],
  "updated_cst": "2026-10-14 04:38:01",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-14 11:04:19",
+  "ran_at": "2026-10-14 13:45:00",
   "cutoff": "2026-10-13",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
   "fqt": "1",
-  "kline_series": 31,
+  "kline_series": 15,
   "sources": {
-   "eastmoney": 31
+   "eastmoney_mirror": 6,
+   "eastmoney": 9
   },
-  "missing": [],
+  "missing": [
+   "BK0427",
+   "BK0433",
+   "BK0436",
+   "BK0486",
+   "BK1200",
+   "BK1202",
+   "BK1204",
+   "BK1207",
+   "BK1209",
+   "BK1210",
+   "BK1212",
+   "BK1213",
+   "BK1214",
+   "BK1215",
+   "BK1216",
+   "BK1283"
+  ],
+  "em_mirror": [
+   "BK0456",
+   "BK0478",
+   "BK1035",
+   "BK1203",
+   "BK1206",
+   "BK1217"
+  ],
   "asof": "2026-10-13",
-  "asof_hits": 31,
-  "scored": 31,
+  "asof_hits": 15,
+  "scored": 15,
   "required": 19,
-  "state": "reused",
-  "holdings": 5
+  "reason": "可评分行业覆盖不足（15/31 个行业满足评分条件，至少需要 19 个）"
  },
  "industry_rotation": {
   "month": "2026-10",
