@@ -598,6 +598,11 @@ def _ren_mainland_hotlist(ctx):
         if len(themes) > 1:
             bits.append("接着是" + "、".join(f"「{t['label']}」{_int(t['count'])} 条"
                                            for t in themes[1:3]))
+    vocab = res.get("finance_summary") or {}
+    terms = [str(item.get("term") or "") for item in (vocab.get("top_terms") or [])
+             if isinstance(item, dict) and item.get("term")]
+    if terms:
+        bits.append("标题词汇集中在「" + "、".join(terms[:4]) + "」")
     newest = str(res.get("newest_cst") or "")
     if newest:
         bit = f"最新一条 {newest[5:]}"
@@ -608,8 +613,8 @@ def _ren_mainland_hotlist(ctx):
     bits.append(f"其中当天 {_int(res.get('today_sources'))} 家、窗口内滞后 "
                 f"{_int(res.get('lag_sources'))} 家、暂缺 {len(res.get('missing') or [])} 家")
     text = "；".join(bits) + "。"
-    text += ("翻译：热点榜只数「谁在说、说了多少」，不数谁说得对——同一件事十家一起喊，"
-             "也不等于它就真要发生；标题是线索，不是结论。"
+    text += ("翻译：主题榜数「谁在说、说了多少」，词汇分析只统计标题里反复出现的词；"
+             "两者都不能证明消息真假，也不是涨跌信号——同一件事十家一起喊，不等于它就真要发生。"
              f"今天的姿势：{_tip(seed)}。")
     return text
 

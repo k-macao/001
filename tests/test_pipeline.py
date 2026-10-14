@@ -4532,24 +4532,24 @@ class LimeThemeTests(unittest.TestCase):
 
 
 class FinanceSummaryRegressionTests(unittest.TestCase):
-    """回归 2026-10-14 事故：_calculate_finance_summary 用 Counter 却未导入，生成阶段 NameError。"""
+    """内地热点榜词汇摘要：标题数 / 媒体覆盖口径正确，不渲染未校准概率。"""
 
-    def test_finance_summary_runs_with_finance_analysis_headlines(self):
+    def test_finance_summary_counts_title_mentions_and_media(self):
         headlines = [
-            {"finance_analysis": {"concepts": {"AI": 2, "芯片": 1},
-                                  "sentiment_score": 0.4,
-                                  "sentiment_class": "正面"}},
-            {"finance_analysis": {"concepts": {"AI": 1},
-                                  "sentiment_score": -0.1,
-                                  "sentiment_class": "负面"}},
-            {"title": "无财经分析的标题"},
+            {"title": "AI大模型算力提升", "source": "媒体甲"},
+            {"title": "AI算力需求增加", "source": "媒体乙"},
+            {"title": "AI芯片公告", "source": "媒体甲"},
+            {"title": "无财经分析的标题", "source": "媒体丙"},
         ]
         summary = pipeline._calculate_finance_summary(headlines)
         self.assertTrue(summary["enabled"])
         self.assertTrue(summary["has_data"])
-        self.assertEqual(summary["total_analyzed"], 2)
-        self.assertEqual(summary["top_concepts"][0]["concept"], "AI")
-        self.assertEqual(summary["sentiment_distribution"], {"正面": 1, "负面": 1})
+        self.assertEqual(summary["total_titles"], 4)
+        ai = next(item for item in summary["top_terms"] if item["term"] == "AI")
+        self.assertEqual(ai["title_count"], 3)
+        self.assertEqual(ai["media_count"], 2)
+        self.assertNotIn("overall_positive_probability", summary)
+        self.assertNotIn("overall_negative_probability", summary)
 
 
 if __name__ == "__main__":

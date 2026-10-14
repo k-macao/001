@@ -7,7 +7,7 @@
 它不是构造故事：标题、链接、时间都来自当天真实抓取，只是**离线重放**到渲染层。
 
 用途：沙箱 / CI 没有外网时，也能验证新栏目在 5 套主题（lime / pixel / forum / dossier /
-guizang）下都能渲染，且主题条数、时效体检、暂缺点名都如实显示。
+guizang）下都能渲染，且主题条数、时效体检、暂缺点名与本地词汇分析都如实显示。
 
 真实覆盖仍以联网机器为准：
     python3 output/pipeline.py --dry-run      # 每家 ✅/⚠️ + 「内地财经媒体 N/18 家…」
@@ -194,7 +194,7 @@ def plain(html):
 def snippets(text, needle, width=110, limit=2):
     out = []
     for m in re.finditer(re.escape(needle), text):
-        seg = text[max(0, m.start() - width):m.end() + width]
+        seg = text[max(0, m.start() - width):m.end() + width].strip()
         if seg not in out:
             out.append(seg)
         if len(out) >= limit:
@@ -254,6 +254,10 @@ def main():
         item_rows = [s for s in snippets(text, "↳", width=120, limit=3)]
         lines += ["**⑤ 代表标题行**（可点原文 + 媒体名 + 时间 + 今日 / 昨日及更早）", ""]
         lines += [f"```\n{s}\n```" for s in item_rows] or ["```\n（未找到）\n```"]
+        lines.append("")
+        vocab_rows = snippets(text, "AI词汇分析", width=360, limit=1)
+        lines += ["**⑥ AI词汇分析**（本地 jieba 分词 + 财经停用词表；标题数 / 媒体数，不是涨跌概率）", ""]
+        lines += [f"```\n{s}\n```" for s in vocab_rows] or ["```\n（未找到）\n```"]
         lines += ["", "---", ""]
     lines += [
         "## 真实覆盖怎么看（沙箱无外网，必须在本机跑）",
