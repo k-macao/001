@@ -424,7 +424,7 @@ from concurrent.futures import ThreadPoolExecutor
 from html import escape as _html_escape, unescape as _html_unescape
 from html.parser import HTMLParser
 from urllib.parse import quote, urljoin, urlparse, parse_qs, unquote
-from datetime import datetime, timezone, timedelta
+from datetime import date, datetime, timezone, timedelta
 from typing import Dict, List
 
 try:
@@ -471,6 +471,7 @@ import dedup as _dedup  # noqa: E402
 import hk_overseas as _hkx  # noqa: E402  # 🇭🇰 港股境外数据源（Yahoo / Stooq / HKEX / 可选 stealth 浏览器）
 import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首古诗词
 import finance_analysis as _finance  # noqa: E402  # 🧩 本地 jieba 财经标题词汇分析（内地财经热点榜增强）
+import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（今日预判内娱乐子栏）
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
 # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首诗开关：OCTOPUS_SHIQUAN=0 可关闭。
@@ -10137,9 +10138,19 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 最终结论 / 前置盘点：核心判断放大显示，关键市场数字保留在同一栏核对。
     conclusion = _conclusion_pairs(kit, ai_result, market, pan, policy,
                                    quant=quant, weekly=weekly_res)
-    if conclusion:
+    # ☯ 今日八卦运程与利忌：今日预判内的娱乐子栏（纯日期规则、与行情结论独立；
+    # OCTOPUS_BAGUA=0 关闭，日期解析失败则子栏缺席，绝不拖垮日报）。
+    bagua_html = ""
+    if _bagua.ENABLED:
+        try:
+            _bagua_day = datetime.strptime(str(date_str)[:10], "%Y-%m-%d").date() \
+                if date_str else date.today()
+            bagua_html = _bagua.render_bagua_html(day=_bagua_day)
+        except Exception:
+            bagua_html = ""
+    if conclusion or bagua_html:
         blocks["FORECAST"] = ("FORECAST", SECTION_TITLE_FORECAST,
-                               _conclusion_panel(kit, conclusion), "", "")
+                               _conclusion_panel(kit, conclusion) + bagua_html, "", "")
     summary = _summary_pairs(ai_result, pan, policy, source_items, today_n, total,
                              quant=quant,
                              backup_events=(data.get("_backup_info") or {}).get("events"))

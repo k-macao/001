@@ -48,7 +48,7 @@
 
 | 顺序 | 栏目 | 重点看什么 |
 |---:|---|---|
-| 00 | 【回游金枪鱼】今日预判 | 最终方向判断、关键指数数据与政策定调；视觉重点突出 |
+| 00 | 【回游金枪鱼】今日预判 | 最终方向判断、关键指数数据与政策定调；栏内附 ☯ 今日八卦运程与利忌（公历梅花变体起卦：本卦/变卦/运程星级/利方利色利数吉时/宜忌/看盘宜，娱乐参考、与行情结论独立，`OCTOPUS_BAGUA=0` 关闭）；视觉重点突出 |
 | 01 | 【及时秋刀鱼】AI 行情复盘 | 全球与美股、A 股、港股行情、市场宽度、成交额与板块热力 |
 | 02 | 【深水石斑鱼】港股行情 | 港股指数、个股行情明细与市场层成交额 |
 | 03 | 【探照安康鱼】时间节点量化预测 | 未来日程窗口、重要度与重点发布日 |
@@ -348,6 +348,7 @@
 | `output/octopus_quant/sector_rotation.py` | 港股量化引擎 | A 股概念到港股观察篮子的轮动评分与三策略投票 |
 | `output/octopus_quant/uzi_trend.py` | 港股量化引擎 | 【游资剑鱼】UZI 多流派趋势分析：指标重算 + 上游评委规则打分 |
 | `output/octopus_short.py`、`output/stock_memes.json` | 精简与速查卡 | 短线速查卡与全篇精简（含新手三句话配对引擎及 100 句股票梗句库） |
+| `output/octopus_bagua.py` | 八卦利忌 | ☯ 今日八卦运程与利忌：公历梅花变体确定性起卦（64 卦/动爻变卦/五行生克），`python3 output/octopus_bagua.py [--date YYYY-MM-DD]` 可单独看今日 |
 | `output/octopus_ren.py`、`output/octopus_lexicon.py` | 提鲜解读 | AI帮你提鲜（原名鲜鲜解读）与 50 词活鲜词库 |
 | `output/finance_analysis.py` | 内地财经热点榜 | jieba 本地标题词汇提取、财经停用词过滤与标题数 / 媒体数汇总；不调用外部大模型 |
 | `output/octopus_weekly.py`、`output/hk_seven_day.py` | 七日预测 | 七日逐日预测与 AI 七日港股分析子块 |
