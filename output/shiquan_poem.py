@@ -19,8 +19,8 @@ https://github.com/lianginx/chinese-poetry-api-skill），在每次日报生成�
    （按诗泉 ``internal/classifier`` 与 ``internal/api/rest/handler/formatter.go``
    口径预构建的跨朝代经典诗词库），当运行环境离线、外网受限或单测运行时，
    自动在本地语料库中按完全一致的过滤条件随机抽取一首诗词；
-3. 五套主题开篇渲染：支持 ``lime`` / ``guizang`` / ``dossier`` / ``forum`` /
-   ``pixel`` 五套日报主题的卷首诗卡渲染，置于刊头之后、第一栏目之前。
+3. 五套主题卷首渲染：支持 ``lime`` / ``guizang`` / ``dossier`` / ``forum`` /
+   ``pixel`` 五套日报主题的诗卡渲染；与 ☯ 今日卦象同属刊头后的「诗与远方的海」栏目。
 """
 
 from __future__ import annotations
@@ -623,10 +623,10 @@ def _esc(val: Any) -> str:
 
 def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime") -> str:
     """按五套主题（``lime`` / ``guizang`` / ``dossier`` / ``forum`` / ``pixel``）
-    渲染日报最开始的「诗泉 · 随机一首诗」开篇诗卡。
+    渲染「诗与远方的海」栏目内的「今日一首诗」子块。
 
     设计约束：
-    - 不使用 ``<h2>`` 或 ``SECTION_BODY_MARK``，不干扰正文 00..N 栏目编号与分条续接统计；
+    - 不另起 ``<h2>`` 或 ``SECTION_BODY_MARK``，诗卡与卦象共属一个卷首栏目；
     - 全表（``<table>``）内联样式排版，兼容微信 / PushPlus ``v-html`` 清洗与所有字色对比度门禁。
     """
     if not isinstance(poem, dict):
@@ -655,7 +655,7 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'background:#101426;border:1px solid #39FFB6;box-shadow:5px 5px 0 #000;color:#F4F7FF;">'
             '<tr><td width="28%" valign="top" style="padding:8px 10px;border-bottom:1px solid #1E2440;'
             'font-size:11px;font-weight:900;letter-spacing:0.12em;color:#39FFB6;">'
-            '📜 SHIQUAN // 诗泉 · 开篇随机一首诗</td>'
+            '📜 今日一首诗 // 诗泉</td>'
             f'<td valign="top" style="padding:8px 10px;border-bottom:1px solid #1E2440;'
             f'font-size:15px;font-weight:900;color:#FFE66D;">'
             f'《{title}》 <span style="font-size:12px;font-weight:700;color:#A6AEC9;">{meta_str}</span></td></tr>'
@@ -672,7 +672,7 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'background:#2C2C2E;border:1px solid #3A3A3C;border-radius:10px;color:#F2F2F7;">'
             '<tr><td width="28%" valign="top" style="padding:8px 12px;border-bottom:1px solid #3A3A3C;'
             'font-size:11px;font-weight:700;letter-spacing:0.10em;color:#BF5AF2;">'
-            '📜 SHIQUAN · 开篇随机一首诗 · 诗泉</td>'
+            '📜 今日一首诗 · 诗泉</td>'
             f'<td valign="top" style="padding:8px 12px;border-bottom:1px solid #3A3A3C;'
             f'font-size:15px;font-weight:800;color:#FFFFFF;">'
             f'《{title}》 <span style="font-size:12px;font-weight:600;color:#A1A1AA;">{meta_str}</span></td></tr>'
@@ -690,7 +690,7 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             '<tr><td width="28%" valign="top" style="padding:8px 10px;border-bottom:1px solid #D8D4CC;'
             'font-size:10px;font-weight:700;letter-spacing:0.12em;color:#0E0E0E;">'
             '<span style="background:#39FF14;color:#0E0E0E;padding:1px 6px;margin-right:6px;">诗泉</span>'
-            'SHIQUAN · 开篇随机一首诗</td>'
+            '📜 今日一首诗</td>'
             f'<td valign="top" style="padding:8px 10px;border-bottom:1px solid #D8D4CC;'
             f'font-size:15px;font-weight:800;color:#0E0E0E;">'
             f'《{title}》 <span style="font-size:12px;font-weight:600;color:#333333;">{meta_str}</span></td></tr>'
@@ -708,7 +708,7 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'border-right:1px solid #DDDDDD;border-bottom:1px solid #DDDDDD;color:#222222;">'
             '<tr><td width="28%" valign="top" style="padding:8px 12px;border-bottom:1px solid #E5E5E5;'
             'font-size:11px;font-weight:700;letter-spacing:0.10em;color:#002FA7;">'
-            '📜 SHIQUAN · 开篇随机一首诗 · 诗泉</td>'
+            '📜 今日一首诗 · 诗泉</td>'
             f'<td valign="top" style="padding:8px 12px;border-bottom:1px solid #E5E5E5;'
             f'font-size:15px;font-weight:800;color:#111111;">'
             f'《{title}》 <span style="font-size:12px;font-weight:600;color:#333333;">{meta_str}</span></td></tr>'
@@ -727,7 +727,7 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
         'font-size:11px;font-weight:800;letter-spacing:0.08em;color:#111111;">'
         '<span style="display:inline-block;padding:1px 8px;margin-right:6px;border-radius:999px;'
         'background:#D4FF00;color:#111111;font-size:10px;font-weight:900;">诗泉</span>'
-        'SHIQUAN · 开篇随机一首诗</td>'
+        '📜 今日一首诗</td>'
         f'<td valign="top" style="padding:8px 12px;border-bottom:1px solid #ECEEF3;'
         f'font-size:15px;font-weight:800;color:#111111;">'
         f'《{title}》 <span style="font-size:12px;font-weight:600;color:#333333;">{meta_str}</span></td></tr>'

@@ -469,9 +469,9 @@ import freshness_checker as _freshness  # noqa: E402
 import backup_sources as _backup  # noqa: E402
 import dedup as _dedup  # noqa: E402
 import hk_overseas as _hkx  # noqa: E402  # 🇭🇰 港股境外数据源（Yahoo / Stooq / HKEX / 可选 stealth 浏览器）
-import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首古诗词
+import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）卷首随机一首古诗词
 import finance_analysis as _finance  # noqa: E402  # 🧩 本地 jieba 财经标题词汇分析（内地财经热点榜增强）
-import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（今日预判内娱乐子栏）
+import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（「诗与远方的海」卷首栏）
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
 # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首诗开关：OCTOPUS_SHIQUAN=0 可关闭。
@@ -6119,6 +6119,7 @@ _SECTION_ICON_META = {
     "HK QUOTES": ("◍", "HK-MKT", C_CYAN, "#092836"),
     # 内地财经热点榜（2026-10-13 新增）：18 家内地财经媒体的主题热度榜，✦ = 热度
     "MAINLAND HOTLIST": ("✦", "CN-HOT", C_AMBER, C_FLAT_BG),
+    "POETRY & SEA": ("✦", "VERSE", C_CYAN, "#092836"),
 }
 
 
@@ -8326,6 +8327,8 @@ SECTION_TITLE_SHORT_CARD = "【闪电飞鱼】短线速查卡"
 SECTION_TITLE_STRATEGY = "【六眼飞鱼】量化 MACD 策略"
 SECTION_TITLE_STRATEGY_READ = SECTION_TITLE_STRATEGY
 SECTION_TITLE_FORECAST = "【回游金枪鱼】今日预判"
+# 刊头后独立的卷首栏；不占行情栏目 00..N 编号，也不参与数据新鲜度审计。
+SECTION_TITLE_POETRY_SEA = "诗与远方的海"
 SECTION_TITLE_ECON_CALENDAR = "【探照安康鱼】时间节点量化预测"
 # 2026-10-10 更名：原「【火爆大鱿鱼】美联储因子量化分析」「【巡回巨鲸】地缘政治因子量化分析」；数据源键名
 # （美联储趋势 / 地缘政治趋势）、像素关卡名 FED TREND / GEO TREND 不变。
@@ -10155,21 +10158,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 最终结论 / 前置盘点：核心判断放大显示，关键市场数字保留在同一栏核对。
     conclusion = _conclusion_pairs(kit, ai_result, market, pan, policy,
                                    quant=quant, weekly=weekly_res)
-    # ☯ 今日八卦运程与利忌：今日预判内的娱乐子栏（纯日期规则、与行情结论独立；
-    # OCTOPUS_BAGUA=0 关闭；报告日同时接受 YYYYMMDD / YYYY-MM-DD（见 _bagua_report_day），
-    # 渲染异常只让子栏缺席并打一行告警，绝不拖垮日报）。
-    # 子栏只「附」在有真实结论的今日预判里：没有任何行情 / 量化 / 政策结论时整栏缺席，
-    # 不用娱乐内容单独撑起一个「预判」栏（日报从首个有真实数据的栏目开始）。
-    bagua_html = ""
-    if _bagua.ENABLED and conclusion:
-        try:
-            bagua_html = _bagua.render_bagua_html(day=_bagua_report_day(date_str))
-        except Exception as e:  # noqa: BLE001
-            print(f"⚠️ 八卦子栏渲染失败（date_str={date_str!r}）：{type(e).__name__}: {e}")
-            bagua_html = ""
+    # ☯ 今日卦象已移到卷首「诗与远方的海」，不属于市场预判：此栏只保留真实数据结论。
     if conclusion:
         blocks["FORECAST"] = ("FORECAST", SECTION_TITLE_FORECAST,
-                               _conclusion_panel(kit, conclusion) + bagua_html, "", "")
+                               _conclusion_panel(kit, conclusion), "", "")
     summary = _summary_pairs(ai_result, pan, policy, source_items, today_n, total,
                              quant=quant,
                              backup_events=(data.get("_backup_info") or {}).get("events"))
@@ -10246,7 +10238,14 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         }, kit, today_n, total)
         if card:
             sections.append(card)
+    # 卷首内容各自独立开关；卦象按报告日起卦，与行情结论无关，也不计入当天源。
     poem = _shiquan.get_opening_poem(data, allow_network=False) if (SHIQUAN_ENABLED and _shiquan.is_enabled()) else None
+    bagua_html = ""
+    if _bagua.ENABLED:
+        try:
+            bagua_html = _bagua.render_bagua_html(day=_bagua_report_day(date_str))
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️ 卷首卦象渲染失败（date_str={date_str!r}）：{type(e).__name__}: {e}")
     return {
         "sections": sections,
         "total": total,
@@ -10254,16 +10253,21 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         "content_n": content_n,
         "market": market,
         "poem": poem,
+        "bagua_html": bagua_html,
     }
 
 
-def _opening_poem_section_prefix(data, parts, theme):
-    """生成刊头之后、第一栏目之前的「诗泉 · 随机一首诗」开篇块（含分条标记）。"""
-    if not (SHIQUAN_ENABLED and _shiquan.is_enabled()):
-        return ""
-    poem = (parts or {}).get("poem") or _shiquan.get_opening_poem(data, allow_network=False)
-    card = _shiquan.render_opening_poem_html(poem, theme=theme)
-    return f"{ card }\n{PART_BREAK_MARK}" if card else ""
+def _poetry_sea_section(parts, kit):
+    """刊头后的单一卷首栏目：诗泉诗选 + ☯ 今日卦象，同一栏目内分块展示。
+
+    用主题自己的 section 渲染头部与 SECTION_BODY_MARK，分条时诗和卦先按一个
+    栏目装箱；卷首编号「序」不挤占今日预判的 00 栏。两块都不可用时不出空栏目。
+    """
+    poem_html = _shiquan.render_opening_poem_html(
+        (parts or {}).get("poem"), theme=kit.theme)
+    bagua_html = (parts or {}).get("bagua_html") or ""
+    content = poem_html + bagua_html
+    return kit.section("序", "POETRY & SEA", SECTION_TITLE_POETRY_SEA, content) if content else ""
 
 
 # ============================================================
@@ -13068,6 +13072,7 @@ class _dossier_palette:
 # 形状只用圆 ● / 三角 ▲▼▶ / 方 ■□ / 菱 ◆ / 半圆 ◐◍◎ 等几何字形；
 # 颜色只用落字深绿 / 落字深红 / 黑；原色只作荧光填充与描边，确保几何字形在浅灰底上清晰。
 DOSSIER_ICONS = {
+    "POETRY & SEA": ("◆", D_GREEN_INK, "●", D_RED_INK),
     "RETAIL SENTIMENT": ("◉", D_RED_INK, "●", D_GREEN_INK),
     "FORECAST": ("▲", D_GREEN_INK, "●", D_RED_INK),
     "SUMMARY": ("■", D_BLACK, "▲", D_RED_INK),
@@ -13282,7 +13287,8 @@ def generate_report_dossier(data, date_display, date_str, sentiment_history=None
         content_html = "".join(
             PART_BREAK_MARK + DOSSIER_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
             for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
-        first_section = _opening_poem_section_prefix(data, parts, "dossier") + DOSSIER_KIT.section("00", *sections[0])
+        opening = _poetry_sea_section(parts, DOSSIER_KIT)
+        first_section = (opening + PART_BREAK_MARK if opening else "") + DOSSIER_KIT.section("00", *sections[0])
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -13465,6 +13471,7 @@ class _forum_palette:
 # 2026-10-06 起：点缀色改紫，⚡ 速览类图标随点缀走紫；📈 行情改红（A 股红涨），
 # 📊 趋势跟踪改青（避开「绿＝跌」的新语义），✅ 数据核对仍用绿（勾号＝通过，非涨跌）。
 FORUM_ICONS = {
+    "POETRY & SEA": ("📜", F_PURPLE),
     "RETAIL SENTIMENT": ("💬", F_CYAN),     # Reddit / StockTwits 社区样本
     "FORECAST": ("🔮", F_PURPLE),           # 紫色：预判 / AI
     "SUMMARY": ("📌", F_ORANGE),
@@ -13655,7 +13662,8 @@ def generate_report_forum(data, date_display, date_str, sentiment_history=None,
         content_html = "".join(
             PART_BREAK_MARK + FORUM_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
             for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
-        first_section = _opening_poem_section_prefix(data, parts, "forum") + FORUM_KIT.section("00", *sections[0])
+        opening = _poetry_sea_section(parts, FORUM_KIT)
+        first_section = (opening + PART_BREAK_MARK if opening else "") + FORUM_KIT.section("00", *sections[0])
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -13971,7 +13979,8 @@ def generate_report_lime(data, date_display, date_str, sentiment_history=None,
         content_html = "".join(
             PART_BREAK_MARK + LIME_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
             for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
-        first_section = _opening_poem_section_prefix(data, parts, "lime") + LIME_KIT.section("00", *sections[0])
+        opening = _poetry_sea_section(parts, LIME_KIT)
+        first_section = (opening + PART_BREAK_MARK if opening else "") + LIME_KIT.section("00", *sections[0])
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -14268,7 +14277,8 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
     sections = parts["sections"]
     total = parts["total"]
     today_n = parts["today_n"]
-    first_section = _opening_poem_section_prefix(data, parts, "guizang") + GUIZANG_KIT.section("00", *sections[0])
+    opening = _poetry_sea_section(parts, GUIZANG_KIT)
+    first_section = (opening + PART_BREAK_MARK if opening else "") + GUIZANG_KIT.section("00", *sections[0])
     content_html = "".join(
         PART_BREAK_MARK + GUIZANG_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
         for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
@@ -14350,8 +14360,8 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
 
     # 6. 拼版：栏目编号按渲染顺序生成（只在场的栏目占用编号）
     # 每个栏目前都插入分条标记（含第一栏），供超长日报按完整栏目分条推送
-    poem_prefix = _opening_poem_section_prefix(data, parts, "pixel")
-    content_html = (f"{PART_BREAK_MARK}{poem_prefix[:-len(PART_BREAK_MARK)]}" if poem_prefix else "") + "".join(
+    opening = _poetry_sea_section(parts, PIXEL_KIT)
+    content_html = (PART_BREAK_MARK + opening if opening else "") + "".join(
         PART_BREAK_MARK + PIXEL_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
         for i, (kicker, title, content, badge, caption) in enumerate(sections, 0))
 

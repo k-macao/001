@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""☯ 今日八卦运程与利忌 —— 置于【回游金枪鱼】今日预判内的娱乐子栏。
+"""☯ 今日八卦运程与利忌 —— 「诗与远方的海」卷首栏的娱乐子块。
 
 口径（诚实披露，写进页面与测试）：
   * **公历梅花变体、章鱼自创**：不用农历、不冒充传统黄历。起卦只用报告日
@@ -21,7 +21,7 @@ import os
 from datetime import date, datetime
 
 ENABLED = str(os.environ.get("OCTOPUS_BAGUA", "1")).strip().lower() not in ("0", "false", "no")
-TITLE = "☯ 今日八卦运程与利忌"
+TITLE = "今日八卦运程与利忌"
 DISCLAIMER = "公历梅花变体 · 规则推演 · 娱乐参考 · 非传统黄历 · 不构成投资建议"
 
 # 先天八卦数：乾1 兑2 离3 震4 巽5 坎6 艮7 坤8
@@ -182,10 +182,10 @@ def _esc(s) -> str:
 
 
 def render_bagua_html(result: dict | None = None, day: date | None = None) -> str:
-    """渲染日报子栏 HTML（纯内联样式，不依赖主题 kit，任何主题可嵌）。
+    """渲染卷首卦象子块 HTML（纯内联样式，不依赖主题 kit，任何主题可嵌）。
 
-    只用灰阶（边框 #999999），不带任何有色值：归藏主题要求页面上除克莱因蓝外
-    不得出现有色，dossier / forum / lime 也各有色板契约，灰阶在所有主题下都合法。
+    使用可见的 ☯ 图标标记算卦内容；不靠脚本/折叠控件显示，否则微信清洗 HTML
+    后卦象可能被隐藏。只用灰阶：归藏主题除克莱因蓝外不得出现有色值。
     """
     if not ENABLED:
         return ""
@@ -197,7 +197,11 @@ def render_bagua_html(result: dict | None = None, day: date | None = None) -> st
     fort = " · ".join(f'{k} {_stars(v)}' for k, v in r["fortune"].items())
     return (
         f'<div style="border:1px dashed #999999;border-radius:8px;padding:10px 12px;margin:8px 0;">'
-        f'<div style="font-weight:900;font-size:15px;">{TITLE} · {_esc(r["date"])}（{_esc(r["weekday"])}）</div>'
+        f'<div style="font-weight:900;font-size:15px;line-height:1.5;">'
+        f'<span role="img" aria-label="算卦" style="display:inline-block;vertical-align:middle;'
+        f'border:1px solid #999999;border-radius:6px;padding:0 6px;margin-right:7px;'
+        f'font-size:22px;line-height:1.4;color:#555555;">☯</span>'
+        f'{TITLE} · {_esc(r["date"])}（{_esc(r["weekday"])}）</div>'
         f'<table style="width:100%;border-collapse:collapse;margin-top:6px;"><tr>'
         f'<td style="width:86px;vertical-align:top;text-align:center;">{lines_html}'
         f'<div style="font-size:12px;margin-top:4px;">{r["upper"]["symbol"]}上 {r["lower"]["symbol"]}下<br>第{r["moving_line"]}爻动</div></td>'
@@ -218,7 +222,7 @@ def render_bagua_text(result: dict | None = None, day: date | None = None) -> st
     r = result or daily_bagua(day)
     fort = " · ".join(f'{k} {_stars(v)}' for k, v in r["fortune"].items())
     return "\n".join([
-        f'{TITLE} · {r["date"]}（{r["weekday"]}）',
+        f'☯ {TITLE} · {r["date"]}（{r["weekday"]}）',
         f'本卦：{r["hexagram"]}（{r["upper"]["symbol"]}{r["upper"]["name"]}上 / '
         f'{r["lower"]["symbol"]}{r["lower"]["name"]}下，{r["keyword"]} · {r["level"]}）',
         f'动爻：第{r["moving_line"]}爻 → 变卦：{r["changed_hexagram"]}',
