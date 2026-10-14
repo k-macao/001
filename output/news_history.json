@@ -8727,51 +8727,415 @@
    "ts": "2026-10-13 11:01",
    "date": "2026-10-13",
    "url": "https://finance.ifeng.com/c/8xCTvk7mceh"
+  },
+  {
+   "title": "恒生指数开盘跌0.26% 恒生科技指数跌0.02%",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-10-14 10:24",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "美股三大股指集体收跌：存储概念股持续走弱，苹果股价盘中创新高",
+   "source": "ThePaper.cn",
+   "section": "全球头条",
+   "ts": "2026-10-14 08:44",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "一脑多形•智链无界：艾利特机器人亮相2026 中国工博会以统一智能底座推进具身智能规模化落地",
+   "source": "美通社",
+   "section": "全球头条",
+   "ts": "2026-10-14 08:00",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "国新办举行新闻发布会 介绍2026年前三季度进出口情况",
+   "source": "新华网",
+   "section": "全球头条",
+   "ts": "2026-10-14 11:21",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "鸿蒙智行、懂车帝回应“尊界V800送检报告”",
+   "source": "电子工程专辑",
+   "section": "全球头条",
+   "ts": "2026-10-14 08:08",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "IMF小幅上调全球增长预期 AI投资支撑经济韧性",
+   "source": "消费日报网",
+   "section": "全球头条",
+   "ts": "2026-10-14 09:41",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "人民币兑美元中间价报6.7249，较上日调高49点",
+   "source": "同花顺",
+   "section": "全球头条",
+   "ts": "2026-10-14 09:22",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "抢钱俱乐部：黄金做多信号出现那边4280_名家点金",
+   "source": "黄金网",
+   "section": "全球头条",
+   "ts": "2026-10-14 11:11",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "泽连斯基称，在此次“完全蓄意且作秀式”的袭击后，已有60万人陷入断电。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-14 14:02",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "英伟达投入2.5亿美元推进英国智能体安全研究。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-14 14:01",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "现货白银日内跌1%，现报58.51美元/盎司。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-14 14:01",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "【我国风电装机规模连续16年稳居世界第一】从中国可再生能源学会风能专业委员会了解到，今年前八个月，我国风电新增并网容量达5326万千瓦",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-14 14:01",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "欧洲斯托克50指数期货上涨0.11%，德国DAX指数期货上涨0.33%，富时指数期货上涨0.08%。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-14 14:01",
+   "date": "2026-10-14"
+  },
+  {
+   "title": "黑龙江农作物收获已超五成",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 18:36",
+   "date": "2026-10-13",
+   "url": "https://www.cs.com.cn/xwzx/08/2026/10/14/detail_2026101410044455.html"
+  },
+  {
+   "title": "食品饮料ETF华夏（515170）连续近3个交易日获资金净流入",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 21:20",
+   "date": "2026-10-13",
+   "url": "https://www.cs.com.cn/tzjj/etf/2026/10/14/detail_2026101410044532.html"
+  },
+  {
+   "title": "恒生科技ETF华夏、恒生互联网ETF华夏连续获净申购",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 21:59",
+   "date": "2026-10-13",
+   "url": "https://www.cs.com.cn/tzjj/etf/2026/10/14/detail_2026101410044547.html"
+  },
+  {
+   "title": "中国人民银行灵活运用多种工具保持流动性充裕 10月资金面或延续 ...",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:41",
+   "date": "2026-10-14",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6acf1b4a30d34f8caf3c3e8dd5491434&url=http%3a%2f%2fwww.zqrb.cn%2ffinance%2fhongguanjingji%2f2026-10-14%2fA1791899014788.html&c=17755686259177125631&mkt=en-us"
+  },
+  {
+   "title": "香港证监会：中介机构仍须对各种与可疑安排相关的警号保持警惕",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 21:08",
+   "date": "2026-10-13",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6acf1b4a30d34f8caf3c3e8dd5491434&url=http%3a%2f%2fwww.zqrb.cn%2fstock%2fgupiaoyaowen%2f2026-10-14%2fA1791910210149.html&c=11352195276950133510&mkt=en-us"
+  },
+  {
+   "title": "蓝图下风险重重？十数年专利诉讼案再起波澜",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:26",
+   "date": "2026-10-14",
+   "url": "https://www.chnfund.com/article/AR7916006e-5793-1763-abc0-3a244a26f412"
+  },
+  {
+   "title": "继续抄底，股票ETF单日“吸金”超百亿元",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:26",
+   "date": "2026-10-14",
+   "url": "https://www.chnfund.com/article/ARf57cb26e-5fda-8c90-a7c7-3a244aac3893"
+  },
+  {
+   "title": "“三桶油”均创阶段新高",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 22:06",
+   "date": "2026-10-13",
+   "url": "https://www.chnfund.com/article/AR60c32e46-8951-92fa-a4e8-3a244a939c63"
+  },
+  {
+   "title": "群核科技盘中跌超10%，拟采纳中文双重外文名称及股份简称",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:59",
+   "date": "2026-10-14",
+   "url": "https://www.caiwennews.com/article/1650647.shtml"
+  },
+  {
+   "title": "今晚美国9月CPI数据将定2027社保COLA，预期上调3.5%",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:55",
+   "date": "2026-10-14",
+   "url": "https://www.caiwennews.com/article/1650641.shtml"
+  },
+  {
+   "title": "心泰医疗盘中跌超5%，封堵器获注册证并持续回购股份",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:55",
+   "date": "2026-10-14",
+   "url": "https://www.caiwennews.com/article/1650636.shtml"
+  },
+  {
+   "title": "险资举牌节奏放缓 股票配置占比连升8个季度",
+   "source": "经济参考网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://www.jjckb.cn/20261014/6f06c5e0268f41cd98bfa881b4a0ae20/c.html"
+  },
+  {
+   "title": "“链”上成势 “海”中破浪 “新”里寻机——宁乡经开区进阶的 ...",
+   "source": "经济参考网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://www.jjckb.cn/20261014/0db4dd4608524df6bd73c6c0177eda92/c.html"
+  },
+  {
+   "title": "成渝中线高铁跨沙河特大桥顺利合龙",
+   "source": "经济参考网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://www.jjckb.cn/20261014/db31ee74347b45f0bb3148d63684736e/c.html"
+  },
+  {
+   "title": "比亚迪：中欧贸易投资磋商为混动汽车贸易营造了稳定、可预期、可持续的合作环境",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 13:54",
+   "date": "2026-10-14",
+   "url": "https://www.ithome.com/1/012/821.htm"
+  },
+  {
+   "title": "Rust 编写：开发者挑战 Adobe 后再挑战微软，Office 三件套替代品上线",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 13:53",
+   "date": "2026-10-14",
+   "url": "https://www.ithome.com/1/012/820.htm"
+  },
+  {
+   "title": "SEMI 预测：全球 300mm 晶圆厂设备投资 2029 年将达 2270 亿美元",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 13:53",
+   "date": "2026-10-14",
+   "url": "https://www.ithome.com/1/012/819.htm"
+  },
+  {
+   "title": "存储设备涨超四成，黄金饰品降温！9月物价数据出炉",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:16",
+   "date": "2026-10-14",
+   "url": "https://www.stcn.com/article/detail/4217524.html"
+  },
+  {
+   "title": "科技+科技，21股上榜，哪些并购被看好？机构大手笔增持股揭秘（附 ...",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 06:00",
+   "date": "2026-10-14",
+   "url": "https://www.stcn.com/article/detail/4217497.html"
+  },
+  {
+   "title": "科技+科技，21股上榜，哪些并购被看好？机构大手笔增持股揭秘 ...",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 05:57",
+   "date": "2026-10-14",
+   "url": "https://www.stcn.com/article/detail/4217516.html"
+  },
+  {
+   "title": "AI短剧保持活跃，沪指半日微涨0.01%",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://m.nbd.com.cn/articles/2026-10-14/4603946.html"
+  },
+  {
+   "title": "机构席位卖出243.53万 北交所上市公司花溪科技登龙虎榜",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 17:57",
+   "date": "2026-10-13",
+   "url": "https://m.nbd.com.cn/articles/2026-10-13/4603094.html"
+  },
+  {
+   "title": "泽连斯基向美方提交新一轮会晤方案 提议近日开展会谈",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 17:04",
+   "date": "2026-10-13",
+   "url": "https://m.nbd.com.cn/articles/2026-10-14/4603701.html"
+  },
+  {
+   "title": "A股两大板块，涨停潮！",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://m.21jingji.com/article/20261014/herald/d00948295a371aacd60f932391b93339.html"
+  },
+  {
+   "title": "国新办“新征程上的奋斗者”中外记者见面会 围绕“奋进‘十五五 ...",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 06:35",
+   "date": "2026-10-14",
+   "url": "https://m.21jingji.com/live/show/5706.html"
+  },
+  {
+   "title": "美联储加息，大消息！今夜，重磅数据来袭！",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:08",
+   "date": "2026-10-14",
+   "url": "https://wap.stockstar.com/detail/IG2026101400019921"
+  },
+  {
+   "title": "继续抄底！股票ETF单日“吸金”超百亿元",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://wap.stockstar.com/detail/IG2026101400019849"
+  },
+  {
+   "title": "24亿大庸古城“复活”？涌入百万客流，有商户日均营收却不到200元 ...",
+   "source": "时代财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 18:12",
+   "date": "2026-10-13",
+   "url": "https://www.tfcaijing.com/article/page/4b4e325630386b4f42414c432b79786a51774e506a773d3d"
+  },
+  {
+   "title": "从大迫杰到基普乔格，马拉松赛场上还有另一场较量",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 01:00",
+   "date": "2026-10-14",
+   "url": "https://www.eeo.com.cn/2026/1014/1063750.shtml"
+  },
+  {
+   "title": "芭田股份近5日主力资金净流入 10月13日股价震荡市盈率仅9.7处历史低位",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:51",
+   "date": "2026-10-14",
+   "url": "https://www.eeo.com.cn/2026/1014/1063909.shtml"
+  },
+  {
+   "title": "凤凰传媒近5日主力净流出 10月13日资金净流出接近市场均值",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:49",
+   "date": "2026-10-14",
+   "url": "https://www.eeo.com.cn/2026/1014/1063908.shtml"
+  },
+  {
+   "title": "美联储加息，大消息，今夜重磅数据来袭",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:15",
+   "date": "2026-10-14",
+   "url": "https://finance.ifeng.com/c/8xDMZj9YKGf"
+  },
+  {
+   "title": "国家统计局：9月份CPI同比上涨0.9%，PPI同比上涨5.0%",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-13 20:39",
+   "date": "2026-10-13",
+   "url": "https://finance.ifeng.com/c/8xD7tWZzISQ"
+  },
+  {
+   "title": "风电龙头，逼近跌停",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-14 00:52",
+   "date": "2026-10-14",
+   "url": "https://finance.ifeng.com/c/8xDPEjCKxHz"
   }
  ],
- "updated_cst": "2026-10-14 04:38:01",
+ "updated_cst": "2026-10-14 14:06:06",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-14 13:45:00",
+  "ran_at": "2026-10-14 14:04:27",
   "cutoff": "2026-10-13",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
-  "fqt": "1",
-  "kline_series": 15,
+  "fqt": "0",
+  "kline_series": 10,
   "sources": {
-   "eastmoney_mirror": 6,
-   "eastmoney": 9
+   "eastmoney": 8,
+   "eastmoney_mirror": 2
   },
   "missing": [
    "BK0427",
    "BK0433",
    "BK0436",
+   "BK0464",
+   "BK0479",
    "BK0486",
+   "BK0728",
+   "BK1035",
    "BK1200",
+   "BK1201",
    "BK1202",
+   "BK1203",
    "BK1204",
+   "BK1206",
    "BK1207",
-   "BK1209",
    "BK1210",
+   "BK1211",
    "BK1212",
-   "BK1213",
-   "BK1214",
    "BK1215",
    "BK1216",
    "BK1283"
   ],
   "em_mirror": [
-   "BK0456",
-   "BK0478",
-   "BK1035",
-   "BK1203",
-   "BK1206",
-   "BK1217"
+   "BK1213",
+   "BK1214"
   ],
   "asof": "2026-10-13",
-  "asof_hits": 15,
-  "scored": 15,
+  "asof_hits": 10,
+  "scored": 10,
   "required": 19,
-  "reason": "可评分行业覆盖不足（15/31 个行业满足评分条件，至少需要 19 个）"
+  "reason": "可评分行业覆盖不足（10/31 个行业满足评分条件，至少需要 19 个）"
  },
  "industry_rotation": {
   "month": "2026-10",
