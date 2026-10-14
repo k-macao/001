@@ -26,8 +26,8 @@
 
 | 步骤 | 命令 / 配置 | 说明 |
 |---|---|---|
-| 环境要求 | Python `3.11+`、`requests` | 只生成本地日报无需推送令牌；推送微信需设置 `PUSHPLUS_TOKEN`（本地环境变量或 GitHub Actions 同名 Secret） |
-| 进入目录并安装依赖 | `cd /path/to/02 && python3 -m pip install requests` | 安装 HTTP 请求依赖 |
+| 环境要求 | Python `3.11+`、`requests`、`jieba` | 只生成本地日报无需推送令牌；推送微信需设置 `PUSHPLUS_TOKEN`（本地环境变量或 GitHub Actions 同名 Secret） |
+| 进入目录并安装依赖 | `cd /path/to/02 && python3 -m pip install -r requirements.txt` | 安装 HTTP 请求与财经中文分词依赖 |
 | 仅生成本地日报 | `python3 output/pipeline.py --no-push` | 采集、分析并生成 HTML 日报，不推送微信 |
 | 完整采集与推送流程 | `python3 output/push.py` | 完整流程：采集 → 分析 → 生成 → 新鲜度检查 → 推送 |
 
