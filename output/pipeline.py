@@ -9804,6 +9804,23 @@ def _render_industry_rotation(source, kit):
     return _industry_rotation_block(result, kit)
 
 
+def _bagua_report_day(date_str):
+    """☯ 八卦起卦日：报告日字符串 → date。
+
+    流水线实际传入的是 ``_today_str()`` 的 ``YYYYMMDD``（如 20261014），测试与手工
+    调用常用 ISO ``YYYY-MM-DD``；两种都接受。2026-10-14 线上首发时只解析 ISO 口径，
+    ``20261014`` 抛 ValueError 被吞掉 → 子栏整体缺席，故此处统一解析并在都不合法时
+    回退到北京时间当天（起卦只依赖日期，回退不会算错卦）。
+    """
+    text = str(date_str or "").strip()[:10]
+    for fmt in ("%Y%m%d", "%Y-%m-%d"):
+        try:
+            return datetime.strptime(text, fmt).date()
+        except ValueError:
+            continue
+    return datetime.now(CST).date()
+
+
 def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                             policy_result=None, news_corpus=None):
     """提取逐栏目内容与当天检验统计（两主题共用；仅渲染套件不同）。
@@ -10139,16 +10156,18 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     conclusion = _conclusion_pairs(kit, ai_result, market, pan, policy,
                                    quant=quant, weekly=weekly_res)
     # ☯ 今日八卦运程与利忌：今日预判内的娱乐子栏（纯日期规则、与行情结论独立；
-    # OCTOPUS_BAGUA=0 关闭，日期解析失败则子栏缺席，绝不拖垮日报）。
+    # OCTOPUS_BAGUA=0 关闭；报告日同时接受 YYYYMMDD / YYYY-MM-DD（见 _bagua_report_day），
+    # 渲染异常只让子栏缺席并打一行告警，绝不拖垮日报）。
+    # 子栏只「附」在有真实结论的今日预判里：没有任何行情 / 量化 / 政策结论时整栏缺席，
+    # 不用娱乐内容单独撑起一个「预判」栏（日报从首个有真实数据的栏目开始）。
     bagua_html = ""
-    if _bagua.ENABLED:
+    if _bagua.ENABLED and conclusion:
         try:
-            _bagua_day = datetime.strptime(str(date_str)[:10], "%Y-%m-%d").date() \
-                if date_str else date.today()
-            bagua_html = _bagua.render_bagua_html(day=_bagua_day)
-        except Exception:
+            bagua_html = _bagua.render_bagua_html(day=_bagua_report_day(date_str))
+        except Exception as e:  # noqa: BLE001
+            print(f"⚠️ 八卦子栏渲染失败（date_str={date_str!r}）：{type(e).__name__}: {e}")
             bagua_html = ""
-    if conclusion or bagua_html:
+    if conclusion:
         blocks["FORECAST"] = ("FORECAST", SECTION_TITLE_FORECAST,
                                _conclusion_panel(kit, conclusion) + bagua_html, "", "")
     summary = _summary_pairs(ai_result, pan, policy, source_items, today_n, total,

@@ -182,7 +182,11 @@ def _esc(s) -> str:
 
 
 def render_bagua_html(result: dict | None = None, day: date | None = None) -> str:
-    """渲染日报子栏 HTML（纯内联样式，不依赖主题 kit，任何主题可嵌）。"""
+    """渲染日报子栏 HTML（纯内联样式，不依赖主题 kit，任何主题可嵌）。
+
+    只用灰阶（边框 #999999），不带任何有色值：归藏主题要求页面上除克莱因蓝外
+    不得出现有色，dossier / forum / lime 也各有色板契约，灰阶在所有主题下都合法。
+    """
     if not ENABLED:
         return ""
     r = result or daily_bagua(day)
@@ -192,7 +196,7 @@ def render_bagua_html(result: dict | None = None, day: date | None = None) -> st
         for ln in reversed(r["lines"]))
     fort = " · ".join(f'{k} {_stars(v)}' for k, v in r["fortune"].items())
     return (
-        f'<div style="border:1px dashed #9db38a;border-radius:8px;padding:10px 12px;margin:8px 0;">'
+        f'<div style="border:1px dashed #999999;border-radius:8px;padding:10px 12px;margin:8px 0;">'
         f'<div style="font-weight:900;font-size:15px;">{TITLE} · {_esc(r["date"])}（{_esc(r["weekday"])}）</div>'
         f'<table style="width:100%;border-collapse:collapse;margin-top:6px;"><tr>'
         f'<td style="width:86px;vertical-align:top;text-align:center;">{lines_html}'
