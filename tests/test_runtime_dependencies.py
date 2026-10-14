@@ -32,6 +32,7 @@ class RuntimeDependencyTests(unittest.TestCase):
                 "from output.finance_analysis import analyze_finance_item; "
                 "r = analyze_finance_item('国务院发布新能源汽车产业发展规划'); "
                 "assert r['concepts'], r; "
+                "assert r['vocabulary_terms'], r; "
                 "assert abs(r['positive_probability'] + "
                 "r['negative_probability'] - 100) < 0.01, r"
             )],

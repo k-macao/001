@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
 """
-财经概念映射与利好利空概率模型
-集成到内地财经热点榜（【沸腾花蛤】栏目）
+内地财经热点榜的本地标题词汇分析（jieba + 财经词表）。
 
-功能：
-- 概念映射：将新闻标题映射到A股概念板块（新能源、芯片、军工等50+概念）
-- 情感分析：利好/利空三级分类，支持否定词和转折词修正
-- 概率模型：计算利好概率、利空概率、概念相关性分数
+在不请求外部大模型、也不读取新闻正文的前提下，对标题做分词、停用词过滤和词汇统计；
+主题词频按「提及该词的标题数」及「涉及媒体数」统计，不把重复出现次数包装成热度或概率。
+另保留概念映射与标题情绪词典接口供兼容使用；其中情绪分数是启发式词典分数，不是经校准的涨跌概率。
 
 用法：
-    from output.finance_analysis import analyze_finance_item, FinanceConceptAnalyzer, FinanceSentimentAnalyzer
-    
-    result = analyze_finance_item("国务院发布新能源汽车产业发展规划")
-    print(result)
+    from output.finance_analysis import analyze_finance_item, summarize_hotlist_vocabulary
+
+    item = analyze_finance_item("国务院发布新能源汽车产业发展规划")
+    print(item["vocabulary_terms"])
 """
 
 import jieba
@@ -59,7 +57,14 @@ class FinanceConceptAnalyzer:
             "减持", "增持", "回购", "分红", "股权激励", "机构调研",
             # 公司事件
             "业绩预告", "业绩快报", "年报", "季报", "中报", "重组", "并购",
-            "股权变动", "高管变动", "停牌", "复牌", "退市", "ST", "*ST"
+            "股权变动", "高管变动", "停牌", "复牌", "退市", "ST", "*ST",
+            # 词频分析专用词（避免「大额存单」「存储芯片」等关键短语被切碎）
+            "A股", "H股", "港股", "沪指", "创业板指", "科创板", "北交所", "沪深300",
+            "人工智能", "生成式人工智能", "大模型", "算力", "数据中心", "光模块", "存储芯片",
+            "具身智能", "人形机器人", "固态电池", "动力电池", "新能源汽车", "消费电子",
+            "金融街论坛", "大额存单", "存款利率", "北向资金", "南向资金", "社融",
+            "以旧换新", "创新药", "大宗商品", "净流入", "净流出", "同比增长", "环比增长",
+            "ETF", "CPO", "PCB", "GPU", "CPU", "GDP", "CPI", "PPI", "PMI", "LPR", "MLF", "M2"
         ]
         for word in finance_words:
             jieba.add_word(word, freq=1000)
@@ -219,6 +224,132 @@ class FinanceConceptAnalyzer:
             "categories": categories,
             "top_concepts": [{"concept": c, "score": s} for c, s in sorted_concepts]
         }
+
+
+# ============================================================================
+# 标题词汇分析（本地 jieba 分词，不调用外部大模型）
+# ============================================================================
+
+# 新闻标题里的通用报道词 / 虚词。词频按标题级去重，停用词只影响词汇榜，
+# 不会删改原始标题，也不会影响热点主题榜的条数。
+FINANCE_VOCABULARY_STOPWORDS = frozenset((
+    "今日", "昨日", "明日", "近日", "日前", "本周", "今年", "去年", "年内", "目前", "当前",
+    "今日早盘", "今日午间", "今日下午", "早盘", "午盘", "午后", "盘中", "收盘后", "开盘后",
+    "公司", "企业", "上市公司", "多家公司", "多家企业", "市场", "行业", "领域", "机构", "人士",
+    "记者", "消息", "新闻", "财经", "报道", "相关", "表示", "指出", "称", "据悉", "获悉",
+    "发布", "宣布", "公布", "显示", "披露", "公告", "回应", "提到", "介绍", "表示称",
+    "预计", "有望", "将于", "或将", "正在", "已经", "目前已", "进一步", "持续", "继续", "再次",
+    "首次", "首个", "首批", "多个", "多家", "部分", "其中", "同时", "此外", "此前", "之后",
+    "方面", "情况", "变化", "相关人士", "有关", "我国", "国内", "全国", "全球", "中国", "目前来看",
+    "三大", "集体", "指跌超", "指涨超", "频频", "并作", "出席", "演讲", "透露", "认为", "提出",
+    "今日起", "正式", "创新", "推动", "加快", "加大", "实现", "成为", "进入", "带动", "影响",
+    "同比", "环比", "同比增长", "环比增长", "增长", "下降", "上升", "上涨", "下跌", "大幅",
+    "亿元", "万亿元", "人民币", "万亿", "亿元人民币", "亿美元", "美元", "个百分点", "个基点", "个交易日",
+    "主席", "频频", "披露", "供给", "需求", "紧张", "旺盛", "格局", "没有", "重回", "逆势",
+    "上调", "年期", "成本", "容量", "三大指数", "板块", "支持", "科技", "融资",
+))
+
+# 同频时优先保留高信息量的财经词；其余词按首次出现次序稳定排序。
+FINANCE_VOCABULARY_PRIORITY = (
+    "AI", "大模型", "算力", "半导体", "芯片", "存储芯片", "A股", "港股", "创业板指",
+    "证监会", "央行", "监管", "政策", "降准", "降息", "LPR", "GDP", "CPI", "PPI", "PMI",
+    "新能源", "新能源汽车", "电池", "固态电池", "光伏", "储能", "机器人", "数据中心",
+    "ETF", "CPO", "PCB", "GPU", "CPU", "北向资金", "南向资金", "沪指", "科创板",
+    "大额存单", "存款利率", "银行", "券商", "基金", "保险", "房地产", "创新药", "黄金", "原油",
+    "业绩", "净利润", "订单", "回购", "增持", "减持", "并购", "重组", "涨停", "跌停",
+)
+_FINANCE_VOCABULARY_PRIORITY_RANK = {term: i for i, term in enumerate(FINANCE_VOCABULARY_PRIORITY)}
+
+
+def _normalize_vocabulary_token(token: str) -> str:
+    """清理分词结果；全 ASCII 词汇统一大写，便于 AI / ETF 等跨标题合并。"""
+    token = str(token or "").strip()
+    token = re.sub(r"^[^\w]+|[^\w]+$", "", token, flags=re.UNICODE)
+    if token.isascii():
+        token = token.upper()
+    return token
+
+
+def extract_finance_vocabulary(text: str) -> List[str]:
+    """从标题 / 文本抽取可读词汇，返回去重后的 token（保留首次出现顺序）。
+
+    采用 jieba 的本地词典分词，再过滤数字、标点、单字和常见报道套话。
+    这是一份可复现的候选词清单，不做无监督「语义」推断；外部模型不可用也不影响结果。
+    """
+    text = str(text or "").strip()
+    if not text:
+        return []
+
+    result, seen = [], set()
+    for raw in jieba.lcut(text, HMM=False):
+        token = _normalize_vocabulary_token(raw)
+        if len(token) < 2 or token in FINANCE_VOCABULARY_STOPWORDS:
+            continue
+        if token.isdigit() or not re.search(r"[\u3400-\u9fff]", token):
+            # ASCII acronym / ticker-like terms can be meaningful (AI, ETF, GDP).
+            if not re.fullmatch(r"[A-Z]{2,}[0-9]*", token):
+                continue
+        if token not in seen:
+            seen.add(token)
+            result.append(token)
+    return result
+
+
+def summarize_hotlist_vocabulary(headlines: List[Dict], top_n: int = 8) -> Dict:
+    """汇总内地热点榜的标题词汇。
+
+    每个词在一条标题中至多计一次；`title_count` 是提及该词的标题数，
+    `media_count` 是这些标题涉及的不同媒体数，绝不是词频概率或市场预测。
+    """
+    headlines = headlines if isinstance(headlines, (list, tuple)) else []
+    title_counts = Counter()
+    media_by_term = {}
+    first_seen = {}
+    analyzed_titles = 0
+
+    for headline in headlines:
+        if not isinstance(headline, dict):
+            continue
+        title = str(headline.get("title") or "").strip()
+        if not title:
+            continue
+        analyzed_titles += 1
+        # 不信任历史 / 外部注入的缓存词条：按标题重新分词，确保词汇摘要绝不读取正文。
+        terms = extract_finance_vocabulary(title)
+        unique_terms = list(dict.fromkeys(str(term).strip() for term in terms if str(term).strip()))
+        source = str(headline.get("source") or "").strip()
+        for term in unique_terms:
+            if term not in first_seen:
+                first_seen[term] = len(first_seen)
+            title_counts[term] += 1
+            media_by_term.setdefault(term, set())
+            if source:
+                media_by_term[term].add(source)
+
+    try:
+        limit = max(0, int(top_n))
+    except (TypeError, ValueError):
+        limit = 8
+    sorted_terms = sorted(
+        title_counts.items(),
+        key=lambda pair: (-pair[1],
+                          _FINANCE_VOCABULARY_PRIORITY_RANK.get(pair[0], len(FINANCE_VOCABULARY_PRIORITY)),
+                          first_seen.get(pair[0], 0)),
+    )
+    top_terms = [
+        {"term": term, "title_count": count,
+         "media_count": len(media_by_term.get(term) or ())}
+        for term, count in sorted_terms[:limit]
+    ]
+    return {
+        "enabled": True,
+        "has_data": bool(title_counts),
+        "method": "jieba 本地分词 + 财经停用词表",
+        "counting_unit": "标题级去重",
+        "total_titles": analyzed_titles,
+        "unique_terms": len(title_counts),
+        "top_terms": top_terms,
+    }
 
 
 # ============================================================================
@@ -435,18 +566,15 @@ def analyze_finance_item(title: str, content: str = "") -> Dict:
         content: 新闻内容（可选）
         
     Returns:
-        Dict: {
-            "concepts": {概念: 相关性分数},
-            "concept_probabilities": {概念: 概率分数},
-            "top_concepts": [{概念, 分数}],
-            "sentiment_score": 情感得分,
-            "sentiment_class": 情感分类,
-            "positive_probability": 利好概率,
-            "negative_probability": 利空概率,
-            "analysis": 详细分析数据
-        }
+        Dict: 词汇项（`vocabulary_terms`）+ 概念映射 + 兼容用的启发式标题情绪评分。
+        `positive_probability` / `negative_probability` 是旧接口派生值，并非校准概率，
+        不应用作涨跌概率或投资判断。
     """
-    text = title + " " + (content[:500] if content else "")
+    title = str(title or "")
+    content = str(content or "")
+    text = title + " " + content[:500]
+    # 热点榜词汇统计严格只读标题；正文只保留给旧的概念 / 情绪兼容接口使用。
+    vocabulary_terms = extract_finance_vocabulary(title)
     
     # 概念提取
     concepts = concept_analyzer.extract_concepts(text)
@@ -466,6 +594,7 @@ def analyze_finance_item(title: str, content: str = "") -> Dict:
     )[:5]
     
     return {
+        "vocabulary_terms": vocabulary_terms,
         "concepts": concepts,
         "concept_details": concept_details,
         "concept_probabilities": concept_probabilities,
@@ -499,70 +628,22 @@ def batch_analyze_finance_items(items: List[Dict]) -> List[Dict]:
 # ============================================================================
 
 def integrate_finance_analysis_to_hotlist(mainland_data: Dict) -> Dict:
-    """
-    为内地财经热点榜数据添加财经分析
-    
-    Args:
-        mainland_data: 原始的内地财经媒体数据
-        
-    Returns:
-        Dict: 添加了 finance_analysis 字段的数据
-    """
+    """为热点榜标题附加本地词汇分析，并写入可复现的词汇汇总。"""
     if not isinstance(mainland_data, dict):
         return mainland_data
-    
+
     headlines = mainland_data.get("headlines", [])
-    if not headlines:
+    if not isinstance(headlines, list):
         return mainland_data
-    
-    # 为每个 headline 添加财经分析
+
     for headline in headlines:
         if isinstance(headline, dict) and "title" in headline:
-            if "finance_analysis" not in headline:
+            if not isinstance(headline.get("finance_analysis"), dict):
                 headline["finance_analysis"] = analyze_finance_item(
-                    headline.get("title", ""), 
-                    headline.get("content", "")
+                    headline.get("title", ""), headline.get("content", "")
                 )
-    
-    # 计算整体统计
-    all_concepts = Counter()
-    sentiment_scores = []
-    
-    for headline in headlines:
-        fa = headline.get("finance_analysis", {})
-        for concept, score in fa.get("concepts", {}).items():
-            all_concepts[concept] += score
-        if fa.get("sentiment_score") is not None:
-            sentiment_scores.append(fa["sentiment_score"])
-    
-    # 整体情感统计
-    avg_sentiment = sum(sentiment_scores) / len(sentiment_scores) if sentiment_scores else 0
-    
-    if avg_sentiment > 0:
-        overall_pos_prob = round(min(abs(avg_sentiment) * 100, 95), 2)
-        overall_neg_prob = round(100 - overall_pos_prob, 2)
-    elif avg_sentiment < 0:
-        overall_neg_prob = round(min(abs(avg_sentiment) * 100, 95), 2)
-        overall_pos_prob = round(100 - overall_neg_prob, 2)
-    else:
-        overall_pos_prob = 50.0
-        overall_neg_prob = 50.0
-    
-    # 整体概念统计
-    top_overall_concepts = sorted(
-        all_concepts.items(), 
-        key=lambda x: x[1], 
-        reverse=True
-    )[:5]
-    
-    mainland_data["finance_analysis_summary"] = {
-        "overall_sentiment_score": round(avg_sentiment, 4),
-        "overall_sentiment_class": sentiment_analyzer.classify_sentiment(avg_sentiment),
-        "overall_positive_probability": overall_pos_prob,
-        "overall_negative_probability": overall_neg_prob,
-        "top_concepts": [{"concept": c, "score": round(s, 4)} for c, s in top_overall_concepts]
-    }
-    
+
+    mainland_data["finance_analysis_summary"] = summarize_hotlist_vocabulary(headlines)
     return mainland_data
 
 
@@ -588,8 +669,8 @@ def test_analyzer():
         result = analyze_finance_item(text)
         print(f"{i}. {text}")
         print(f"   概念: {', '.join([c['concept'] for c in result['top_concepts']])}")
-        print(f"   情感: {result['sentiment_class']} (得分: {result['sentiment_score']:.4f})")
-        print(f"   利好概率: {result['positive_probability']}% | 利空概率: {result['negative_probability']}%")
+        print(f"   词汇: {', '.join(result['vocabulary_terms'][:8]) or '无有效词条'}")
+        print(f"   规则情绪标签: {result['sentiment_class']} (词典得分: {result['sentiment_score']:.4f}，非校准概率)")
         print()
 
 

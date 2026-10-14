@@ -634,6 +634,17 @@ class HotlistBuildTests(unittest.TestCase):
         self.assertEqual(sum(t["count"] for t in hot["themes"]), hot["total"])
         self.assertEqual(hot["total"], len(_HOT_ENTRIES))
 
+    def test_vocabulary_summary_is_added_without_mutating_the_source_pool(self):
+        mainland = _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME]
+        original = mainland["headlines"][0]
+        hot = pipeline.build_mainland_hotlist(mainland)
+        self.assertNotIn("finance_analysis", original, "渲染分析不能改写采集层标题池")
+        self.assertTrue(hot["finance_summary"]["has_data"])
+        self.assertEqual(hot["finance_summary"]["total_titles"], len(_HOT_ENTRIES))
+        self.assertTrue(hot["finance_summary"]["top_terms"])
+        self.assertTrue(all("title_count" in term and "media_count" in term
+                            for term in hot["finance_summary"]["top_terms"]))
+
     def test_headlines_are_classified_and_sorted(self):
         hot = pipeline.build_mainland_hotlist(
             _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME])
@@ -655,6 +666,7 @@ class HotlistBuildTests(unittest.TestCase):
         b = pipeline.build_mainland_hotlist(data)
         self.assertEqual([(t["label"], t["count"]) for t in a["themes"]],
                          [(t["label"], t["count"]) for t in b["themes"]])
+        self.assertEqual(a["finance_summary"], b["finance_summary"])
 
     def test_health_and_missing_are_carried(self):
         hot = pipeline.build_mainland_hotlist(
@@ -687,6 +699,8 @@ class HotlistRenderTests(unittest.TestCase):
                                                 theme=theme)
                 self.assertIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
                 self.assertIn("A股盘面", html)
+                self.assertIn("AI词汇分析", html)
+                self.assertIn("半导体", html)
                 self.assertIn("北京商报（北京商报网）", html, "暂缺的媒体要在栏目里点名")
         hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
         self.assertEqual(len([t for t in hot["themes"]]), len(set(
@@ -702,6 +716,9 @@ class HotlistRenderTests(unittest.TestCase):
         self.assertIn("https://www.eeo.com.cn/2026/1013/1.shtml", block,
                       "代表标题要带可点原文链接")
         self.assertIn(pipeline.MAINLAND_HOT_OTHER_LABEL, block)
+        self.assertIn("AI词汇分析", block)
+        self.assertIn("jieba 本地分词", block)
+        self.assertNotIn("利好概率", block, "词典分数不能伪装成预测概率")
 
     def test_plain_mode_keeps_a_compact_health_row(self):
         data = _hotlist_data(_HOT_ENTRIES)
