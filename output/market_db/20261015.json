@@ -1,0 +1,2689 @@
+{
+ "schema": "octopus-market-db/2",
+ "db_date": "2026-10-15",
+ "date_compact": "20261015",
+ "timezone": "Asia/Shanghai",
+ "created_at": "2026-10-15 12:22:38",
+ "slots": {
+  "1230": {
+   "slot": "1230",
+   "label": "午间 12:30",
+   "date": "2026-10-15",
+   "pulled_at": "2026-10-15 12:22:38",
+   "scheduled_at": "2026-10-15 12:30:00",
+   "trading_day": true,
+   "sources": {
+    "eastmoney": {
+     "key": "eastmoney",
+     "label": "东方财富 push2 行情快照",
+     "status": "failed",
+     "host": "",
+     "error": "ConnectionError: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
+     "elapsed_ms": 10605,
+     "quote_time": null,
+     "price_peer": true,
+     "symbols": 0
+    },
+    "sina": {
+     "key": "sina",
+     "label": "新浪财经 hq.sinajs.cn",
+     "status": "ok",
+     "host": "hq.sinajs.cn",
+     "error": null,
+     "elapsed_ms": 928,
+     "quote_time": "2026-10-15 12:02",
+     "price_peer": true,
+     "symbols": 32
+    },
+    "tencent": {
+     "key": "tencent",
+     "label": "腾讯财经 qt.gtimg.cn",
+     "status": "ok",
+     "host": "qt.gtimg.cn",
+     "error": null,
+     "elapsed_ms": 1009,
+     "quote_time": "2615-20-23 13:62:62",
+     "price_peer": true,
+     "symbols": 37
+    },
+    "yahoo": {
+     "key": "yahoo",
+     "label": "Yahoo Finance chart",
+     "status": "ok",
+     "host": "query1.finance.yahoo.com",
+     "error": null,
+     "elapsed_ms": 1371,
+     "quote_time": "2026-10-15 12:07:33",
+     "price_peer": true,
+     "symbols": 35
+    },
+    "em_kline": {
+     "key": "em_kline",
+     "label": "东方财富 push2his 日K收盘（校验源）",
+     "status": "failed",
+     "host": "",
+     "error": "三主机均无有效日K",
+     "elapsed_ms": 38657,
+     "quote_time": null,
+     "price_peer": false,
+     "symbols": 0
+    },
+    "tdx": {
+     "key": "tdx",
+     "label": "通达信行情 mootdx（沪深 · 多主站）",
+     "status": "failed",
+     "host": "",
+     "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
+     "elapsed_ms": 10725,
+     "quote_time": null,
+     "price_peer": true,
+     "symbols": 0
+    }
+   },
+   "quotes": {
+    "^HSI": {
+     "name": "恒生指数",
+     "market": "HK",
+     "price": 23955.58,
+     "prev_close": 24314.17,
+     "change_pct": -1.4748,
+     "open": 24119.14,
+     "high": 24162.71,
+     "low": 23945.84,
+     "volume": null,
+     "amount": 11379189.59,
+     "quote_time": "2026-10-15 12:05:00",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 23955.58,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 24314.17,
+      "prev_close_sources": 3,
+      "median_all": 23955.58,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 23955.58,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:02"
+       },
+       "tencent": {
+        "price": 23955.58,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 23955.58,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:00"
+       }
+      },
+      "symbol": "^HSI"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "^HSTECH": {
+     "name": "恒生科技",
+     "market": "HK",
+     "price": 4051.8,
+     "prev_close": 4174.47,
+     "change_pct": -2.9386,
+     "open": 4082.06,
+     "high": 4103.99,
+     "low": 4048.74,
+     "volume": null,
+     "amount": 3001653.41,
+     "quote_time": "2026-10-15 12:02",
+     "sources": [
+      "sina",
+      "tencent"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 4051.8,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 4174.47,
+      "prev_close_sources": 2,
+      "median_all": 4051.8,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 4051.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:02"
+       },
+       "tencent": {
+        "price": 4051.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       }
+      },
+      "symbol": "^HSTECH"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "^HSCEI": {
+     "name": "国企指数",
+     "market": "HK",
+     "price": 8059.6895,
+     "prev_close": 8183.1695,
+     "change_pct": -1.509,
+     "open": 8124.22,
+     "high": 8137.77,
+     "low": 8054.74,
+     "volume": null,
+     "amount": 3772205.94,
+     "quote_time": "2026-10-15 12:02",
+     "sources": [
+      "sina",
+      "tencent"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 8059.6895,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 8183.1695,
+      "prev_close_sources": 2,
+      "median_all": 8059.6895,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 8059.689,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:02"
+       },
+       "tencent": {
+        "price": 8059.69,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       }
+      },
+      "symbol": "^HSCEI"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "000001.SS": {
+     "name": "上证指数",
+     "market": "A",
+     "price": 3692.651,
+     "prev_close": 3767.2271,
+     "change_pct": -1.9796,
+     "open": 3710.6954,
+     "high": 3724.5611,
+     "low": 3692.594,
+     "volume": 301139850.0,
+     "amount": 457549368028.0,
+     "quote_time": "2026-10-15 12:05:00",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 3692.651,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0001,
+      "outliers": [],
+      "lagged": [
+       "yahoo"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 3767.2271,
+      "prev_close_sources": 3,
+      "median_all": 3692.652,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 3692.652,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:35:54"
+       },
+       "tencent": {
+        "price": 3692.65,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0001,
+        "quote_time": "2026-10-15 12:05:00"
+       },
+       "yahoo": {
+        "price": 3692.652,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:25"
+       }
+      },
+      "symbol": "000001.SS"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "399001.SZ": {
+     "name": "深证成指",
+     "market": "A",
+     "price": 11773.4525,
+     "prev_close": 12110.591,
+     "change_pct": -2.7838,
+     "open": 11819.991,
+     "high": 11940.01,
+     "low": 11773.455,
+     "volume": 33916806337.0,
+     "amount": 524217046220.63,
+     "quote_time": "2026-10-15 12:07:04",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 11773.4525,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 12110.591,
+      "prev_close_sources": 3,
+      "median_all": 11773.455,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 11773.455,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:35:03"
+       },
+       "tencent": {
+        "price": 11773.45,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:03"
+       },
+       "yahoo": {
+        "price": 11773.455,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:04"
+       }
+      },
+      "symbol": "399001.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "399006.SZ": {
+     "name": "创业板指",
+     "market": "A",
+     "price": 2768.632,
+     "prev_close": 2866.763,
+     "change_pct": -3.4231,
+     "open": 2776.924,
+     "high": 2819.381,
+     "low": 2768.375,
+     "volume": 10506274569.0,
+     "amount": 253872742558.25,
+     "quote_time": "2026-10-15 12:07:19",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 2768.632,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0001,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 2866.763,
+      "prev_close_sources": 3,
+      "median_all": 2768.634,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 2768.634,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:35:18"
+       },
+       "tencent": {
+        "price": 2768.63,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0001,
+        "quote_time": "2026-10-15 12:05:18"
+       },
+       "yahoo": {
+        "price": 2768.634,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:19"
+       }
+      },
+      "symbol": "399006.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "^DJI": {
+     "name": "道琼斯",
+     "market": "US",
+     "price": 51621.48,
+     "prev_close": 51670.1,
+     "change_pct": -0.0941,
+     "open": 51684.75,
+     "high": 51869.75,
+     "low": 51365.42,
+     "volume": 442523838.0,
+     "amount": null,
+     "quote_time": "2283-08-51 04:69:27",
+     "sources": [
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 51621.48,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 51670.1,
+      "prev_close_sources": 2,
+      "median_all": 51621.48,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "tencent": {
+        "price": 51621.48,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2283-08-51 04:69:27"
+       },
+       "yahoo": {
+        "price": 51621.48,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 04:36:17"
+       }
+      },
+      "symbol": "^DJI"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "^GSPC": {
+     "name": "标普500",
+     "market": "US",
+     "price": 7718.94,
+     "prev_close": 7805.45,
+     "change_pct": -1.1083,
+     "open": 7774.18,
+     "high": 7789.15,
+     "low": 7693.31,
+     "volume": 3388032000.0,
+     "amount": null,
+     "quote_time": "2615-20-23 13:62:62",
+     "sources": [
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 7718.94,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 7805.45,
+      "prev_close_sources": 2,
+      "median_all": 7718.94,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "tencent": {
+        "price": 7718.94,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2615-20-23 13:62:62"
+       },
+       "yahoo": {
+        "price": 7718.94,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 04:36:08"
+       }
+      },
+      "symbol": "^GSPC"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "^IXIC": {
+     "name": "纳斯达克",
+     "market": "US",
+     "price": 26692.87,
+     "prev_close": 27204.38,
+     "change_pct": -1.8802,
+     "open": 27031.64,
+     "high": 27134.29,
+     "low": 26602.12,
+     "volume": 7640476000.0,
+     "amount": null,
+     "quote_time": "2026-10-15 05:15:59",
+     "sources": [
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 26692.87,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 27204.38,
+      "prev_close_sources": 2,
+      "median_all": 26692.87,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "tencent": {
+        "price": 26692.87,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 26692.87,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 05:15:59"
+       }
+      },
+      "symbol": "^IXIC"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "MSFT": {
+     "name": "微软",
+     "market": "US",
+     "price": 533.69,
+     "prev_close": 543.45,
+     "change_pct": -1.7959,
+     "open": 545.27,
+     "high": 545.75,
+     "low": 532.54,
+     "volume": 22251503.0,
+     "amount": 11970646894.0,
+     "quote_time": "2026-10-15 04:00:01",
+     "sources": [
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 533.69,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 543.45,
+      "prev_close_sources": 2,
+      "median_all": 533.69,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "tencent": {
+        "price": 533.69,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 533.69,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 04:00:01"
+       }
+      },
+      "symbol": "MSFT"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "META": {
+     "name": "Meta",
+     "market": "US",
+     "price": 737.54,
+     "prev_close": 762.5,
+     "change_pct": -3.2734,
+     "open": 760.75,
+     "high": 761.5,
+     "low": 734.29,
+     "volume": 16151285.0,
+     "amount": 12044096788.0,
+     "quote_time": "2026-10-15 04:00:01",
+     "sources": [
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 2,
+     "consensus": {
+      "price": 737.54,
+      "n_sources": 2,
+      "n_agree": 2,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致（双源）",
+      "confidence": 2,
+      "confidence_label": "中",
+      "prev_close": 762.5,
+      "prev_close_sources": 2,
+      "median_all": 737.54,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "tencent": {
+        "price": 737.54,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 737.54,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 04:00:01"
+       }
+      },
+      "symbol": "META"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "600519.SS": {
+     "name": "贵州茅台",
+     "market": "A",
+     "price": 1306.0,
+     "prev_close": 1286.0,
+     "change_pct": 1.5552,
+     "open": 1286.0,
+     "high": 1317.76,
+     "low": 1282.0,
+     "volume": 3440026.0,
+     "amount": 4492843706.0,
+     "quote_time": "2026-10-15 12:05:56",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 1306.0,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina",
+       "yahoo"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 1286.0,
+      "prev_close_sources": 3,
+      "median_all": 1306.0,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 1306.0,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 1306.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:56"
+       },
+       "yahoo": {
+        "price": 1306.0,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:29:56"
+       }
+      },
+      "symbol": "600519.SS"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "300750.SZ": {
+     "name": "宁德时代",
+     "market": "A",
+     "price": 273.18,
+     "prev_close": 280.12,
+     "change_pct": -2.4775,
+     "open": 274.98,
+     "high": 279.85,
+     "low": 272.0,
+     "volume": 21291245.0,
+     "amount": 5874052212.59,
+     "quote_time": "2026-10-15 12:07:28",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 273.18,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 280.12,
+      "prev_close_sources": 3,
+      "median_all": 273.18,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 273.18,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 273.18,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:27"
+       },
+       "yahoo": {
+        "price": 273.18,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:28"
+       }
+      },
+      "symbol": "300750.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "300308.SZ": {
+     "name": "中际旭创",
+     "market": "A",
+     "price": 656.24,
+     "prev_close": 692.9,
+     "change_pct": -5.2908,
+     "open": 661.19,
+     "high": 676.0,
+     "low": 656.24,
+     "volume": 17913879.0,
+     "amount": 11895900158.22,
+     "quote_time": "2026-10-15 12:07:13",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 656.24,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 692.9,
+      "prev_close_sources": 3,
+      "median_all": 656.24,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 656.24,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 656.24,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:12"
+       },
+       "yahoo": {
+        "price": 656.24,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:13"
+       }
+      },
+      "symbol": "300308.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "002594.SZ": {
+     "name": "比亚迪",
+     "market": "A",
+     "price": 81.26,
+     "prev_close": 81.44,
+     "change_pct": -0.221,
+     "open": 80.63,
+     "high": 82.47,
+     "low": 80.11,
+     "volume": 13620607.0,
+     "amount": 1111270776.99,
+     "quote_time": "2026-10-15 12:07:15",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 81.26,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 81.44,
+      "prev_close_sources": 3,
+      "median_all": 81.26,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 81.26,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 81.26,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:15"
+       },
+       "yahoo": {
+        "price": 81.26,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:15"
+       }
+      },
+      "symbol": "002594.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "600036.SS": {
+     "name": "招商银行",
+     "market": "A",
+     "price": 42.51,
+     "prev_close": 42.67,
+     "change_pct": -0.375,
+     "open": 42.74,
+     "high": 42.8,
+     "low": 42.36,
+     "volume": 38055298.0,
+     "amount": 1621697722.0,
+     "quote_time": "2026-10-15 12:05:51",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 42.51,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina",
+       "yahoo"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 42.67,
+      "prev_close_sources": 3,
+      "median_all": 42.51,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 42.51,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 42.51,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:51"
+       },
+       "yahoo": {
+        "price": 42.51,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       }
+      },
+      "symbol": "600036.SS"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "601318.SS": {
+     "name": "中国平安",
+     "market": "A",
+     "price": 51.06,
+     "prev_close": 51.23,
+     "change_pct": -0.3318,
+     "open": 50.91,
+     "high": 51.56,
+     "low": 50.85,
+     "volume": 38959949.0,
+     "amount": 1994879692.0,
+     "quote_time": "2026-10-15 12:05:50",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 51.06,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina",
+       "yahoo"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 51.23,
+      "prev_close_sources": 3,
+      "median_all": 51.06,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 51.06,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 51.06,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:50"
+       },
+       "yahoo": {
+        "price": 51.06,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:02"
+       }
+      },
+      "symbol": "601318.SS"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "000858.SZ": {
+     "name": "五粮液",
+     "market": "A",
+     "price": 70.9,
+     "prev_close": 70.82,
+     "change_pct": 0.113,
+     "open": 70.66,
+     "high": 71.9,
+     "low": 70.4,
+     "volume": 17967935.0,
+     "amount": 1280367734.89,
+     "quote_time": "2026-10-15 12:07:27",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 70.9,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 70.82,
+      "prev_close_sources": 3,
+      "median_all": 70.9,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 70.9,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 70.9,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:27"
+       },
+       "yahoo": {
+        "price": 70.9,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:27"
+       }
+      },
+      "symbol": "000858.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "000333.SZ": {
+     "name": "美的集团",
+     "market": "A",
+     "price": 83.52,
+     "prev_close": 83.7,
+     "change_pct": -0.2151,
+     "open": 83.6,
+     "high": 84.88,
+     "low": 83.4,
+     "volume": 14628102.0,
+     "amount": 1232699049.73,
+     "quote_time": "2026-10-15 12:07:33",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 83.52,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [
+       "sina"
+      ],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 83.7,
+      "prev_close_sources": 3,
+      "median_all": 83.52,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 83.52,
+        "lagged": true,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:30:00"
+       },
+       "tencent": {
+        "price": 83.52,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:05:33"
+       },
+       "yahoo": {
+        "price": 83.52,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 12:07:33"
+       }
+      },
+      "symbol": "000333.SZ"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0700.HK": {
+     "name": "腾讯控股",
+     "market": "HK",
+     "price": 419.4,
+     "prev_close": 423.4,
+     "change_pct": -0.9447,
+     "open": 415.0,
+     "high": 422.6,
+     "low": 414.0,
+     "volume": 11036192.0,
+     "amount": 4615140958.32,
+     "quote_time": "2026-10-15 11:59:59",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 419.4,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 423.4,
+      "prev_close_sources": 3,
+      "median_all": 419.4,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 419.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 419.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 419.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:59"
+       }
+      },
+      "symbol": "0700.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "9988.HK": {
+     "name": "阿里巴巴-W",
+     "market": "HK",
+     "price": 105.2,
+     "prev_close": 110.5,
+     "change_pct": -4.7964,
+     "open": 108.2,
+     "high": 109.3,
+     "low": 105.1,
+     "volume": 35249863.0,
+     "amount": 3781977763.45,
+     "quote_time": "2026-10-15 11:59:59",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 105.2,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 110.5,
+      "prev_close_sources": 3,
+      "median_all": 105.2,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 105.2,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 105.2,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 105.2,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:59"
+       }
+      },
+      "symbol": "9988.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "3690.HK": {
+     "name": "美团-W",
+     "market": "HK",
+     "price": 74.9,
+     "prev_close": 77.1,
+     "change_pct": -2.8534,
+     "open": 75.95,
+     "high": 77.5,
+     "low": 74.85,
+     "volume": 20055990.0,
+     "amount": 1531779432.0,
+     "quote_time": "2026-10-15 11:59:56",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 74.9,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 77.1,
+      "prev_close_sources": 3,
+      "median_all": 74.9,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 74.9,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 74.9,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 74.9,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:56"
+       }
+      },
+      "symbol": "3690.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "1810.HK": {
+     "name": "小米集团-W",
+     "market": "HK",
+     "price": 27.02,
+     "prev_close": 26.38,
+     "change_pct": 2.4261,
+     "open": 26.0,
+     "high": 27.26,
+     "low": 25.98,
+     "volume": 163833815.0,
+     "amount": 4409113910.42,
+     "quote_time": "2026-10-15 11:59:59",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 27.02,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 26.38,
+      "prev_close_sources": 3,
+      "median_all": 27.02,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 27.02,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 27.02,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 27.02,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:59"
+       }
+      },
+      "symbol": "1810.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "1299.HK": {
+     "name": "友邦保险",
+     "market": "HK",
+     "price": 72.55,
+     "prev_close": 72.75,
+     "change_pct": -0.2749,
+     "open": 72.8,
+     "high": 73.95,
+     "low": 71.65,
+     "volume": 19215205.0,
+     "amount": 1395994850.39,
+     "quote_time": "2026-10-15 11:59:57",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 72.55,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 72.75,
+      "prev_close_sources": 3,
+      "median_all": 72.55,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 72.55,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 72.55,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 72.55,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:57"
+       }
+      },
+      "symbol": "1299.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0005.HK": {
+     "name": "汇丰控股",
+     "market": "HK",
+     "price": 147.4,
+     "prev_close": 148.0,
+     "change_pct": -0.4054,
+     "open": 147.3,
+     "high": 147.9,
+     "low": 146.7,
+     "volume": 4357173.0,
+     "amount": 641820285.0,
+     "quote_time": "2026-10-15 11:59:27",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 147.4,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 148.0,
+      "prev_close_sources": 3,
+      "median_all": 147.4,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 147.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 147.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 147.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:27"
+       }
+      },
+      "symbol": "0005.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0939.HK": {
+     "name": "建设银行",
+     "market": "HK",
+     "price": 9.855,
+     "prev_close": 9.855,
+     "change_pct": 0.0,
+     "open": 9.91,
+     "high": 9.91,
+     "low": 9.775,
+     "volume": 73443910.0,
+     "amount": 723837561.58,
+     "quote_time": "2026-10-15 11:59:56",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 9.855,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 9.855,
+      "prev_close_sources": 3,
+      "median_all": 9.855,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 9.855,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 9.855,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 9.855,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:56"
+       }
+      },
+      "symbol": "0939.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0941.HK": {
+     "name": "中国移动",
+     "market": "HK",
+     "price": 80.85,
+     "prev_close": 80.9,
+     "change_pct": -0.0618,
+     "open": 81.0,
+     "high": 81.1,
+     "low": 80.55,
+     "volume": 6561496.0,
+     "amount": 530647374.3,
+     "quote_time": "2026-10-15 11:59:53",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 80.85,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 80.9,
+      "prev_close_sources": 3,
+      "median_all": 80.85,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 80.85,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 80.85,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 80.85,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:53"
+       }
+      },
+      "symbol": "0941.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0388.HK": {
+     "name": "香港交易所",
+     "market": "HK",
+     "price": 371.0,
+     "prev_close": 373.6,
+     "change_pct": -0.6959,
+     "open": 373.6,
+     "high": 373.6,
+     "low": 369.4,
+     "volume": 1441849.0,
+     "amount": 535484609.5,
+     "quote_time": "2026-10-15 11:59:33",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 371.0,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 373.6,
+      "prev_close_sources": 3,
+      "median_all": 371.0,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 371.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 371.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 371.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:33"
+       }
+      },
+      "symbol": "0388.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0981.HK": {
+     "name": "中芯国际",
+     "market": "HK",
+     "price": 51.85,
+     "prev_close": 54.3,
+     "change_pct": -4.512,
+     "open": 52.5,
+     "high": 52.9,
+     "low": 51.15,
+     "volume": 39476420.0,
+     "amount": 2048498607.3,
+     "quote_time": "2026-10-15 11:59:55",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 51.85,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 54.3,
+      "prev_close_sources": 3,
+      "median_all": 51.85,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 51.85,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 51.85,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 51.85,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:55"
+       }
+      },
+      "symbol": "0981.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "1211.HK": {
+     "name": "比亚迪股份",
+     "market": "HK",
+     "price": 72.8,
+     "prev_close": 72.85,
+     "change_pct": -0.0686,
+     "open": 72.85,
+     "high": 73.7,
+     "low": 71.8,
+     "volume": 8027362.0,
+     "amount": 584369126.97,
+     "quote_time": "2026-10-15 11:59:41",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 72.8,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 72.85,
+      "prev_close_sources": 3,
+      "median_all": 72.8,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 72.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 72.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 72.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:41"
+       }
+      },
+      "symbol": "1211.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "1024.HK": {
+     "name": "快手-W",
+     "market": "HK",
+     "price": 28.4,
+     "prev_close": 29.52,
+     "change_pct": -3.794,
+     "open": 28.8,
+     "high": 28.88,
+     "low": 28.32,
+     "volume": 20237349.0,
+     "amount": 577904401.15,
+     "quote_time": "2026-10-15 11:59:58",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 28.4,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 29.52,
+      "prev_close_sources": 3,
+      "median_all": 28.4,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 28.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 28.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 28.4,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:58"
+       }
+      },
+      "symbol": "1024.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "9618.HK": {
+     "name": "京东集团-SW",
+     "market": "HK",
+     "price": 104.3,
+     "prev_close": 106.1,
+     "change_pct": -1.6965,
+     "open": 104.9,
+     "high": 105.9,
+     "low": 104.3,
+     "volume": 2776574.0,
+     "amount": 291564940.05,
+     "quote_time": "2026-10-15 11:59:56",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 104.3,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 106.1,
+      "prev_close_sources": 3,
+      "median_all": 104.3,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 104.3,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 104.3,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 104.3,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:56"
+       }
+      },
+      "symbol": "9618.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "0883.HK": {
+     "name": "中国海洋石油",
+     "market": "HK",
+     "price": 24.04,
+     "prev_close": 24.72,
+     "change_pct": -2.7508,
+     "open": 24.76,
+     "high": 24.8,
+     "low": 23.8,
+     "volume": 67705865.0,
+     "amount": 1634367772.16,
+     "quote_time": "2026-10-15 11:59:51",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 24.04,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 24.72,
+      "prev_close_sources": 3,
+      "median_all": 24.04,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 24.04,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 24.04,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 24.04,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:51"
+       }
+      },
+      "symbol": "0883.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "2318.HK": {
+     "name": "中国平安",
+     "market": "HK",
+     "price": 50.0,
+     "prev_close": 50.6,
+     "change_pct": -1.1858,
+     "open": 50.45,
+     "high": 50.5,
+     "low": 49.9,
+     "volume": 19078774.0,
+     "amount": 957170749.09,
+     "quote_time": "2026-10-15 11:59:56",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 50.0,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 50.6,
+      "prev_close_sources": 3,
+      "median_all": 50.0,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 50.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 50.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 50.0,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:56"
+       }
+      },
+      "symbol": "2318.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "2020.HK": {
+     "name": "安踏体育",
+     "market": "HK",
+     "price": 75.3,
+     "prev_close": 74.55,
+     "change_pct": 1.006,
+     "open": 74.35,
+     "high": 75.9,
+     "low": 73.9,
+     "volume": 5479169.0,
+     "amount": 412166688.05,
+     "quote_time": "2026-10-15 11:59:45",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 75.3,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 74.55,
+      "prev_close_sources": 3,
+      "median_all": 75.3,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 75.3,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 75.3,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 75.3,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:45"
+       }
+      },
+      "symbol": "2020.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "9999.HK": {
+     "name": "网易-S",
+     "market": "HK",
+     "price": 195.8,
+     "prev_close": 197.2,
+     "change_pct": -0.7099,
+     "open": 193.4,
+     "high": 196.6,
+     "low": 193.3,
+     "volume": 1777622.0,
+     "amount": 347377631.5,
+     "quote_time": "2026-10-15 11:59:37",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 195.8,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 197.2,
+      "prev_close_sources": 3,
+      "median_all": 195.8,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 195.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 195.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 195.8,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:37"
+       }
+      },
+      "symbol": "9999.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    },
+    "2269.HK": {
+     "name": "药明生物",
+     "market": "HK",
+     "price": 49.46,
+     "prev_close": 49.74,
+     "change_pct": -0.5629,
+     "open": 49.12,
+     "high": 50.3,
+     "low": 49.12,
+     "volume": 17520094.0,
+     "amount": 873178861.16,
+     "quote_time": "2026-10-15 11:59:55",
+     "sources": [
+      "sina",
+      "tencent",
+      "yahoo"
+     ],
+     "n_sources": 3,
+     "consensus": {
+      "price": 49.46,
+      "n_sources": 3,
+      "n_agree": 3,
+      "spread_pct": 0.0,
+      "outliers": [],
+      "lagged": [],
+      "sources": [
+       "sina",
+       "tencent",
+       "yahoo"
+      ],
+      "verdict": "一致",
+      "confidence": 3,
+      "confidence_label": "高",
+      "prev_close": 49.74,
+      "prev_close_sources": 3,
+      "median_all": 49.46,
+      "eod_close_check": null,
+      "eod_close_checks": [],
+      "by_source": {
+       "sina": {
+        "price": 49.46,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59"
+       },
+       "tencent": {
+        "price": 49.46,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": null
+       },
+       "yahoo": {
+        "price": 49.46,
+        "lagged": false,
+        "outlier": false,
+        "dev_pct": 0.0,
+        "quote_time": "2026-10-15 11:59:55"
+       }
+      },
+      "symbol": "2269.HK"
+     },
+     "eod_close": null,
+     "eod_close_tdx": null
+    }
+   },
+   "cross_check": {
+    "symbols_total": 37,
+    "symbols_ok": 37,
+    "symbols_with_quorum": 37,
+    "sources_ok": 3,
+    "sources_total": 6,
+    "sources_ok_list": [
+     "sina",
+     "tencent",
+     "yahoo"
+    ],
+    "median_prices": {
+     "^HSI": 23955.58,
+     "^HSTECH": 4051.8,
+     "^HSCEI": 8059.6895,
+     "000001.SS": 3692.651,
+     "399001.SZ": 11773.4525,
+     "399006.SZ": 2768.632,
+     "^DJI": 51621.48,
+     "^GSPC": 7718.94,
+     "^IXIC": 26692.87,
+     "MSFT": 533.69,
+     "META": 737.54,
+     "600519.SS": 1306.0,
+     "300750.SZ": 273.18,
+     "300308.SZ": 656.24,
+     "002594.SZ": 81.26,
+     "600036.SS": 42.51,
+     "601318.SS": 51.06,
+     "000858.SZ": 70.9,
+     "000333.SZ": 83.52,
+     "0700.HK": 419.4,
+     "9988.HK": 105.2,
+     "3690.HK": 74.9,
+     "1810.HK": 27.02,
+     "1299.HK": 72.55,
+     "0005.HK": 147.4,
+     "0939.HK": 9.855,
+     "0941.HK": 80.85,
+     "0388.HK": 371.0,
+     "0981.HK": 51.85,
+     "1211.HK": 72.8,
+     "1024.HK": 28.4,
+     "9618.HK": 104.3,
+     "0883.HK": 24.04,
+     "2318.HK": 50.0,
+     "2020.HK": 75.3,
+     "9999.HK": 195.8,
+     "2269.HK": 49.46
+    },
+    "conflicts": [],
+    "lagged": [
+     "000001.SS·yahoo",
+     "000333.SZ·sina",
+     "000858.SZ·sina",
+     "002594.SZ·sina",
+     "300308.SZ·sina",
+     "300750.SZ·sina",
+     "399001.SZ·sina",
+     "399006.SZ·sina",
+     "600036.SS·sina",
+     "600036.SS·yahoo",
+     "600519.SS·sina",
+     "600519.SS·yahoo",
+     "601318.SS·sina",
+     "601318.SS·yahoo"
+    ],
+    "agreement_rate": 1.0,
+    "consensus_ok": true
+   },
+   "self_check": {
+    "score": 88,
+    "ok": false,
+    "checks": [
+     {
+      "name": "slot_valid",
+      "ok": true,
+      "warn_only": false,
+      "detail": "时段 1230 ∈ ['0800', '1230', '1700']"
+     },
+     {
+      "name": "schedule_window",
+      "ok": true,
+      "warn_only": true,
+      "detail": "拉取时刻距计划 ±7 分钟（容差 180）"
+     },
+     {
+      "name": "sources_min",
+      "ok": false,
+      "warn_only": false,
+      "detail": "成功源 3/6：sina, tencent, yahoo"
+     },
+     {
+      "name": "symbol_coverage",
+      "ok": true,
+      "warn_only": false,
+      "detail": "标的覆盖 37/37（100%，下限 80%）"
+     },
+     {
+      "name": "quorum_rate",
+      "ok": true,
+      "warn_only": false,
+      "detail": "有效共识 37/37（100%，下限 90%）"
+     },
+     {
+      "name": "numeric_sanity",
+      "ok": true,
+      "warn_only": false,
+      "detail": "全部价格 >0 且涨跌幅在容差内"
+     },
+     {
+      "name": "cross_source",
+      "ok": true,
+      "warn_only": false,
+      "detail": "无跨源冲突"
+     },
+     {
+      "name": "lag_detected",
+      "ok": true,
+      "warn_only": true,
+      "detail": "滞后源 14 处：000001.SS·yahoo、000333.SZ·sina、000858.SZ·sina、002594.SZ·sina、300308.SZ·sina、300750.SZ·sina"
+     },
+     {
+      "name": "slot_jump",
+      "ok": true,
+      "warn_only": false,
+      "detail": "无可比时段"
+     },
+     {
+      "name": "freshness",
+      "ok": true,
+      "warn_only": true,
+      "detail": "本时段存在当天行情"
+     }
+    ],
+    "alerts": [
+     "sources_min：成功源 3/6：sina, tencent, yahoo"
+    ]
+   },
+   "integrity": {
+    "algo": "sha256",
+    "hash": "56784d31a3b4a272e7dd8815fdc69ed69941a6c5f70b46085a416d107db576cc"
+   }
+  }
+ },
+ "audit": {
+  "pulls": [
+   {
+    "slot": "1230",
+    "pulled_at": "2026-10-15 12:22:38",
+    "overwrote": false,
+    "sources_ok": 3,
+    "symbols_ok": 37,
+    "score": 88
+   }
+  ],
+  "pull_count": 1
+ },
+ "updated_at": "2026-10-15 12:22:38",
+ "ai": {
+  "row_count": 37,
+  "symbols": 37,
+  "slots_present": [
+   "1230"
+  ],
+  "feature_names": [
+   "price",
+   "change_pct",
+   "prev_close",
+   "open",
+   "high",
+   "low",
+   "volume",
+   "amount",
+   "spread_pct",
+   "n_sources",
+   "confidence",
+   "n_lagged",
+   "slot_index",
+   "ret_prev_slot",
+   "ret_day_open",
+   "ret_1d",
+   "ret_5d",
+   "vol_5d",
+   "pe",
+   "pb",
+   "total_mv",
+   "float_mv",
+   "days_since_action"
+  ],
+  "label_names": [
+   "next_slot_ret",
+   "eod_ret",
+   "next_day_eod_ret"
+  ]
+ },
+ "integrity": {
+  "algo": "sha256",
+  "hash": "a5eeece69481f5ff1d5f9cda20aad45dc2b668241353c87428752c0064ad6323"
+ }
+}
