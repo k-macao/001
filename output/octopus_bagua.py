@@ -190,10 +190,12 @@ def render_bagua_html(result: dict | None = None, day: date | None = None) -> st
     if not ENABLED:
         return ""
     r = result or daily_bagua(day)
-    lines_html = "".join(
-        f'<div style="font-size:15px;line-height:1.15;letter-spacing:2px;">'
-        f'{"━━━ ━━━" if not ln else "━━━━━━━"}</div>'
-        for ln in reversed(r["lines"]))
+    # 加粗、缩小的爻线：用实色块代替字符，阳爻一整条、阴爻两段，细而清晰
+    def _bar(yang: bool) -> str:
+        if yang:
+            return '<div style="display:flex;justify-content:center;margin:2px auto;"><div style="width:44px;height:5px;background:#111111;border-radius:1px;"></div></div>'
+        return '<div style="display:flex;justify-content:center;gap:5px;margin:2px auto;"><div style="width:19px;height:5px;background:#111111;border-radius:1px;"></div><div style="width:19px;height:5px;background:#111111;border-radius:1px;"></div></div>'
+    lines_html = "".join(_bar(bool(ln)) for ln in reversed(r["lines"]))
     fort = " · ".join(f'{k} {_stars(v)}' for k, v in r["fortune"].items())
     return (
         f'<div style="border:1px dashed #999999;border-radius:8px;padding:10px 12px;margin:8px 0;">'
@@ -203,8 +205,8 @@ def render_bagua_html(result: dict | None = None, day: date | None = None) -> st
         f'font-size:22px;line-height:1.4;color:#555555;">☯</span>'
         f'{TITLE} · {_esc(r["date"])}（{_esc(r["weekday"])}）</div>'
         f'<table style="width:100%;border-collapse:collapse;margin-top:6px;"><tr>'
-        f'<td style="width:86px;vertical-align:top;text-align:center;">{lines_html}'
-        f'<div style="font-size:12px;margin-top:4px;">{r["upper"]["symbol"]}上 {r["lower"]["symbol"]}下<br>第{r["moving_line"]}爻动</div></td>'
+        f'<td style="width:68px;vertical-align:top;text-align:center;padding-top:2px;">{lines_html}'
+        f'<div style="font-size:11px;margin-top:5px;line-height:1.4;color:#222222;">{r["upper"]["symbol"]}上 {r["lower"]["symbol"]}下<br>第{r["moving_line"]}爻动</div></td>'
         f'<td style="vertical-align:top;padding-left:10px;font-size:13px;line-height:1.7;">'
         f'<b>本卦 {_esc(r["hexagram"])}</b>（{_esc(r["keyword"])} · {_esc(r["level"])}）'
         f' → <b>变卦 {_esc(r["changed_hexagram"])}</b><br>{_esc(r["one_liner"])}<br>{_esc(fort)}</td></tr></table>'
