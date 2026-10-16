@@ -9423,20 +9423,40 @@ def _short_card_base_date(date_str):
         return None
 
 
-def _short_card_section(card_ctx, kit, today_n, total):
+def _beginner_tips_block(tips, kit):
+    """🐣【新手三句话】独立排版块（2026-10-16 起渲染在卷首卦象之后）。
+
+    文案与配对逻辑仍在 `octopus_short`（百句股票梗库 · 按当次盘面三槽位配对），
+    这里只负责排版：主题 kit 的小标 + 键值表 + 一句免责（入门版不出脚注，与全篇同规）。
+    卦象缺席时本块返回空串，三句话仍由速查卡末尾渲染——两边不会同时出，绝不重复。
+    """
+    if not tips:
+        return ""
+    plain = PLAIN()
+    return (kit.sub(_esc(_short.TIPS_TITLE_PLAIN if plain else _short.TIPS_TITLE))
+            + kit.kv([(_esc(label), _esc(text)) for label, text in tips])
+            + kit.note(_esc(_short.DISCLAIMER)))
+
+
+def _short_card_section(card_ctx, kit, today_n, total, tips=None, tips_in_card=True):
     """🎯【闪电飞鱼】短线速查卡（2026-09-30 新增；正文结论之后的行动要点收尾）。
 
     用户要求「内容再精炼，适合短线操作，入门观看」：把全天数据里**最能直接动手**的
     几件事压成 ≤600 字一张卡——今天什么风、明天怎么做（概率 / 区间 / 仓位 / 止损 / 止盈）、
-    今明哪些时点别碰、板块强弱各 3、资金水位、舆情风声、当天数据底，
-    末尾附【新手三句话】（读取 `output/stock_memes.json` 百句股票梗句库，按看方向 / 放止损 / 别动手随时配对使用）。
+    今明哪些时点别碰、板块强弱各 3、资金水位、舆情风声、当天数据底。
+
+    【新手三句话】（读取 `output/stock_memes.json` 百句股票梗句库，按看方向 / 放止损 /
+    别动手随时配对使用）2026-10-16 起默认**不再排在卡尾**：用户要求「放在卦象后」，
+    三句话改由卷首「诗与远方的海」卦象之后渲染（见 `_beginner_tips_block`）；
+    `tips_in_card=True`（卦象关闭 / 起卦失败时的回落路径）才继续排在卡尾。
+    `tips` 由调用方按同一份 card_ctx 预先配对后传入，保证两处是同一组三句话。
 
     与整仓「防自欺」同规（细则见 output/octopus_short.py 与 tests/test_short_card.py）：
     纯规则合成、可复现；每个数字都取自下文各栏渲染用的同一批实参（不另算一套）；
     哪一路没数据那一行就缺席，全部缺数据整卡缺席；超字数预算按优先级**整行**撤下并留痕，
     绝不截断半句话。OCTOPUS_LITE=0 / --full 关闭。
     """
-    card = _short.build_card(card_ctx)
+    card = _short.build_card(card_ctx, tips=tips, tips_in_card=tips_in_card)
     if not card:
         return None
     lead_color = GZ_INK_STRONG if _is_guizang_like(kit) else C_INK
@@ -9451,8 +9471,8 @@ def _short_card_section(card_ctx, kit, today_n, total):
                           if isinstance(value, str) and "数据底" in str(label) else value))
                  for label, value in pairs]
     html = kit.kv([("定调", lead_val), *[(_esc(label), value) for label, value in pairs]])
-    html += kit.sub(_esc(_short.TIPS_TITLE_PLAIN if plain else _short.TIPS_TITLE))
-    html += kit.kv([(_esc(label), _esc(text)) for label, text in card["tips"]])
+    if tips_in_card:            # 卦象缺席时的回落：三句话仍排在卡尾，与卷首二选一
+        html += _beginner_tips_block(card["tips"], kit)
     dropped = [d for d in (card.get("dropped") or [])]
     if dropped:                  # 被字数预算撤下的行如实点名，并指回正文对应栏目（入门版不出脚注）
         html += kit.note(_esc(f'字数预算内已收起：{"、".join(dropped)}（完整内容见下文对应栏目）'))
@@ -10225,19 +10245,6 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             decorated.append((kick, title, content, badge, caption))
         sections = decorated
 
-    # 短线速查卡收尾呈现：正文按 ①→④ 与总结阅读后，再给行动要点。
-    # 取材全部是上面渲染正文用的同一批对象，缺数据自动缺席（LITE=0 / --full 整卡不出）。
-    if LITE_ENABLED:
-        card = _short_card_section({
-            "date_str": date_str or _today_str(),
-            # 「今明必看」的日基准：报告日（YYYYMMDD）→ date 对象；解析不出来就不猜今明。
-            "today": _short_card_base_date(date_str),
-            "weekly": weekly_res, "quant": quant, "ai": ai_result,
-            "pan": pan if pan_ok else {}, "cal": cal, "senti": senti_result,
-            "coverage": {"today": today_n, "total": total},
-        }, kit, today_n, total)
-        if card:
-            sections.append(card)
     # 卷首内容各自独立开关；卦象按报告日起卦，与行情结论无关，也不计入当天源。
     poem = _shiquan.get_opening_poem(data, allow_network=False) if (SHIQUAN_ENABLED and _shiquan.is_enabled()) else None
     bagua_html = ""
@@ -10246,6 +10253,28 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             bagua_html = _bagua.render_bagua_html(day=_bagua_report_day(date_str))
         except Exception as e:  # noqa: BLE001
             print(f"⚠️ 卷首卦象渲染失败（date_str={date_str!r}）：{type(e).__name__}: {e}")
+    # 短线速查卡收尾呈现：正文按 ①→④ 与总结阅读后，再给行动要点。
+    # 取材全部是上面渲染正文用的同一批对象，缺数据自动缺席（LITE=0 / --full 整卡不出）。
+    beginner_tips_html = ""
+    if LITE_ENABLED:
+        card_ctx = {
+            "date_str": date_str or _today_str(),
+            # 「今明必看」的日基准：报告日（YYYYMMDD）→ date 对象；解析不出来就不猜今明。
+            "today": _short_card_base_date(date_str),
+            "weekly": weekly_res, "quant": quant, "ai": ai_result,
+            "pan": pan if pan_ok else {}, "cal": cal, "senti": senti_result,
+            "coverage": {"today": today_n, "total": total},
+        }
+        # 🐣【新手三句话】（2026-10-16 用户要求「放在卦象后」）：先按同一份 card_ctx
+        # 配对一次，再看卦象在不在——卦象在卷首 → 三句话紧跟卦象；
+        # 卦象被关掉（OCTOPUS_BAGUA=0）或起卦失败 → 仍留在速查卡末尾，内容不丢、不重复。
+        tips = _short.pair_beginner_tips(card_ctx)
+        card = _short_card_section(card_ctx, kit, today_n, total,
+                                   tips=tips, tips_in_card=not bagua_html)
+        if card:
+            sections.append(card)
+        if bagua_html:
+            beginner_tips_html = _beginner_tips_block(tips, kit)
     return {
         "sections": sections,
         "total": total,
@@ -10254,19 +10283,25 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         "market": market,
         "poem": poem,
         "bagua_html": bagua_html,
+        "beginner_tips_html": beginner_tips_html,
     }
 
 
 def _poetry_sea_section(parts, kit):
-    """刊头后的单一卷首栏目：诗泉诗选 + ☯ 今日卦象，同一栏目内分块展示。
+    """刊头后的单一卷首栏目：诗泉诗选 + ☯ 今日卦象 + 🐣 新手三句话，同一栏目内分块展示。
 
     用主题自己的 section 渲染头部与 SECTION_BODY_MARK，分条时诗和卦先按一个
-    栏目装箱；卷首编号「序」不挤占今日预判的 00 栏。两块都不可用时不出空栏目。
+    栏目装箱；卷首编号「序」不挤占今日预判的 00 栏。三块都不可用时不出空栏目。
+
+    🐣 新手三句话（2026-10-16 用户要求「放在卦象后」）：三句话紧跟卦象之后，
+    让入门读者在翻到行情数字之前先拿到「看方向 / 放止损 / 别动手」三句人话；
+    卦象缺席时 parts["beginner_tips_html"] 为空串，三句话仍由速查卡末尾渲染。
     """
     poem_html = _shiquan.render_opening_poem_html(
         (parts or {}).get("poem"), theme=kit.theme)
     bagua_html = (parts or {}).get("bagua_html") or ""
-    content = poem_html + bagua_html
+    tips_html = (parts or {}).get("beginner_tips_html") or ""
+    content = poem_html + bagua_html + tips_html
     return kit.section("序", "POETRY & SEA", SECTION_TITLE_POETRY_SEA, content) if content else ""
 
 
