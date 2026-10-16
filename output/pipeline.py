@@ -13322,7 +13322,7 @@ def _dossier_html_frame(masthead, first_section, content_html, footer_text,
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{D_PAPER}" style="margin:0;padding:0;background:{D_PAPER};color:{D_INK};font-family:{D_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:680px;margin:0 auto;padding:26px 18px 0;background:{D_PAPER};color:{D_INK};font-family:{D_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="max-width:980px;margin:0 auto;padding:16px 8px 0;background:{D_PAPER};color:{D_INK};font-family:{D_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -13563,15 +13563,15 @@ def forum_section(num, kicker_en, title, content, badge_html="", caption=""):
         f'<div style="margin-top:14px;border:1px solid {F_HAIR};border-radius:14px;'
         f'background:{F_CARD};color:{F_INK};overflow:hidden;">'
         f'<table width="100%" style="border-collapse:collapse;color:{F_INK};">'
-        f'<tr><td style="padding:12px 0 0 14px;color:{F_MUTED};">'
+        f'<tr><td style="padding:10px 0 0 10px;color:{F_MUTED};">'
         f'{forum_icon(kicker_en)}'
         f'<span style="padding-left:8px;font-family:{F_MONO};font-size:10px;'
         f'letter-spacing:0.18em;color:{F_MUTED};">{_esc(kicker_en)}</span>'
-        + f'</td><td align="right" style="padding:12px 14px 0 0;color:{F_MUTED};">'
+        + f'</td><td align="right" style="padding:10px 10px 0 0;color:{F_MUTED};">'
         f'<span style="font-family:{F_MONO};font-size:10px;color:{F_MUTED};'
         f'letter-spacing:0.08em;">#{num}</span>'
         f'</td></tr>'
-        f'<tr><td colspan="2" style="padding:0 14px 13px;color:{F_INK};">'
+        f'<tr><td colspan="2" style="padding:0 10px 11px;color:{F_INK};">'
         f'<h2 style="margin:8px 0 0;font-size:{GZ_FS_SECTION}px;font-weight:700;'
         f'color:{F_INK_STRONG};">{_esc(title)}</h2>'
         f'{meta}</td></tr></table>'
@@ -13698,7 +13698,7 @@ def _forum_html_frame(masthead, first_section, content_html, footer_text,
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{F_BG}" style="margin:0;padding:0;background:{F_BG};color:{F_INK};font-family:{F_FONT};font-size:{GZ_FS_BODY}px;line-height:1.7;color-scheme:dark;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:680px;margin:0 auto;padding:18px 14px 0;background:{F_BG};color:{F_INK};font-family:{F_FONT};font-size:{GZ_FS_BODY}px;line-height:1.7;color-scheme:dark;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="max-width:980px;margin:0 auto;padding:14px 8px 0;background:{F_BG};color:{F_INK};font-family:{F_FONT};font-size:{GZ_FS_BODY}px;line-height:1.7;color-scheme:dark;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -13860,7 +13860,7 @@ def lime_section(num, kicker_en, title, content, badge_html="", caption=""):
     meta = (f'<div style="color:{L_MUTED};font-size:{GZ_FS_META}px;padding-top:6px;">'
             f'{" · ".join(meta_bits)}</div>') if meta_bits else ""
     head = (
-        f'<div style="margin-top:18px;padding:18px 16px 14px;border-radius:22px;'
+        f'<div style="margin-top:14px;padding:14px 10px 12px;border-radius:22px;'
         f'background:{L_CARD};color:{L_INK};overflow:hidden;">'
         f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{L_CARD}" '
         f'style="width:100%!important;border-collapse:collapse;background:{L_CARD};color:{L_INK};">'
@@ -13950,7 +13950,7 @@ def _lime_html_frame(masthead, first_section, content_html, footer_text,
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{L_BG}" style="margin:0;padding:0;background:{L_BG};color:{L_INK};font-family:{L_FONT};font-size:{GZ_FS_BODY}px;line-height:1.68;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:680px;margin:0 auto;padding:22px 14px 0;background:{L_BG};color:{L_INK};font-family:{L_FONT};font-size:{GZ_FS_BODY}px;line-height:1.68;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="max-width:980px;margin:0 auto;padding:16px 8px 0;background:{L_BG};color:{L_INK};font-family:{L_FONT};font-size:{GZ_FS_BODY}px;line-height:1.68;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -14318,7 +14318,7 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{GZ_PAPER}" style="margin:0;padding:0;background:{GZ_PAPER};color:{GZ_INK};font-family:{GZ_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:680px;margin:0 auto;padding:26px 18px 0;background:{GZ_PAPER};color:{GZ_INK};font-family:{GZ_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="max-width:980px;margin:0 auto;padding:16px 8px 0;background:{GZ_PAPER};color:{GZ_INK};font-family:{GZ_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -14383,8 +14383,8 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
 </head>
 <body style="margin:0;padding:0;background:{C_BG};font-family:{FONT};color:{C_INK};font-size:13px;line-height:1.7;-webkit-text-size-adjust:100%;">
 
-<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:680px;margin:0 auto;background:{C_BG};">
-<tr><td style="padding:12px 10px;">
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:980px;margin:0 auto;background:{C_BG};">
+<tr><td style="padding:8px 6px;">
 
 <!-- 外框：像素终端窗口 -->
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;background:{C_PAPER};border:1px solid {C_ACCENT};box-shadow:8px 8px 0 #000;">
@@ -14396,7 +14396,7 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
 <td align="right" style="padding:5px 8px;font-family:{FONT_MONO};font-size:10px;font-weight:900;color:#000;">[−][□][×]</td>
 </tr></table>
 
-<div style="padding:18px 18px 20px;">
+<div style="padding:14px 10px 16px;">
 
 <!-- 刊头 masthead：纯 HTML 像素章鱼 + 游戏卡带标题 -->
 <table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">
@@ -14702,9 +14702,9 @@ def _compact_html_for_push(html):
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
         '<meta name="color-scheme" content="light only">'
         '<title>章鱼 AI · 上水日报（精简版）</title></head>'
-        '<body bgcolor="#FFFFFF" style="margin:0;padding:16px;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
+        '<body bgcolor="#FFFFFF" style="margin:0;padding:8px 6px;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
         'font-size:15px;line-height:1.7;color:#111;background:#FFFFFF;color-scheme:light;">'
-        '<div style="max-width:680px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
+        '<div style="max-width:980px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
         'font-size:15px;line-height:1.7;color:#111;background:#FFFFFF;color-scheme:light;">'
         '<table width="100%" cellpadding="6" cellspacing="0" bgcolor="#FFFFFF" '
         'style="width:100%!important;border-collapse:collapse;background:#FFFFFF;color:#111;">'
