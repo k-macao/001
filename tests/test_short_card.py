@@ -7,6 +7,10 @@
   · 同源——卡上每个数字都能在输入实参里逐字找到（不另算一套、不加戏）；
   · 诚实——字数超预算时按优先级**整行**撤下并留痕（dropped），绝不截断半句话；
     【新手三句话】读取 `output/stock_memes.json` 百句股票梗句库，按当次盘面与种子随时配对使用。
+
+2026-10-16（用户要求「新手三句话，放在卦象后」）：三句话的配对逻辑不动，渲染位置
+改到卷首「诗与远方的海」卦象之后——见 `BeginnerTipsPlacementTests` 一条条守住位置、
+回落（卦象关闭时回卡尾）与「同一份日报只出现一处」。
 """
 import datetime as dt
 import importlib.util
@@ -420,6 +424,24 @@ class BeginnerTipsTests(unittest.TestCase):
             self.assertIn("观望", blob)
 
 
+def pipeline_report_data(pipeline):
+    """整链渲染用的一份真实结构数据（各测试类共用；数字来自测试夹具，全程离线）。"""
+    import test_weekly as tw
+    from test_quant import run_engine
+    import test_pipeline as tp
+    data = tp.SectionReadingOrderTests()._full_data()
+    data["A股大盘全景"] = tp.MarketPanoramaTests()._panorama_payload()
+    data["每周走势预测"] = tw.WeeklyPipelineIntegrationTests()._source()
+    with tempfile.TemporaryDirectory() as tmp:
+        data["港股量化"] = pipeline._source_result(
+            "港股量化引擎", "success", is_today=True, content_date="2026-08-02",
+            result=run_engine(tmpdir=tmp, n_stocks=12))
+    cal = tp.EconCalendarTests()
+    res, _ = cal._fetch()
+    data["财经日历"] = res
+    return data
+
+
 class CardRenderingTests(unittest.TestCase):
     """整链（pipeline）层面的断言：卡片位置、两主题、开关、字数。"""
 
@@ -429,20 +451,7 @@ class CardRenderingTests(unittest.TestCase):
         cls.pipeline = pipeline
 
     def _data(self):
-        import test_weekly as tw
-        from test_quant import run_engine
-        import test_pipeline as tp
-        data = tp.SectionReadingOrderTests()._full_data()
-        data["A股大盘全景"] = tp.MarketPanoramaTests()._panorama_payload()
-        data["每周走势预测"] = tw.WeeklyPipelineIntegrationTests()._source()
-        with tempfile.TemporaryDirectory() as tmp:
-            data["港股量化"] = self.pipeline._source_result(
-                "港股量化引擎", "success", is_today=True, content_date="2026-08-02",
-                result=run_engine(tmpdir=tmp, n_stocks=12))
-        cal = tp.EconCalendarTests()
-        res, _ = cal._fetch()
-        data["财经日历"] = res
-        return data
+        return pipeline_report_data(self.pipeline)
 
     def test_card_closes_report_after_analysis_data_and_conclusion(self):
         data = self._data()
@@ -472,7 +481,11 @@ class CardRenderingTests(unittest.TestCase):
             self.assertLess(html.index("总结<"),
                             html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
                             f"{theme} 速查卡必须作为结论后的收尾")
+            # 2026-10-16：三句话移到卷首卦象之后，仍在日报里，但不在速查卡内部
             self.assertIn("新手三句话", html)
+            self.assertLess(html.index("新手三句话"),
+                            html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                            f"{theme} 三句话必须排在速查卡之前（卷首卦象之后）")
 
     def test_card_text_stays_within_budget_in_full_report(self):
         data = self._data()
@@ -541,6 +554,99 @@ class CardRenderingTests(unittest.TestCase):
         parts = self.pipeline._split_html_for_push(
             html, self.pipeline.PUSHPLUS_MAX_CONTENT_CHARS)
         self.assertEqual(len(parts or []), 1)
+
+    def test_card_html_no_longer_carries_beginner_tips(self):
+        """2026-10-16：三句话搬到卷首后，速查卡正文里不该再出现同一句话。"""
+        data = self._data()
+        sections = self.pipeline._collect_report_parts(
+            data, self.pipeline.GUIZANG_KIT, date_str="20260802")["sections"]
+        card_html = next(section[2] for section in sections if section[0] == "SHORT CARD")
+        self.assertNotIn("新手三句话", card_html)
+        self.assertNotIn("① 看方向", card_html)
+
+
+class BeginnerTipsPlacementTests(unittest.TestCase):
+    """🐣【新手三句话】2026-10-16 改位：紧跟卷首卦象之后（用户要求「放在卦象后」）。
+
+    守四件事：
+      · 位置——每个推送主题里，三句话都排在「今日八卦运程与利忌」之后、正文之前；
+      · 唯一——同一份日报只出现一处，速查卡里不再重复一遍；
+      · 回落——OCTOPUS_BAGUA=0 / 起卦失败时，三句话回到速查卡末尾，内容不丢；
+      · 预算——移出卡片后不再占速查卡字数预算（口径跟实际渲染一致，见
+        `octopus_short.build_card(tips_in_card=)`）。
+    """
+
+    @classmethod
+    def setUpClass(cls):
+        import pipeline
+        cls.pipeline = pipeline
+
+    def _data(self):
+        return pipeline_report_data(self.pipeline)
+
+    def test_tips_right_after_bagua_in_every_push_theme(self):
+        data = self._data()
+        for theme in self.pipeline.PUSH_THEMES:
+            with self.subTest(theme=theme):
+                html = self.pipeline.generate_report(
+                    data, "2026年8月2日 · 周日", "20260802", theme=theme)
+                self.assertEqual(html.count("新手三句话"), 1,
+                                 f"{theme}: 三句话整篇只能出现一处")
+                self.assertLess(html.index("今日八卦运程与利忌"),
+                                html.index("新手三句话"),
+                                f"{theme}: 三句话必须排在卦象之后")
+                self.assertLess(html.index("新手三句话"),
+                                html.index(self.pipeline.SECTION_TITLE_FORECAST),
+                                f"{theme}: 三句话必须在正文（今日预判）之前")
+                self.assertLess(html.index("新手三句话"),
+                                html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                                f"{theme}: 三句话不在速查卡里")
+
+    def test_opening_section_carries_tips_with_bagua(self):
+        data = self._data()
+        parts = self.pipeline._collect_report_parts(
+            data, self.pipeline.GUIZANG_KIT, date_str="20260802")
+        opening = self.pipeline._poetry_sea_section(parts, self.pipeline.GUIZANG_KIT)
+        self.assertIn(short.TIPS_TITLE_PLAIN, opening)
+        self.assertLess(opening.index("今日八卦运程与利忌"),
+                        opening.index(short.TIPS_TITLE_PLAIN))
+        for label in ("① 看方向", "② 放止损", "③ 别动手"):
+            self.assertIn(label, opening, label)
+
+    def test_tips_fall_back_to_card_tail_when_bagua_disabled(self):
+        import octopus_bagua as bagua
+        data = self._data()
+        with patch.object(bagua, "ENABLED", False):
+            html = self.pipeline.generate_report(
+                data, "2026年8月2日 · 周日", "20260802", theme="guizang")
+        self.assertNotIn("今日八卦运程与利忌", html)
+        self.assertEqual(html.count("新手三句话"), 1, "回落后也只能出现一处")
+        self.assertLess(html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                        html.index("新手三句话"), "卦象关闭时三句话回到速查卡末尾")
+
+    def test_tips_absent_in_full_long_form(self):
+        """--full / OCTOPUS_LITE=0：与改位前一致，速查卡与三句话都整块不出。"""
+        data = self._data()
+        with patch.object(self.pipeline, "LITE_ENABLED", False):
+            self.pipeline._quant.render.LITE = False
+            try:
+                html = self.pipeline.generate_report(
+                    data, "2026年8月2日 · 周日", "20260802", theme="guizang")
+            finally:
+                self.pipeline._quant.render.LITE = True
+        self.assertNotIn(self.pipeline.SECTION_TITLE_SHORT_CARD, html)
+        self.assertNotIn("新手三句话", html)
+
+    def test_card_budget_follows_render_position(self):
+        """三句话移出卡片后不再占字数预算；两处共用同一组配对结果。"""
+        ctx = rich_ctx()
+        in_card = short.build_card(ctx, tips_in_card=True)     # 默认：向后兼容
+        moved = short.build_card(ctx, tips_in_card=False)      # 改位后：卷首渲染
+        self.assertEqual(in_card["tips"], moved["tips"], "两处必须是同一组三句话")
+        first_tip = in_card["tips"][0][1]
+        self.assertIn(first_tip, in_card["text"])
+        self.assertNotIn(first_tip, moved["text"])
+        self.assertLessEqual(len(moved["text"]), len(in_card["text"]))
 
 
 if __name__ == "__main__":

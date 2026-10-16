@@ -7,6 +7,11 @@
 **今天什么风、明天怎么做、哪些日子别碰**——外加从库文件（`output/stock_memes.json`，
 100 句股票梗句）读取并按当次盘面随时配对的【新手三句话】。
 
+2026-10-16（用户要求「新手三句话，放在卦象后」）：三句话的**配对仍在本模块**，
+渲染位置改到卷首「诗与远方的海」卦象之后（pipeline 用 `build_card(..., tips_in_card=False)`
+把预算也一并交出去）；卦象关闭（OCTOPUS_BAGUA=0）或起卦失败时回落到卡尾原处，
+同一份日报里三句话**只出现一处**。
+
 设计原则（与整仓「防自欺」文化一致，写进 tests/test_short_card.py 兜底）：
   1. **纯规则合成、可复现**：不调大模型、不掷骰子；同一份输入永远得到同一张卡与同一组三句话。
   2. **零新增计算**：卡上每个数字都直接取自本次渲染正文用的同一批实参
@@ -17,7 +22,8 @@
      阈值只有一处定义；百句股票梗库一律不含阿拉伯数字，绝不伪造行情数字。
   3. **数据不足自动缺席**：哪一路没数据，对应那一行就不出现；全都没数据 → 整卡缺席，
      绝不用旧数据或写死文案充数。
-  4. **字数硬预算**：正文可见文字 ≤ CARD_CHAR_BUDGET（默认 600 字，含【新手三句话】）。
+  4. **字数硬预算**：正文可见文字 ≤ CARD_CHAR_BUDGET（默认 600 字；
+     三句话留在卡尾时含【新手三句话】，移到卷首后不再计入——见 build_card）。
      超预算时按 DROP_ORDER 从「最不影响动手」的行开始**整行**撤下，绝不截断半句话，
      撤了哪几行如实记在 card["dropped"] 里（测试与日志都能查）。
      地板：定调 + 明日剧本 + 数据底 + 新手小抄永不撤（撤完可撤行仍超预算时如实超长，
@@ -786,7 +792,7 @@ def _lead_text(ctx):
     return "■ 今日定调：现有数据不足以判断方向，先看下面的时点与水位"
 
 
-def build_card(ctx):
+def build_card(ctx, *, tips=None, tips_in_card=True):
     """按 ctx 组装速查卡；一行数据都拿不到时返回 None（整卡缺席，不占版面）。
 
     返回 {"lead": str, "pairs": [(label, value)], "tips": [(label, text)],
@@ -796,6 +802,13 @@ def build_card(ctx):
       tips    —— 从库文件（100 句股票梗句）按当次盘面配对出的【新手三句话】；
       dropped —— 因字数预算被撤下的行 key（如实留痕，绝不静默丢内容）；
       text    —— 全部可见文字（去标签）拼接，字数预算与测试断言共用同一口径。
+
+    tips / tips_in_card（2026-10-16 新增，用户要求「新手三句话放在卦象后」）：
+      tips_in_card=True（默认，向后兼容）时【新手三句话】计入卡片字数预算，
+      由调用方渲染在卡尾；传 False 表示三句话改由卷首卦象之后渲染（pipeline），
+      此时预算与 text 都不再计入这三句话——**预算口径永远跟实际渲染的一致**，
+      否则卡片会为不存在的文字白白撤行。tips 可由调用方预先配对好传入，
+      保证「卷首三句话」与「卡上原本的三句话」是同一组，绝不出现两套。
     """
     ctx = ctx if isinstance(ctx, dict) else {}
     lines = []
@@ -812,12 +825,14 @@ def build_card(ctx):
         return None                             # 一行数据都没有 → 整卡缺席
 
     lead = _lead_text(ctx)
-    tips = pair_beginner_tips(ctx)
+    if tips is None:
+        tips = pair_beginner_tips(ctx)
 
     def plain(pairs):
         blob = [lead, DISCLAIMER]
         blob += [f"{a}{b}" for a, b in pairs]
-        blob += [f"{a}{b}" for a, b in tips]
+        if tips_in_card:                    # 三句话移出卡片后不再占卡片的字数预算
+            blob += [f"{a}{b}" for a, b in tips]
         return _strip_tags("".join(blob))
 
     kept = list(droppable)
