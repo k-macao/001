@@ -6,10 +6,12 @@
   - 整页拆分（_split_html_for_push）：每条 ≤ 单条上限、外壳与页脚齐全、标签平衡、
     正文一个字不丢、横幅如实标注「承接上条（续）」「本条未完」；
   - PushPlus「1 分钟 N 次请求」排队（_push_rate_wait / _wait_push_rate_limit）；
+  - PushPlus 默认一对多群组（topic=oai.1）与显式空 topic 回退一对一；
   - 微信推送标题（build_push_title）：[OCTOPUS] 关键词前缀、(强制) / (状态) 标记位置、
     时间戳永远在末尾、四条推送路径共用一个出口、分条 (i/N) 不挤掉推送时刻。
 """
 import importlib.util
+import os
 import re
 import sys
 import types
@@ -342,6 +344,38 @@ class StyledDeliveryTests(unittest.TestCase):
             self.assertNotIn("推送精简排版", part)
         self.assertEqual("".join(sent).count("甲"), 4300)
         self.assertEqual("".join(sent).count("乙"), 4300)
+
+
+class PushDeliveryModeTests(unittest.TestCase):
+    """推送默认发到一对多群组；显式空 topic 时兼容回退一对一。"""
+
+    class _Response:
+        status_code = 200
+
+        @staticmethod
+        def json():
+            return {"code": 200, "msg": "success"}
+
+    def _send(self, **kwargs):
+        with (patch.object(pipeline.requests, "post", return_value=self._Response(), create=True) as post,
+              patch.object(pipeline, "_wait_push_rate_limit")):
+            self.assertTrue(pipeline._push_one_message(
+                "测试日报", "<p>测试</p>", token="test-token", **kwargs))
+        return post.call_args.kwargs["json"]
+
+    def test_default_topic_routes_to_one_to_many_group(self):
+        expected_topic = os.environ.get("PUSHPLUS_TOPIC", "oai.1")
+        self.assertEqual(pipeline.PUSHPLUS_TOPIC, expected_topic)
+        payload = self._send()
+        if expected_topic:
+            self.assertEqual(payload["topic"], expected_topic)
+        else:
+            self.assertNotIn("topic", payload)
+
+    def test_empty_topic_override_falls_back_to_one_to_one(self):
+        with patch.object(pipeline, "PUSHPLUS_TOPIC", "oai.1"):
+            payload = self._send(topic="")
+        self.assertNotIn("topic", payload)
 
 
 class PushRateLimitTests(unittest.TestCase):

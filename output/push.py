@@ -21,7 +21,8 @@
   或环境变量: OCTOPUS_PUSH_THEME=lime|pixel|forum|dossier|guizang
 
 推送方式:
-  默认 PushPlus「一对一」直发自己（无 topic）；显式设置 PUSHPLUS_TOPIC 才发到群组。
+  默认 PushPlus「一对多」群组推送（topic=oai.1）；可用 PUSHPLUS_TOPIC 覆盖群组编码，
+  显式设置为空字符串可回退「一对一」直发自己（无 topic）。
 
 超长日报（> 单条 10 万字上限）:
   自动按栏目边界拆成多条消息完整推送（标题带 1/N、2/N…），内容一个字不丢；

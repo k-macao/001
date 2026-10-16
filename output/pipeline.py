@@ -657,9 +657,9 @@ PUSHPLUS_SPLIT_MIN_BODY = int(os.environ.get("PUSHPLUS_SPLIT_MIN_BODY", "1500"))
 # 单份日报最多拆成多少条（防御性上限：正常 25 万字日报约 3 条）
 PUSHPLUS_MAX_PARTS = int(os.environ.get("PUSHPLUS_MAX_PARTS", "12"))
 
-# 默认「一对一」直发自己（不携带 topic 字段）；如需一对多群组推送，
-# 显式设置环境变量 PUSHPLUS_TOPIC=群组编码（例如 oai.1）。
-PUSHPLUS_TOPIC = os.environ.get("PUSHPLUS_TOPIC", "")
+# 默认「一对多」群组推送（topic=oai.1）；可用 PUSHPLUS_TOPIC 覆盖群组编码，
+# 显式设置为空字符串可回退「一对一」直发自己（不携带 topic 字段）。
+PUSHPLUS_TOPIC = os.environ.get("PUSHPLUS_TOPIC", "oai.1")
 
 # ============================================================
 # 推送主题（2026-08-21 起，一对一 / 一对多推送共用）
@@ -15170,8 +15170,8 @@ def push_to_wechat(title, content_html, token=None, template="html", report_name
                    topic=None):
     """通过 PushPlus 推送消息到微信；返回 True/False，调用方必须据此决定退出码。
 
-    - 默认「一对一」推送（不携带 topic）；只有显式设置 PUSHPLUS_TOPIC
-      或传入非空 topic 时才推送到群组；传空字符串可临时回退一对一；
+    - 默认「一对多」群组推送（topic=oai.1）；可用 PUSHPLUS_TOPIC 覆盖群组编码，
+      显式设置或传入空字符串可临时回退「一对一」（不携带 topic）；
     - 日报 HTML 超过单条上限（默认 10 万字符）时，按栏目装箱合并成尽可能少的几条
       （每条都填到上限，必要时在栏目内断开并标注「承接上条（续）」），
       全部明细按原顺序送达；旧版 HTML 无拆分锚点或 PUSHPLUS_MULTIPART=0 时，
