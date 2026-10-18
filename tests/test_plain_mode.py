@@ -38,10 +38,9 @@ def _strip(html):
 
 def _rich_data():
     """整链数据：复用速查卡测试的多源夹具（日程 / 量化引擎 / 每周预测 / 全景 / 情绪…），
-    再补 MACD / 板块轮动 / 港股境外行情三路，覆盖所有带说明文字的栏目。"""
+    再补 MACD / 板块轮动两路，覆盖所有带说明文字的栏目。"""
     import test_short_card as tsc
     import test_sector_rotation as tsr
-    import test_hk_overseas as thk
     import test_macd_strategy as tms
     case = tsc.CardRenderingTests()
     case.setUpClass()
@@ -53,7 +52,6 @@ def _rich_data():
     data[pipeline.SECTOR_ROTATION_SOURCE_NAME] = pipeline._source_result(
         "东方财富 A股概念库 + 港股日线/快照", "success", is_today=True,
         content_date="2026-08-02", result=rotation)
-    data[pipeline.HK_OVERSEAS_SOURCE_NAME] = thk.sample_source_result()
     data[pipeline.MACD_SOURCE_NAME] = pipeline._source_result(
         pipeline.MACD_SOURCE_NAME, "success", content_date="2026-08-02", result=tms.result_for())
     return data

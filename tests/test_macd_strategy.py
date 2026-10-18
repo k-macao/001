@@ -436,7 +436,7 @@ class PipelineIntegrationTests(unittest.TestCase):
         with ExitStack() as stack:
             for fn in legacy:
                 stack.enter_context(patch.object(pipeline, fn, return_value={"status": "unavailable"}))
-            for flag in ("HK_OVERSEAS_ENABLED", "HK_NEWS_ENABLED", "ECON_CALENDAR_ENABLED"):
+            for flag in ("HK_NEWS_ENABLED", "ECON_CALENDAR_ENABLED"):
                 stack.enter_context(patch.object(pipeline, flag, False))
             stack.enter_context(patch.object(pipeline, "fetch_hk_seven_day", return_value=None))
             stack.enter_context(patch.object(pipeline, "fetch_public_sites", return_value={}))

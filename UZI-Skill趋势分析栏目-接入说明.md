@@ -12,7 +12,7 @@
 |---|---|
 | 上游 | <https://github.com/wbh604/UZI-Skill>（游资 UZI Skills，MIT） |
 | 上游提交 | `650788c54a9b2e042bf7f983f16dbf8d727fce1d`（2026-09-05，对应上游版本 v3.9.4） |
-| 安装方式 | **vendor 到 `tools/UZI-Skill/`**（与 `tools/patchright-enhanced/` 同一套做法），不用 submodule、不装 pip 依赖 |
+| 安装方式 | **vendor 到 `tools/UZI-Skill/`**（与 `tools/chinese-poetry-api/` 同一套做法），不用 submodule、不装 pip 依赖 |
 | 装了哪些文件 | `skills/deep-analysis/scripts/lib/` 下的 6 个规则引擎文件 + `__init__.py`（本地裁剪）+ `LICENSE` + `VENDORED.md` + `UPSTREAM.json` |
 | 没装什么 | 上游的取数层（akshare / yfinance / baostock / 东财 / 雪球）、报告渲染、截图、personas、screen 等；本仓库日线走自己的数据线 |
 | 运行时依赖 | **零**（规则引擎只用 Python 标准库；导入自检在沙箱内实测通过，未装 akshare / pandas / requests） |
