@@ -303,11 +303,12 @@ def _ren_liquidity(ctx):
 
 
 def _ren_weekly(ctx):
-    """【嗜血大白鲨】逐日走势量化预测：把未来 7 个交易日的逐日表格讲成一句人话。"""
+    """每日趋势量化推演：翻译逐日表格、七日结论与并入的港股概率分析。"""
     weekly = ctx.get("weekly") or {}
     entry = weekly.get("entry") or {}
-    if not (weekly.get("available") and entry.get("p_up") is not None):
-        return ""
+    weekly_available = bool(weekly.get("available") and entry.get("p_up") is not None)
+    if not weekly_available:
+        return _ren_hk_probability(ctx)
     seed = f"{ctx.get('date_str') or ''}|WEEKLY"
     p = float(entry["p_up"]) * 100
     dir_txt = {"up": "看涨", "down": "看跌"}.get(str(entry.get("direction") or ""), "中性观望")
@@ -328,6 +329,9 @@ def _ren_weekly(ctx):
                  f"最谨慎 T+{int(worst.get('k') or 0)}（{_pct(worst.get('p_up'))}）。")
     text += ("翻译：逐日表格像导航的分段路况，越往后越不准；仓位和止损都按「留一手」来，"
              "别看见一天看涨就一把梭。")
+    hk_text = _ren_hk_probability(ctx)
+    if hk_text:
+        text += " 港股指数与个股概率补充：" + hk_text
     return text
 
 
