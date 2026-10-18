@@ -170,6 +170,10 @@ class NoFabricationTests(unittest.TestCase):
         ctx = rich_ctx()
         for key in ("policy", "ai", "uzi", "quant", "weekly", "fed", "geo", "senti"):
             broken = dict(ctx, **{key: {"available": False}})
+            if key == "weekly":
+                # WEEKLY FORECAST now combines weekly output and HK probability analysis;
+                # make both inputs unavailable to verify the combined interpretation is absent.
+                broken["quant"] = {"available": False}
             kicker = {"policy": "POLICY SHOCK", "ai": "STRATEGY READ",
                       "uzi": "UZI TREND",
                       "quant": "QUANT FORECAST", "weekly": "WEEKLY FORECAST",

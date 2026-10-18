@@ -630,6 +630,19 @@ class RenderIntegrationTests(unittest.TestCase):
         self.assertIsInstance(html, str)
         self.assertIn("预测概括", html)
 
+    def test_daily_conclusion_labels_quantitative_forecast_as_analysis(self):
+        quant = {
+            "available": True,
+            "headline": {"available": True, "arrow": "■", "label": "中性", "p_up": 0.55},
+            "target_label": "下一交易日",
+        }
+        pairs = pipeline._conclusion_pairs(
+            pipeline.GUIZANG_KIT, None, None, None, None, quant=quant)
+        self.assertEqual(pairs[0][0], "量化分析")
+        panel = pipeline._conclusion_panel(pipeline.GUIZANG_KIT, pairs)
+        self.assertIn("量化分析", panel)
+        self.assertNotIn("量化预测", panel)
+
     def test_report_includes_quant_sections_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
             res = run_engine(tmpdir=tmp)
@@ -646,12 +659,16 @@ class RenderIntegrationTests(unittest.TestCase):
                                                date_str=res["as_of"].replace("-", ""))
         kickers = [s[0] for s in parts["sections"]]
         self.assertIn("QUANT FORECAST", kickers)
-        self.assertIn("HK PROBABILITY", kickers)
         self.assertIn("LIQUIDITY FLOW", kickers)
+        self.assertIn("WEEKLY FORECAST", kickers)
+        self.assertNotIn("HK PROBABILITY", kickers)
         self.assertLess(kickers.index("QUANT FORECAST"),
-                        kickers.index("HK PROBABILITY"))
-        self.assertLess(kickers.index("HK PROBABILITY"),
                         kickers.index("LIQUIDITY FLOW"))
+        self.assertLess(kickers.index("LIQUIDITY FLOW"),
+                        kickers.index("WEEKLY FORECAST"))
+        # 港股概率走势分析已作为子块合入同一个逐日趋势量化推演栏目。
+        weekly_section = next(s for s in parts["sections"] if s[0] == "WEEKLY FORECAST")
+        self.assertIn("港股概率走势分析", weekly_section[2])
         # 2026-10-14 重排：量化预测（③可能会怎样）位于行情复盘（①发生了什么）之后
         self.assertLess(kickers.index("MARKET REVIEW"),
                         kickers.index("QUANT FORECAST"))
@@ -670,8 +687,11 @@ class RenderIntegrationTests(unittest.TestCase):
         }
         html = pipeline.generate_report(data, "2026年9月28日 · 周一",
                                        res["as_of"].replace("-", ""))
-        for title in ("【蜉蝣天地水母】量化预测总览", "港股概率走势分析", "资金流动性分析"):
+        for title in ("【蜉蝣天地水母】量化预测总览", "每日趋势量化推演",
+                      "港股概率走势分析", "资金流动性分析"):
             self.assertIn(title, html)
+        self.assertEqual(html.count("每日趋势量化推演</h2>"), 1)
+        self.assertNotIn("港股概率走势分析</h2>", html)
         self.assertIn("预测概括", html)
 
     def test_report_without_quant_source_does_not_break(self):

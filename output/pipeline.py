@@ -120,7 +120,7 @@
       probability(分桶+保序+逻辑回归校准 / 推进式回测) → liquidity(资金流动性) →
       engine(编排) → render(呈现)，外加「预测留痕 → 次日按真实收盘结算」的反馈闭环
       （output/quant_history.json）。核心栏目三个：**【蜉蝣天地水母】量化预测总览**（概率 + 95% 区间 +
-      波动分位 + 模型可信度 + 预测复盘）、**港股概率走势分析**（恒指/恒科/国企指数 +
+      波动分位 + 模型可信度 + 预测复盘）、**每日趋势量化推演**（逐日走势预测 + 恒指/恒科/国企指数 +
       个股池逐只概率 + 市场宽度 + 五因子拆解）、**资金流动性分析**（南向/北向成交总额
       与 z 值分位、恒指量能、Amihud 非流动性、CR5 集中度、主力资金流、流动性综合分
       0~100 与对概率的有界修正）。概率全部由「同一套因子在自身历史上滚动重算 →
@@ -195,9 +195,10 @@
   18. 「AI 七日港股走势分析概率」子块（output/hk_seven_day.py，2026-09-29 起，取代原
       「每日量化策略（行业轮动）」栏目：该栏目从上线到 09-28 的 58 份日报出现率 0/58，
       东财行业板块两步取数在真实环境未跑通；2026-09-30 起由独立栏目并入第 17 节
-      【嗜血大白鲨】逐日走势量化预测成为栏内子块，两路数据任一可用即出栏目，数据源键名 /
+      【嗜血大白鲨】逐日走势量化预测与港股概率走势分析合并为「每日趋势量化推演」，逐日表格 / 港股概率 / AI七日任一路可用即出栏目，数据源键名 /
       审计标签 / 留痕文件各自保留）：恒生指数 / 恒生科技 / 国企指数三只标的、未来 7 个
-      交易日（按交易日计数、假期顺延）的收盘上涨概率 + 依据 / 风险 / 三道防线。量化基准
+      交易日（按交易日计数、假期顺延）的收盘上涨概率 + 依据 / 风险 / 三道防线，与港股概率走势分析共用
+      **每日趋势量化推演**栏目头。量化基准
       复用 octopus_weekly 的因果引擎（视界 7：扩张基准率 + 20 日特征最近邻、s+7≤t 已结算
       锚点、截断不变性自检、5%~95% 夹逼）；研判引擎按优先级三选一——
       ① 大模型（OpenAI 兼容 /chat/completions：OCTOPUS_LLM_API_KEY /
@@ -303,7 +304,7 @@
       栏目口径：逐行标供数来源（YH/ST/HKEX/+BR）与行情日；snapshot=True（行情快照），
       因此不会单独把日报推过当天检验闸门；OCTOPUS_HK_OVERSEAS=0 可关闭整路采集。
       本条与既有栏目的分工：【及时秋刀鱼】AI 行情复盘给全市场报价快照（含港股双指数），
-      【港股概率走势分析】给概率模型，本栏给**境外口径的港股个股与市场层明细**。
+      【每日趋势量化推演】给逐日走势与港股概率模型，本栏给**境外口径的港股个股与市场层明细**。
 
   24. 隐藏「【无敌帝王蟹】全球头条」与「港股名家频道」两个栏目（2026-10-02 按用户要求，
       与同日隐藏「东方财富快讯」同一口径）：
@@ -7440,7 +7441,7 @@ def _pixel_market_section(market, pan=None):
 #     ③ HKEX 官方统计（市场成交额）④ stealth 浏览器（可选，patchright-enhanced 读 WAF 站点）
 #   诚实口径：有几行说几行——某只取不到就少一行、整块取不到就整栏缺席；
 #   市场成交额拿不到就不显示总量；每个数字都带「行情日」与供数来源（YH/ST/BR）。
-#   本条与「AI 行情复盘 · 港股双指数」「港股概率走势分析」的分工：
+#   本条与「AI 行情复盘 · 港股双指数」「每日趋势量化推演」的分工：
 #     前者给全市场快照口径的两只指数，后者给概率模型，
 #     这里给**港股个股篮子 + 港交所市场层**的境外行情明细（含成交量/成交额）。
 # ------------------------------------------------------------
@@ -7855,13 +7856,12 @@ def _market_review_meta(kit, market, pan):
     return " · ".join(badges), caption
 
 
-def _weekly_merged_meta(kit, weekly_src, hk7_src):
-    """【嗜血大白鲨】逐日走势量化预测（合并栏目）的徽标与副标题：两路数据分别标状态。
+def _weekly_merged_meta(kit, weekly_src, hk7_src, quant_src=None):
+    """每日趋势量化推演栏的徽标与副标题：逐日表格、AI 七日走势、港股概率各自标状态。
 
-    2026-09-30 起本节合并原「AI 七日港股走势分析概率」：① 恒指未来 7 个交易日逐日表格
-    （因果量化引擎）与 ② 恒指 / 恒科 / 国企三指数七日概率（大模型研判，失败降级量化基准）
-    两路任一可用即出栏目。各路出自己的状态徽标与来源名（「 ＋ 」相接）；暂缺的一路在副标题
-    写明，读者不会把一路的状态误当成整栏的状态。数据源键名 / 审计标签 / 留痕文件各自保留。
+    逐日表格（因果量化引擎）、恒指 / 恒科 / 国企三指数七日概率（大模型研判，失败降级量化基准）
+    与港股指数及个股概率分析共用一个栏目头。一路可用即出栏目；来源徽标与来源名分别标注，
+    避免把一路的状态误当成整栏状态。底层数据源键名 / 审计标签 / 留痕文件各自保留。
     """
     def _res(src):
         return (src.get("result") or {}) if isinstance(src, dict) else {}
@@ -7869,6 +7869,7 @@ def _weekly_merged_meta(kit, weekly_src, hk7_src):
     badges, names, missing = [], [], []
     wk_ok = bool(_res(weekly_src).get("available"))
     hk_ok = bool(_res(hk7_src).get("available"))
+    quant_ok = bool(_res(quant_src).get("available"))
     if wk_ok:
         badges.append(kit.badge("七日预测", "ai"))
         nm = _short_source(weekly_src)
@@ -7885,6 +7886,13 @@ def _weekly_merged_meta(kit, weekly_src, hk7_src):
             names.append(nm)
     else:
         missing.append("AI 七日港股")
+    if quant_ok:
+        badges.append(kit.badge("港股概率", "ai"))
+        nm = _short_source(quant_src)
+        if nm:
+            names.append(nm)
+    else:
+        missing.append("港股概率分析")
     caption = "" if PLAIN() else " ＋ ".join(names)
     if missing and (wk_ok or hk_ok):
         note = "暂缺：" + "、".join(missing)
@@ -8123,11 +8131,11 @@ def _market_brief(market, labels, kit, with_date=False):
 def _conclusion_pairs(kit, ai_result, market, pan, policy, quant=None, weekly=None):
     """最终「今日预判」：量化与方向结论 → 核心判断 → 市场数据 → 政策定调。"""
     pairs = []
-    # 量化预测置顶：概率 + 区间 + 模型可信度，一眼看到「结论与把握有多大」
+    # 量化分析置顶：概率 + 区间 + 模型可信度，一眼看到「结论与把握有多大」
     if quant and quant.get("available"):
         head = quant.get("headline") or {}
         if head.get("available"):
-            pairs.append(("量化预测",
+            pairs.append(("量化分析",
                           f'<b>{_esc(head.get("arrow", "■"))} '
                           f'{_esc(head.get("label", "中性"))} '
                           f'{head.get("p_up", 0) * 100:.0f}%</b>'
@@ -8215,7 +8223,7 @@ def _conclusion_panel(kit, pairs):
                           if label == "核心判断"), None)
     if primary_index is None:
         primary_index = next((i for i, (label, _value) in enumerate(pairs)
-                              if label in ("市场倾向", "量化预测", "七日预测")), 0)
+                              if label in ("市场倾向", "量化分析", "七日预测")), 0)
     primary_label, primary_value = pairs[primary_index]
     secondary = [pair for i, pair in enumerate(pairs) if i != primary_index]
     if _is_guizang_like(kit):
@@ -8338,7 +8346,7 @@ SECTION_TITLE_GEO_TREND = "【巡回巨鲸】地缘政治因子量化分析"
 SECTION_TITLE_UZI_TREND = "【游资剑鱼】UZI 多流派趋势分析"
 SECTION_TITLE_QUANT_FORECAST = "【蜉蝣天地水母】量化预测总览"
 SECTION_TITLE_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
-SECTION_TITLE_WEEKLY_FORECAST = "【嗜血大白鲨】逐日走势量化预测"
+SECTION_TITLE_WEEKLY_FORECAST = "每日趋势量化推演"
 SECTION_TITLE_SECTOR_ROTATION = "【滚滚翻车鱼】板块轮动量化策略"
 # 2026-10-04 新增：原「每日量化策略（行业轮动）」的申万一级 31 行业版本（PR #84 的移植版）
 SECTION_TITLE_INDUSTRY_ROTATION = "【巡游旗鱼】申万一级行业轮动"
@@ -8369,7 +8377,7 @@ REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
     "NEWS SENTIMENT",
 )
 REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
-    "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW", "WEEKLY FORECAST",
+    "QUANT FORECAST", "LIQUIDITY FLOW", "WEEKLY FORECAST",
 )
 REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
     "STRATEGY READ", "UZI TREND", "SECTOR ROTATION", "INDUSTRY ROTATION",
@@ -9940,9 +9948,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             build_policy_factor(data, date_str, news_corpus)
         ai_result = build_ai_analysis(data)
 
-    # ---- 量化三栏：预测总览 → 港股概率走势 → 资金流动性（结论之后优先展示）----
+    # ---- 量化栏目：预测总览 → 资金流动性；港股概率分析并入每日趋势推演 ----
     quant = {}
     quant_src = data.get("港股量化") or {}
+    hk_probability_html = ""
     if isinstance(quant_src, dict):
         quant = quant_src.get("result") or {}
     lq_html = ""          # 资金流动性正文（同子栏合并要用它判断 05 栏是否真的在场）
@@ -9952,10 +9961,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         if fc_html:
             blocks["QUANT FORECAST"] = (
                 "QUANT FORECAST", SECTION_TITLE_QUANT_FORECAST, fc_html, quant_badge, "")
-        hk_html = _quant.render.render_hk_probability(quant, kit)
-        if hk_html:
-            blocks["HK PROBABILITY"] = (
-                "HK PROBABILITY", "港股概率走势分析", hk_html, quant_badge, "")
+        hk_probability_html = _quant.render.render_hk_probability(quant, kit) or ""
         lq_html = _quant.render.render_liquidity(quant, kit)
         if lq_html:
             blocks["LIQUIDITY FLOW"] = (
@@ -9976,16 +9982,19 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     if weekly_res.get("available") and isinstance(weekly_res.get("entry"), dict):
         wk_html = _weekly_forecast_block(weekly_res, kit) or ""
     hk7_html = _hk_seven_day_block(hk7_res, kit) if hk7_res.get("available") else ""
-    if wk_html or hk7_html:
+    if wk_html or hk7_html or hk_probability_html:
         merged_html = wk_html
         if hk7_html:
             merged_html += kit.item_row(
                 "◧", "<b>AI 七日港股走势分析概率</b> · 恒指 / 恒科 / 国企",
                 "" if PLAIN() else
-                "原独立栏目并入本节：三指数未来 7 个交易日概率、依据、风险与三道防线"
+                "三指数未来 7 个交易日概率、依据、风险与三道防线"
                 "（大模型研判，失败降级量化基准；各自留痕，规则合成参考，非投资建议）。") + hk7_html
+        if hk_probability_html:
+            merged_html += kit.sub("港股概率走势分析") + hk_probability_html
         wk_badge, wk_caption = _weekly_merged_meta(
-            kit, weekly_src if wk_html else None, hk7_src if hk7_html else None)
+            kit, weekly_src if wk_html else None, hk7_src if hk7_html else None,
+            quant_src if hk_probability_html else None)
         blocks["WEEKLY FORECAST"] = (
             "WEEKLY FORECAST", SECTION_TITLE_WEEKLY_FORECAST, merged_html,
             wk_badge, wk_caption)
