@@ -22,7 +22,7 @@ ctx 约定（键全部可选，缺了就降级）：
   notes     build_section_ai_notes 的结果（与页面 ⌁ AI 研判行同源的方向定调）
   market/pan/policy/ai/quant/weekly/hk7/fed/geo/senti/cal/yt/google/em
             与 _collect_report_parts 里渲染正文用的同一批对象
-  uzi       _uzi_result(data) 的结果（【游资剑鱼】UZI 多流派趋势分析，与正文同一份）
+  uzi       _uzi_result(data) 的结果（【游资剑鱼】多专家流派趋势分析，与正文同一份）
   trend     _trend_section_stats(data) 的结果（趋势跟踪共享统计）
   coverage  {today, total, missing: [...]}（总结栏数据覆盖同源）
 """
@@ -177,7 +177,7 @@ def _ren_forecast(ctx):
 
 
 def _ren_econ_calendar(ctx):
-    """【探照安康鱼】时间节点量化预测：把日程表讲成「开盲盒预告」。"""
+    """【探照安康鱼】时间节点量化分析：把日程表讲成「开盲盒预告」。"""
     cal = ctx.get("cal") or {}
     if cal.get("status") != "success":
         return ""
@@ -208,7 +208,7 @@ def _ren_econ_calendar(ctx):
 
 
 def _ren_quant_forecast(ctx):
-    """【蜉蝣天地水母】量化预测总览：概率 + 模型自检的诚实翻译。"""
+    """【蜉蝣天地水母】量化分析总览：概率 + 模型自检的诚实翻译。"""
     quant = ctx.get("quant") or {}
     if not quant.get("available"):
         return ""
@@ -452,7 +452,7 @@ def _ren_strategy(ctx):
 
 
 def _ren_uzi_trend(ctx):
-    """【游资剑鱼】UZI 多流派趋势分析：把「一套公开规则逐条打分」讲成面试现场。
+    """【游资剑鱼】多专家流派趋势分析：把「一套公开规则逐条打分」讲成面试现场。
 
     只引用 uzi_trend.run_trend() 结果里已有的数字——过门禁的标的数 / 评委数 / 规则数 /
     票型 / 均分 / 定调分布 / 被门禁撤下的评委 / 缺席标的，一个都不新造；定调用语直接取

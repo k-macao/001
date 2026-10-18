@@ -13,7 +13,7 @@
 - 只在主源失败或返回无效内容时才依次尝试备用源；启用了哪一路在日志与「数据覆盖」里写明；
 - ``used_by`` 写的是**日报栏目标题**，栏目改名时同步（2026-09-29 第二批改名：全球头条→
   【无敌帝王蟹】全球头条、趋势跟踪→【深海大鲨鱼】趋势跟踪、政策因子→【深海肥蓝鲸】政策因子、
-  每周量化走势预测→【嗜血大白鲨】逐日走势量化预测）；**数据源键名与新鲜度阈值键不改**
+  每周量化走势预测→【嗜血大白鲨】逐日走势量化分析）；**数据源键名与新鲜度阈值键不改**
   （freshness_checker.FRESHNESS_THRESHOLDS 仍按 全球头条 / 每周量化走势预测 等源名匹配）；
 - 绝不伪造数据：全部候选都失败就如实「暂缺」。
 
@@ -110,7 +110,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "yahoo_bars": {
         "name": "日线序列 · 港股量化 / 每周预测 / 板块轮动 / MACD",
-        "used_by": ("【蜉蝣天地水母】量化预测总览", "每日趋势量化推演",
+        "used_by": ("【蜉蝣天地水母】量化分析总览", "每日趋势量化推演",
                     "【滚滚翻车鱼】板块轮动量化策略·港股与恒指日线",
                     "【六眼飞鱼】量化 MACD 策略·MACD日线"),
         "primary": ("Yahoo Finance query1", "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"),
@@ -188,7 +188,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     "em_datacenter": {
         "name": "东方财富 数据中心报表（沪深港通成交 / 财经日历）",
         "used_by": ("【及时秋刀鱼】AI 行情复盘·南北向", "资金流动性分析",
-                    "【探照安康鱼】时间节点量化预测"),
+                    "【探照安康鱼】时间节点量化分析"),
         "primary": ("东方财富 datacenter-web", EM_DATACENTER_URLS[0]),
         "backups": (
             ("东方财富 datacenter（同格式镜像）", EM_DATACENTER_URLS[1], True),
