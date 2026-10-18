@@ -32,9 +32,6 @@ FRESHNESS_THRESHOLDS = {
     "申万一级行业轮动策略": {"max_lag_days": 5, "type": "trading", "desc": "申万一级 31 行业日线（东财板块指数 / 申万官方兜底）"},
     "板块轮动量化策略": {"max_lag_days": 4, "type": "trading", "desc": "A股概念快照与港股日线/快照；以结果中最近数据日期检查"},
     "MACD量化策略": {"max_lag_days": 4, "type": "trading", "desc": "MACD 已收盘日线；按有效标的中最早收盘日保守检查"},
-    # 港股境外数据源（2026-10-02）：Yahoo / Stooq / HKEX，交易日行情，快照性质（snapshot=True）
-    "港股境外数据源": {"max_lag_days": 3, "type": "trading", "desc": "境外港股行情（Yahoo/Stooq/HKEX），交易日收盘数据"},
-    
     # 新闻资讯类：要求当天或 72h 内
     "全球头条": {"max_lag_days": 1, "type": "news", "desc": "Google News 头条，要求当天"},
     "东财快讯": {"max_lag_days": 1, "type": "news", "desc": "东财快讯，要求当天"},

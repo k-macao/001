@@ -356,12 +356,12 @@ a{
           <tr><td class="col-no"><span class="num">10</span></td><td class="col-key">【巡回巨鲸】地缘政治因子量化分析</td><td>趋势定调与关键证据</td><td>宏观与事件因子</td></tr>
           <tr><td class="col-no"><span class="num">11</span></td><td class="col-key">【探照安康鱼】时间节点量化分析</td><td>未来日程窗口、重要度与重点发布日</td><td>宏观与事件因子</td></tr>
           <tr><td class="col-no"><span class="num">12</span></td><td class="col-key">【及时秋刀鱼】AI 行情复盘</td><td>全球与美股、A 股、港股行情、市场宽度、成交额与板块热力</td><td>盘面与资讯复盘</td></tr>
-          <tr><td class="col-no"><span class="num">13</span></td><td class="col-key">【深水石斑鱼】港股行情</td><td>港股指数、个股行情明细与市场层成交额</td><td>盘面与资讯复盘</td></tr>
-          <tr><td class="col-no"><span class="num">14</span></td><td class="col-key">【深海大鲨鱼】趋势跟踪</td><td>36 个新闻源头（香港 7 / 内地 23 / 国际 6）及社区公开信息；另有内地财经媒体 18 家独立标题池</td><td>盘面与资讯复盘</td></tr>
-          <tr><td class="col-no"><span class="num">15</span></td><td class="col-key">新闻情绪</td><td>A 股、港股、美股热门标的的标题情绪与评分</td><td>盘面与资讯复盘</td></tr>
-          <tr><td class="col-no"><span class="num">16</span></td><td class="col-key">总结</td><td>风险关注、数据覆盖与关键盘面回顾</td><td>收束与结论</td></tr>
-          <tr><td class="col-no"><span class="num">17</span></td><td class="col-key">【回游金枪鱼】今日预判</td><td>最终方向判断、关键指数数据与政策定调</td><td>收束与结论</td></tr>
-          <tr><td class="col-no"><span class="num">18</span></td><td class="col-key">【闪电飞鱼】短线速查卡</td><td>结论后的行动要点：T+1 剧本、重要日程、仓位与数据覆盖</td><td>收束与结论</td></tr>
+          
+          <tr><td class="col-no"><span class="num">13</span></td><td class="col-key">【深海大鲨鱼】趋势跟踪</td><td>36 个新闻源头（香港 7 / 内地 23 / 国际 6）及社区公开信息；另有内地财经媒体 18 家独立标题池</td><td>盘面与资讯复盘</td></tr>
+          <tr><td class="col-no"><span class="num">14</span></td><td class="col-key">新闻情绪</td><td>A 股、港股、美股热门标的的标题情绪与评分</td><td>盘面与资讯复盘</td></tr>
+          <tr><td class="col-no"><span class="num">15</span></td><td class="col-key">总结</td><td>风险关注、数据覆盖与关键盘面回顾</td><td>收束与结论</td></tr>
+          <tr><td class="col-no"><span class="num">16</span></td><td class="col-key">【回游金枪鱼】今日预判</td><td>最终方向判断、关键指数数据与政策定调</td><td>收束与结论</td></tr>
+          <tr><td class="col-no"><span class="num">17</span></td><td class="col-key">【闪电飞鱼】短线速查卡</td><td>结论后的行动要点：T+1 剧本、重要日程、仓位与数据覆盖</td><td>收束与结论</td></tr>
         </tbody>
       </table>
     </div>
@@ -381,13 +381,13 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">02</span></td>
+            <td class="col-no"><span class="num">01</span></td>
             <td class="col-key">DATA SOURCES</td>
             <td><h2>数据源与主备防线</h2></td>
             <td>每条注册数据线均具备 <strong>1 个主源 + 2 个备用源</strong>（通过 <code>python3 output/pipeline.py --sources</code> 可查看明细）；主源失败才顺序启用备用源，全失败标 <code>unavailable</code>，绝不写死假数据。</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">19</span></td>
+            <td class="col-no"><span class="num">18</span></td>
             <td class="col-key">FAILOVER</td>
             <td><h3>双线独立采集与主备切换</h3></td>
             <td>港股与全球新闻源头（36 家）直供趋势跟踪；内地财经媒体（18 家）直供新闻情绪与政策因子，两条线各自采集、互不替代。</td>
@@ -408,37 +408,32 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">01</span></td>
+            <td class="col-no"><span class="num">00</span></td>
             <td class="col-key">实时行情与 K 线</td>
             <td>Yahoo <code>query1</code> → Yahoo <code>query2</code> → 东财 <code>push2</code> / 新浪 <code>hq.sinajs.cn</code></td>
             <td>覆盖全球、美股、A 股、港股核心指数与商品；主备均失败时该品种标暂缺</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">02</span></td>
+            <td class="col-no"><span class="num">01</span></td>
             <td class="col-key">A 股全景与资金</td>
             <td>东财 <code>push2</code> → <code>82.push2</code> → <code>72.push2</code> / <code>datacenter-web</code></td>
             <td>覆盖指数、涨跌家数、两市成交额、南北向成交与行业板块热力</td>
           </tr>
+          
           <tr>
-            <td class="col-no"><span class="num">03</span></td>
-            <td class="col-key">港股境外四路</td>
-            <td>① Yahoo Chart API → ② Stooq 日线 CSV → ③ 港交所每日市场统计 → ④ patchright 浏览器（可选）</td>
-            <td>覆盖恒指、恒科、国企指数及 8 只重点港股，交叉核验防单源失真</td>
-          </tr>
-          <tr>
-            <td class="col-no"><span class="num">04</span></td>
+            <td class="col-no"><span class="num">02</span></td>
             <td class="col-key">36 个新闻源头</td>
             <td>香港本地 7 家 + 内地 23 家 + 国际通讯社 6 家（官方 RSS/公开页 → Google News 站点检索 → 镜像源）</td>
             <td>直供【深海大鲨鱼】趋势跟踪栏目，72 小时时效窗口</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">05</span></td>
+            <td class="col-no"><span class="num">03</span></td>
             <td class="col-key">内地财经媒体 18 家</td>
             <td>18 家内地主流财经媒体独立采集（主源 + 2 路备用检索）</td>
             <td>进入独立标题池供「新闻情绪」与「政策因子」打分，不额外刷屏正文栏目</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">06</span></td>
+            <td class="col-no"><span class="num">04</span></td>
             <td class="col-key">公开论坛 4 平台</td>
             <td>Reddit（10 板块）、StockTwits、TradingView、Bogleheads</td>
             <td>无需账号抓取公开讨论热度与多空分歧；无合格样本时对应块缺席</td>
@@ -462,7 +457,7 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">03</span></td>
+            <td class="col-no"><span class="num">02</span></td>
             <td class="col-key">QUANT ENGINE</td>
             <td><h2>量化与策略引擎</h2></td>
             <td>从单指标趋势到多流派评审团，从五维概念轮动到 31 个申万行业，每套算法均明确写出触发条件、样本门槛与失效边界。</td>
@@ -489,43 +484,43 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">01</span></td>
+            <td class="col-no"><span class="num">00</span></td>
             <td class="col-key">【游资剑鱼】多专家流派趋势</td>
             <td>66 位方法评委 / 242 条规则库；启用利弗莫尔、米内尔维尼、达瓦斯、江恩、西蒙斯 5 位评委（14 条规则）同台打分，合议均分决定 5 档趋势定调</td>
             <td>可评估规则权重 &lt;50% 时整位评委撤下，绝不把缺数据当 0 分弃权票掺进均分</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">02</span></td>
+            <td class="col-no"><span class="num">01</span></td>
             <td class="col-key">【滚滚翻车鱼】板块轮动</td>
             <td>A 股 12 个热门概念库映射到港股观察篮子；五维加权（动量 30% + 资金 25% + 新闻 20% + 宽度 15% + 龙头 10%）+ 三策略投票（动量突破 / 资金共振 / 均值回归）</td>
             <td>涨幅软上限 6%、主力净流入上限 25 亿；概念板块逐页抓取并自适应复权口径</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">03</span></td>
+            <td class="col-no"><span class="num">02</span></td>
             <td class="col-key">【巡游旗鱼】申万行业轮动</td>
             <td>覆盖 31 个申万一级行业；周度评分（胜率 40% + 赔率 30% + 趋势 30%）+ 月度纯多头组合（每月首个交易日调仓，等权持有前 5 行业）</td>
             <td>5 道判死门禁（列表完整、日线可取、锚点 ≤14 天、样本 ≥66 根、持仓存档）</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">04</span></td>
+            <td class="col-no"><span class="num">03</span></td>
             <td class="col-key">MACD 四项派生信号</td>
             <td>柱体收敛（连缩 ≥3 根且幅度 ≥25%）、确认底背离（5 日分形枢轴）、布林回归（触下轨后收回到带内 + 柱回升）、周日共振（≥35 周 + 日金叉）</td>
             <td>左侧信号未过零轴必须标「左侧试探」；残缺当前周排除，防止盘中伪共振</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">05</span></td>
+            <td class="col-no"><span class="num">04</span></td>
             <td class="col-key">因子软压缩（tanh cap）</td>
             <td><code>显示值 = 2·tanh(原始值/2)，cap=2</code>；小信号（≤0.5）保留 ≥98%，极端值（≥4）削去 &gt;50%</td>
             <td>单因子最高权重 30%（MOM），极端原始值最多贡献 ±0.60，防止单因子绑架总分</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">06</span></td>
+            <td class="col-no"><span class="num">05</span></td>
             <td class="col-key">Jev 本地研判层（可选）</td>
             <td>TypeSafe 的 System One：砍掉自由文本生成，只输出 <code>choice</code>（方向）、<code>score</code>（风险档位）、<code>noul</code>（收涨概率）三类原语</td>
             <td>只需 <code>onnxruntime + tokenizers + numpy</code>；复用 5%~95% 概率夹边与 ±20pp 偏离收敛护栏</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">07</span></td>
+            <td class="col-no"><span class="num">06</span></td>
             <td class="col-key">市场数据库（隐藏功能）</td>
             <td>每天 08:00 / 12:30 / 17:00 三次抓取，6 路独立源并行落库至 <code>output/market_db/YYYYMMDD.json</code></td>
             <td>中位数 + MAD 离群检测、≥2 路一致共识、通达信通道 90s 总预算防卡死四道闸</td>
@@ -549,13 +544,13 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">04</span></td>
+            <td class="col-no"><span class="num">03</span></td>
             <td class="col-key">LAYOUT &amp; PUSH</td>
             <td><h2>页面版式与推送门禁</h2></td>
             <td>全站采用多行多列表格结构化展示，兼顾高信息密度与清晰对齐；默认开启入门版与跨栏同子栏合并，保持单条推送在 100,000 字符上限内。</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">4</span></td>
+            <td class="col-no"><span class="num">03</span></td>
             <td class="col-key">MODES</td>
             <td><h3>四种阅读版式与推送安全护栏</h3></td>
             <td>通过命令行参数或环境变量一键切换入门版、说明版、全量长版与五套视觉主题。</td>
@@ -576,37 +571,37 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">01</span></td>
+            <td class="col-no"><span class="num">00</span></td>
             <td class="col-key">入门版（默认）</td>
             <td><code>OCTOPUS_LITE=1</code>（默认）</td>
             <td>只留结论、数字、动作与 AI帮你提鲜；计算口径、执行规则与折叠披露默认收起</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">02</span></td>
+            <td class="col-no"><span class="num">01</span></td>
             <td class="col-key">同子栏合并（默认）</td>
             <td><code>OCTOPUS_SUB_MERGE=1</code></td>
             <td>跨栏（南北向成交、板块热力）与栏内重复数据只展开一次，后出现位置留 <code>↳ 同子栏合并｜见 XX</code> 指针</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">03</span></td>
+            <td class="col-no"><span class="num">02</span></td>
             <td class="col-key">精简 + 说明文字</td>
             <td><code>--notes</code> 或 <code>OCTOPUS_NOTES=1</code></td>
             <td>在精简结构上恢复逐栏口径、来源与方法论说明</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">04</span></td>
+            <td class="col-no"><span class="num">03</span></td>
             <td class="col-key">全量长版</td>
             <td><code>--full</code> 或 <code>OCTOPUS_LITE=0</code></td>
             <td>完整展开所有子表、五因子拆解、回测窗口与说明文字</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">05</span></td>
+            <td class="col-no"><span class="num">04</span></td>
             <td class="col-key">当天新鲜度门禁</td>
             <td>至少 1 个源含当天数据</td>
             <td>未通过时默认不推日报，改为发送「检验未通过」纯文本告警，防静默失联</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">06</span></td>
+            <td class="col-no"><span class="num">05</span></td>
             <td class="col-key">PushPlus 字体色守卫</td>
             <td><code>_enforce_dark_gray_font()</code></td>
             <td>全容器与表格显式写入内联 <code>color</code>，防止微信 <code>v-html</code> 剥离 <code>&lt;body&gt;</code> 后字色变淡</td>
@@ -630,13 +625,13 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">05</span></td>
+            <td class="col-no"><span class="num">04</span></td>
             <td class="col-key">POSTMORTEMS</td>
             <td><h2>五次关键工程诊断与修复实录</h2></td>
             <td>每一次线上异常都追查到底层协议、时区翻篇或客户端超时机制，并用离线回归测试锁死修复结果。</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">05</span></td>
+            <td class="col-no"><span class="num">04</span></td>
             <td class="col-key">CASES</td>
             <td><h3>现象 → 根因 → 修复 → 量化验证</h3></td>
             <td>涵盖凌晨日线缺失、静态兜底清理、通达信死站卡死、行业轮动参数修复与近 10 次推送审计。</td>
@@ -747,37 +742,37 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">01</span></td>
+            <td class="col-no"><span class="num">00</span></td>
             <td class="col-key">日报生成与预览</td>
             <td><code>python3 output/pipeline.py --no-push</code> / <code>--dry-run</code></td>
             <td>本地生成 HTML 或只跑采集预览不写盘</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">02</span></td>
+            <td class="col-no"><span class="num">01</span></td>
             <td class="col-key">版式切换参数</td>
             <td><code>--notes</code> / <code>--full</code> / <code>--no-ren</code></td>
             <td>开启说明文字、恢复全量长版或关闭 AI帮你提鲜</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">03</span></td>
+            <td class="col-no"><span class="num">02</span></td>
             <td class="col-key">研究单跑模式</td>
             <td><code>--quant-only</code> / <code>--weekly-only</code> / <code>--calendar-only</code> / <code>--hk7-only</code></td>
             <td>单独调试量化引擎、七日预测、财经日历或 AI 七日港股分析</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">04</span></td>
+            <td class="col-no"><span class="num">03</span></td>
             <td class="col-key">主题与版面变量</td>
             <td><code>OCTOPUS_PUSH_THEME=lime</code> / <code>OCTOPUS_LITE=1</code> / <code>OCTOPUS_SUB_MERGE=1</code></td>
             <td>切换 5 套主题（<code>lime</code>/<code>pixel</code>/<code>forum</code>/<code>dossier</code>/<code>guizang</code>）与同子栏合并</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">05</span></td>
+            <td class="col-no"><span class="num">04</span></td>
             <td class="col-key">市场数据库 CLI</td>
             <td><code>python3 output/market_db.py pull</code> / <code>verify --all</code> / <code>stats --days 7</code></td>
             <td>拉取多源行情快照、复核全部日期文件或查看近 7 日覆盖率</td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">06</span></td>
+            <td class="col-no"><span class="num">05</span></td>
             <td class="col-key">自动运行计划</td>
             <td><code>.github/workflows/octopus-daily.yml</code> / <code>market-db.yml</code></td>
             <td>北京时间 09:00~21:00 每两小时运行日报；08:00/12:30/17:00 运行市场数据库</td>
@@ -801,13 +796,13 @@ a{
         </thead>
         <tbody>
           <tr>
-            <td class="col-no"><span class="num">01</span></td>
+            <td class="col-no"><span class="num">00</span></td>
             <td class="col-key">版本定位</td>
             <td>章鱼 AI · 内容分类整理（公众号杂志版 · 全量多行多列表格排版）</td>
             <td><a href="./整理-表格可视化.html">整理-表格可视化.html</a></td>
           </tr>
           <tr>
-            <td class="col-no"><span class="num">02</span></td>
+            <td class="col-no"><span class="num">01</span></td>
             <td class="col-key">免责声明</td>
             <td>所有量化概率、技术指标与规则研判仅供研究参考，不构成任何投资建议。</td>
             <td><a href="./整理.md">整理.md</a></td>
