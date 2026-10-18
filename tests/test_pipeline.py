@@ -1138,13 +1138,13 @@ class GuizangOnePageTests(unittest.TestCase):
         titles = [s[1] for s in pipeline._collect_report_parts(
             data, pipeline.GUIZANG_KIT, date_str="20260929")["sections"]]
         # 2026-09-29 起七个栏目更名；AI 全篇速览已移除，社会情绪因子由真实样本驱动。
-        # 未来30天影响经济时间点 / 量化预测总览 / 全球头条 / 趋势跟踪 / 政策因子 /
+        # 未来30天影响经济时间点 / 量化分析总览 / 全球头条 / 趋势跟踪 / 政策因子 /
         # 每周量化走势预测 分别加上鱼名前缀；
         # 2026-09-30 起「行情速览」+「全球大盘全景复盘」合并为「【及时秋刀鱼】AI 行情复盘」；
         # 2026-10-02 起「东方财富快讯」「【无敌帝王蟹】全球头条」「港股名家频道」
         # 三个资讯栏目在页面隐藏（保留后台抓取供 AI 分析与审计）。
         for title in (pipeline.SECTION_TITLE_RETAIL_SENTIMENT, "【回游金枪鱼】今日预判",
-                      "【探照安康鱼】时间节点量化预测", "【蜉蝣天地水母】量化预测总览",
+                      "【探照安康鱼】时间节点量化分析", "【蜉蝣天地水母】量化分析总览",
                       "每日趋势量化推演", "资金流动性分析", "【及时秋刀鱼】AI 行情复盘",
                       "【深海肥蓝鲸】政策因子", pipeline.SECTION_TITLE_STRATEGY,
                       "【深海大鲨鱼】趋势跟踪",
@@ -3301,7 +3301,7 @@ class EconCalendarTests(unittest.TestCase):
         with patch.object(pipeline, "safe_request", lambda *a, **k: None):
             res = pipeline.fetch_econ_calendar(today=self.TODAY)
         html = self._report(self._data(res))
-        self.assertNotIn("【探照安康鱼】时间节点量化预测", html, "抓取失败的栏目不进正文")
+        self.assertNotIn("【探照安康鱼】时间节点量化分析", html, "抓取失败的栏目不进正文")
         self.assertNotIn("未来30天影响经济时间点", html, "旧栏目名不得回潮")
         self.assertRegex(html, r"暂缺：[^<]*财经日历")
 
@@ -3318,7 +3318,7 @@ class EconCalendarTests(unittest.TestCase):
                                    "SHORT CARD") if k in kickers]
         for theme, markers in (
             ("guizang", ["【回游金枪鱼】今日预判</h2>", "【及时秋刀鱼】AI 行情复盘</h2>",
-                         "【探照安康鱼】时间节点量化预测</h2>", "总结</h2>",
+                         "【探照安康鱼】时间节点量化分析</h2>", "总结</h2>",
                          f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>"]),
             ("pixel", pixel_markers),
         ):
@@ -3450,8 +3450,8 @@ class SectionRenameTests(unittest.TestCase):
 
     EXPECTED = {
         "FORECAST": "【回游金枪鱼】今日预判",
-        "ECON CALENDAR": "【探照安康鱼】时间节点量化预测",
-        "QUANT FORECAST": "【蜉蝣天地水母】量化预测总览",
+        "ECON CALENDAR": "【探照安康鱼】时间节点量化分析",
+        "QUANT FORECAST": "【蜉蝣天地水母】量化分析总览",
     }
 
     def _data(self):
@@ -3499,7 +3499,7 @@ class SectionRenameBatch2Tests(unittest.TestCase):
     """2026-09-29 第二批栏目改名回归：只改标题文字，内容 / 顺序 / 抓取 / 门禁不变。
 
     全球头条 → 【无敌帝王蟹】全球头条；趋势跟踪 → 【深海大鲨鱼】趋势跟踪；
-    政策因子 → 【深海肥蓝鲸】政策因子；每周量化走势预测 → 【嗜血大白鲨】逐日走势量化预测。
+    政策因子 → 【深海肥蓝鲸】政策因子；每周量化走势预测 → 【嗜血大白鲨】逐日走势量化分析。
     边界：数据源键名（全球头条 / 国家政策 / 每周走势预测 / Reddit…）、新鲜度阈值键、
     审计标签、像素主题英文关卡名与图标砖短标签一律不变；风险提示里的跨栏目引用
     （「『栏目名』第NN条」）指向正文栏目头，因此同步用新标题。

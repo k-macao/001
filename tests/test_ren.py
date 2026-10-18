@@ -29,7 +29,7 @@ ALL_KICKERS = (
 
 
 def uzi_result():
-    """一份【游资剑鱼】UZI 多流派趋势分析的 run_trend() 结果（数字均为测试造的）。
+    """一份【游资剑鱼】多专家流派趋势分析的 run_trend() 结果（数字均为测试造的）。
 
     键与 output/octopus_quant/uzi_trend.py 的真实返回一一对应：coverage / panel /
     rules_enabled / rules_total / tones / items（含 tone_key + tone + score_avg）/
@@ -255,7 +255,7 @@ class ContentTests(unittest.TestCase):
 
 
 class UziTrendRenTests(unittest.TestCase):
-    """【游资剑鱼】UZI 多流派趋势分析的「AI帮你提鲜」（2026-10-13 接入）。
+    """【游资剑鱼】多专家流派趋势分析的「AI帮你提鲜」（2026-10-13 接入）。
 
     防自欺口径与该栏正文一致：解读只引用 run_trend() 结果里已有的数字与 items 自带的
     tone 文案；本栏没有概率口径 → 几率条整条缺席（绝不硬凑一个涨跌概率）。

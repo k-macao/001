@@ -641,7 +641,7 @@ class RenderIntegrationTests(unittest.TestCase):
         self.assertEqual(pairs[0][0], "量化分析")
         panel = pipeline._conclusion_panel(pipeline.GUIZANG_KIT, pairs)
         self.assertIn("量化分析", panel)
-        self.assertNotIn("量化预测", panel)
+        self.assertNotIn("量化分析", panel)
 
     def test_report_includes_quant_sections_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -669,7 +669,7 @@ class RenderIntegrationTests(unittest.TestCase):
         # 港股概率走势分析已作为子块合入同一个逐日趋势量化推演栏目。
         weekly_section = next(s for s in parts["sections"] if s[0] == "WEEKLY FORECAST")
         self.assertIn("港股概率走势分析", weekly_section[2])
-        # 2026-10-14 重排：量化预测（③可能会怎样）位于行情复盘（①发生了什么）之后
+        # 2026-10-14 重排：量化分析（③可能会怎样）位于行情复盘（①发生了什么）之后
         self.assertLess(kickers.index("MARKET REVIEW"),
                         kickers.index("QUANT FORECAST"))
 
@@ -687,7 +687,7 @@ class RenderIntegrationTests(unittest.TestCase):
         }
         html = pipeline.generate_report(data, "2026年9月28日 · 周一",
                                        res["as_of"].replace("-", ""))
-        for title in ("【蜉蝣天地水母】量化预测总览", "每日趋势量化推演",
+        for title in ("【蜉蝣天地水母】量化分析总览", "每日趋势量化推演",
                       "港股概率走势分析", "资金流动性分析"):
             self.assertIn(title, html)
         self.assertEqual(html.count("每日趋势量化推演</h2>"), 1)
@@ -699,7 +699,7 @@ class RenderIntegrationTests(unittest.TestCase):
                                                 quotes={}, error="offline")}
         html = pipeline.generate_report(data, "2026年9月28日 · 周一", "20260928",
                                        theme="guizang")
-        self.assertNotIn("量化预测总览", html)   # 改名后仍不得出现（含鱼名前缀版本）
+        self.assertNotIn("量化分析总览", html)   # 改名后仍不得出现（含鱼名前缀版本）
         self.assertIn("总结</h2>", html)  # 栏目名 2026-09-28 由「盘点总结」改为「总结」
 
 

@@ -496,7 +496,7 @@ class QuantEngine:
 
     # ---------- 预测概括 ----------
     def _headline(self, primary, liq, breadth, journal, target_date):
-        """把概率、区间、流动性与模型表现压成一句话（页首「量化预测总览」用）。"""
+        """把概率、区间、流动性与模型表现压成一句话（页首「量化分析总览」用）。"""
         p5 = primary["probs"].get(5, {})
         p_up = p5.get("p_up")
         bands = p5.get("bands") or {}

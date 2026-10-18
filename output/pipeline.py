@@ -48,11 +48,11 @@
       「⌁ AI 研判 ▲偏多 / ▼偏空 / ■中性 · 多头 x% / 空头 y% — 栏内证据 → 预测：结论」。
       概率 = 50 + 45*(多−空)/(多+空)，夹在 5%–95%（持平 50%，绝不绝对化）；≥60% 偏多 /
       ≤40% 偏空 / 其间中性；多头 + 空头恒 100%。证据仅取自该栏目已抓取数据；结论类栏目
-      （【回游金枪鱼】今日预判 / 策略研判 / 总结）与前瞻日程类栏目（【探照安康鱼】时间节点量化预测：
+      （【回游金枪鱼】今日预判 / 策略研判 / 总结）与前瞻日程类栏目（【探照安康鱼】时间节点量化分析：
       日程不含方向信息，只给「最密集日 + 事件密度提示」）不附加，栏目无数据自然缺席。
       规则合成，非投资建议。
   6.3 新增「未来30天影响经济时间点」栏目（2026-09-28，位于专业分析之后的首个数据栏目；
-      2026-09-29 起更名为「【探照安康鱼】时间节点量化预测」）：
+      2026-09-29 起更名为「【探照安康鱼】时间节点量化分析」）：
       数据源为东方财富财经日历（数据中心公开报表 RPT_CPH_FECALENDAR，无需密钥，
       START_DATE 即北京时间）。服务端只支持按日期过滤，故一次拉全窗口 + 翻页，
       再在本地按写死的口径筛选：保留 数据（中美欧日英港等市场的宏观读数）/
@@ -119,7 +119,7 @@
       思维重构成六个可独立测试的层——providers(数据) → features(五因子特征) →
       probability(分桶+保序+逻辑回归校准 / 推进式回测) → liquidity(资金流动性) →
       engine(编排) → render(呈现)，外加「预测留痕 → 次日按真实收盘结算」的反馈闭环
-      （output/quant_history.json）。核心栏目三个：**【蜉蝣天地水母】量化预测总览**（概率 + 95% 区间 +
+      （output/quant_history.json）。核心栏目三个：**【蜉蝣天地水母】量化分析总览**（概率 + 95% 区间 +
       波动分位 + 模型可信度 + 预测复盘）、**每日趋势量化推演**（逐日走势预测 + 恒指/恒科/国企指数 +
       个股池逐只概率 + 市场宽度 + 五因子拆解）、**资金流动性分析**（南向/北向成交总额
       与 z 值分位、恒指量能、Amihud 非流动性、CR5 集中度、主力资金流、流动性综合分
@@ -195,7 +195,7 @@
   18. 「AI 七日港股走势分析概率」子块（output/hk_seven_day.py，2026-09-29 起，取代原
       「每日量化策略（行业轮动）」栏目：该栏目从上线到 09-28 的 58 份日报出现率 0/58，
       东财行业板块两步取数在真实环境未跑通；2026-09-30 起由独立栏目并入第 17 节
-      【嗜血大白鲨】逐日走势量化预测与港股概率走势分析合并为「每日趋势量化推演」，逐日表格 / 港股概率 / AI七日任一路可用即出栏目，数据源键名 /
+      【嗜血大白鲨】逐日走势量化分析与港股概率走势分析合并为「每日趋势量化推演」，逐日表格 / 港股概率 / AI七日任一路可用即出栏目，数据源键名 /
       审计标签 / 留痕文件各自保留）：恒生指数 / 恒生科技 / 国企指数三只标的、未来 7 个
       交易日（按交易日计数、假期顺延）的收盘上涨概率 + 依据 / 风险 / 三道防线，与港股概率走势分析共用
       **每日趋势量化推演**栏目头。量化基准
@@ -223,8 +223,8 @@
 
   19. 栏目更名（2026-09-29 按用户要求，只改标题文字，内容 / 顺序 / 抓取 / 推送门禁
       与拆分逻辑完全不变）：今日预判→**【回游金枪鱼】今日预判**、
-      未来30天影响经济时间点→**【探照安康鱼】时间节点量化预测**、
-      量化预测总览→**【蜉蝣天地水母】量化预测总览**。相关标题集中定义为
+      未来30天影响经济时间点→**【探照安康鱼】时间节点量化分析**、
+      量化分析总览→**【蜉蝣天地水母】量化分析总览**。相关标题集中定义为
       SECTION_TITLE_FORECAST / SECTION_TITLE_ECON_CALENDAR / SECTION_TITLE_QUANT_FORECAST，
       guizang 与 pixel 两个主题共用。「时间节点」栏目的窗口天数不再写在标题里，
       仍在栏目内「窗口摘要 · 时间窗口」如实显示（OCTOPUS_CALENDAR_DAYS 改窗口时同步变化）。
@@ -262,7 +262,7 @@
         全球头条          → **【无敌帝王蟹】全球头条**
         趋势跟踪          → **【深海大鲨鱼】趋势跟踪**
         政策因子          → **【深海肥蓝鲸】政策因子**
-        每周量化走势预测   → **【嗜血大白鲨】逐日走势量化预测**（按用户给的新名，标题不再带「每周」，
+        每周量化走势预测   → **【嗜血大白鲨】逐日走势量化分析**（按用户给的新名，标题不再带「每周」，
                           周度口径仍在栏目内如实披露：「未来 5 个交易日」「锚定 X 收盘」）
       四个标题集中定义为 SECTION_TITLE_GLOBAL_HEADLINES / SECTION_TITLE_TREND /
       SECTION_TITLE_POLICY / SECTION_TITLE_WEEKLY_FORECAST，与第 19 条的现行栏目常量并列，
@@ -380,7 +380,7 @@
         （回归测试 tests/test_push_split.py::PushTitleTests 按源码数调用点，漏改会红）；
       · 「日报未推送提醒」「日报推送失败提醒」两条纯文本告警的标题保持原样
         （仍带 🐙）：它们是提醒而非日报本体，不与 [OCTOPUS] 关键词混在一起。
-  29. 【游资剑鱼】UZI 多流派趋势分析接入「🦑 AI帮你提鲜」（2026-10-13）：该栏目此前是
+  29. 【游资剑鱼】多专家流派趋势分析接入「🦑 AI帮你提鲜」（2026-10-13）：该栏目此前是
       正文表格里唯一没有大白话解读的分析栏（octopus_ren._GENERATORS 缺 "UZI TREND" 条目）。
       · 解读生成器 octopus_ren._ren_uzi_trend 只引用 run_trend() 结果里已有的数字
         （算出结果的标的数 / 评委数 / 规则数 / 票型 / 均分 / 定调分布 / 被门禁撤下的评委 /
@@ -456,7 +456,7 @@ import octopus_quant as _quant  # noqa: E402
 from octopus_quant import sector_rotation as _sector_rotation  # noqa: E402
 # A股申万一级行业轮动（2026-10-04 移植回上线）：独立于港股「板块轮动」，可整体关闭。
 from octopus_quant import industry_rotation as _industry_rotation  # noqa: E402
-# 【游资剑鱼】UZI 多流派趋势分析（2026-10-11 新增）：方法来自 vendored 的 UZI-Skill 规则引擎
+# 【游资剑鱼】多专家流派趋势分析（2026-10-11 新增）：方法来自 vendored 的 UZI-Skill 规则引擎
 # （tools/UZI-Skill，MIT，66 位评委 × 242 条规则），日线复用 MACD 栏目同一批，零新增联网。
 from octopus_quant import uzi_trend as _uzi_trend  # noqa: E402
 import octopus_weekly as _weekly  # noqa: E402
@@ -493,7 +493,7 @@ INDUSTRY_ROTATION_SOURCE_LABEL = "东方财富 · 申万一级行业指数日线
 # 策略研判内的 MACD 子策略：独立于港股概率引擎，优先市场库 / 本次日线，缺项补免费源。
 MACD_ENABLED = str(os.environ.get("OCTOPUS_MACD", "1")).strip().lower() not in ("0", "false", "no")
 MACD_SOURCE_NAME = "MACD量化策略"
-# 【游资剑鱼】UZI 多流派趋势分析（独立栏目）：Weinstein 四阶段 + 均线排列 + 上游评委规则打分。
+# 【游资剑鱼】多专家流派趋势分析（独立栏目）：Weinstein 四阶段 + 均线排列 + 上游评委规则打分。
 # OCTOPUS_UZI_TREND=0 或 --no-uzi-trend 关闭；规则引擎（tools/UZI-Skill）缺席时栏目自然缺席。
 UZI_TREND_ENABLED = str(os.environ.get("OCTOPUS_UZI_TREND", "1")).strip().lower() not in ("0", "false", "no")
 UZI_TREND_SOURCE_NAME = "UZI多流派趋势分析"
@@ -4449,12 +4449,12 @@ def fetch_hk_quant():
 
     head = res.get("headline") or {}
     if head.get("available"):
-        print(f"  ✅ 量化预测：{head['text']}")
+        print(f"  ✅ 量化分析：{head['text']}")
     liq = res.get("liquidity") or {}
     if liq.get("score") is not None:
         print(f"  ✅ 流动性综合分 {liq['score']:.0f}/100（{liq['label']}）")
 
-    # 量化预测的 is_today 判定：as_of 是上一个交易日收盘，运行在开盘前（09:00）时，
+    # 量化分析的 is_today 判定：as_of 是上一个交易日收盘，运行在开盘前（09:00）时，
     # as_of == 昨天 是最新数据，应视为当天快照（snapshot），否则当天检验会永远不通过。
     # 这里用「4 天内都算新鲜」口径（周一跑，周五收盘滞后 3 天仍算新鲜），并配合引擎内部的回退检测。
     as_of = res.get("as_of")
@@ -4529,7 +4529,7 @@ def fetch_macd_strategy(data=None):
 
 
 # ============================================================
-# 【游资剑鱼】UZI 多流派趋势分析（独立栏目，2026-10-11 新增）
+# 【游资剑鱼】多专家流派趋势分析（独立栏目，2026-10-11 新增）
 # ------------------------------------------------------------
 # 方法：vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill，MIT）——Weinstein 四阶段 /
 #       均线多头排列等指标按上游同式本地重算，打分直接调上游 evaluate()，不重写规则。
@@ -4548,7 +4548,7 @@ def fetch_uzi_trend(data=None, bars_by_code=None):
     if not bars_by_code:
         return _source_result(UZI_TREND_SOURCE_LABEL, "unavailable", result=None,
                               error="MACD 栏目本次没有可用已收盘日线")
-    print(f"📡 正在计算 UZI 多流派趋势分析（{len(bars_by_code)} 只标的 · "
+    print(f"📡 正在计算 多专家流派趋势分析（{len(bars_by_code)} 只标的 · "
           f"评委 {'/'.join(_uzi_trend.panel_ids() or []) or '未装载'}）...")
     try:
         result = _uzi_trend.run_trend(bars_by_code, now=datetime.now(CST))
@@ -5055,12 +5055,12 @@ def _calendar_events_for_weekly(cal_result):
 
 
 def fetch_weekly_forecast(cal_result=None):
-    """运行【嗜血大白鲨】逐日走势量化预测（恒指日线 · 未来 7 个交易日逐日表格 · 无未来函数）。
+    """运行【嗜血大白鲨】逐日走势量化分析（恒指日线 · 未来 7 个交易日逐日表格 · 无未来函数）。
 
     cal_result: 可选，本次抓到的「时间节点」财经日历结果；用来给逐日表格标注事件日
     （★★★ 日程 → 「事件日波动可能放大」提醒），不参与任何概率计算。失败时如实降级。
     """
-    print("📡 正在计算【嗜血大白鲨】逐日走势量化预测（恒生指数 · 未来 7 个交易日逐日 · 无未来函数）...")
+    print("📡 正在计算【嗜血大白鲨】逐日走势量化分析（恒生指数 · 未来 7 个交易日逐日 · 无未来函数）...")
     if not WEEKLY_ENABLED:
         print("  ⏭ 量化走势预测已关闭（OCTOPUS_WEEKLY=0 / --no-weekly）")
         return _source_result("每周量化走势预测", "unavailable", result=None,
@@ -8337,14 +8337,14 @@ SECTION_TITLE_STRATEGY_READ = SECTION_TITLE_STRATEGY
 SECTION_TITLE_FORECAST = "【回游金枪鱼】今日预判"
 # 刊头后独立的卷首栏；不占行情栏目 00..N 编号，也不参与数据新鲜度审计。
 SECTION_TITLE_POETRY_SEA = "诗与远方的海"
-SECTION_TITLE_ECON_CALENDAR = "【探照安康鱼】时间节点量化预测"
+SECTION_TITLE_ECON_CALENDAR = "【探照安康鱼】时间节点量化分析"
 # 2026-10-10 更名：原「【火爆大鱿鱼】美联储因子量化分析」「【巡回巨鲸】地缘政治因子量化分析」；数据源键名
 # （美联储趋势 / 地缘政治趋势）、像素关卡名 FED TREND / GEO TREND 不变。
 SECTION_TITLE_FED_TREND = "【火爆大鱿鱼】美联储因子量化分析"
 SECTION_TITLE_GEO_TREND = "【巡回巨鲸】地缘政治因子量化分析"
 # 2026-10-11 新增：独立栏目，方法来自 vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill）。
-SECTION_TITLE_UZI_TREND = "【游资剑鱼】UZI 多流派趋势分析"
-SECTION_TITLE_QUANT_FORECAST = "【蜉蝣天地水母】量化预测总览"
+SECTION_TITLE_UZI_TREND = "【游资剑鱼】多专家流派趋势分析"
+SECTION_TITLE_QUANT_FORECAST = "【蜉蝣天地水母】量化分析总览"
 SECTION_TITLE_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
 SECTION_TITLE_WEEKLY_FORECAST = "每日趋势量化推演"
 SECTION_TITLE_SECTOR_ROTATION = "【滚滚翻车鱼】板块轮动量化策略"
@@ -9128,7 +9128,7 @@ def _weekly_daily_cards(daily, kit):
 
 
 def _weekly_forecast_block(res, kit):
-    """【嗜血大白鲨】逐日走势量化预测栏目内容（两主题共用；res 见 fetch_weekly_forecast 的 result）。
+    """【嗜血大白鲨】逐日走势量化分析栏目内容（两主题共用；res 见 fetch_weekly_forecast 的 result）。
 
     2026-09-29 起升级为**未来 7 个交易日逐日表格**：① 逐日表格（预测数字，一行一天）
     → ② 逐日理由 / 分析 / AI 操作建议（长文本卡）→ ③ 七日整段结论（P(7日涨) + 因子 +
@@ -9794,7 +9794,7 @@ def _industry_rotation_block(res, kit):
 
 
 def _uzi_result(data):
-    """【游资剑鱼】UZI 多流派趋势分析的结果字典（正文渲染与「🦑 AI帮你提鲜」共用同一份）。
+    """【游资剑鱼】多专家流派趋势分析的结果字典（正文渲染与「🦑 AI帮你提鲜」共用同一份）。
 
     与 _trend_section_stats 同一口径：解读层引用的数字必须来自渲染正文用的同一批实参，
     不允许两处各算一套。数据源缺席 / status 非 success / result 不是字典 → 返回 {}，
@@ -9808,7 +9808,7 @@ def _uzi_result(data):
 
 
 def _render_uzi_trend(source, kit):
-    """两套主题共用：【游资剑鱼】UZI 多流派趋势分析。
+    """两套主题共用：【游资剑鱼】多专家流派趋势分析。
 
     内容来自 octopus_quant.uzi_trend.run_trend() 的结果字典：面板概览 → 逐标的
     （阶段 / 均线 / RSI·KDJ·WR / 区间收益·位置·波动 / 评委面板 / 趋势定调）→
@@ -9897,7 +9897,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         source_items.append((INDUSTRY_ROTATION_SOURCE_NAME, data[INDUSTRY_ROTATION_SOURCE_NAME]))
     if isinstance(data.get(MACD_SOURCE_NAME), dict):
         source_items.append((MACD_SOURCE_NAME, data[MACD_SOURCE_NAME]))
-    # UZI 多流派趋势分析：独立栏目 + 独立来源行（关闭时不写 data 键，审计口径不变）。
+    # 多专家流派趋势分析：独立栏目 + 独立来源行（关闭时不写 data 键，审计口径不变）。
     if isinstance(data.get(UZI_TREND_SOURCE_NAME), dict):
         source_items.append((UZI_TREND_SOURCE_NAME, data[UZI_TREND_SOURCE_NAME]))
     # 前瞻日程（「时间节点」栏目）：关掉采集时不进审计，总源数保持不变。
@@ -9968,7 +9968,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "LIQUIDITY FLOW", "资金流动性分析", lq_html,
                 kit.source_badge(quant_src), _short_source(quant_src))
 
-    # ---- 【嗜血大白鲨】逐日走势量化预测（2026-09-29 起：未来 7 个交易日逐日表格）----
+    # ---- 【嗜血大白鲨】逐日走势量化分析（2026-09-29 起：未来 7 个交易日逐日表格）----
     #      2026-09-30 合并原「AI 七日港股走势分析概率」为栏内子块：两路数据任一可用即出栏目，
     #      数据源键名 / 审计标签 / 留痕文件各自保留（与「行情速览 + 全景复盘」合并同一先例）。
     weekly_res = {}
@@ -10113,7 +10113,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         # 兼容旧 kicker 的锚点引用（如风险提示中的 AI READ 引用）
         blocks["AI READ"] = blocks["STRATEGY READ"]
 
-    # ④b 【游资剑鱼】UZI 多流派趋势分析（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
+    # ④b 【游资剑鱼】多专家流派趋势分析（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
     #     评委规则打分。日线复用 MACD 栏目同一批；规则引擎缺席或日线不足 → 整栏缺席。
     uzi_src = data.get(UZI_TREND_SOURCE_NAME) or {}
     uzi_res = _uzi_result(data)      # 正文与「🦑 AI帮你提鲜」共用同一份结果（不另算一套）
@@ -15756,7 +15756,7 @@ def quant_only_report(*, enable_stocks=True):
 
 
 def weekly_only_report():
-    """只跑【嗜血大白鲨】逐日走势量化预测并打印结果（研究 / 排障用，不生成日报、不推送）。"""
+    """只跑【嗜血大白鲨】逐日走势量化分析并打印结果（研究 / 排障用，不生成日报、不推送）。"""
     print("🐙 " + "=" * 48)
     print("   章鱼 AI · 量化走势预测（未来 7 个交易日 · 研究模式）")
     print("🐙 " + "=" * 48)
@@ -16034,7 +16034,7 @@ def main():
                        help="精简版面里保留说明文字 / 过程文字（计算口径、数据来源、折叠披露等；"
                             "默认入门版不渲染，等价 OCTOPUS_NOTES=1）")
     parser.add_argument("--no-uzi-trend", action="store_true",
-                        help="关闭【游资剑鱼】UZI 多流派趋势分析栏目（等价 OCTOPUS_UZI_TREND=0）")
+                        help="关闭【游资剑鱼】多专家流派趋势分析栏目（等价 OCTOPUS_UZI_TREND=0）")
     parser.add_argument("--no-hk7", action="store_true",
                        help="跳过 AI 七日港股走势分析概率（只出常规栏目，运行更快）")
     parser.add_argument("--hk7-only", action="store_true",
