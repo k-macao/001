@@ -23,7 +23,8 @@ spec.loader.exec_module(ren)
 ALL_KICKERS = (
     "STRATEGY READ", "UZI TREND", "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
     "WEEKLY FORECAST", "POLICY SHOCK", "FED TREND", "GEO TREND", "ECON CALENDAR",
-    "MARKET REVIEW", "TREND TRACKING", "GLOBAL HEADLINES", "EASTMONEY WIRE",
+    "MARKET REVIEW", "RETAIL SENTIMENT", "MEDIA RISK", "TREND TRACKING",
+    "SECTOR ROTATION", "INDUSTRY ROTATION", "GLOBAL HEADLINES", "EASTMONEY WIRE",
     "HK GURU CHANNELS", "NEWS SENTIMENT", "HK 7D PROB", "SUMMARY", "FORECAST",
 )
 
@@ -82,6 +83,33 @@ def rich_ctx():
                    "winners": [{"name": "银行"}], "losers": [{"name": "地产链"}]},
         "ai": {"available": True, "sentiment_label": "中性", "score": 7,
                "confidence": "高", "themes": ["AI/算力", "新能源/锂电"]},
+        "retail_sentiment": {
+            "available": True, "bull": 12, "bear": 8, "directional_n": 20,
+            "nbi": 20.0, "label": "偏多", "dispersion": 97.1,
+        },
+        "media_risk": {
+            "available": True, "window_hours": 72, "risk_stock_n": 2,
+            "risk_event_n": 1, "attention_evidence_n": 3,
+            "stocks": [{"name": "测试股份"}, {"name": "样本控股"}],
+            "top_stock": {"name": "测试股份", "risk_index": 64,
+                          "level": {"label": "橙色预警"}, "attention_only": False},
+        },
+        "sector_rotation": {
+            "concept_total": 10, "mapped_total": 4, "scored_total": 2,
+            "items": [
+                {"name": "AI应用", "overall_score": 76.5, "score_label": "靠前",
+                 "strategy_summary": {"available_n": 3, "consensus": "偏多"}},
+                {"name": "机器人", "overall_score": 61.0, "score_label": "中游",
+                 "strategy_summary": {"available_n": 2, "consensus": "中性"}},
+            ],
+        },
+        "industry_rotation": {
+            "available": True, "scored_count": 31,
+            "breadth": {"total": 31, "up_week": 19, "above_ma20": 18, "avg_week": 0.0123},
+            "scores": [{"name": "电子", "score": 71.2}],
+            "state": {"holdings": [{"name": name} for name in
+                                    ("电子", "通信", "银行", "汽车", "医药生物")]},
+        },
         "uzi": uzi_result(),
         "quant": {
             "available": True,
@@ -160,7 +188,7 @@ class DeterminismTests(unittest.TestCase):
 
 class NoFabricationTests(unittest.TestCase):
     def test_empty_ctx_returns_empty_for_every_section(self):
-        """数据缺失 → 空串（栏目末尾不出现硬编解读）。"""
+        """数据缺失 → 空串（生成器不硬编；实际有正文时由渲染层给诚实后备结论）。"""
         for kicker in ALL_KICKERS:
             self.assertEqual(ren.section_ren(kicker, {}), "", kicker)
             self.assertEqual(ren.section_ren(kicker, {"date_str": "20260101"}), "", kicker)
@@ -184,6 +212,28 @@ class NoFabricationTests(unittest.TestCase):
         self.assertEqual(ren.section_ren("ECON CALENDAR", broken), "")
         broken = dict(ctx, pan={"status": "failed"}, market={"status": "failed"})
         self.assertEqual(ren.section_ren("MARKET REVIEW", broken), "")
+        self.assertEqual(ren.section_ren(
+            "RETAIL SENTIMENT", dict(ctx, retail_sentiment={"available": False})), "")
+        self.assertEqual(ren.section_ren(
+            "MEDIA RISK", dict(ctx, media_risk={"available": False})), "")
+        self.assertEqual(ren.section_ren(
+            "SECTOR ROTATION", dict(ctx, sector_rotation={})), "")
+        self.assertEqual(ren.section_ren(
+            "INDUSTRY ROTATION", dict(ctx, industry_rotation={"available": False})), "")
+
+    def test_strategy_uses_macd_fallback_without_inventing_cross_market_signal(self):
+        ctx = rich_ctx()
+        ctx["ai"] = {"available": False}
+        ctx["macd"] = {
+            "available": True, "coverage": {"valid": 3, "total": 4},
+            "items": [{"action_key": "hold"}, {"action_key": "watch"},
+                      {"action_key": "exit"}],
+        }
+        text = ren.section_ren("STRATEGY READ", ctx)
+        self.assertIn("只解读已有 MACD", text)
+        self.assertIn("有效 3/4", text)
+        self.assertIn("试探 0 / 持有 1 / 观察 1 / 规避 1", text)
+        self.assertNotIn("中性", text)
 
     def test_unknown_kicker_returns_empty(self):
         self.assertEqual(ren.section_ren("NOT A KICKER", rich_ctx()), "")
@@ -202,7 +252,11 @@ class NoFabricationTests(unittest.TestCase):
             "POLICY SHOCK": ["-9"],
             "FED TREND": ["命中 7 次", "8 条"],
             "GEO TREND": ["命中 5 次"],
+            "RETAIL SENTIMENT": ["20 条", "看多 12", "看空 8", "+20.0", "97.1/100"],
+            "MEDIA RISK": ["72 小时", "2 只", "1 条", "3 条", "64/100"],
             "TREND TRACKING": ["33", "94", "31", "20 家"],
+            "SECTOR ROTATION": ["2 个", "AI应用", "76.5/100", "3 套"],
+            "INDUSTRY ROTATION": ["31 个", "19 个", "+1.23%", "71.2/100"],
             "SUMMARY": ["15", "18"],
         }
         for kicker, tokens in cases.items():
@@ -465,6 +519,33 @@ class PipelineIntegrationTests(unittest.TestCase):
             self._data(), "2026年9月29日 · 周二", "20260929")
         self.assertIn("0.18", html)          # 上证 +0.18% 与正文同源
         self.assertIn("1 涨 / 1 跌", html)  # 报价面计数进入解读
+
+    def test_every_rendered_data_section_starts_with_conclusion(self):
+        """五套主题的每个实际数据栏目（含速查卡）都必须先结论、后依据与正文。"""
+        parts = None
+        kits = (self.pipeline.GUIZANG_KIT, self.pipeline.PIXEL_KIT,
+                self.pipeline.LIME_KIT, self.pipeline.FORUM_KIT,
+                self.pipeline.DOSSIER_KIT)
+        for kit in kits:
+            with self.subTest(theme=kit.theme):
+                themed = self.pipeline._collect_report_parts(
+                    self._data(), kit, date_str="20260929")
+                self.assertTrue(themed["sections"])
+                for kicker, _title, content, _badge, _caption in themed["sections"]:
+                    self.assertIn(
+                        self.pipeline.SECTION_AI_CONCLUSION_MARKER, content[:500],
+                        f"{kicker} 没有把栏首结论放在正文第一位",
+                    )
+                parts = parts or themed
+
+        market = next(content for kicker, _title, content, _badge, _caption
+                      in parts["sections"] if kicker == "MARKET REVIEW")
+        self.assertLess(market.find("AI帮你提鲜"), market.find("⌁ AI 研判"))
+        self.assertLess(market.find("⌁ AI 研判"), market.find("上证指数"))
+        # 旧研判在大白话结论后只保留数据依据，不再重复概率或「→ 预测」结论。
+        self.assertIn("数据依据", market)
+        self.assertNotRegex(market, r"多头 \d+%|空头 \d+%")
+        self.assertNotIn("→ 预测：", market)
 
     def test_ren_block_char_art_and_odds_meter(self):
         """2026-10-06 改版：独立内容区 + 字符图头 + 概率 / 几率条（两主题都出）。"""
