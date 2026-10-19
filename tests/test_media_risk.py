@@ -23,6 +23,12 @@ media_risk = pipeline._media_risk
 
 
 class MediaRiskRuleTests(unittest.TestCase):
+    def test_user_facing_section_name_is_warning_blowfish(self):
+        self.assertEqual(
+            pipeline.SECTION_TITLE_MEDIA_RISK,
+            "【警戒爆炸豚】媒体舆情风险点量化分析",
+        )
+
     def test_specific_event_taxonomy_and_generic_risk_not_overmatched(self):
         event = media_risk.classify_title(
             "公司收到证监会立案调查通知，审计报告为无法表示意见")

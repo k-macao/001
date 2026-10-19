@@ -520,10 +520,11 @@ UZI_TREND_SOURCE_LABEL = "UZI-Skill 规则引擎（vendored）· 复用 MACD 栏
 # 每周量化走势预测开关：OCTOPUS_WEEKLY=0 或 --no-weekly 可整体跳过
 WEEKLY_ENABLED = str(os.environ.get("OCTOPUS_WEEKLY", "1")).strip().lower() not in ("0", "false", "no")
 WEEKLY_HISTORY_FILENAME = _weekly.JOURNAL_FILENAME
-# 「AI帮你提鲜」开关（2026-09-29 新增，原名「鲜鲜解读」，2026-10-06 更名）：每个数据
-# 栏目末尾追加一块「🦑 AI帮你提鲜」内容区（字符图头 + 概率几率条 + 大白话），
-# 把当栏关键数字翻译成大白话 + 网络梗，帮入门读者降低阅读门槛。
-# 纯规则合成（output/octopus_ren.py）：可复现、不伪造数字、数据不足自动缺席。
+# 「AI帮你提鲜」开关（2026-09-29 新增，原名「鲜鲜解读」，2026-10-06 更名）：每个实际
+# 渲染的数据栏目开头先放「🦑 AI帮你提鲜」结论区（字符图头 + 可用时的概率几率条 + 大白话），
+# 再列同源量化依据与正文，帮入门读者先看懂结论；卷首诗 / 卦象不属于数据栏目。
+# 纯规则合成（output/octopus_ren.py）：可复现、不伪造数字；专用生成器证据不足但正文存在时，
+# 只给「证据不足、不硬判」后备结论，不补数字或方向。
 # 2026-09-30 起解读末尾按行情状态确定性点缀「🦐 活鲜度」标签 + 一句活鲜比喻，
 # 「⌁ AI 研判」行也按方向点缀一句短比喻——词库见 output/octopus_lexicon.py
 # （条件驱动、点缀不含数字、认不出方向就不点缀；随 OCTOPUS_REN 一并开关）。
@@ -8203,7 +8204,11 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
 # 2026-10-10 更名：原「新闻情绪」；数据源键名、审计标签与 kicker（NEWS SENTIMENT）不变。
 SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
-SECTION_TITLE_MEDIA_RISK = "【警戒河豚】媒体舆情风险点量化分析"
+SECTION_TITLE_MEDIA_RISK = "【警戒爆炸豚】媒体舆情风险点量化分析"
+
+# 每个实际渲染的数据栏目都先输出栏首结论。data 属性只供回归测试/下游解析定位，
+# 页面不可见；不要用标题文字做结构判断（主题与栏名会变）。
+SECTION_AI_CONCLUSION_MARKER = 'data-octopus-section-ai-conclusion="1"'
 
 # 正文逻辑顺序（2026-10-14 按用户要求重排）：
 #   今日预判（置顶，用户要求保留在最前）
@@ -8501,10 +8506,11 @@ def _trend_section_stats(data):
 
 
 def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo_trend=None):
-    """为有内容的数据栏目生成逐栏 AI 研判（概率多空 + 预测）。
+    """为有内容的数据栏目生成逐栏 AI 研判元数据（概率多空 + 预测）。
 
     返回 {kicker: note}；仅真实有数据的栏目出研判。结论型栏目
-    （今日预判 / 策略研判 / 总结）本身即结论，不重复追加。
+    （今日预判 / 策略研判 / 总结）本身即结论，不另生成 note。渲染时，栏首大白话块
+    读取 note 的方向 / 概率；后续「⌁ AI 研判」只显示箭头前数据依据，避免重复结论。
     注意：text 内数据片段必须已 _esc（渲染端不再二次转义）。
     """
     notes = {}
@@ -8713,22 +8719,85 @@ MERGED_SECTION_NOTES = {
 
 
 def _section_note_keys(kicker):
-    """栏目 → 需要追加的研判行 [(标签, notes 键), ...]；未合并的栏目就是它自己。"""
+    """栏目 → 需要展示的研判依据 [(标签, notes 键), ...]；未合并的栏目就是它自己。"""
     return MERGED_SECTION_NOTES.get(kicker) or (("", kicker),)
 
 
-def _ai_judge_row(note, kit, aspect="", seed=""):
-    """逐栏 AI 研判行（两主题共用）：⌁ AI 研判 ▲ 偏多 · 多头 68% / 空头 32% — 判断预测。
+def _section_note_for_evidence(note):
+    """栏首已有大白话结论时，把旧「AI 研判」降为量化依据，避免重复说结论。
+
+    ``build_section_ai_notes`` 的 text 通常是「本栏数字 → 预测：方向」。大白话块已经承担
+    方向结论，因此这里只保留箭头前的同源数字；概率与方向标签仍由 `_ai_judge_row`
+    展示。无法识别旧格式时原样保留，宁可多披露证据，也不猜写新内容。
+    """
+    copied = dict(note or {})
+    text = str(copied.get("text") or "")
+    if "→ 预测：" in text:
+        text = text.split("→ 预测：", 1)[0].rstrip(" ，；。")
+        if text:
+            text += "。"
+    copied["text"] = text
+    return copied
+
+
+def _section_notes_html(kicker, notes, kit, *, evidence_only=False, date_str=""):
+    """渲染某栏的同源量化研判；合并栏可保留多套互不相同的证据。"""
+    rows = []
+    for note_label, note_key in _section_note_keys(kicker):
+        note = (notes or {}).get(note_key)
+        if not note:
+            continue
+        shown = _section_note_for_evidence(note) if evidence_only else note
+        rows.append(_ai_judge_row(
+            shown, kit, aspect=note_label,
+            seed=f"{date_str}|{kicker}|{note_key}|{note_label}",
+            evidence_only=evidence_only,
+        ))
+    return "".join(rows)
+
+
+def _rendered_section_fallback_conclusion(kicker):
+    """已有正文但专用翻译器证据不足时的诚实栏首结论；不新增数字或方向。"""
+    noun = {
+        "FORECAST": "预判", "ECON CALENDAR": "日程", "QUANT FORECAST": "量化结果",
+        "HK PROBABILITY": "概率结果", "LIQUIDITY FLOW": "资金结果",
+        "WEEKLY FORECAST": "逐日推演", "MARKET REVIEW": "行情复盘",
+        "RETAIL SENTIMENT": "社区情绪", "MEDIA RISK": "媒体风险证据",
+        "POLICY SHOCK": "政策信号", "FED TREND": "美联储信号", "GEO TREND": "地缘信号",
+        "STRATEGY READ": "策略结果", "UZI TREND": "规则评分", "TREND TRACKING": "趋势样本",
+        "SECTOR ROTATION": "板块评分", "INDUSTRY ROTATION": "行业评分",
+        "GLOBAL HEADLINES": "头条", "EASTMONEY WIRE": "快讯", "HK GURU CHANNELS": "频道观点",
+        "NEWS SENTIMENT": "新闻情绪", "MAINLAND HOTLIST": "媒体热度", "HK 7D PROB": "七日结果",
+        "SUMMARY": "总结",
+    }.get(kicker, "数据")
+    return (f"本栏已有{noun}，但现有证据不足以支持更明确的单一方向，所以不硬判涨跌。"
+            "小散户先看正文的核心数字、样本量和数据日期；看不懂就先观察，不把缺项或中性硬翻成买卖信号。")
+
+
+def _ai_judge_row(note, kit, aspect="", seed="", evidence_only=False):
+    """逐栏 AI 研判行（两主题共用）。
+
+    默认保留历史完整样式：方向 + 多空概率 + 判断预测。``evidence_only=True`` 用于栏首
+    已有「AI帮你提鲜」结论的页面：标题仍保留为「⌁ AI 研判（…）」供读者识别口径，
+    但只写「数据依据」和箭头前的同源数字，不再重复方向、概率条或预测句。
 
     aspect：合并栏目（【及时秋刀鱼】AI 行情复盘）里标明这一行是哪一路证据
-    （报价面 / A股全景面），两套口径各自出概率，不混算成一个数。
+    （报价面 / A股全景面），两套口径各自独立，不混算成一个数。
     seed：🦐 活鲜点缀的确定性种子（含日期 + 栏目），同一天同一栏永远同一句比喻；
-    点缀只加在渲染文字上，note["text"] 本体不动，不影响原始研判数据。
+    点缀只加在完整研判文字上，note["text"] 本体不动，不影响原始研判数据。
     """
     bull_c, bear_c, flat_c = kit.ok_color, kit.bad_color, kit.warn_color
     lc = (bull_c if note["label"] == "偏多"
           else bear_c if note["label"] == "偏空" else flat_c)
     title = f"⌁ AI 研判（{aspect}）" if aspect else "⌁ AI 研判"
+    if evidence_only:
+        if _is_guizang_like(kit):
+            head = (f'<b style="color:{GZ_KLEIN}">{title}</b>'
+                    f' · <b style="color:{GZ_FAINT}">数据依据</b>')
+        else:
+            head = (f'<span style="color:{C_CYAN};font-weight:900;">{title}</span>'
+                    f' · <span style="color:{C_MUTED};font-weight:900;">数据依据</span>')
+        return kit.item_row("⌁", f"{head} — {note['text']}")
     if _is_guizang_like(kit):
         head = (f'<b style="color:{lc}">{title} {note["mark"]} {note["label"]}</b>'
                 f' · <b style="color:{bull_c}">多头 {note["bull_pct"]}%</b>'
@@ -8747,7 +8816,10 @@ def _ai_judge_row(note, kit, aspect="", seed=""):
 
 
 def _ren_judgment_row(text, kit, meta=None):
-    """逐栏「🦑 AI帮你提鲜」内容区块（两主题共用，2026-10-06 由「鲜鲜解读」更名）。
+    """逐栏「🦑 AI帮你提鲜」栏首结论区块（两主题共用）。
+
+    2026-10-20 起从栏目末尾前置到正文开头：先给小散户大白话结论，再列量化依据
+    与正文数据；旧「⌁ AI 研判」只保留同源数字依据，避免重复说同一个方向。
 
     更鲜明突出的版式（2026-10-06 改版）：
       · 整块独立描边成区（pixel：青色硬边框 + 实色阴影；guizang 系：克莱因蓝粗左线），
@@ -8780,7 +8852,7 @@ def _ren_judgment_row(text, kit, meta=None):
                     f'█▓▒░ {_ren.REN_ICON} <span style="letter-spacing:1px;">{_esc(_ren.REN_TITLE)}</span> ░▒▓█</td>'
                     f'<td valign="top" style="padding:8px 10px 4px;font-size:10px;font-weight:700;color:{GZ_FAINT};'
                     f'line-height:1.5;font-family:{FONT_MONO};border-bottom:1px solid {GZ_HAIR_SOFT};">'
-                    f'大白话翻译 · FRESH BOOST</td></tr>')
+                    f'本栏 AI 结论 · 大白话 · 先结论后证据</td></tr>')
     else:
         ink, muted = C_INK, C_MUTED
         up_c, dn_c, mid_c = C_GREEN, C_RED, C_AMBER
@@ -8791,7 +8863,7 @@ def _ren_judgment_row(text, kit, meta=None):
                     f'█▓▒░ {_ren.REN_ICON} {_esc(_ren.REN_TITLE)} ░▒▓█</td>'
                     f'<td valign="top" style="padding:5px 10px;background:{C_CYAN};color:{C_BG};'
                     f'font-size:9px;font-weight:900;letter-spacing:2px;font-family:{FONT_MONO};">'
-                    f'// 大白话翻译 · FRESH BOOST</td></tr>')
+                    f'// 本栏 AI 结论 · 大白话 · 先结论后证据</td></tr>')
 
     # 方向与上色：偏多 → 涨色 ▲、偏空 → 跌色 ▼、其余 → 中性色 ■（不只靠颜色区分）。
     if "偏多" in label:
@@ -8825,12 +8897,12 @@ def _ren_judgment_row(text, kit, meta=None):
     sub_html = (f'<div style="font-size:10px;color:{muted};letter-spacing:.3px;'
                 f'padding-top:6px;line-height:1.6;font-family:{FONT_MONO};">'
                 f'{_esc(_ren.DISCLAIMER)}</div>') if not PLAIN() else ""
-    return (f'<table width="100%" cellpadding="0" cellspacing="0"'
+    return (f'<table {SECTION_AI_CONCLUSION_MARKER} width="100%" cellpadding="0" cellspacing="0"'
             f' style="width:100%!important;border-collapse:collapse;margin-top:10px;{box}">'
             f'{head_row}'
             f'{meter_html}'
             f'<tr><td width="28%" valign="top" style="padding:8px 10px 10px;font-size:11px;font-weight:700;'
-            f'color:{muted};line-height:1.75;font-family:{FONT_MONO};">提鲜解读</td>'
+            f'color:{muted};line-height:1.75;font-family:{FONT_MONO};">本栏结论</td>'
             f'<td valign="top" style="padding:8px 10px 10px;font-size:12px;color:{ink};line-height:1.75;'
             f'font-family:{FONT_MONO};">{_esc(text)}{sub_html}</td></tr></table>')
 
@@ -9299,7 +9371,11 @@ def _short_card_section(card_ctx, kit, today_n, total, tips=None, tips_in_card=T
         pairs = [(label, (value.split(" · 数字与下文各栏同源")[0]
                           if isinstance(value, str) and "数据底" in str(label) else value))
                  for label, value in pairs]
-    html = kit.kv([("定调", lead_val), *[(_esc(label), value) for label, value in pairs]])
+    # 速查卡本身就是规则合成的行动摘要；第一行显式标成栏首 AI 结论，随后才列证据项。
+    html = kit.kv([("本栏 AI 结论", lead_val),
+                   *[(_esc(label), value) for label, value in pairs]])
+    # marker 作为首张表的 data 属性，不额外制造一个会在邮件主题里变成空白行的 HTML 块。
+    html = html.replace("<table ", f"<table {SECTION_AI_CONCLUSION_MARKER} ", 1)
     if tips_in_card:            # 卦象缺席时的回落：三句话仍排在卡尾，与卷首二选一
         html += _beginner_tips_block(card["tips"], kit)
     dropped = [d for d in (card.get("dropped") or [])]
@@ -9755,7 +9831,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
 
     # ---- 栏目拼版：今日预判 → ①②③④ 逻辑分组 → 总结收尾（有内容才渲染）----
     blocks = {}  # kicker -> (kicker_en, title, content, badge_html, caption)
-    retail_sentiment_section = _senti_strategy.build_section(kit, data)
+    # 栏首结论与正文严格复用同一个结构化结果，避免两边各算一套。
+    retail_sentiment_result = _senti_strategy.calculate(data)
+    retail_sentiment_section = _senti_strategy.build_section(
+        kit, data, result=retail_sentiment_result)
     if retail_sentiment_section:
         blocks[retail_sentiment_section[0]] = retail_sentiment_section
 
@@ -10021,40 +10100,33 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 没有采集到社区样本时情绪因子缺席。
     sections = [blocks[k] for k in REPORT_SECTION_ORDER if k in blocks]
 
-    # ⑧ 逐栏目 AI 研判：有实际数据的数据栏目末尾追加「⌁ AI 研判」行
-    #    （概率化多空判断 + 一句分析预测；规则合成，结论型栏目不重复）。
+    # ⑧+⑨ 栏首结论：把原来埋在栏目末尾的「AI帮你提鲜」前置；旧「⌁ AI 研判」
+    # 降为结论后的同源量化依据（只保留箭头前数据），形成「大白话结论 → 数字依据 → 正文」。
+    # 若关闭提鲜，则仍把完整 AI 研判前置；若专用生成器因数据形态返回空，但栏目确实已渲染，
+    # 使用不带数字/方向的诚实后备结论，绝不为了全覆盖硬编结果。
     judge_notes = build_section_ai_notes(
         data, policy=policy if (isinstance(policy, dict) and policy.get("available")) else None,
         senti=senti_result if (isinstance(senti_result, dict) and senti_result.get("available")) else None,
         fed_trend=fed_res if (isinstance(fed_res, dict) and fed_res.get("available")) else None,
         geo_trend=geo_res if (isinstance(geo_res, dict) and geo_res.get("available")) else None)
-    if judge_notes:
-        new_sections = []
-        for kick, title, content, badge, caption in sections:
-            # 合并栏目（AI 行情复盘）追加两行：报价面 + A股全景面，口径各自独立。
-            for aspect, note_key in _section_note_keys(kick):
-                note = judge_notes.get(note_key)
-                if note:
-                    content = content + _ai_judge_row(
-                        note, kit, aspect, seed=f"{date_str}|{kick}|{note_key}|{aspect}")
-            new_sections.append((kick, title, content, badge, caption))
-        sections = new_sections
 
-    # ⑨ 逐栏目「🦑 AI帮你提鲜」（2026-09-29 新增，2026-10-06 更名 + 改版）：把每栏关键数字翻译成大白话 + 网络梗，
-    #    帮入门读者降低阅读门槛。规则合成（octopus_ren.py）：可复现、数字全部来自本次
-    #    实参（趋势跟踪与数据覆盖与正文共用同一 helper，不另算一套）；数据不足的栏目
-    #    自动不加解读；OCTOPUS_REN=0 / --no-ren 整体关闭。非投资建议。
     ren_ctx = None
+    decorated = []
+    garnish_used = []   # 同一份日报里同一句活鲜比喻只出现一次（见 octopus_ren._seafood_garnish_parts）
     if REN_ENABLED:
         ren_ctx = {
-            # 【沸腾花蛤】内地财经热点榜：与正文 blocks["MAINLAND HOTLIST"] 同一份结果
+            # 以下对象与对应正文严格同源；任何生成器都只能读取这些结构化结果。
             "hotlist": hotlist_res,
             "date_str": date_str or _today_str(),
             "notes": judge_notes,
             "market": market, "pan": pan, "policy": policy, "ai": ai_result,
             "quant": quant, "weekly": weekly_res, "hk7": hk7_res,
             "fed": fed_res, "geo": geo_res, "senti": senti_result,
+            "retail_sentiment": retail_sentiment_result,
             "media_risk": media_risk_result,
+            "sector_rotation": (rotation_src.get("result") or {}) if isinstance(rotation_src, dict) else {},
+            "industry_rotation": (industry_src.get("result") or {}) if isinstance(industry_src, dict) else {},
+            "macd": ai_result.get("macd") if isinstance(ai_result, dict) else {},
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
             # 【游资剑鱼】：与正文 blocks["UZI TREND"] 用的同一份 run_trend() 结果
@@ -10064,17 +10136,28 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "missing": _missing_source_names(source_items),
             },
         }
-        decorated = []
-        garnish_used = []   # 同一份日报里同一句活鲜比喻只出现一次（见 octopus_ren._seafood_garnish_parts）
-        for kick, title, content, badge, caption in sections:
+
+    for kick, title, content, badge, caption in sections:
+        if ren_ctx is not None:
             ren_ctx["_garnish_avoid"] = tuple(garnish_used) if SUB_MERGE_ENABLED else ()
             ren_block = _ren.section_ren_block(kick, ren_ctx)
-            if ren_block:
-                if ren_block.get("metaphor"):
-                    garnish_used.append(ren_block["metaphor"])
-                content = content + _ren_judgment_row(ren_block["text"], kit, meta=ren_block)
-            decorated.append((kick, title, content, badge, caption))
-        sections = decorated
+            if not ren_block:
+                ren_block = {
+                    "text": _rendered_section_fallback_conclusion(kick),
+                    "label": None, "p_pct": None, "metaphor": None,
+                }
+            if ren_block.get("metaphor"):
+                garnish_used.append(ren_block["metaphor"])
+            conclusion_html = _ren_judgment_row(ren_block["text"], kit, meta=ren_block)
+            evidence_html = _section_notes_html(
+                kick, judge_notes, kit, evidence_only=True, date_str=date_str)
+            content = conclusion_html + evidence_html + content
+        else:
+            # --no-ren 只关大白话翻译；已有研判仍放在正文前，不再埋在栏目末尾。
+            content = _section_notes_html(
+                kick, judge_notes, kit, evidence_only=False, date_str=date_str) + content
+        decorated.append((kick, title, content, badge, caption))
+    sections = decorated
 
     # 卷首内容各自独立开关；卦象按报告日起卦，与行情结论无关，也不计入当天源。
     poem = _shiquan.get_opening_poem(data, allow_network=False) if (SHIQUAN_ENABLED and _shiquan.is_enabled()) else None
