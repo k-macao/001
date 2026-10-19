@@ -1,4 +1,4 @@
-"""内地财经热点榜标题词汇分析回归（本地 jieba，无网络请求）。"""
+"""【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）标题分析回归（本地 jieba，无网络请求）。"""
 import sys
 import unittest
 from pathlib import Path
@@ -92,6 +92,114 @@ class FinanceVocabularyTests(unittest.TestCase):
         self.assertIn("算力", terms)
         self.assertNotIn("黄金", terms)
         self.assertNotIn("原油", terms)
+
+
+class SentimentHotspotRiskTests(unittest.TestCase):
+    """2026-10-19 情绪热点因子三件套：情绪总览 / 热点聚合 / 预警风险点。"""
+
+    def test_match_risk_keywords_hits_categories_in_lexicon_order(self):
+        hits = finance.match_risk_keywords("证监会对某公司立案调查，股价跌停")
+        cats = [c for c, _ in hits]
+        kws = [k for _, k in hits]
+        self.assertIn("立案", kws)
+        self.assertIn("调查", kws)
+        self.assertIn("跌停", kws)
+        self.assertEqual(cats[0], "监管与合规风险", "按词表顺序返回")
+        self.assertIn("市场波动风险", cats)
+
+    def test_match_risk_keywords_is_empty_for_benign_title(self):
+        self.assertEqual(finance.match_risk_keywords("白酒板块逆市拉升，多股涨停"), [])
+        self.assertEqual(finance.match_risk_keywords(""), [])
+
+    def test_title_mood_collapses_dictionary_classes(self):
+        self.assertEqual(finance.title_mood("重大利好：政策红利大力支持新能源")["label"],
+                         finance.MOOD_POSITIVE)
+        self.assertEqual(finance.title_mood("某公司暴雷退市，股价暴跌")["label"],
+                         finance.MOOD_NEGATIVE)
+        self.assertEqual(finance.title_mood("央行召开工作会议")["label"],
+                         finance.MOOD_NEUTRAL)
+
+    def test_sentiment_summary_counts_are_deterministic_and_honest(self):
+        headlines = [{"title": "重大利好政策红利", "source": "甲"},
+                     {"title": "公司暴雷退市", "source": "乙"},
+                     {"title": "央行召开会议", "source": "甲"}]
+        a = finance.aggregate_hotlist_sentiment(headlines)
+        b = finance.aggregate_hotlist_sentiment(headlines)
+        self.assertEqual(a, b)
+        self.assertTrue(a["has_data"])
+        self.assertEqual(a["total_titles"], 3)
+        self.assertEqual(a["pos_n"] + a["neu_n"] + a["neg_n"], 3)
+        self.assertIn("非校准概率", a["note"])
+        self.assertNotIn("positive_probability", a)
+        empty = finance.aggregate_hotlist_sentiment([])
+        self.assertFalse(empty["has_data"])
+        self.assertIsNone(empty["avg_score"])
+        self.assertIsNone(empty["label"])
+
+    def test_hotspots_aggregate_same_term_titles_with_mood_and_risk(self):
+        headlines = [
+            {"title": "AI算力芯片需求大增", "source": "甲",
+             "url": "u1", "published_cst": "2026-10-13 05:00"},
+            {"title": "AI大模型芯片出口遭制裁", "source": "乙",
+             "url": "u2", "published_cst": "2026-10-13 06:00"},
+            {"title": "白酒消费回暖", "source": "丙",
+             "url": "u3", "published_cst": "2026-10-13 04:00"},
+        ]
+        first = finance.aggregate_hotlist_hotspots(headlines)
+        second = finance.aggregate_hotlist_hotspots(headlines)
+        self.assertEqual(first, second, "热点聚合必须确定性可复现")
+        self.assertTrue(first["has_data"])
+        clusters = {c["term"]: c for c in first["clusters"]}
+        self.assertIn("AI", clusters)
+        ai = clusters["AI"]
+        self.assertEqual(ai["title_count"], 2)
+        self.assertEqual(ai["media_count"], 2)
+        self.assertTrue(ai["aggregated"], "≥2 条同题 = 聚合热点")
+        self.assertIn("外部冲击风险", ai["risk_categories"], "「制裁」要标注到簇上")
+        self.assertEqual(ai["pos_n"] + ai["neu_n"] + ai["neg_n"], ai["title_count"])
+        self.assertEqual(ai["samples"][0]["published_cst"], "2026-10-13 06:00",
+                         "样例标题按时间倒序")
+        self.assertGreaterEqual(first["aggregated_n"], 1)
+
+    def test_risk_points_level_rule_and_evidence(self):
+        headlines = [
+            {"title": "某公司被立案调查", "source": "甲",
+             "url": "u1", "published_cst": "2026-10-13 01:00"},
+            {"title": "另一公司违规被处罚", "source": "乙",
+             "url": "u2", "published_cst": "2026-10-13 02:00"},
+            {"title": "第三家公司遭约谈整改", "source": "甲",
+             "url": "u3", "published_cst": "2026-10-13 03:00"},
+        ]
+        rep = finance.analyze_hotlist_risks(headlines)
+        self.assertTrue(rep["has_data"])
+        self.assertEqual(rep["hit_n"], 3)
+        self.assertEqual(rep["total_titles"], 3)
+        top = rep["points"][0]
+        self.assertEqual(top["category"], "监管与合规风险")
+        self.assertEqual(top["count"], 3)
+        self.assertEqual(top["media_n"], 2)
+        self.assertEqual(top["level"], finance.RISK_LEVEL_HIGH, "≥3 条且 ≥2 家 → 高")
+        self.assertEqual(len(top["samples"]), 2)
+        self.assertEqual(top["samples"][0]["published_cst"], "2026-10-13 03:00",
+                         "证据标题最新在前")
+        self.assertIn("约谈", top["samples"][0]["matched"])
+        again = finance.analyze_hotlist_risks(headlines)
+        self.assertEqual(rep, again, "预警风险点必须确定性可复现")
+
+    def test_risk_title_counted_once_per_category(self):
+        headlines = [{"title": "公司被立案调查并处罚", "source": "甲"}]
+        rep = finance.analyze_hotlist_risks(headlines)
+        self.assertEqual(rep["hit_n"], 1)
+        top = rep["points"][0]
+        self.assertEqual(top["count"], 1, "同一标题命中同类多个词只算 1 条")
+        self.assertEqual(top["level"], finance.RISK_LEVEL_WATCH)
+
+    def test_risk_report_is_empty_when_no_hits(self):
+        rep = finance.analyze_hotlist_risks([{"title": "白酒板块逆市拉升", "source": "甲"}])
+        self.assertFalse(rep["has_data"])
+        self.assertEqual(rep["hit_n"], 0)
+        self.assertEqual(rep["points"], [])
+        self.assertEqual(rep["total_titles"], 1)
 
 
 if __name__ == "__main__":

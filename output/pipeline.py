@@ -489,7 +489,7 @@ import freshness_checker as _freshness  # noqa: E402
 import backup_sources as _backup  # noqa: E402
 import dedup as _dedup  # noqa: E402
 import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）卷首随机一首古诗词
-import finance_analysis as _finance  # noqa: E402  # 🧩 本地 jieba 财经标题词汇分析（内地财经热点榜增强）
+import finance_analysis as _finance  # noqa: E402  # 🧩 本地 jieba 财经标题分析（情绪热点因子量化分析增强：词汇 + 情绪 + 风险词表）
 import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（「诗与远方的海」卷首栏）
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
@@ -3966,7 +3966,7 @@ def fetch_mainland_news_sources():
                "desc": cfg.get("desc", ""), "feed": official_feed,
                "status": "fail", "scanned": 0, "today": 0, "newest": None,
                "items": [], "titles": [], "note": "", "served_by": "—",
-               # 时效体检字段（2026-10-13 新增，供「内地财经热点榜」的源头体检行使用）
+               # 时效体检字段（2026-10-13 新增，供「情绪热点因子量化分析」的源头体检行使用）
                "newest_cst": None, "lag_hours": None, "state": "暂缺", "via": "—"}
         # 2026-10-13 修：候选源逐个试，直到拿到**可用条目**为止。
         # 旧版只试第一个「解析得出条目」的源——Bing 检索 RSS 解析没问题，但条目链接
@@ -4101,7 +4101,7 @@ def fetch_mainland_news_sources():
     newest = max((r["newest"] for r in records if r.get("newest")), default=None)
     missing = [r["name"] for r in records if r.get("status") != "ok"]
     # 时效体检（2026-10-13 新增）：逐源记「窗口内条数 / 最新条目北京时间 / 滞后小时数 /
-    # 当天还是滞后」，供【沸腾花蛤】内地财经热点榜的体检行与总结的数据覆盖共用。
+    # 当天还是滞后」，供【沸腾花蛤】情绪热点因子量化分析的体检行与总结的数据覆盖共用。
     health = [{"name": r.get("name", "?"), "status": r.get("status", "fail"),
                "items": len([it for it in (r.get("items") or []) if isinstance(it, dict)]),
                "newest_cst": r.get("newest_cst"), "lag_hours": r.get("lag_hours"),
@@ -4146,19 +4146,27 @@ def fetch_mainland_news_sources():
 
 
 # ============================================================
-# 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）
-#   内地 18 家财经媒体的窗口内标题 → 按主题词表聚类成热点榜，并附每家的时效体检。
+# 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增；2026-10-19 更名，原「内地财经热点榜」）
+#   内地 18 家财经媒体的窗口内标题 → 按主题词表聚类成热点榜，并附每家的时效体检；
+#   2026-10-19 起叠加本地「AI 分析」三件套（全部规则合成、只读标题）：
+#     ⚖ 情绪总览（情绪词典折叠成偏多/中性/偏空 + 净情绪分）
+#     🔥 热点聚合（跨媒体同题词汇簇，附情绪与风险标注；原「AI词汇分析」升级并入）
+#     ⚠ 预警风险点（风险词表命中按类别聚合，等级 = 传播度：高/中/关注）
 #   规则合成、确定性、可复现：同一批标题永远得到同一份榜；未命中的进「其他 / 未归类」，
-#   绝不按热度猜、不复制正文、不给买卖建议。
+#   绝不按热度猜、不复制正文、不给买卖建议。情绪分与风险等级是词典启发式，非校准概率。
+#   更名口径与 2026-10-10「新闻情绪 → 新闻情绪因子量化分析」一致：
+#   kicker（MAINLAND HOTLIST）、数据源键名、审计标签与环境变量 OCTOPUS_MAINLAND_HOTLIST 均不变。
 # ============================================================
-SECTION_TITLE_MAINLAND_HOTLIST = "【沸腾花蛤】内地财经热点榜"
+SECTION_TITLE_MAINLAND_HOTLIST = "【沸腾花蛤】情绪热点因子量化分析"
 MAINLAND_HOTLIST_ENABLED = _env_flag("OCTOPUS_MAINLAND_HOTLIST", True)
 MAINLAND_HOTLIST_THEME_MAX = 8          # 全量版最多列几个主题（按条数降序）
 MAINLAND_HOTLIST_THEME_MAX_PLAIN = 5    # 入门版
 MAINLAND_HOTLIST_ITEMS_PER_THEME = 3    # 每个主题列几条代表标题
 MAINLAND_HOTLIST_ITEMS_PER_THEME_PLAIN = 1
-MAINLAND_HOTLIST_VOCAB_MAX = 8          # 词汇分析：全量版展示前八个词
+MAINLAND_HOTLIST_VOCAB_MAX = 8          # 热点聚合：全量版展示前八个词汇簇
 MAINLAND_HOTLIST_VOCAB_MAX_PLAIN = 5    # 入门版压缩展示
+MAINLAND_HOTLIST_RISK_MAX = 5           # 预警风险点：全量版最多列几类
+MAINLAND_HOTLIST_RISK_MAX_PLAIN = 3     # 入门版
 MAINLAND_HOT_OTHER_LABEL = "其他 / 未归类"
 
 # 主题词表：**按顺序**命中第一个就算归类（一词多家命中不重复计数）。
@@ -4209,14 +4217,19 @@ def _mainland_theme_hit(keywords, title):
 
 
 def build_mainland_hotlist(mainland):
-    """内地财经媒体标题池 → 热点榜（规则合成，确定性）。
+    """内地财经媒体标题池 → 情绪热点因子量化分析（规则合成，确定性）。
 
     返回 None 表示该源头不可用 / 窗口内 0 条（栏目整栏缺席，不占位）。
     每条标题只归一个主题（按 MAINLAND_HOT_THEMES 的顺序命中第一个），
     因此各主题条数之和恒等于进榜总条数——榜单里不会出现「加起来对不上」。
-    
+
     标题只读、不取正文；本地 jieba + 停用词表提取词汇，并按标题数 / 媒体数汇总。
-    分析结果不请求外部大模型，也不产生涨跌概率。
+    2026-10-19 起追加本地「AI 分析」（同样只读标题、规则合成）：
+      sentiment_agg  = 情绪总览（偏多/中性/偏空 + 净情绪分）
+      hotspots       = 热点聚合（跨媒体同题词汇簇 + 情绪/风险标注）
+      risk_report    = 预警风险点（风险词表命中类别 + 传播度等级）
+      每个主题桶另附 mood / pos_n / neu_n / neg_n / avg_score（主题级情绪折叠）。
+    分析结果不请求外部大模型；情绪分与风险等级是词典启发式，不产生校准的涨跌概率。
     """
     if not isinstance(mainland, dict) or mainland.get("status") != "success":
         return None
@@ -4266,6 +4279,12 @@ def build_mainland_hotlist(mainland):
     if not buckets:
         return None
     buckets.sort(key=lambda b: (-b["count"], b["order"]))
+    # 主题级情绪折叠（2026-10-19 新增）：桶内标题逐条过本地情绪词典，
+    # 得到 偏多/中性/偏空 计数与净情绪分——只描述「这批标题的措辞倾向」。
+    for b in buckets:
+        mix = _finance.aggregate_titles_mood([h.get("title") for h in b["items"]])
+        b["pos_n"], b["neu_n"], b["neg_n"] = mix["pos_n"], mix["neu_n"], mix["neg_n"]
+        b["avg_score"], b["mood"] = mix["avg_score"], mix["label"]
     analysis = mainland.get("analysis") or {}
     health = [h for h in (analysis.get("health") or []) if isinstance(h, dict)]
     # 时效体检汇总：当天 / 窗口内滞后 / 暂缺 各几家（入门版也显示，压缩成一行）
@@ -4274,6 +4293,10 @@ def build_mainland_hotlist(mainland):
     
     # 💰 新增：计算整体财经分析统计
     finance_summary = _calculate_finance_summary(headlines)
+    # ⚖🔥⚠ 2026-10-19 新增：情绪总览 / 热点聚合 / 预警风险点（全部本地词表，确定性）。
+    sentiment_agg = _finance.aggregate_hotlist_sentiment(headlines)
+    hotspots = _finance.aggregate_hotlist_hotspots(headlines, top_n=MAINLAND_HOTLIST_VOCAB_MAX)
+    risk_report = _finance.analyze_hotlist_risks(headlines, top_n=MAINLAND_HOTLIST_RISK_MAX)
     
     return {
         # status / is_today 是为了让「🦑 AI帮你提鲜」的活鲜度判断与其他栏目同口径
@@ -4297,6 +4320,10 @@ def build_mainland_hotlist(mainland):
         "is_today": bool(mainland.get("is_today")),
         # 💰 新增：财经分析统计
         "finance_summary": finance_summary,
+        # ⚖🔥⚠ 2026-10-19 新增：情绪总览 / 热点聚合 / 预警风险点
+        "sentiment_agg": sentiment_agg,
+        "hotspots": hotspots,
+        "risk_report": risk_report,
     }
 
 
@@ -4306,7 +4333,13 @@ def _calculate_finance_summary(headlines: List[Dict]) -> Dict:
 
 
 def _mainland_hotlist_block(res, kit):
-    """热点榜正文：源头时效体检行 + 主题榜（条数 / 占比条 / 涉及媒体 / 代表标题）。"""
+    """情绪热点因子正文：情绪总览 + 源头时效体检行 + 主题榜 + 热点聚合 + 预警风险点。
+
+    2026-10-19 升级（原「内地财经热点榜」版式）：主题榜每行附情绪折叠；
+    原「AI词汇分析」升级为「🔥 热点聚合」（同一份词表与计数，附情绪 / 风险 / 同题聚合标记）；
+    新增「⚠ 预警风险点」（风险词表命中按类别聚合，等级 = 传播度）。
+    所有分析都是本地词典启发式，页面上如实标注，不伪装成校准概率。
+    """
     if not res or not res.get("themes"):
         return ""
     rows = []
@@ -4322,6 +4355,19 @@ def _mainland_hotlist_block(res, kit):
     head_bits.append(f'今日 {res["today_n"]} 条')
     rows.append(kit.item_row("", " · ".join(head_bits) + " " + kit.source_badge(
         {"status": "success", "is_today": res.get("is_today")}), ""))
+    # ⚖ 情绪总览（2026-10-19 新增）：偏多/中性/偏空 条数 + 净情绪分 + 风险词命中数。
+    agg = res.get("sentiment_agg") or {}
+    if agg.get("has_data"):
+        avg = agg.get("avg_score")
+        left = (f'<b>情绪总览</b> 偏多 {int(agg.get("pos_n") or 0)} 条 · '
+                f'中性 {int(agg.get("neu_n") or 0)} 条 · 偏空 {int(agg.get("neg_n") or 0)} 条'
+                + (f' ｜ 净情绪分 {avg:+.2f}（{_esc(str(agg.get("label") or "—"))}）'
+                   if avg is not None else ""))
+        risk_hit = int((res.get("risk_report") or {}).get("hit_n") or 0)
+        rows.append(kit.item_row(
+            "⚖", left,
+            _esc(f'风险词命中 {risk_hit}/{int(agg.get("total_titles") or 0)} 条 · '
+                 f'{agg.get("method") or "本地情绪词典"}，非校准概率')))
     # 源头时效体检（非入门版）：每家「窗口内条数 + 最新时间（滞后小时）」压成一行，
     # 谁当天、谁滞后、谁暂缺一眼看全；入门版只报暂缺名单。
     if not PLAIN():
@@ -4358,16 +4404,24 @@ def _mainland_hotlist_block(res, kit):
     per_theme = (MAINLAND_HOTLIST_ITEMS_PER_THEME_PLAIN if PLAIN()
                  else MAINLAND_HOTLIST_ITEMS_PER_THEME)
     shown_themes = res["themes"][:theme_max]
+    shown_urls = set()      # 已渲染过的原文链接：预警风险点证据行不再重复同一条原文
     for i, b in enumerate(shown_themes, 1):
         pct = (b["count"] / res["total"] * 100) if res["total"] else 0.0
         left = (f'<b>{_esc(b["label"])}</b> {kit.meter(b["count"], res["max_count"])}'
                 f' <span style="font-size:11px;">{b["count"]} 条 · {pct:.0f}%</span>')
-        rows.append(kit.item_row(f"{i:02d}", left,
-                                 _esc(f'{b["media_n"]} 家' +
-                                      (f' · {"、".join(b["media"][:3])}'
-                                       + (" 等" if b["media_n"] > 3 else "") if b["media"] else ""))))
+        # 主题级情绪折叠（2026-10-19 新增）：入门版只给定调，全量版附三档计数。
+        right_bits = [f'{b["media_n"]} 家' +
+                      (f' · {"、".join(b["media"][:3])}'
+                       + (" 等" if b["media_n"] > 3 else "") if b["media"] else "")]
+        if b.get("mood"):
+            right_bits.append(f'情绪{b["mood"]}' if PLAIN() else
+                              f'情绪{b["mood"]}（多{b.get("pos_n", 0)}/中{b.get("neu_n", 0)}'
+                              f'/空{b.get("neg_n", 0)}）')
+        rows.append(kit.item_row(f"{i:02d}", left, _esc(" · ".join(right_bits))))
         for it in b["items"][:per_theme]:
             url = str(it.get("url") or "")
+            if url:
+                shown_urls.add(url)
             title = _public_text(it.get("title"), 120)
             link = (f'<a href="{_esc(url)}" style="color:{kit.ok_color}">{_esc(title)}</a>'
                     if url else _esc(title))
@@ -4391,32 +4445,119 @@ def _mainland_hotlist_block(res, kit):
         rows.append(kit.item_row("…", f'另有 {len(res["themes"]) - theme_max} 个主题未展开',
                                  _esc("按条数降序，完整的只在全量版（--full）显示")))
     
-    # 本地「AI词汇分析」：用标题级词频和媒体覆盖展示高频词，不给情绪词典分数贴概率标签。
-    finance_summary = res.get("finance_summary") or {}
-    if finance_summary.get("has_data"):
-        top_terms = list(finance_summary.get("top_terms") or [])
-        total_titles = int(finance_summary.get("total_titles") or 0)
-        if top_terms:
+    # 🔥 热点聚合（2026-10-19 由「AI词汇分析」升级并入）：同一份 jieba 词频口径
+    #    （标题级去重、提及该词的标题数 / 涉及媒体数，一个数字不加不减），每簇再附
+    #    同题聚合标记、情绪折叠与风险类别；按词聚合，同一条标题可进多个热点簇。
+    hotspots = res.get("hotspots") or {}
+    clusters = [c for c in (hotspots.get("clusters") or []) if isinstance(c, dict)]
+    if hotspots.get("has_data") and clusters:
+        total_titles = int(hotspots.get("total_titles") or 0)
+        agg_n = int(hotspots.get("aggregated_n") or 0)
+        head_right = (_esc(f'扫描 {total_titles} 条标题 · 同题热点（≥2 条）{agg_n} 个')
+                      if PLAIN() else
+                      _esc(f'扫描 {total_titles} 条标题 · 标题级去重 · '
+                           f'跨媒体同题（≥2 条）{agg_n} 个 · 不代表涨跌信号'))
+        rows.append(kit.item_row(
+            "🔥", f'<b>热点聚合</b> · {_esc(str(hotspots.get("method") or "jieba 本地分词"))}',
+            head_right))
+        cluster_limit = (MAINLAND_HOTLIST_VOCAB_MAX_PLAIN if PLAIN()
+                         else MAINLAND_HOTLIST_VOCAB_MAX)
+        cluster_max = max(1, max(int(c.get("title_count") or 0) for c in clusters))
+        for i, c in enumerate(clusters[:cluster_limit], 1):
+            count = int(c.get("title_count") or 0)
+            media_n = int(c.get("media_count") or 0)
+            coverage = (count / total_titles * 100) if total_titles else 0.0
+            # 左列保持旧词汇榜同款计数尾（「N 条标题 · N 家媒体 · 覆盖 N%」），
+            # 同题聚合 / 情绪 / 风险标注挪进右列与媒体名单同排——右列自带每行的区分信息，
+            # 避免两行左列计数尾逐字相同（tools/report_outline.py 的栏内重复口径）。
+            term_text = (f'<b>{_esc(str(c.get("term") or ""))}</b> '
+                         f'{kit.meter(count, cluster_max)} '
+                         f'<span style="font-size:11px;">{count} 条标题 · {media_n} 家媒体 · 覆盖 {coverage:.0f}%</span>')
+            tag_bits = []
+            if c.get("aggregated"):
+                tag_bits.append("同题聚合")
+            if c.get("label"):
+                tag_bits.append(f'情绪{c["label"]}')
+            risk_cats = [str(x) for x in (c.get("risk_categories") or []) if x]
+            if risk_cats and not PLAIN():
+                tag_bits.append("⚠" + "、".join(risk_cats[:2]))
+            media_list = [str(m) for m in (c.get("media") or []) if m]
+            if media_list:
+                tag_bits.append("、".join(media_list[:3]) + (" 等" if media_n > 3 else ""))
+            rows.append(kit.item_row(f"{i:02d}", term_text, _esc(" · ".join(tag_bits))))
+        if len(clusters) > cluster_limit:
             rows.append(kit.item_row(
-                "⌕", f'<b>AI词汇分析</b> · {_esc(str(finance_summary.get("method") or "本地词表"))}',
-                _esc(f'扫描 {total_titles} 条标题 · 标题级去重 · 不代表涨跌信号')
+                "…", f'另有 {len(clusters) - cluster_limit} 个热点词汇未展开',
+                _esc("入门版压缩展示；全量版只列前八项")
             ))
-            term_max = max(1, max(int(item.get("title_count") or 0) for item in top_terms))
-            term_limit = (MAINLAND_HOTLIST_VOCAB_MAX_PLAIN if PLAIN()
-                          else MAINLAND_HOTLIST_VOCAB_MAX)
-            for i, item in enumerate(top_terms[:term_limit], 1):
-                count = int(item.get("title_count") or 0)
-                media_n = int(item.get("media_count") or 0)
-                coverage = (count / total_titles * 100) if total_titles else 0.0
-                term_text = (f'<b>{_esc(str(item.get("term") or ""))}</b> '
-                             f'{kit.meter(count, term_max)} '
-                             f'<span style="font-size:11px;">{count} 条标题 · {media_n} 家媒体 · 覆盖 {coverage:.0f}%</span>')
-                rows.append(kit.item_row(f"{i:02d}", term_text, ""))
-            if len(top_terms) > term_limit:
+    
+    # ⚠ 预警风险点（2026-10-19 新增）：风险词表命中的标题按类别聚合，等级 = 传播度
+    #    （高 / 中 / 关注，只看几条几家在说，不预测发生概率）；证据标题带可点原文，
+    #    与主题榜已展示过的同一条原文不重复出现（栏内同一原文只列一次）。
+    risk = res.get("risk_report") or {}
+    if int(risk.get("total_titles") or 0):
+        points = [p for p in (risk.get("points") or []) if isinstance(p, dict)]
+        risk_limit = MAINLAND_HOTLIST_RISK_MAX_PLAIN if PLAIN() else MAINLAND_HOTLIST_RISK_MAX
+        if points:
+            head_right = (_esc(f'{int(risk.get("hit_n") or 0)}/'
+                               f'{int(risk.get("total_titles") or 0)} 条标题命中 · '
+                               f'聚成 {int(risk.get("points_total") or len(points))} 类')
+                          if PLAIN() else
+                          _esc(f'{int(risk.get("hit_n") or 0)}/'
+                               f'{int(risk.get("total_titles") or 0)} 条标题命中 · '
+                               f'聚成 {int(risk.get("points_total") or len(points))} 类 · '
+                               f'等级是传播度（{risk.get("level_rule") or "高/中/关注"}），不是发生概率'))
+            rows.append(kit.item_row(
+                "⚠", f'<b>预警风险点</b> · {_esc(str(risk.get("method") or "本地风险词表"))}',
+                head_right))
+            for i, p in enumerate(points[:risk_limit], 1):
+                level = str(p.get("level") or "")
+                lv_color = (kit.bad_color if level == "高"
+                            else kit.warn_color if level == "中" else "")
+                lv_html = (f'<b style="color:{lv_color};">【{_esc(level)}】</b>' if lv_color
+                           else f'<b>【{_esc(level)}】</b>')
+                kws = [str(k) for k in (p.get("keywords") or []) if k]
+                left = (f'{lv_html} <b>{_esc(str(p.get("category") or ""))}</b> '
+                        f'<span style="font-size:11px;">{int(p.get("count") or 0)} 条 · '
+                        f'{int(p.get("media_n") or 0)} 家'
+                        + (f' · 命中词：{_esc("、".join(kws[:4]))}' if kws else "")
+                        + '</span>')
+                media = [str(m) for m in (p.get("media") or []) if m]
                 rows.append(kit.item_row(
-                    "…", f'另有 {len(top_terms) - term_limit} 个词汇未展开',
-                    _esc("入门版压缩展示；完整词汇仅列前八项")
-                ))
+                    f"{i:02d}", left,
+                    # 右列带条数锚点：两个风险类别恰好同一批媒体时也不会逐字撞行
+                    _esc(f'命中 {int(p.get("count") or 0)} 条：'
+                         + "、".join(media[:3]) + (" 等" if len(media) > 3 else ""))
+                    if media else ""))
+                if not PLAIN():
+                    for s in (p.get("samples") or [])[:2]:
+                        if not isinstance(s, dict):
+                            continue
+                        url = str(s.get("url") or "")
+                        if url and url in shown_urls:
+                            continue            # 主题榜已展示过同一条原文，不再重复
+                        title = _public_text(s.get("title"), 120)
+                        link = (f'<a href="{_esc(url)}" style="color:{kit.ok_color}">{_esc(title)}</a>'
+                                if url else _esc(title))
+                        bits = [str(s.get("source") or "")]
+                        stamp = str(s.get("published_cst") or "")
+                        if stamp:
+                            bits.append(stamp[5:])
+                        matched = [str(w) for w in (s.get("matched") or []) if w]
+                        if matched:
+                            bits.append("命中：" + "、".join(matched))
+                        rows.append(kit.item_row("↳", link, _esc(" · ".join(x for x in bits if x))))
+                        if url:
+                            shown_urls.add(url)
+            if len(points) > risk_limit:
+                rows.append(kit.item_row(
+                    "…", f'另有 {len(points) - risk_limit} 类风险点未展开',
+                    _esc("入门版压缩展示；全量版只列前五类")))
+        else:
+            rows.append(kit.item_row(
+                "⚠", "<b>预警风险点</b>",
+                _esc(f'窗口内 {int(risk.get("total_titles") or 0)} 条标题未命中风险词表'
+                     f'（词表启发式，未命中 ≠ 没有风险）')))
     
     return kit.rows("".join(rows)) if rows else ""
 
@@ -6109,8 +6250,9 @@ _SECTION_ICON_META = {
     "SECTOR ROTATION": ("↻", "ROTATE", C_CYAN, "#092836"),
     # 申万一级行业轮动（2026-10-04 移植）：与港股板块轮动的 ↻/ROTATE 区分开
     "INDUSTRY ROTATION": ("◑", "INDUST", C_LEMON, C_FLAT_BG),
-    # 内地财经热点榜（2026-10-13 新增）：18 家内地财经媒体的主题热度榜，✦ = 热度
-    "MAINLAND HOTLIST": ("✦", "CN-HOT", C_AMBER, C_FLAT_BG),
+    # 情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
+    # 18 家内地财经媒体的主题热度 + 情绪/风险因子榜，✦ = 热度
+    "MAINLAND HOTLIST": ("✦", "SENT-HOT", C_AMBER, C_FLAT_BG),
     "POETRY & SEA": ("✦", "VERSE", C_CYAN, "#092836"),
 }
 
@@ -8198,7 +8340,8 @@ REPORT_FACT_SECTIONS = (                       # ① 发生了什么
 )
 REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
     "RETAIL SENTIMENT", "TREND TRACKING",
-    # 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）紧跟趋势跟踪，「内地口径」与「港股口径」相邻。
+    # 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增，2026-10-19 更名）紧跟趋势跟踪，
+    # 「内地口径」与「港股口径」相邻。
     "MAINLAND HOTLIST",
     "NEWS SENTIMENT",
 )
@@ -8477,7 +8620,8 @@ def _trend_section_stats(data):
     }
 
 
-def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo_trend=None):
+def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo_trend=None,
+                           hotlist=None):
     """为有内容的数据栏目生成逐栏 AI 研判（概率多空 + 预测）。
 
     返回 {kicker: note}；仅真实有数据的栏目出研判。结论型栏目
@@ -8675,6 +8819,37 @@ def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo
                 prob, f"归因 {senti.get('total_matched')} 只（前 {len(stocks)} 只评分），"
                       f"最强 {_esc(str(best.get('name')))}、最弱 {_esc(str(worst.get('name')))}"
                       f" → 预测：新闻情绪{label}，关注情绪与价格背离")
+
+    # ⑧ 情绪热点因子量化分析（原内地财经热点榜，2026-10-19 接入研判行）：
+    #    情绪词典的多/空计数当证据量（与⑦新闻情绪同一合成规则），附热点聚合前两位
+    #    与最高等级预警风险点。证据全部来自 build_mainland_hotlist() 的同一份结果，
+    #    不另算一套；词典启发式，不是校准概率。
+    if isinstance(hotlist, dict) and hotlist.get("status") == "success":
+        agg = hotlist.get("sentiment_agg") or {}
+        if agg.get("has_data"):
+            risk = hotlist.get("risk_report") or {}
+            bull = int(agg.get("pos_n") or 0)
+            bear = int(agg.get("neg_n") or 0)
+            prob = _ai_judge_prob(bull, bear)
+            _mark, label = _ai_judge_label(prob)
+            detail = (f'{int(hotlist.get("total") or 0)} 条标题：情绪 {bull} 多 / {bear} 空'
+                      f'（中性 {int(agg.get("neu_n") or 0)}，词典启发式）')
+            clusters = (hotlist.get("hotspots") or {}).get("clusters") or []
+            hot_terms = [str(c.get("term")) for c in clusters[:2]
+                         if isinstance(c, dict) and c.get("term")]
+            if hot_terms:
+                detail += "，热点聚合 " + "、".join(_esc(t) for t in hot_terms)
+            points = [p for p in (risk.get("points") or []) if isinstance(p, dict)]
+            if points:
+                top = points[0]
+                detail += (f'，预警风险点 {int(risk.get("points_total") or len(points))} 类'
+                           f'（最高「{_esc(str(top.get("category") or ""))}」'
+                           f'【{_esc(str(top.get("level") or ""))}】{int(top.get("count") or 0)} 条）')
+                verdict = f'内地情绪面{label}，优先核对「{_esc(str(top.get("category") or ""))}」证据'
+            else:
+                verdict = f"内地情绪面{label}，风险词表未命中（未命中 ≠ 没有风险）"
+            notes["MAINLAND HOTLIST"] = _judge_note(
+                prob, f"{detail} → 预测：{verdict}（非校准概率，不构成投资建议）")
 
     return notes
 
@@ -9922,10 +10097,12 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             blocks["TREND TRACKING"] = (
                 "TREND TRACKING", SECTION_TITLE_TREND, digest, "", "")
 
-    # ⑤b 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）：18 家内地财经媒体窗口内标题
-    #     按主题词表聚类（规则合成、确定性），并附每家的时效体检（条数 / 最新时间 /
-    #     滞后小时数 / 暂缺点名）。源头整源不可用或窗口内 0 条 → 整栏缺席，不占位。
-    hotlist_res = None      # 结果对象留存，供「🦑 AI帮你提鲜」复用同一份数字
+    # ⑤b 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」
+    #     更名）：18 家内地财经媒体窗口内标题按主题词表聚类（规则合成、确定性），并附每家的
+    #     时效体检（条数 / 最新时间 / 滞后小时数 / 暂缺点名）；2026-10-19 起叠加本地 AI 分析
+    #     三件套——⚖ 情绪总览、🔥 热点聚合、⚠ 预警风险点（全部标题级词典启发式，非校准概率）。
+    #     源头整源不可用或窗口内 0 条 → 整栏缺席，不占位。
+    hotlist_res = None      # 结果对象留存，供「⌁ AI 研判」与「🦑 AI帮你提鲜」复用同一份数字
     if MAINLAND_HOTLIST_ENABLED:
         mainland_src = data.get(MAINLAND_NEWS_SOURCE_NAME) or {}
         hotlist_res = build_mainland_hotlist(mainland_src)
@@ -9939,10 +10116,11 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                     if hotlist_res.get("merged"):
                         bits.append(f'跨源同题合并 {hotlist_res["merged"]} 条')
                     bits.append("主题按固定词表命中（第一条命中的主题，不重复计数）")
+                    bits.append("情绪 / 风险为本地词典启发式（标题级，非校准概率）")
                     caption = " ｜ ".join(bits)
                 blocks["MAINLAND HOTLIST"] = (
                     "MAINLAND HOTLIST", SECTION_TITLE_MAINLAND_HOTLIST, hot_html,
-                    kit.badge("内地资讯", "ok"), caption)
+                    kit.badge("情绪因子", "ai"), caption)
 
     # ⑥ 资讯：三个资讯栏目（东方财富快讯 / 【无敌帝王蟹】全球头条 / 港股名家频道）
     #    自 2026-10-02 起全部在页面隐藏（用户要求），不再单独渲染为栏目；
@@ -9986,7 +10164,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         data, policy=policy if (isinstance(policy, dict) and policy.get("available")) else None,
         senti=senti_result if (isinstance(senti_result, dict) and senti_result.get("available")) else None,
         fed_trend=fed_res if (isinstance(fed_res, dict) and fed_res.get("available")) else None,
-        geo_trend=geo_res if (isinstance(geo_res, dict) and geo_res.get("available")) else None)
+        geo_trend=geo_res if (isinstance(geo_res, dict) and geo_res.get("available")) else None,
+        hotlist=hotlist_res if (isinstance(hotlist_res, dict)
+                                and hotlist_res.get("status") == "success") else None)
     if judge_notes:
         new_sections = []
         for kick, title, content, badge, caption in sections:
@@ -10006,7 +10186,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     ren_ctx = None
     if REN_ENABLED:
         ren_ctx = {
-            # 【沸腾花蛤】内地财经热点榜：与正文 blocks["MAINLAND HOTLIST"] 同一份结果
+            # 【沸腾花蛤】情绪热点因子量化分析：与正文 blocks["MAINLAND HOTLIST"] 同一份结果
             "hotlist": hotlist_res,
             "date_str": date_str or _today_str(),
             "notes": judge_notes,
