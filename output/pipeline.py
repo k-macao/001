@@ -482,6 +482,7 @@ import octopus_weekly as _weekly  # noqa: E402
 import octopus_ren as _ren  # noqa: E402
 import octopus_short as _short  # noqa: E402  # 🎯 短线速查卡（≤600 字，日报结尾）
 import sentiment_strategy as _senti_strategy  # noqa: E402  # 📐 散户情绪因子（有 Reddit / StockTwits 样本时渲染）
+import media_risk as _media_risk  # noqa: E402  # 🚨 A/H 媒体舆情风险事件提取（规则分，不是概率）
 import octopus_lexicon as _lex  # noqa: E402  # 🦐 活鲜词库（AI帮你提鲜 / AI 研判点缀）
 import hk_seven_day as _hk7  # noqa: E402
 import jev_bridge as _jev  # noqa: E402
@@ -541,6 +542,8 @@ REN_ENABLED = _ren.ENABLED
 # OCTOPUS_LITE=0 或 --full 回到全量长版（旧行为）。
 # ------------------------------------------------------------
 LITE_ENABLED = _short.ENABLED
+# A/H 媒体舆情风险点：复用现有标题池与情绪历史，不新增联网；0 可独立关闭栏目。
+MEDIA_RISK_ENABLED = str(os.environ.get("OCTOPUS_MEDIA_RISK", "1")).strip().lower() not in ("0", "false", "no")
 # 量化呈现层（octopus_quant/render.py）跟日报同一个开关：--full / OCTOPUS_LITE=0 时
 # 校准曲线表 / 分项评分表 / 五因子逐行 / 全量个股表全部回来。
 _quant.render.LITE = LITE_ENABLED
@@ -614,6 +617,8 @@ LITE_LIMITS = {
     "site_posts": (2, 5),            # 每个社区板块/榜单的样本条数
     "senti_stocks": (2, 15),         # 情绪逐股：每市场最多几只
     "senti_headlines": (1, 3),       # 每只股票的证据标题条数
+    "media_risk_stocks": (4, 8),     # 媒体风险：预警标的（按等级 / 风险指数排序）
+    "media_risk_evidence": (2, 4),   # 媒体风险：每只标的列出的可追溯证据
     "em_summary": (60, 0),           # 东财快讯摘要截断字数（0 = 不截断）
     "notes": (0, 1),                 # 方法论长注：0 = 折叠成一句，1 = 全文
     "risk_cards": (2, 0),            # 风险提示卡条数（0 = 全部）
@@ -6098,6 +6103,7 @@ _SECTION_ICON_META = {
     "GLOBAL HEADLINES": ("▤", "NEWS", C_CYAN, "#092836"),
     "EASTMONEY WIRE": ("!", "WIRE", C_AMBER, C_FLAT_BG),
     "NEWS SENTIMENT": ("◆", "SENTI", C_MAGENTA, "#301226"),
+    "MEDIA RISK": ("!", "RISK", C_RED, C_DOWN_BG),
     "DATA AUDIT": ("✓", "LOG", C_GREEN, C_UP_BG),
     "FORECAST": ("★", "TL;DR", C_LEMON, C_AI_BG),
     "SUMMARY": ("✓", "RECAP", C_GREEN, C_UP_BG),
@@ -8082,7 +8088,7 @@ def _missing_source_names(source_items):
 
 
 def _summary_pairs(ai_result, pan, policy, source_items, today_n, total, quant=None,
-                   backup_events=None):
+                   backup_events=None, media_risk=None):
     """前置盘点：结论回顾 → 模型校准与预测追踪 → 明日关注 → 风险 → 数据覆盖。"""
     pairs = []
     if quant and quant.get("available"):
@@ -8119,14 +8125,28 @@ def _summary_pairs(ai_result, pan, policy, source_items, today_n, total, quant=N
         pairs.append(("今日盘点", _esc("｜".join(recap))))
     if ai_result and ai_result.get("themes"):
         pairs.append(("明日关注", _esc(ai_result["themes"])))
+    risk_notes = []
+    if isinstance(media_risk, dict) and media_risk.get("available"):
+        levels = media_risk.get("level_counts") or {}
+        top = media_risk.get("top_stock") or {}
+        alert_n = int(levels.get("red") or 0) + int(levels.get("orange") or 0)
+        detail = (f'结构化预警 {media_risk.get("risk_stock_n") or 0} 只（红/橙 {alert_n}）'
+                  f' · 异常关注 {media_risk.get("abnormal_attention_n") or 0} 只')
+        if top.get("name"):
+            detail += (f' · 最高 {top["name"]} '
+                       f'{(top.get("level") or {}).get("label") or "观察"} '
+                       f'{int(top.get("risk_index") or 0)}/100')
+        risk_notes.append(detail)
     if ai_result and ai_result.get("risks"):
         counts = {}
         for r in ai_result["risks"]:
             for kw in r.get("keywords") or []:
                 counts[kw] = counts.get(kw, 0) + 1
         if counts:
-            kws = "、".join(f"{k}×{v}" for k, v in sorted(counts.items(), key=lambda kv: -kv[1]))
-            pairs.append(("风险关注", _esc(kws)))
+            risk_notes.append("策略关键词 " + "、".join(
+                f"{k}×{v}" for k, v in sorted(counts.items(), key=lambda kv: -kv[1])))
+    if risk_notes:
+        pairs.append(("风险关注", _esc("｜".join(risk_notes))))
     elif ai_result and ai_result.get("available"):
         pairs.append(("风险关注", "未检出显著风险舆情"))
     # A股资讯已从日报栏目中移除：底层数据仍供量化策略使用，不再作为正文的
@@ -8182,6 +8202,8 @@ SECTION_TITLE_TREND = "【深海大鲨鱼】趋势跟踪"
 SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
 # 2026-10-10 更名：原「新闻情绪」；数据源键名、审计标签与 kicker（NEWS SENTIMENT）不变。
 SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
+# 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
+SECTION_TITLE_MEDIA_RISK = "【警戒河豚】媒体舆情风险点量化分析"
 
 # 正文逻辑顺序（2026-10-14 按用户要求重排）：
 #   今日预判（置顶，用户要求保留在最前）
@@ -8200,7 +8222,8 @@ REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
     "RETAIL SENTIMENT", "TREND TRACKING",
     # 【沸腾花蛤】内地财经热点榜（2026-10-13 新增）紧跟趋势跟踪，「内地口径」与「港股口径」相邻。
     "MAINLAND HOTLIST",
-    "NEWS SENTIMENT",
+    # 具体风险事实优先于模糊情绪：先看结构化事件预警，再看标题情绪分。
+    "MEDIA RISK", "NEWS SENTIMENT",
 )
 REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
     "QUANT FORECAST", "LIQUIDITY FLOW", "WEEKLY FORECAST",
@@ -9946,13 +9969,31 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
 
     # ⑥ 资讯：三个资讯栏目（东方财富快讯 / 【无敌帝王蟹】全球头条 / 港股名家频道）
     #    自 2026-10-02 起全部在页面隐藏（用户要求），不再单独渲染为栏目；
-    #    原始抓取数据照旧保留，仅作为 政策因子 / 策略研判 / 新闻情绪 / 逐栏 AI 研判 /
-    #    AI帮你提鲜 / 数据审计 的信号源（与「东方财富快讯」隐藏时的口径完全一致）。
+    #    原始抓取数据照旧保留，仅作为 媒体风险 / 政策因子 / 策略研判 / 新闻情绪 /
+    #    逐栏 AI 研判 / AI帮你提鲜 / 数据审计 的信号源（与「东方财富快讯」隐藏时的口径完全一致）。
     #    A股资讯已按用户要求移除，其数据不再采集。
     #    风险提示命中这些标题时 shown=False（见 build_daily_quant_strategy），
     #    因此保留完整标题、不生成指向已隐藏栏目的死链锚点。
 
-    # ⑦ 新闻情绪：只有真正归因到个股时才出现（样本不足不再占位）
+    # ⑦ 媒体舆情风险点：A/H 成交活跃标的，具体事件事实优先于模糊情绪。
+    #     复用同一 72h 标题池与 sentiment_history 新闻量基线；无具体事件且无可靠异常时整栏缺席。
+    media_risk_result = {}
+    if MEDIA_RISK_ENABLED:
+        media_risk_result = build_media_risk(
+            data, date_str or _today_str(), sentiment_history,
+            news_corpus=news_corpus)
+        if media_risk_result.get("available"):
+            red_orange = sum(int((media_risk_result.get("level_counts") or {}).get(k) or 0)
+                             for k in ("red", "orange"))
+            blocks["MEDIA RISK"] = (
+                "MEDIA RISK", SECTION_TITLE_MEDIA_RISK,
+                _media_risk_block(media_risk_result, kit),
+                kit.badge(f"{red_orange} 项高等级" if red_orange else "风险观察",
+                          "bad" if red_orange else "warn"),
+                "" if PLAIN() else "A股＋港股 · 72 小时标题事件 · 风险指数非概率",
+            )
+
+    # ⑧ 新闻情绪：只有真正归因到个股时才出现（样本不足不再占位）
     senti_result = {}
     if AI_ANALYSIS_ENABLED:
         senti_result = build_news_sentiment(data, date_str or _today_str(),
@@ -9972,7 +10013,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         blocks["FORECAST"] = ("FORECAST", SECTION_TITLE_FORECAST,
                                _conclusion_panel(kit, conclusion), "", "")
     summary = _summary_pairs(ai_result, pan, policy, source_items, today_n, total,
-                             quant=quant,
+                             quant=quant, media_risk=media_risk_result,
                              backup_events=(data.get("_backup_info") or {}).get("events"))
     blocks["SUMMARY"] = ("SUMMARY", "总结", kit.kv(summary), "", "")
 
@@ -10013,6 +10054,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "market": market, "pan": pan, "policy": policy, "ai": ai_result,
             "quant": quant, "weekly": weekly_res, "hk7": hk7_res,
             "fed": fed_res, "geo": geo_res, "senti": senti_result,
+            "media_risk": media_risk_result,
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
             # 【游资剑鱼】：与正文 blocks["UZI TREND"] 用的同一份 run_trend() 结果
@@ -10861,20 +10903,28 @@ _STOCK_ALIASES = {
     "江波龙": ("A股", "301308"),
     # 港股
     "腾讯": ("港股", "00700"), "腾讯控股": ("港股", "00700"),
-    "美团": ("港股", "03690"),
+    "Tencent": ("港股", "00700"), "Tencent Holdings": ("港股", "00700"),
+    "美团": ("港股", "03690"), "Meituan": ("港股", "03690"),
     "阿里巴巴": ("港股", "09988"), "阿里": ("港股", "09988"),
+    "Alibaba": ("港股", "09988"), "Alibaba Group": ("港股", "09988"),
     "小米": ("港股", "01810"), "小米集团": ("港股", "01810"),
-    "快手": ("港股", "01024"),
+    "Xiaomi": ("港股", "01810"),
+    "快手": ("港股", "01024"), "Kuaishou": ("港股", "01024"),
     "京东": ("港股", "09618"), "京东集团": ("港股", "09618"),
+    "JD.com": ("港股", "09618"),
     "百度": ("港股", "09888"), "百度集团": ("港股", "09888"),
-    "网易": ("港股", "09999"),
+    "Baidu": ("港股", "09888"),
+    "网易": ("港股", "09999"), "NetEase": ("港股", "09999"),
     "友邦": ("港股", "01299"), "友邦保险": ("港股", "01299"), "AIA": ("港股", "01299"),
     "海底捞": ("港股", "06862"),
     "优地机器人": ("港股", "02549"),
     "稀美资源": ("港股", "01536"),
-    "长和": ("港股", "00001"), "长实": ("港股", "01113"),
+    "长和": ("港股", "00001"), "CK Hutchison": ("港股", "00001"),
+    "长实": ("港股", "01113"), "CK Asset": ("港股", "01113"),
     "汇丰": ("港股", "00005"), "汇丰控股": ("港股", "00005"),
-    "港交所": ("港股", "00388"),
+    "HSBC": ("港股", "00005"), "HSBC Holdings": ("港股", "00005"),
+    "港交所": ("港股", "00388"), "HKEX": ("港股", "00388"),
+    "Hong Kong Exchanges and Clearing": ("港股", "00388"),
     # 美股
     "英伟达": ("美股", "NVDA"), "NVIDIA": ("美股", "NVDA"),
     "苹果": ("美股", "AAPL"), "Apple": ("美股", "AAPL"),
@@ -10988,6 +11038,18 @@ def _extract_stock_universe(hot):
     return universe
 
 
+def _headline_has_entity_token(title, token):
+    """中文按子串，英文 / 代码按不区分大小写的字母数字边界匹配。"""
+    text = str(title or "")
+    word = str(token or "")
+    if not text or not word:
+        return False
+    if word.isascii():
+        return bool(re.search(
+            rf"(?<![A-Za-z0-9]){re.escape(word)}(?![A-Za-z0-9])", text, re.IGNORECASE))
+    return word in text
+
+
 def _attribute_headline(title, universe):
     """标题归因到个股（增强版 2026-09-09）：
 
@@ -11006,16 +11068,16 @@ def _attribute_headline(title, universe):
         return []
     universe_by_key = {u["key"]: u for u in universe}
     matched = {}  # key → (universe_item, tag_priority)
-    # 1) 精确全名
+    # 1) 精确全名（英文名大小写不敏感且要求字母数字边界）
     for u in universe:
-        if u["name"] in title:
+        if _headline_has_entity_token(title, u["name"]):
             if u["key"] not in matched:
                 item = dict(u)
                 item["tag"] = "name"
                 matched[u["key"]] = (item, 0)
     # 2) 别名 / 代码
     for alias, (mkt, code) in _STOCK_ALIASES.items():
-        if alias not in title:
+        if not _headline_has_entity_token(title, alias):
             continue
         target_key = f"{mkt}:{code}"
         if target_key in universe_by_key and target_key not in matched:
@@ -11033,7 +11095,7 @@ def _attribute_headline(title, universe):
             matched[u["key"]] = (item, 1)
     # 3) 行业 / 概念（弱归因，只补充未被强归因的 key）
     for keyword, targets in _SECTOR_KEYWORDS.items():
-        if keyword not in title:
+        if not _headline_has_entity_token(title, keyword):
             continue
         for mkt, code in targets:
             target_key = f"{mkt}:{code}"
@@ -11108,18 +11170,36 @@ def _collect_headline_items(data, default_date):
     google = data.get("全球头条", {}) or {}
     for h in google.get("headlines", []) or []:
         if isinstance(h, dict):
-            _add(h.get("title"), h.get("source"), "全球头条", h.get("published_cst"))
+            _add(h.get("title"), h.get("source"), "全球头条", h.get("published_cst"),
+                 url=h.get("url", ""))
     em = data.get("东财快讯", {}) or {}
     for h in em.get("headlines", []) or []:
         if isinstance(h, dict):
-            _add(h.get("title"), "东方财富", "东财快讯", h.get("time"))
+            _add(h.get("title"), h.get("source") or "东方财富", "东财快讯", h.get("time"),
+                 url=h.get("url", ""))
     yt = data.get("港股名家频道", {}) or {}
     for ch in yt.get("channels", []) or []:
         ch_name = ch.get("name", "港股频道")
         for v in ch.get("videos", []) or []:
-            _add(v.get("title"), ch_name, "港股名家频道", v.get("published_cst"))
+            _add(v.get("title"), ch_name, "港股名家频道", v.get("published_cst"),
+                 url=v.get("url", ""))
+
+    # 港股 36 源池：此前只用于趋势跟踪，2026-10-20 起同时进入 A/H 媒体风险标题池。
+    # 仍只纳入采集端已通过「72h + 可验证时区 + 原文主机白名单」三道门的 items；
+    # 每条保留真实媒体名、分钟时间与原文链接，不能把聚合栏目名冒充来源。
+    hk_news = data.get(HK_NEWS_SOURCE_NAME) or {}
+    if isinstance(hk_news, dict):
+        for rec in hk_news.get("sources") or []:
+            if not isinstance(rec, dict):
+                continue
+            source_name = str(rec.get("name") or "港股新闻源头")
+            for h in rec.get("items") or []:
+                if isinstance(h, dict):
+                    _add(h.get("title"), source_name, HK_NEWS_SOURCE_NAME,
+                         h.get("published_cst"), url=h.get("url", ""))
+
     # 内地财经媒体源头（2026-10-12 新增，18 家）：标题、来源与原文链接一并进标题池，
-    # 供新闻情绪因子 / 政策因子 / 策略研判与逐栏 AI 研判共用；窗口仍由
+    # 供媒体风险 / 新闻情绪因子 / 政策因子 / 策略研判与逐栏 AI 研判共用；窗口仍由
     # _filter_headlines_window 按 ts 统一判定。
     mainland = data.get(MAINLAND_NEWS_SOURCE_NAME) or {}
     if isinstance(mainland, dict):
@@ -11583,6 +11663,274 @@ def _build_market_sentiment_summary(all_stocks, by_market):
         "coldest": coldest,
         "most_covered": most_covered,
     }
+
+
+# ============================================================
+# 媒体舆情风险点（A股＋港股 · 结构化事件预警）
+# ------------------------------------------------------------
+# 与新闻情绪的边界：新闻情绪回答「标题偏暖还是偏冷」；本栏回答「是否出现了
+# 立案 / 审计非标 / 股权冻结 / 断供等具体风险事实，或可靠的新闻量异常」。风险指数 0~100 是用于排序的
+# 确定性规则分，不是发生概率或涨跌概率；单一标题不会直接生成自动止损指令。
+# ============================================================
+def _media_risk_sentiment_scores(headlines, universe):
+    """复用新闻情绪词表，为风险 Agent Schema 计算每只 A/H 标的的 [-1, 1] 标题分。"""
+    slots = {}
+    for item in headlines or []:
+        if not isinstance(item, dict):
+            continue
+        title = str(item.get("title") or "")
+        risk_event = _media_risk.classify_title(title)
+        if not risk_event and _media_risk._is_noise_title(title):
+            continue
+        scored = _score_headline_sentiment(title)
+        value = float(scored.get("s") or 0)
+        if risk_event and risk_event.get("disputed") and value < 0:
+            value = 0.0
+        elif risk_event and not risk_event.get("disputed") and value == 0:
+            value = -1.0
+        for target in _attribute_headline(title, universe) or []:
+            if target.get("market") not in ("A股", "港股"):
+                continue
+            slot = slots.setdefault(target.get("key"), {"sum": 0.0, "n": 0,
+                                                         "negative_n": 0, "positive_n": 0})
+            slot["sum"] += value
+            slot["n"] += 1
+            slot["negative_n"] += int(value < 0)
+            slot["positive_n"] += int(value > 0)
+    return {
+        key: {
+            "score": (slot["sum"] / slot["n"]) if slot["n"] else None,
+            "sample_n": slot["n"],
+            "negative_n": slot["negative_n"],
+            "positive_n": slot["positive_n"],
+            "method": "existing_headline_sentiment_dictionary_with_risk_event_floor",
+        }
+        for key, slot in slots.items()
+    }
+
+
+def build_media_risk(data, date_str, history=None, news_corpus=None):
+    """构建 A/H 成交活跃标的的媒体风险事件、热度异常与分级处置。
+
+    标题严格复用新闻情绪的 72 小时时间窗：分钟时间晚于报告锚点的条目被排除；
+    只有日期、没有分钟时间的当日条目可以进入日级观察，但渲染时明确标注
+    「日级时间，禁用于日内回测」。美股不进入首期范围。
+    """
+    universe = [stock for stock in _extract_stock_universe(
+        (data or {}).get("热门榜单", {}) or {})
+        if stock.get("market") in ("A股", "港股")]
+    if not universe:
+        return {"available": False, "scope": "A股＋港股成交活跃标的",
+                "universe_n": 0, "stocks": []}
+    anchor_dt = _factor_anchor_dt(date_str)
+    anchor_date = anchor_dt.strftime("%Y-%m-%d")
+    if isinstance(news_corpus, dict) and isinstance(news_corpus.get("items"), list):
+        raw = news_corpus["items"]
+    else:
+        raw = _collect_headline_items(data or {}, anchor_date)
+    headlines = _filter_headlines_window(raw, anchor_dt, hours=_media_risk.WINDOW_HOURS)
+    prices = {}
+    markets = (((data or {}).get("热门榜单") or {}).get("markets") or {})
+    for market in ("A股", "港股"):
+        for stock in ((markets.get(market) or {}).get("stocks") or []):
+            code = str(stock.get("code") or "").strip()
+            name = str(stock.get("name") or "").strip()
+            if name:
+                prices[f"{market}:{code or name}"] = stock.get("change_pct")
+    result = _media_risk.analyze(
+        headlines, universe, _attribute_headline,
+        history if isinstance(history, dict) else {}, date_str,
+        prices=prices,
+        sentiment_scores=_media_risk_sentiment_scores(headlines, universe),
+        as_of=anchor_dt.strftime("%Y-%m-%d %H:%M:%S"),
+        window_hours=_media_risk.WINDOW_HOURS,
+    )
+    result["window_text"] = f"{anchor_dt:%m-%d %H:%M}"
+    return result
+
+
+def _media_risk_href(value):
+    """风险证据原文链接的最后一道输出校验（只接受无凭据的 HTTPS URL）。"""
+    raw = str(value or "").strip()
+    if not raw or any(c.isspace() or c in '<>\\"\'' for c in raw):
+        return ""
+    try:
+        parsed = urlparse(raw)
+        if (parsed.scheme != "https" or not parsed.hostname or parsed.username
+                or parsed.password or parsed.port not in (None, 443)):
+            return ""
+    except ValueError:
+        return ""
+    return raw
+
+
+def _media_risk_color(stock, kit):
+    key = str(((stock or {}).get("level") or {}).get("key") or "")
+    if key in ("red", "orange"):
+        return kit.bad_color
+    return kit.warn_color
+
+
+def _media_risk_title_html(event, color):
+    title = _esc(str((event or {}).get("title") or ""))
+    href = _media_risk_href((event or {}).get("url"))
+    if not href:
+        return title
+    return (f'<a href="{_esc(href)}" style="color:{color};font-weight:700;'
+            f'text-decoration:none;">{title}</a>')
+
+
+def _media_risk_attention_text(stock):
+    attention = (stock or {}).get("attention") or {}
+    if attention.get("enough"):
+        multiple = attention.get("multiple")
+        multiple_text = (f'{float(multiple):.1f}×'
+                         if type(multiple) in (int, float) else "均值为0，倍数不可定义")
+        return (f'今日 {int(attention.get("today") or 0)} 条 vs '
+                f'近 {int(attention.get("n") or 0)} 日均 {float(attention.get("mean") or 0):.1f} 条 · '
+                f'z={attention.get("z_display") or "—"} · {multiple_text} · '
+                f'{attention.get("label") or "正常"}')
+    return (f'今日 {int(attention.get("today") or 0)} 条 · 历史 n={int(attention.get("n") or 0)}'
+            f'（需≥{int(attention.get("need") or _media_risk.MIN_BASELINE_DAYS)}日，暂不判异常）')
+
+
+def _media_risk_block(res, kit):
+    """五套主题共用的媒体风险栏目正文（只用 kit 原语，保持微信全内联表格）。"""
+    if not (isinstance(res, dict) and res.get("available") and res.get("stocks")):
+        return ""
+    levels = res.get("level_counts") or {}
+    level_line = (f'红 {int(levels.get("red") or 0)} · 橙 {int(levels.get("orange") or 0)} · '
+                  f'黄 {int(levels.get("yellow") or 0)} · 蓝 {int(levels.get("blue") or 0)}')
+    categories = "、".join(f"{name}×{count}" for name, count in res.get("top_categories") or []) or "—"
+    head_pairs = [
+        ("监控范围", f'{_esc(str(res.get("scope") or "A股＋港股"))} · {int(res.get("universe_n") or 0)} 只'),
+        ("风险/异常命中", f'{int(res.get("risk_stock_n") or 0)} 只 · '
+                          f'具体风险 {int(res.get("risk_event_n") or 0)} 个 · '
+                          f'异常关注 {int(res.get("abnormal_attention_n") or 0)} 只 · {level_line}'),
+        ("事件类型", _esc(categories)),
+        ("时间窗口", f'近 {int(res.get("window_hours") or _media_risk.WINDOW_HOURS)} 小时 · 截至 {_esc(str(res.get("window_text") or "—"))}'),
+    ]
+    if not PLAIN():
+        headline_n = int(res.get("headline_n") or 0)
+        head_pairs.extend([
+            ("时间戳覆盖", f'{int(res.get("precise_ts_n") or 0)}/{headline_n} 条标题有分钟级发布时间'),
+            ("噪音剔除", f'{int(res.get("noise_filtered_n") or 0)} 条明确营销/导流标题'),
+            ("Agent Schema", _esc(str(res.get("agent_schema_version") or "—")) + " · JSON 可解析"),
+            ("风险指数", "0–100 规则排序分；JSON 的 0–1 值仅为归一化序数（不是发生概率、不是涨跌概率）"),
+        ])
+    out = [kit.kv(head_pairs)]
+
+    cat_rows = []
+    for name, count in (res.get("top_categories") or []):
+        cat_rows.append([_esc(str(name)), str(int(count)), "标题信号归因次数"])
+    if cat_rows and not PLAIN():
+        out.append(kit.sub("风险类型分布") + kit.table(
+            ["风险类型", "命中", "口径"], cat_rows,
+            aligns=("left", "right", "left")))
+
+    stocks = list(res.get("stocks") or [])
+    stock_limit = LITE("media_risk_stocks")
+    shown_stocks = stocks[:stock_limit] if stock_limit else stocks
+    for stock in shown_stocks:
+        level = stock.get("level") or {}
+        color = _media_risk_color(stock, kit)
+        name = _esc(str(stock.get("name") or ""))
+        code = _esc(str(stock.get("code") or ""))
+        market = _esc(str(stock.get("market") or ""))
+        label = _esc(str(level.get("label") or "观察"))
+        out.append(kit.sub(
+            f'! {name} {code} · {market} · {label} · 风险指数 {int(stock.get("risk_index") or 0)}/100'))
+        payload = stock.get("agent_payload") or {}
+        metrics = payload.get("sentiment_metrics") or {}
+        recommendation = payload.get("actionable_recommendation") or {}
+        status_counts = stock.get("status_counts") or {}
+        status_text = " · ".join(
+            f"{key} {int(status_counts.get(key) or 0)}"
+            for key in ("Current", "Emerging", "Historical") if status_counts.get(key)) or "—"
+        sentiment_value = metrics.get("sentiment_score")
+        sentiment_text = (f'{float(sentiment_value):+.2f}'
+                          if type(sentiment_value) in (int, float) else "样本不足")
+        pairs = [
+            ("核心触发", _esc("、".join(stock.get("top_hits") or []) or "—")),
+            ("事件时态", _esc(status_text)),
+            ("标准动作", f'<b style="color:{color};">{_esc(str(recommendation.get("action") or "Watch"))}</b>'),
+            ("证据覆盖", f'{int(stock.get("event_n") or 0)} 条归因 · '
+                         f'{int(stock.get("source_n") or 0)} 个来源 · '
+                         f'{int(stock.get("category_n") or 0)} 类信号'),
+            ("舆情热度", _esc(_media_risk_attention_text(stock))),
+            ("情绪/传播", _esc(
+                f'{sentiment_text} · {metrics.get("media_authority_level") or "Unknown"} · '
+                f'{metrics.get("propagation_stage") or "Single_Source"}'
+                + (" · 空头背离" if metrics.get("bearish_divergence") else ""))),
+        ]
+        change = stock.get("change_pct")
+        if type(change) in (int, float):
+            pairs.append(("价格交叉核对",
+                          f'{float(change):+.2f}% · {_esc(str(stock.get("divergence") or "—"))}'))
+        flags = []
+        if stock.get("attention_only"):
+            flags.append("仅新闻量异常，未检出具体负面事件；最高黄色关注")
+        if stock.get("sector_only"):
+            flags.append("仅行业链弱归因，等级封顶黄色关注")
+        if stock.get("disputed_only"):
+            flags.append("全部证据处于澄清/否认/解除语境，已降权")
+        if stock.get("commentary_only"):
+            flags.append("仅评论/社区来源，主要视为传播与情绪风险，等级封顶黄色关注")
+        if stock.get("historical_only"):
+            flags.append("仅 Historical 历史事件，风险指数封顶49")
+        elif stock.get("emerging_only") and not stock.get("attention_only"):
+            flags.append("仅 Emerging 待确认事件，不进入 Level 4")
+        if flags:
+            pairs.append(("归因护栏", _esc("；".join(flags))))
+        logic = list(payload.get("risk_logic_summary") or [])
+        if logic:
+            pairs.append(("判定依据", _esc("；".join(logic[:3] if PLAIN() else logic))))
+        pairs.append(("处置建议", f'<b style="color:{color};">{_esc(str(stock.get("action") or ""))}</b>'))
+        out.append(kit.kv(pairs))
+
+        events = list(stock.get("events") or [])
+        evidence_limit = LITE("media_risk_evidence")
+        shown_events = events[:evidence_limit] if evidence_limit else events
+        for event in shown_events:
+            ts = str(event.get("ts") or "")
+            if ts:
+                when = ts
+            else:
+                when = f'{event.get("date") or "日期未知"}（日级时间，禁用于日内回测）'
+            signal_label = ("热度异常证据" if event.get("signal_type") == "attention" else
+                            f'{event.get("severity_label") or "关注"}风险')
+            bits = [
+                "/".join(str(c) for c in event.get("categories") or []),
+                signal_label,
+                f'时态：{event.get("status") or "Current"}',
+                str(event.get("authority_tier") or ""),
+                str(event.get("source") or ""),
+                when,
+                f'归因：{event.get("attribution_label") or "—"}',
+            ]
+            if event.get("hits"):
+                bits.append("命中：" + "/".join(str(x) for x in event["hits"][:5]))
+            if event.get("disputed"):
+                bits.append("澄清/否认/解除语境，已降权")
+            out.append(kit.item_row(
+                "!", _media_risk_title_html(event, color),
+                _esc(" · ".join(bit for bit in bits if bit))))
+        hidden_events = max(0, int(stock.get("event_n") or 0) - len(shown_events))
+        if hidden_events and not PLAIN():
+            out.append(kit.note(f"其余 {hidden_events} 条证据已计入风险指数，正文按影响分仅展开前 {len(shown_events)} 条。"))
+
+    hidden_stocks = max(0, len(stocks) - len(shown_stocks))
+    if hidden_stocks and not PLAIN():
+        out.append(kit.note(f"另 {hidden_stocks} 只风险标的已计入汇总；默认版按预警等级与风险指数只列前 {len(shown_stocks)} 只。"))
+    if not PLAIN():
+        out.append(kit.note(
+            "口径：具体风险事件词表 × 来源权威度 × 公司归因强度，叠加跨源确认与近30日新闻量异常；"
+            "无事件词时仅在基线≥5日、（z≥2 或达到历史均值3倍）且当日≥3条时输出异常关注，"
+            "并明确不代表负面事实。营销/导流噪音先剔除；行业链映射与澄清语境均降权。"
+            "标题是线索而非事实定论，需回看监管/公司原文；"
+            "下游 JSON 给出时态、标准动作与可审计判定摘要，不输出隐藏思维链。"
+            "风险指数只用于排序与风控观察，不是概率，不触发自动交易。"))
+    return "".join(out)
 
 
 SENTI_MARKET_ORDER = ("A股", "港股", "美股")
@@ -12914,6 +13262,7 @@ DOSSIER_ICONS = {
     "GLOBAL HEADLINES": ("▤", D_GREEN_INK, "▲", D_RED_INK),
     "EASTMONEY WIRE": ("!", D_RED_INK, "■", D_BLACK),
     "NEWS SENTIMENT": ("◆", D_RED_INK, "●", D_GREEN_INK),
+    "MEDIA RISK": ("!", D_RED_INK, "▲", D_BLACK),
     "QUANT STRATEGY": ("◆", D_GREEN_INK, "■", D_RED_INK),
     "QUANT POLICY": ("◉", D_RED_INK, "■", D_BLACK),
     "FED TREND": ("$", D_GREEN_INK, "●", D_RED_INK),
@@ -13311,6 +13660,7 @@ FORUM_ICONS = {
     "GLOBAL HEADLINES": ("🌏", F_CYAN),
     "EASTMONEY WIRE": ("📰", F_ORANGE),
     "NEWS SENTIMENT": ("🔥", F_RED),   # 红色火焰：热度
+    "MEDIA RISK": ("🚨", F_ORANGE),    # 风险事实与分级处置
     "QUANT STRATEGY": ("🤖", F_PURPLE),
     "QUANT POLICY": ("📄", F_ORANGE),
     "FED TREND": ("💵", F_GREEN),
