@@ -202,5 +202,192 @@ class SentimentHotspotRiskTests(unittest.TestCase):
         self.assertEqual(rep["total_titles"], 1)
 
 
+class RiskTrendPostureTests(unittest.TestCase):
+    """2026-10-20 预警风险点「平时也有功能」：逐日预警趋势 + 今日风险态势。"""
+
+    @staticmethod
+    def _day(*pairs):
+        return [{"title": t, "source": s} for t, s in pairs]
+
+    # ---- 逐日画像 ----
+
+    def test_daily_profile_counts_hits_and_levels(self):
+        prof = finance.daily_risk_profile(self._day(
+            ("指数跌超3%", "甲"), ("板块大跌", "乙"), ("个股低开收跌", "丙"),
+            ("公司亏损扩大", "丁"), ("白酒板块逆市拉升", "戊")))
+        self.assertEqual(prof["total_titles"], 5)
+        self.assertEqual(prof["hit_n"], 4)
+        self.assertEqual(prof["hit_rate"], 80.0)
+        mv = prof["categories"]["市场波动风险"]
+        self.assertEqual((mv["count"], mv["media_n"], mv["level"]),
+                         (3, 3, finance.RISK_LEVEL_HIGH), "3 条 3 家 → 高")
+        cr = prof["categories"]["信用与财务风险"]
+        self.assertEqual((cr["count"], cr["level"]), (1, finance.RISK_LEVEL_WATCH))
+        self.assertNotIn("资金流向风险", prof["categories"], "未命中的类别不占位")
+
+    def test_daily_profile_handles_empty_and_junk(self):
+        self.assertEqual(finance.daily_risk_profile([])["categories"], {})
+        prof = finance.daily_risk_profile(["not-a-dict", {"title": ""}, None])
+        self.assertEqual(prof["total_titles"], 0)
+        self.assertEqual(prof["hit_n"], 0)
+
+    # ---- 预警趋势 ----
+
+    def test_trend_statuses_new_up_ongoing_down_cleared(self):
+        by_day = {
+            "2026-10-12": self._day(
+                ("个股大跌", "甲"),                        # 市场波动【关注】
+                ("公司被立案调查", "乙"), ("证监会处罚某券商", "丙"),  # 监管 2条2家【中】
+                ("房企违约传闻", "丁"),                     # 信用【关注】
+                ("股东减持公告", "戊")),                     # 资金【关注】
+            "2026-10-13": self._day(
+                ("指数跌超3%", "甲"), ("板块大跌", "乙"), ("个股低开", "丙"),  # 市场波动→【高】升级
+                ("公司被约谈", "丁"),                       # 监管 1条【关注】→ 降级
+                ("关税政策扰动市场", "戊")),                  # 外部冲击 → 新增；信用/资金 → 解除
+        }
+        t = finance.analyze_risk_trend(by_day, "2026-10-13")
+        self.assertTrue(t["has_history"])
+        self.assertEqual(t["baseline_date"], "2026-10-12")
+        self.assertEqual(t["today_n"], 5)
+        self.assertFalse(t["low_sample"])
+        status = {c["category"]: c["status"] for c in t["changes"]}
+        self.assertEqual(status, {
+            "市场波动风险": finance.RISK_STATUS_UP,
+            "监管与合规风险": finance.RISK_STATUS_DOWN,
+            "信用与财务风险": finance.RISK_STATUS_CLEARED,
+            "资金流向风险": finance.RISK_STATUS_CLEARED,
+            "外部冲击风险": finance.RISK_STATUS_NEW})
+        self.assertEqual((t["new_n"], t["upgraded_n"], t["ongoing_n"],
+                          t["downgraded_n"], t["cleared_n"]), (1, 1, 0, 1, 2))
+        self.assertEqual(t["changes"][0]["status"], finance.RISK_STATUS_NEW,
+                         "状态按 新增→升级→持续→降级→解除 排序")
+        up = next(c for c in t["changes"] if c["status"] == finance.RISK_STATUS_UP)
+        self.assertEqual((up["baseline_level"], up["level"]),
+                         (finance.RISK_LEVEL_WATCH, finance.RISK_LEVEL_HIGH))
+        self.assertTrue(t["trend_phrase"].startswith("较最近存档日"))
+        self.assertIn("新增 1 类", t["trend_phrase"])
+        self.assertIn("解除 2 类", t["trend_phrase"])
+        self.assertTrue(t["trend_brief"].startswith("按日对比"))
+        self.assertIn("新增 1", t["trend_brief"])
+        self.assertNotIn(t["trend_brief"], t["trend_phrase"], "两套归纳必须异文（栏内重复口径）")
+        self.assertIn("不构成投资建议", t["note"])
+
+    def test_trend_ongoing_and_low_sample(self):
+        day = self._day(("个股大跌", "甲"))
+        t = finance.analyze_risk_trend({"2026-10-12": list(day), "2026-10-13": list(day)},
+                                       "2026-10-13")
+        self.assertTrue(t["has_history"])
+        self.assertEqual([c["status"] for c in t["changes"]], [finance.RISK_STATUS_ONGOING])
+        self.assertEqual(t["trend_phrase"], "较最近存档日 持续 1 类")
+        self.assertEqual(t["trend_brief"], "按日对比 持续 1")
+        self.assertTrue(t["low_sample"], "今日存档 1 条 < 5 → 低样本")
+        self.assertNotIn("样本", t["trend_phrase"],
+                         "低样本提示由各渲染行自行追加措辞，不拼进 phrase")
+
+    def test_trend_window_drops_old_days_and_picks_latest_baseline(self):
+        by_day = {
+            "2026-10-01": self._day(("个股大跌", "甲")),    # 窗口外（>7 日）
+            "2026-10-10": self._day(("房企违约", "乙")),    # 窗口内、非最近存档日
+            "2026-10-12": self._day(("股东减持", "丙")),    # 基准日
+            "2026-10-13": self._day(("关税扰动", "丁")),    # 今日
+        }
+        t = finance.analyze_risk_trend(by_day, "2026-10-13")
+        self.assertEqual(t["baseline_date"], "2026-10-12")
+        self.assertEqual([d["date"] for d in t["days"]],
+                         ["2026-10-10", "2026-10-12", "2026-10-13"],
+                         "窗口外的日子不进逐日画像")
+        status = {c["category"]: c["status"] for c in t["changes"]}
+        self.assertEqual(status, {"资金流向风险": finance.RISK_STATUS_CLEARED,
+                                  "外部冲击风险": finance.RISK_STATUS_NEW})
+
+    def test_trend_without_history_is_honest(self):
+        for by_day, today in (
+            ({}, "2026-10-13"),
+            ({"2026-10-13": self._day(("个股大跌", "甲"))}, "2026-10-13"),   # 只有今日
+            ({"2026-10-12": self._day(("个股大跌", "甲"))}, "2026-10-13"),   # 今日无切片
+            ({"2026-10-12": self._day(("个股大跌", "甲"))}, "not-a-date"),   # 日期解析不出
+        ):
+            t = finance.analyze_risk_trend(by_day, today)
+            self.assertFalse(t["has_history"])
+            self.assertEqual(t["trend_phrase"], "")
+            self.assertEqual(t["trend_brief"], "")
+            self.assertEqual(t["changes"], [])
+
+    def test_trend_is_deterministic(self):
+        by_day = {
+            "2026-10-12": self._day(("个股大跌", "甲")),
+            "2026-10-13": self._day(("指数跌超3%", "乙"), ("板块大跌", "丙"),
+                                    ("个股低开", "丁"), ("公司亏损", "戊"),
+                                    ("关税扰动", "己")),
+        }
+        self.assertEqual(finance.analyze_risk_trend(by_day, "2026-10-13"),
+                         finance.analyze_risk_trend(by_day, "2026-10-13"),
+                         "预警趋势必须确定性可复现")
+
+    # ---- 今日风险态势 ----
+
+    def test_posture_calm_day(self):
+        rr = finance.analyze_hotlist_risks(self._day(("白酒板块逆市拉升", "甲"),
+                                                     ("央行召开会议", "乙")))
+        p = finance.risk_posture(rr, {"has_data": True, "label": "偏多"}, None)
+        self.assertTrue(p["calm"])
+        self.assertTrue(p["has_data"])
+        self.assertEqual(p["verdict"], "无预警命中，保持观察")
+        self.assertEqual(p["text"],
+                         "情绪面偏多，无预警命中，保持观察 · 历史存档不足，暂不按日对比")
+        self.assertEqual(p["plain_text"], "情绪面偏多，无预警命中，保持观察")
+        self.assertIn("不构成投资建议", p["note"])
+
+    def test_posture_calm_bearish_day(self):
+        rr = finance.analyze_hotlist_risks(self._day(("白酒板块逆市拉升", "甲")))
+        p = finance.risk_posture(rr, {"has_data": True, "label": "偏空"}, None)
+        self.assertTrue(p["calm"])
+        self.assertEqual(p["verdict"], "无预警命中，留意报道")
+
+    def test_posture_hit_levels(self):
+        hi = finance.analyze_hotlist_risks(self._day(
+            ("指数跌超3%", "甲"), ("板块大跌", "乙"), ("个股低开", "丙")))
+        self.assertFalse(finance.risk_posture(hi, None, None)["calm"])
+        self.assertEqual(finance.risk_posture(hi, None, None)["verdict"],
+                         "有【高】级预警，优先核证据")
+        mid = finance.analyze_hotlist_risks(self._day(("指数跌超3%", "甲"), ("板块大跌", "乙")))
+        p = finance.risk_posture(mid, None, None)
+        self.assertEqual(p["verdict"], "有【中】级预警，关注传播面")
+        self.assertNotIn("情绪面", p["text"], "无情绪数据不硬凑情绪面")
+        watch = finance.analyze_hotlist_risks(self._day(("个股大跌", "甲")))
+        self.assertEqual(
+            finance.risk_posture(watch, {"has_data": True, "label": "中性"}, None)["verdict"],
+            "仅关注级命中，保持观察")
+
+    def test_posture_uses_phrase_not_brief(self):
+        watch = finance.analyze_hotlist_risks(self._day(("个股大跌", "甲")))
+        t = finance.analyze_risk_trend(
+            {"2026-10-12": self._day(("房企违约", "乙")),
+             "2026-10-13": self._day(("个股大跌", "甲"))}, "2026-10-13")
+        p = finance.risk_posture(watch, {"has_data": True, "label": "偏多"}, t)
+        self.assertIn(t["trend_phrase"], p["text"])
+        self.assertNotIn(t["trend_brief"], p["text"], "brief 留给提鲜结论，避免同栏同句")
+        self.assertNotIn(t["trend_phrase"], p["plain_text"],
+                         "入门版态势行不带趋势句（趋势行已带）")
+
+    def test_posture_verdicts_stay_short_for_dedup(self):
+        # 栏内重复审计口径：≥14 字且 ≥8 个汉字的片段同栏出现两次即告警。
+        # verdict 会同现在「⚠ 今日风险态势」行与「🦑 AI帮你提鲜」结论里，必须 ≤13 字。
+        calm = finance.analyze_hotlist_risks(self._day(("白酒板块逆市拉升", "甲")))
+        hi = finance.analyze_hotlist_risks(self._day(
+            ("指数跌超3%", "甲"), ("板块大跌", "乙"), ("个股低开", "丙")))
+        mid = finance.analyze_hotlist_risks(self._day(("指数跌超3%", "甲"), ("板块大跌", "乙")))
+        watch = finance.analyze_hotlist_risks(self._day(("个股大跌", "甲")))
+        variants = [finance.risk_posture(calm, {"has_data": True, "label": m}, None)["verdict"]
+                    for m in ("偏多", "中性", "偏空")]
+        variants += [finance.risk_posture(x, None, None)["verdict"] for x in (hi, mid, watch)]
+        for v in variants:
+            self.assertLessEqual(len(v), 13, f"verdict 过长会触发栏内重复：{v}")
+
+    def test_posture_without_data(self):
+        p = finance.risk_posture({}, None, None)
+        self.assertFalse(p["has_data"])
+
+
 if __name__ == "__main__":
     unittest.main()

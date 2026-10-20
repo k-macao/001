@@ -820,3 +820,143 @@ class HotlistRenderTests(unittest.TestCase):
                 html = pipeline.generate_report(data, "2026年10月13日 · 周二", "20261013")
         self.assertNotIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
         self.assertIn(pipeline.SECTION_TITLE_TREND, html, "趋势跟踪栏目不受影响")
+
+
+def _corpus_items(*days):
+    """存档夹具：news_history.json 条目口径（section=内地财经媒体，date=存档日期）。"""
+    items = []
+    for day, pairs in days:
+        for t, s in pairs:
+            items.append({"title": t, "source": s,
+                          "section": pipeline.MAINLAND_NEWS_SECTION,
+                          "ts": f"{day} 10:00", "date": day})
+    return items
+
+
+# 基准日 10-12：市场波动【关注】1 条 + 信用【关注】1 条 + 资金【关注】1 条；
+# 今日 10-13：市场波动 3 条 3 家 →【高】（升级）+ 信用 1 条（持续）+ 1 条无命中；
+# 资金流向今日缺席 → 解除。今日存档 5 条 ≥ 5 → 非低样本。
+_TREND_CORPUS = _corpus_items(
+    ("2026-10-12", (("个股大跌", "券商中国"), ("房企违约传闻", "和讯网"),
+                    ("股东减持公告", "证券之星"))),
+    ("2026-10-13", (("指数跌超3%", "甲媒体"), ("板块大跌", "乙媒体"),
+                    ("个股低开", "丙媒体"), ("公司亏损扩大", "丁媒体"),
+                    ("白酒板块逆市拉升", "戊媒体"))),
+)
+
+
+class HotlistTrendPostureTests(unittest.TestCase):
+    """2026-10-20 预警风险点「平时也有功能」：🔭 预警趋势 + ⚠ 今日风险态势。"""
+
+    def _hot(self, entries=_HOT_ENTRIES, corpus=None, date_str="20261013"):
+        src = _hotlist_data(entries)[pipeline.MAINLAND_NEWS_SOURCE_NAME]
+        return pipeline.build_mainland_hotlist(src, news_corpus=corpus, date_str=date_str)
+
+    def test_trend_attached_only_with_corpus_and_date(self):
+        hot = self._hot(corpus=_TREND_CORPUS)
+        t = hot["risk_trend"]
+        self.assertTrue(t["has_history"])
+        self.assertEqual(t["baseline_date"], "2026-10-12")
+        self.assertEqual(t["today"], "2026-10-13")
+        self.assertFalse(t["low_sample"])
+        status = {c["category"]: c["status"] for c in t["changes"]}
+        self.assertEqual(status, {"市场波动风险": "升级", "信用与财务风险": "持续",
+                                  "资金流向风险": "解除"})
+        self.assertTrue(hot["risk_posture"]["has_data"])
+        # 无存档 / 日期解析不出 → 趋势如实缺席，态势行仍在（历史存档不足口径）
+        for kwargs in ({}, {"corpus": _TREND_CORPUS, "date_str": None}):
+            h = self._hot(**kwargs)
+            self.assertIsNone(h["risk_trend"])
+            self.assertEqual(h["risk_posture"]["trend_phrase"], "历史存档不足，暂不按日对比")
+
+    def test_corpus_only_counts_mainland_section(self):
+        corpus = list(_TREND_CORPUS)
+        corpus.append({"title": "某股暴跌", "source": "东方财富", "section": "东财快讯",
+                       "ts": "2026-10-13 09:00", "date": "2026-10-13"})
+        hot = self._hot(corpus=corpus)
+        today = [d for d in hot["risk_trend"]["days"] if d["date"] == "2026-10-13"][0]
+        self.assertEqual(today["total_titles"], 5, "只统计「内地财经媒体」段的存档")
+        self.assertEqual(today["hit_n"], 4, "其他栏目的风险标题不混进本栏趋势")
+
+    def test_full_block_renders_trend_and_posture_rows(self):
+        hot = self._hot(corpus=_TREND_CORPUS)
+        with patch.object(pipeline, "LITE_ENABLED", False):
+            block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertIn("预警趋势", block)
+        self.assertIn("近 7 日按日重算", block)
+        self.assertIn("逐日命中 3·4（10-12→10-13）", block)
+        self.assertIn("升级【关注→高】市场波动风险", block)
+        self.assertIn("持续【关注】信用与财务风险", block)
+        self.assertIn("解除 资金流向风险（前日【关注】）", block)
+        self.assertIn("今日风险态势", block)
+        self.assertIn("预警风险点", block, "命中日的预警风险点头行照旧")
+
+    def test_full_block_shows_low_sample_caveat(self):
+        corpus = _corpus_items(
+            ("2026-10-12", (("房企违约传闻", "和讯网"),)),
+            ("2026-10-13", (("指数跌超3%", "甲媒体"), ("个股大跌", "乙媒体"))))
+        hot = self._hot(corpus=corpus)
+        self.assertTrue(hot["risk_trend"]["low_sample"])
+        with patch.object(pipeline, "LITE_ENABLED", False):
+            block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertIn("今日存档 2 条样本尚少，对比仅作提示", block)
+        self.assertIn("新增【中】市场波动风险", block)
+        self.assertIn("解除 信用与财务风险（前日【关注】）", block)
+
+    def test_plain_block_compresses_trend_and_posture(self):
+        hot = self._hot(corpus=_TREND_CORPUS)
+        with patch.object(pipeline, "LITE_ENABLED", True):
+            block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertIn("预警趋势", block)
+        self.assertNotIn("逐日命中", block, "入门版不出逐日明细")
+        self.assertIn(hot["risk_trend"]["trend_phrase"], block)
+        self.assertIn("今日风险态势", block)
+        self.assertIn(hot["risk_posture"]["plain_text"], block)
+        self.assertNotIn("近 7 日按日重算", block, "入门版不带口径长注")
+
+    def test_trend_row_absent_without_history(self):
+        hot = self._hot()
+        with patch.object(pipeline, "LITE_ENABLED", False):
+            block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertNotIn("预警趋势", block, "缺存档不出趋势行，不硬造变化")
+        self.assertIn("今日风险态势", block)
+        self.assertIn("历史存档不足", block)
+
+    def test_zero_hit_day_keeps_disclosure_and_gains_posture(self):
+        entries = (("白酒板块逆市拉升，多股涨停", "时代财经",
+                    "https://www.tfcaijing.com/article/page/9", "2026-10-13 02:35"),)
+        hot = self._hot(entries=entries, corpus=_TREND_CORPUS)
+        self.assertFalse(hot["risk_report"]["has_data"])
+        block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertIn("未命中风险词表", block, "0 命中披露行保留")
+        self.assertIn("预警风险点", block)
+        self.assertIn("今日风险态势", block)
+        self.assertIn("无预警命中", block)
+        self.assertIn("预警趋势", block, "平时也有趋势对比——这就是「平时也有功能」")
+
+    def test_note_and_ren_consume_same_result(self):
+        hot = self._hot(corpus=_TREND_CORPUS)
+        notes = pipeline.build_section_ai_notes({}, hotlist=hot)
+        note = notes["MAINLAND HOTLIST"]
+        self.assertIn("→ 预测：", note["text"])
+        self.assertNotIn("预警趋势", note["text"], "趋势不进研判行（避免同栏三处同句）")
+        ren_txt = pipeline._ren._ren_mainland_hotlist(
+            {"hotlist": hot, "date_str": "20261013", "notes": notes})
+        self.assertIn("今日风险态势", ren_txt)
+        self.assertIn(hot["risk_trend"]["trend_brief"], ren_txt)
+        self.assertNotIn(hot["risk_trend"]["trend_phrase"], ren_txt,
+                         "提鲜用 brief、态势行用 phrase——同栏不许同句")
+
+    def test_build_with_corpus_is_deterministic(self):
+        a = self._hot(corpus=_TREND_CORPUS)
+        b = self._hot(corpus=_TREND_CORPUS)
+        self.assertEqual(a["risk_trend"], b["risk_trend"])
+        self.assertEqual(a["risk_posture"], b["risk_posture"])
+
+    def test_page_renders_trend_and_posture_with_corpus(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        html = pipeline.generate_report(data, "2026年10月13日 · 周二", "20261013",
+                                        news_corpus=_TREND_CORPUS)
+        self.assertIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
+        self.assertIn("预警趋势", html)
+        self.assertIn("今日风险态势", html)

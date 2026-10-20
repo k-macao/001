@@ -24,6 +24,7 @@
 import jieba
 from typing import Dict, List, Tuple, Optional
 from collections import Counter
+import datetime
 import re
 import math
 
@@ -864,6 +865,208 @@ def _iter_lexicon_pairs():
     for category, keywords in FINANCE_RISK_LEXICON:
         for kw in keywords:
             yield category, kw
+
+
+# ============================================================================
+# 预警趋势与今日风险态势（2026-10-20 新增：「平时也有功能」的每日风险分析）
+# ============================================================================
+# 口径：与「⚠ 预警风险点」同一份本地风险词表、同一套标题级命中与传播度等级规则，
+# 对存档语料（news_history.json「内地财经媒体」段）按自然日重算近 RISK_TREND_DAYS 日
+# 画像，与基准日（今日之前最近一个有存档的日子）对比出五种确定性状态：
+#   新增 / 升级 / 持续 / 降级 / 解除。
+# 状态只描述「词表命中的日间变化」，不是事件演化事实，也不是发生概率；
+# 今日存档样本过少时如实提示「对比仅作提示」，无基准日时渲染层整行不出（不硬造变化）。
+
+RISK_TREND_DAYS = 7          # 近几个自然日（含今日）重算逐日风险画像
+RISK_TREND_MIN_SAMPLE = 5    # 今日存档切片少于该条数 → 低样本，对比仅作提示
+RISK_STATUS_NEW = "新增"
+RISK_STATUS_UP = "升级"
+RISK_STATUS_ONGOING = "持续"
+RISK_STATUS_DOWN = "降级"
+RISK_STATUS_CLEARED = "解除"
+_RISK_STATUS_ORDER = {RISK_STATUS_NEW: 0, RISK_STATUS_UP: 1, RISK_STATUS_ONGOING: 2,
+                      RISK_STATUS_DOWN: 3, RISK_STATUS_CLEARED: 4}
+_RISK_LEVEL_RANK = {RISK_LEVEL_WATCH: 1, RISK_LEVEL_MID: 2, RISK_LEVEL_HIGH: 3}
+RISK_TREND_METHOD = (f"近 {RISK_TREND_DAYS} 日按日重算"
+                     "（同一份风险词表 · 标题级 · 存档日期口径）")
+
+
+def daily_risk_profile(items) -> Dict:
+    """一个自然日的标题切片 → 逐日风险画像（与预警风险点同一份词表和等级规则）。
+
+    返回 {total_titles, hit_n, hit_rate, categories: {类别: {level, count, media_n}}}。
+    categories 保全量类别（不做 top_n 截断），只供按日对比，不供渲染证据行。
+    """
+    report = analyze_hotlist_risks(items, top_n=len(FINANCE_RISK_LEXICON))
+    categories = {}
+    for p in report.get("points") or []:
+        if isinstance(p, dict):
+            categories[str(p.get("category") or "")] = {
+                "level": str(p.get("level") or ""),
+                "count": int(p.get("count") or 0),
+                "media_n": int(p.get("media_n") or 0),
+            }
+    total = int(report.get("total_titles") or 0)
+    hit = int(report.get("hit_n") or 0)
+    return {
+        "total_titles": total,
+        "hit_n": hit,
+        "hit_rate": round(hit / total * 100, 1) if total else 0.0,
+        "categories": categories,
+    }
+
+
+def analyze_risk_trend(items_by_day, today, days=RISK_TREND_DAYS) -> Dict:
+    """逐日预警趋势：今日日切片对比基准日 → 新增 / 升级 / 持续 / 降级 / 解除。
+
+    items_by_day: {"YYYY-MM-DD": [item, ...]}（item 只认 title / source 字段）；
+    today: "YYYY-MM-DD" 报告日。只对窗口 [today-days+1, today] 内有存档的自然日
+    算画像；基准日 = 今日之前最近一个有存档的日子。没有基准日或今日无切片 →
+    has_history=False（渲染层不出趋势行，不硬造变化）。
+    今日存档 < RISK_TREND_MIN_SAMPLE 条 → low_sample=True（对比仅作提示）。
+    """
+    items_by_day = items_by_day if isinstance(items_by_day, dict) else {}
+    today = str(today or "")
+    try:
+        today_d = datetime.date.fromisoformat(today)
+    except ValueError:
+        today_d = None
+    day_rows = []
+    if today_d is not None:
+        for offset in range(max(1, int(days)) - 1, -1, -1):
+            key = (today_d - datetime.timedelta(days=offset)).isoformat()
+            slice_items = items_by_day.get(key)
+            if not isinstance(slice_items, (list, tuple)) or not slice_items:
+                continue
+            prof = daily_risk_profile(slice_items)
+            prof["date"] = key
+            day_rows.append(prof)
+    today_prof = next((p for p in day_rows if p.get("date") == today), None)
+    baseline = next((p for p in reversed(day_rows) if str(p.get("date") or "") < today), None)
+    has_history = bool(today_prof) and bool(baseline)
+
+    changes = []
+    if has_history:
+        t_cats = today_prof.get("categories") or {}
+        b_cats = baseline.get("categories") or {}
+        known = sorted(set(t_cats) | set(b_cats),
+                       key=lambda c: _RISK_CATEGORY_ORDER.get(c, 99))   # 词表序，确定性
+        for cat in known:
+            t, b = t_cats.get(cat), b_cats.get(cat)
+            if t and not b:
+                changes.append({"category": cat, "status": RISK_STATUS_NEW,
+                                "level": t["level"], "baseline_level": None,
+                                "count": t["count"], "media_n": t["media_n"]})
+            elif t and b:
+                rt = _RISK_LEVEL_RANK.get(t["level"], 0)
+                rb = _RISK_LEVEL_RANK.get(b["level"], 0)
+                status = (RISK_STATUS_UP if rt > rb else
+                          RISK_STATUS_DOWN if rt < rb else RISK_STATUS_ONGOING)
+                changes.append({"category": cat, "status": status,
+                                "level": t["level"], "baseline_level": b["level"],
+                                "count": t["count"], "media_n": t["media_n"]})
+            elif b and not t:
+                changes.append({"category": cat, "status": RISK_STATUS_CLEARED,
+                                "level": None, "baseline_level": b["level"],
+                                "count": b["count"], "media_n": b["media_n"]})
+        changes.sort(key=lambda c: (
+            _RISK_STATUS_ORDER.get(c["status"], 9),
+            -_RISK_LEVEL_RANK.get(c.get("level") or c.get("baseline_level") or "", 0),
+            _RISK_CATEGORY_ORDER.get(c["category"], 99)))
+
+    counts = {s: sum(1 for c in changes if c["status"] == s) for s in _RISK_STATUS_ORDER}
+    today_n = int((today_prof or {}).get("total_titles") or 0)
+    low_sample = has_history and today_n < RISK_TREND_MIN_SAMPLE
+    # 两套同义异文的归纳，渲染层按行分配（态势行用 phrase、提鲜结论用 brief、
+    # 趋势行自己列逐类明细），避免同一栏里两个单元格逐字重复同一句长文
+    # （栏内重复审计口径：≥14 字且 ≥8 个汉字的片段同栏出现两次即告警）。
+    # 低样本提示由各渲染行自行追加措辞，这里不拼进 phrase/brief。
+    if not has_history:
+        trend_phrase = trend_brief = ""
+    elif not changes:
+        trend_phrase = "较最近存档日无类别变化"
+        trend_brief = "按日对比无类别变化"
+    else:
+        order = (RISK_STATUS_NEW, RISK_STATUS_UP, RISK_STATUS_ONGOING,
+                 RISK_STATUS_DOWN, RISK_STATUS_CLEARED)
+        trend_phrase = "较最近存档日 " + "、".join(
+            f"{s} {counts[s]} 类" for s in order if counts[s])
+        trend_brief = "按日对比 " + "、".join(
+            f"{s} {counts[s]}" for s in order if counts[s])
+
+    return {
+        "enabled": True,
+        "has_history": has_history,
+        "method": RISK_TREND_METHOD,
+        "window_days": max(1, int(days)),
+        "today": today,
+        "baseline_date": (baseline or {}).get("date"),
+        "days": day_rows,
+        "today_n": today_n,
+        "low_sample": low_sample,
+        "changes": changes,
+        "new_n": counts[RISK_STATUS_NEW],
+        "upgraded_n": counts[RISK_STATUS_UP],
+        "ongoing_n": counts[RISK_STATUS_ONGOING],
+        "downgraded_n": counts[RISK_STATUS_DOWN],
+        "cleared_n": counts[RISK_STATUS_CLEARED],
+        "trend_phrase": trend_phrase,
+        "trend_brief": trend_brief,
+        "note": "状态是词表命中的日间对比，不是事件演化事实，也不是发生概率；不构成投资建议",
+    }
+
+
+def risk_posture(risk_report, sentiment_agg=None, trend=None) -> Dict:
+    """今日风险态势：无命中 / 低等级的平时日子也给出一行确定性分析结论。
+
+    只组合三个同源结果里已有的数字——窗口内预警风险点（risk_report）、情绪总览
+    （sentiment_agg）、逐日预警趋势（trend）；不新增取数，不造方向或概率。
+    verdict 是态势定调（AI 研判 / 提鲜 / 渲染共用同一句）；text 是全量版渲染句，
+    plain_text 是入门版压缩句。
+    """
+    risk = risk_report if isinstance(risk_report, dict) else {}
+    points = [p for p in (risk.get("points") or []) if isinstance(p, dict)]
+    total_titles = int(risk.get("total_titles") or 0)
+    agg = sentiment_agg if isinstance(sentiment_agg, dict) else {}
+    trend = trend if isinstance(trend, dict) else {}
+    mood = str(agg.get("label") or "") if agg.get("has_data") else ""
+    levels = [str(p.get("level") or "") for p in points]
+
+    if not points:
+        calm = True
+        verdict = "无预警命中，留意报道" if mood == "偏空" else "无预警命中，保持观察"
+    elif RISK_LEVEL_HIGH in levels:
+        calm = False
+        verdict = "有【高】级预警，优先核证据"
+    elif RISK_LEVEL_MID in levels:
+        calm = False
+        verdict = "有【中】级预警，关注传播面"
+    else:
+        calm = False
+        verdict = "仅关注级命中，保持观察"
+
+    if trend.get("has_history"):
+        trend_phrase = str(trend.get("trend_phrase") or "")
+    else:
+        trend_phrase = "历史存档不足，暂不按日对比"
+
+    # 「未命中风险词表」的披露与「等级是传播度」的注记由栏内「预警风险点」头行负责；
+    # 态势行只讲情绪面定调 + 趋势对比。verdict 控制在 13 字内，与「🦑 AI帮你提鲜」
+    # 结论里引用的同一句话构成 <14 字的公共片段，不触发栏内重复审计
+    # （口径：≥14 字且 ≥8 个汉字的片段同栏出现两次即告警）。
+    mood_part = f"情绪面{mood}，" if mood else ""
+    text = f"{mood_part}{verdict} · {trend_phrase}"
+    plain_text = f"{mood_part}{verdict}"
+    return {
+        "has_data": bool(total_titles or points),
+        "calm": calm,
+        "verdict": verdict,
+        "trend_phrase": trend_phrase,
+        "text": text,
+        "plain_text": plain_text,
+        "mood_label": mood,
+        "note": "词表启发式的态势归纳，不是校准概率；不构成投资建议",
+    }
 
 
 # ============================================================================
