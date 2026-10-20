@@ -7,7 +7,8 @@
 它不是构造故事：标题、链接、时间都来自当天真实抓取，只是**离线重放**到渲染层。
 
 用途：沙箱 / CI 没有外网时，也能验证新栏目在 5 套主题（lime / pixel / forum / dossier /
-guizang）下都能渲染，且主题条数、时效体检、暂缺点名、情绪总览、热点聚合与预警风险点都如实显示。
+guizang）下都能渲染，且主题条数、时效体检、暂缺点名、情绪总览、热点聚合、预警风险点、
+预警趋势与今日风险态势都如实显示。
 
 真实覆盖仍以联网机器为准：
     python3 output/pipeline.py --dry-run      # 每家 ✅/⚠️ + 「内地财经媒体 N/18 家…」
@@ -186,6 +187,25 @@ def build_data():
     return {pl.MAINLAND_NEWS_SOURCE_NAME: src, "热门榜单": hot}
 
 
+def build_corpus():
+    """存档夹具：把同一批实测标题按 news_history.json 的条目口径重放。
+
+    section=内地财经媒体、date=存档日期口径（与真实存档一致：标题级时间截断到日，
+    同日重复按 日期+标题 去重）。SAMPLE 只覆盖 2026-10-11 ~ 10-13 三天 →
+    「🔭 预警趋势」如实只列这三天；10-07 ~ 10-10 无存档就不进对比，
+    不虚构空日、不硬造历史。
+    """
+    items, seen = [], set()
+    for src, title, url, cst in SAMPLE:
+        key = (cst[:10], re.sub(r"\s+", "", title))
+        if key in seen:
+            continue
+        seen.add(key)
+        items.append({"title": title, "source": src, "section": pl.MAINLAND_NEWS_SECTION,
+                      "ts": cst, "date": cst[:10], "url": url})
+    return items
+
+
 def plain(html):
     text = re.sub(r"<[^>]+>", " ", html or "")
     return re.sub(r"\s+", " ", unescape(text)).strip()
@@ -210,7 +230,9 @@ THEMES = (("lime", "青柠版（lime）"), ("pixel", "像素版（pixel）"),
 def main():
     out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "样例-情绪热点因子量化分析-渲染证据.md"
     data = build_data()
-    hotlist = pl.build_mainland_hotlist(data[pl.MAINLAND_NEWS_SOURCE_NAME])
+    corpus = build_corpus()
+    hotlist = pl.build_mainland_hotlist(data[pl.MAINLAND_NEWS_SOURCE_NAME],
+                                        news_corpus=corpus, date_str=DATE_STR)
     lines = [
         "# 样例：【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）在日报里的可见位置",
         "",
@@ -231,10 +253,18 @@ def main():
         f"- 预警风险点：{hotlist['risk_report']['hit_n']}/{hotlist['risk_report']['total_titles']} 条标题命中 · "
         + (" · ".join(f"[{p_['level']}]{p_['category']}×{p_['count']}"
                       for p_ in hotlist["risk_report"]["points"]) or "0 命中（未命中 ≠ 没有风险）"),
+        f"- 预警趋势（按日口径）：{hotlist['risk_trend']['trend_phrase']}"
+        + (f" · 今日存档 {hotlist['risk_trend']['today_n']} 条样本尚少，对比仅作提示"
+           if hotlist["risk_trend"]["low_sample"] else "")
+        + " · 逐日命中 " + "·".join(str(d["hit_n"]) for d in hotlist["risk_trend"]["days"])
+        + f"（{hotlist['risk_trend']['days'][0]['date'][5:]}"
+          f"→{hotlist['risk_trend']['days'][-1]['date'][5:]}，存档只有这三天，如实不补空日）",
+        f"- 今日风险态势：{hotlist['risk_posture']['text']}",
         "",
     ]
     for theme, kit_name in THEMES:
-        html = pl.generate_report(data, DATE_DISPLAY, DATE_STR, theme=theme)
+        html = pl.generate_report(data, DATE_DISPLAY, DATE_STR, theme=theme,
+                                  news_corpus=corpus)
         text = plain(html)
         title_hit = text.count("情绪热点因子量化分析")
         lines += [
@@ -274,6 +304,16 @@ def main():
         risk_rows = snippets(text, "预警风险点", width=420, limit=1)
         lines += ["**⑧ 预警风险点**（本地风险词表标题级命中；等级 = 传播度 高/中/关注，不是发生概率）", ""]
         lines += [f"```\n{s}\n```" for s in risk_rows] or ["```\n（未找到）\n```"]
+        lines.append("")
+        trend_rows = snippets(text, "预警趋势", width=380, limit=2)
+        lines += ["**⑨ 预警趋势**（存档近 7 日按日重算 · 同一份风险词表；与最近存档日对比：新增 / 升级 / "
+                  "持续 / 降级 / 解除；缺存档整行不出。第 1 处 = 栏首提鲜结论引用，第 2 处 = 栏目行本体）", ""]
+        lines += [f"```\n{s}\n```" for s in trend_rows] or ["```\n（未找到）\n```"]
+        lines.append("")
+        posture_rows = snippets(text, "今日风险态势", width=380, limit=2)
+        lines += ["**⑩ 今日风险态势**（天天出的确定性分析结论：情绪面定调 + 按日趋势对比；"
+                  "0 命中日由⑧头行如实披露「未命中」。第 1 处 = 提鲜结论引用，第 2 处 = 栏目行本体）", ""]
+        lines += [f"```\n{s}\n```" for s in posture_rows] or ["```\n（未找到）\n```"]
         lines += ["", "---", ""]
     lines += [
         "## 真实覆盖怎么看（沙箱无外网，必须在本机跑）",
@@ -294,6 +334,8 @@ def main():
     print(f"已写入 {out_path}")
     print("主题榜：" + " · ".join(f"{b['label']} {b['count']}" for b in hotlist["themes"]))
     print(f"进榜 {hotlist['total']} 条 · 最新 {hotlist['newest_cst']}（滞后 {hotlist['lag_hours']:g} 小时）")
+    print(f"预警趋势：{hotlist['risk_trend']['trend_phrase']} · "
+          f"今日风险态势：{hotlist['risk_posture']['verdict']}")
 
 
 if __name__ == "__main__":

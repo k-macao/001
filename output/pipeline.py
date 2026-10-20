@@ -4222,7 +4222,7 @@ def _mainland_theme_hit(keywords, title):
     return False
 
 
-def build_mainland_hotlist(mainland):
+def build_mainland_hotlist(mainland, news_corpus=None, date_str=None):
     """内地财经媒体标题池 → 情绪热点因子量化分析（规则合成，确定性）。
 
     返回 None 表示该源头不可用 / 窗口内 0 条（栏目整栏缺席，不占位）。
@@ -4235,6 +4235,12 @@ def build_mainland_hotlist(mainland):
       hotspots       = 热点聚合（跨媒体同题词汇簇 + 情绪/风险标注）
       risk_report    = 预警风险点（风险词表命中类别 + 传播度等级）
       每个主题桶另附 mood / pos_n / neu_n / neg_n / avg_score（主题级情绪折叠）。
+    2026-10-20 起追加「平时也有功能」的每日风险分析（同一份词表，不新增取数口径）：
+      risk_trend     = 预警趋势（news_history.json 存档近 7 个自然日逐日重算，
+                       与最近存档日对比：新增 / 升级 / 持续 / 降级 / 解除；
+                       存档缺失时 None，渲染层整行不出，不硬造变化）
+      risk_posture   = 今日风险态势（零命中 / 低等级的平时日子也给出一行
+                       确定性分析结论，只组合同源数字，不造方向或概率）
     分析结果不请求外部大模型；情绪分与风险等级是词典启发式，不产生校准的涨跌概率。
     """
     if not isinstance(mainland, dict) or mainland.get("status") != "success":
@@ -4303,6 +4309,11 @@ def build_mainland_hotlist(mainland):
     sentiment_agg = _finance.aggregate_hotlist_sentiment(headlines)
     hotspots = _finance.aggregate_hotlist_hotspots(headlines, top_n=MAINLAND_HOTLIST_VOCAB_MAX)
     risk_report = _finance.analyze_hotlist_risks(headlines, top_n=MAINLAND_HOTLIST_RISK_MAX)
+    # 🔭 2026-10-20 新增：逐日预警趋势 + 今日风险态势（「平时也有功能」的每日风险分析）。
+    #    趋势用同一份风险词表对存档里同一段「内地财经媒体」标题按自然日重算近 7 日画像，
+    #    与最近存档日对比；存档缺失 / 参数缺省时 risk_trend=None，渲染层整行不出，不硬造变化。
+    risk_trend = _hotlist_risk_trend(news_corpus, date_str)
+    risk_posture = _finance.risk_posture(risk_report, sentiment_agg, risk_trend)
     
     return {
         # status / is_today 是为了让「🦑 AI帮你提鲜」的活鲜度判断与其他栏目同口径
@@ -4330,6 +4341,9 @@ def build_mainland_hotlist(mainland):
         "sentiment_agg": sentiment_agg,
         "hotspots": hotspots,
         "risk_report": risk_report,
+        # 🔭 2026-10-20 新增：预警趋势 / 今日风险态势（「平时也有功能」的每日风险分析）
+        "risk_trend": risk_trend,
+        "risk_posture": risk_posture,
     }
 
 
@@ -4338,12 +4352,47 @@ def _calculate_finance_summary(headlines: List[Dict]) -> Dict:
     return _finance.summarize_hotlist_vocabulary(headlines)
 
 
+def _hotlist_risk_trend(news_corpus, date_str):
+    """存档语料 → 近 7 日逐日预警趋势；参数缺失 / 冷启动返回 None（渲染层不出趋势行）。
+
+    只认 section=MAINLAND_NEWS_SECTION 的条目（与热点榜同一批 18 家媒体标题——
+    main() 每次运行把本次抓取并进 news_history.json 的同一份存档）；按 date 字段
+    分日切片（标题级时间截断到日，无时间戳的条目按采集日兜底——与政策因子用
+    存档同一口径）。date_str（YYYYMMDD）解析不出 → None，不猜今天。
+    """
+    if not isinstance(news_corpus, (list, tuple)) or not news_corpus:
+        return None
+    try:
+        today_iso = datetime.strptime(str(date_str), "%Y%m%d").date().isoformat()
+    except (TypeError, ValueError):
+        return None
+    items_by_day = {}
+    for item in news_corpus:
+        if not isinstance(item, dict):
+            continue
+        if str(item.get("section") or "") != MAINLAND_NEWS_SECTION:
+            continue
+        day = str(item.get("date") or "")
+        if not day or not str(item.get("title") or "").strip():
+            continue
+        items_by_day.setdefault(day, []).append(
+            {"title": item.get("title"), "source": item.get("source")})
+    if not items_by_day:
+        return None
+    return _finance.analyze_risk_trend(items_by_day, today_iso,
+                                       days=_finance.RISK_TREND_DAYS)
+
+
 def _mainland_hotlist_block(res, kit):
-    """情绪热点因子正文：情绪总览 + 源头时效体检行 + 主题榜 + 热点聚合 + 预警风险点。
+    """情绪热点因子正文：情绪总览 + 源头时效体检行 + 主题榜 + 热点聚合 + 预警风险点
+    + 预警趋势 + 今日风险态势。
 
     2026-10-19 升级（原「内地财经热点榜」版式）：主题榜每行附情绪折叠；
     原「AI词汇分析」升级为「🔥 热点聚合」（同一份词表与计数，附情绪 / 风险 / 同题聚合标记）；
     新增「⚠ 预警风险点」（风险词表命中按类别聚合，等级 = 传播度）。
+    2026-10-20 新增「平时也有功能」的每日风险分析：「🔭 预警趋势」（存档近 7 日
+    逐日重算，与最近存档日对比：新增 / 升级 / 持续 / 降级 / 解除；缺存档整行不出）
+    与「⚠ 今日风险态势」（天天出，只组合同源定调与趋势对比，不造新数字）。
     所有分析都是本地词典启发式，页面上如实标注，不伪装成校准概率。
     """
     if not res or not res.get("themes"):
@@ -4560,11 +4609,54 @@ def _mainland_hotlist_block(res, kit):
                     "…", f'另有 {len(points) - risk_limit} 类风险点未展开',
                     _esc("入门版压缩展示；全量版只列前五类")))
         else:
+            # 0 命中日：头行照旧如实披露「未命中」（下方态势行只讲定调与趋势，不重复披露）。
             rows.append(kit.item_row(
                 "⚠", "<b>预警风险点</b>",
                 _esc(f'窗口内 {int(risk.get("total_titles") or 0)} 条标题未命中风险词表'
                      f'（词表启发式，未命中 ≠ 没有风险）')))
-    
+        # 🔭⚠ 2026-10-20 新增：预警趋势 + 今日风险态势（「平时也有功能」的每日风险分析）。
+        #    趋势行只在有历史对比时出（不硬造变化）；态势行天天出——「命中 / 未命中」
+        #    之后附一句情绪面定调与按日趋势对比的确定性分析结论（只组合同源数字，不造新数）。
+        trend = res.get("risk_trend") or {}
+        if trend.get("has_history"):
+            days = [d for d in (trend.get("days") or []) if isinstance(d, dict)]
+            spark = "·".join(str(int(d.get("hit_n") or 0)) for d in days)
+            span = ""
+            if days:
+                span = (f'{str(days[0].get("date") or "")[5:]}'
+                        f'→{str(days[-1].get("date") or "")[5:]}')
+            if PLAIN():
+                left = "<b>预警趋势</b>"
+                right = _esc(str(trend.get("trend_phrase") or "")
+                             + ("（样本尚少，仅作提示）" if trend.get("low_sample") else ""))
+            else:
+                left = f'<b>预警趋势</b> · {_esc(str(trend.get("method") or ""))}'
+                change_bits = []
+                for c in (trend.get("changes") or []):
+                    if not isinstance(c, dict):
+                        continue
+                    status = str(c.get("status") or "")
+                    cat = str(c.get("category") or "")
+                    lv = str(c.get("level") or "")
+                    blv = str(c.get("baseline_level") or "")
+                    if status in ("新增", "持续"):
+                        change_bits.append(f"{status}【{lv}】{cat}")
+                    elif status in ("升级", "降级"):
+                        change_bits.append(f"{status}【{blv}→{lv}】{cat}")
+                    else:                                   # 解除
+                        change_bits.append(f"解除 {cat}（前日【{blv}】）")
+                head = f"逐日命中 {spark}" + (f"（{span}）" if span else "")
+                right = _esc(head + " · "
+                             + (" · ".join(change_bits) if change_bits else "无类别变化")
+                             + (f' · 今日存档 {int(trend.get("today_n") or 0)} 条样本尚少，对比仅作提示'
+                                if trend.get("low_sample") else ""))
+            rows.append(kit.item_row("🔭", left, right))
+        posture = res.get("risk_posture") or {}
+        if posture.get("has_data"):
+            rows.append(kit.item_row(
+                "⚠", "<b>今日风险态势</b>",
+                _esc(str(posture.get("plain_text") if PLAIN() else posture.get("text") or ""))))
+
     return kit.rows("".join(rows)) if rows else ""
 
 
@@ -10217,7 +10309,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     hotlist_res = None      # 结果对象留存，供「⌁ AI 研判」与「🦑 AI帮你提鲜」复用同一份数字
     if MAINLAND_HOTLIST_ENABLED:
         mainland_src = data.get(MAINLAND_NEWS_SOURCE_NAME) or {}
-        hotlist_res = build_mainland_hotlist(mainland_src)
+        # news_corpus / date_str：2026-10-20 起供「🔭 预警趋势」按存档近 7 日逐日重算
+        # （同一份风险词表）；缺存档时趋势行整行不出，其余分析不受影响。
+        hotlist_res = build_mainland_hotlist(mainland_src, news_corpus=news_corpus,
+                                             date_str=date_str)
         if hotlist_res:
             hot_html = _mainland_hotlist_block(hotlist_res, kit)
             if hot_html:
@@ -10229,6 +10324,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                         bits.append(f'跨源同题合并 {hotlist_res["merged"]} 条')
                     bits.append("主题按固定词表命中（第一条命中的主题，不重复计数）")
                     bits.append("情绪 / 风险为本地词典启发式（标题级，非校准概率）")
+                    bits.append("预警趋势按存档近 7 日逐日重算（同一份风险词表，缺存档不出）")
                     caption = " ｜ ".join(bits)
                 blocks["MAINLAND HOTLIST"] = (
                     "MAINLAND HOTLIST", SECTION_TITLE_MAINLAND_HOTLIST, hot_html,

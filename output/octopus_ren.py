@@ -705,6 +705,8 @@ def _ren_mainland_hotlist(ctx):
     谁在说、说多少、多新 + 情绪偏多还是偏空 + 热点聚合到哪些词 + 风险词表点亮了什么。
     2026-10-19 起几率条与「⌁ AI 研判」同源（情绪词典多/空计数合成），仍是词典启发式，
     不是校准概率，也不构成投资建议。
+    2026-10-20 起附「今日风险态势」与「预警趋势」：零命中 / 低等级的平时日子也给
+    分析结论（与正文态势行 / 趋势行同一份结果、同一句话）。
     """
     res = ctx.get("hotlist") or {}
     themes = list(res.get("themes") or [])
@@ -749,7 +751,21 @@ def _ren_mainland_hotlist(ctx):
         if kws:
             bit += f"，命中词：{'、'.join(kws)}"
         bits.append(bit)
-    elif int(risk.get("total_titles") or 0):
+    # 🔭 2026-10-20 新增：今日风险态势 + 预警趋势（「平时也有功能」——零命中 / 低等级
+    #    的日子也给分析结论；与正文「⚠ 今日风险态势」「🔭 预警趋势」行同一份结果、
+    #    同一句话，不另算一套）。posture 缺失的老结果对象退回旧文案，保持向后兼容。
+    posture = res.get("risk_posture") or {}
+    trend = res.get("risk_trend") or {}
+    if posture.get("verdict"):
+        bit = f"今日风险态势：{posture['verdict']}"
+        if not points:
+            bit += "——未命中 ≠ 没有风险"
+        if trend.get("has_history") and trend.get("trend_brief"):
+            bit += f"；预警趋势{trend['trend_brief']}"
+            if trend.get("low_sample"):
+                bit += "（今日存档样本少，提示性看待）"
+        bits.append(bit)
+    elif not points and int(risk.get("total_titles") or 0):
         bits.append("风险词表本窗口 0 命中（未命中 ≠ 没有风险）")
     newest = str(res.get("newest_cst") or "")
     if newest:
