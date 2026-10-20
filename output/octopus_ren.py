@@ -698,10 +698,13 @@ def _ren_trend(ctx):
 
 
 def _ren_mainland_hotlist(ctx):
-    """【沸腾花蛤】内地财经热点榜（2026-10-13 新增）：把 18 家内地媒体的主题热度讲成人话。
+    """【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
+    把 18 家内地媒体的主题热度、情绪面与预警风险点讲成人话。
 
-    数字全部来自 build_mainland_hotlist() 的同一份结果（不另算一套）；
-    只陈述谁在说、说多少、多新，不做多空判断——热点榜没有概率口径，几率条整条缺席。
+    数字全部来自 build_mainland_hotlist() 的同一份结果（不另算一套）：
+    谁在说、说多少、多新 + 情绪偏多还是偏空 + 热点聚合到哪些词 + 风险词表点亮了什么。
+    2026-10-19 起几率条与「⌁ AI 研判」同源（情绪词典多/空计数合成），仍是词典启发式，
+    不是校准概率，也不构成投资建议。
     """
     res = ctx.get("hotlist") or {}
     themes = list(res.get("themes") or [])
@@ -714,16 +717,40 @@ def _ren_mainland_hotlist(ctx):
     bits = [f"{_int(res.get('ok_n'))}/{_int(res.get('total_sources'))} 家内地媒体在 72 小时窗口里更新了，"
             f"进榜 {_int(total)} 条"]
     if total:
-        bits.append(f"最热的是「{top['label']}」{_int(top['count'])} 条（占 {share:.0f}%"
-                    f"，{_int(top.get('media_n'))} 家在说）")
+        bits.append(f"最热的是「{top['label']}」{_int(top['count'])} 条（占 {share:.0f}%，"
+                    f"{_int(top.get('media_n'))} 家在说"
+                    + (f"，措辞{top['mood']}" if top.get("mood") else "") + "）")
         if len(themes) > 1:
             bits.append("接着是" + "、".join(f"「{t['label']}」{_int(t['count'])} 条"
                                            for t in themes[1:3]))
-    vocab = res.get("finance_summary") or {}
-    terms = [str(item.get("term") or "") for item in (vocab.get("top_terms") or [])
-             if isinstance(item, dict) and item.get("term")]
+    agg = res.get("sentiment_agg") or {}
+    if agg.get("has_data"):
+        avg = agg.get("avg_score")
+        bits.append(f"情绪面 偏多 {_int(agg.get('pos_n'))} 条 / 中性 {_int(agg.get('neu_n'))} 条 / "
+                    f"偏空 {_int(agg.get('neg_n'))} 条"
+                    + (f"，净情绪分 {avg:+.2f}（{agg.get('label')}）"
+                       if isinstance(avg, (int, float)) else ""))
+    hot = res.get("hotspots") or {}
+    terms = [str(c.get("term") or "") for c in (hot.get("clusters") or [])
+             if isinstance(c, dict) and c.get("term")]
     if terms:
-        bits.append("标题词汇集中在「" + "、".join(terms[:4]) + "」")
+        bit = "热点聚合到「" + "、".join(terms[:4]) + "」"
+        if int(hot.get("aggregated_n") or 0):
+            bit += f"，其中 {int(hot.get('aggregated_n'))} 个是跨媒体同题热点（≥2 条在说同一件事）"
+        bits.append(bit)
+    risk = res.get("risk_report") or {}
+    points = [p for p in (risk.get("points") or []) if isinstance(p, dict)]
+    if points:
+        top_risk = points[0]
+        bit = (f"预警风险点 {int(risk.get('points_total') or len(points))} 类，"
+               f"最扎眼的是「{top_risk.get('category')}」【{top_risk.get('level')}】"
+               f"{_int(top_risk.get('count'))} 条 / {_int(top_risk.get('media_n'))} 家在说")
+        kws = [str(k) for k in (top_risk.get("keywords") or []) if k][:3]
+        if kws:
+            bit += f"，命中词：{'、'.join(kws)}"
+        bits.append(bit)
+    elif int(risk.get("total_titles") or 0):
+        bits.append("风险词表本窗口 0 命中（未命中 ≠ 没有风险）")
     newest = str(res.get("newest_cst") or "")
     if newest:
         bit = f"最新一条 {newest[5:]}"
@@ -734,8 +761,9 @@ def _ren_mainland_hotlist(ctx):
     bits.append(f"其中当天 {_int(res.get('today_sources'))} 家、窗口内滞后 "
                 f"{_int(res.get('lag_sources'))} 家、暂缺 {len(res.get('missing') or [])} 家")
     text = "；".join(bits) + "。"
-    text += ("翻译：主题榜数「谁在说、说了多少」，词汇分析只统计标题里反复出现的词；"
-             "两者都不能证明消息真假，也不是涨跌信号——同一件事十家一起喊，不等于它就真要发生。"
+    text += ("翻译：主题榜数「谁在说、说了多少」，情绪分和风险等级都是本地词典启发式——"
+             "情绪分只看措辞正负，预警等级只看几条几家在说，都不能证明消息真假，也不是涨跌信号；"
+             "看到风险词点亮，先点开原文核对再决定信不信。"
              f"今天的姿势：{_tip(seed)}。")
     return text
 
@@ -886,7 +914,8 @@ _GENERATORS = {
     "EASTMONEY WIRE": _ren_eastmoney_wire,
     "HK GURU CHANNELS": _ren_guru,
     "NEWS SENTIMENT": _ren_sentiment,
-    # 内地财经热点榜（2026-10-13 新增）：18 家内地媒体的主题热度榜
+    # 情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
+    # 18 家内地媒体的主题热度 + 情绪总览 + 热点聚合 + 预警风险点
     "MAINLAND HOTLIST": _ren_mainland_hotlist,
     "HK 7D PROB": _ren_hk7,
     "SUMMARY": _ren_summary,

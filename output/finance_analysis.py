@@ -1,13 +1,21 @@
 #!/usr/bin/env python3
 """
-内地财经热点榜的本地标题词汇分析（jieba + 财经词表）。
+【沸腾花蛤】情绪热点因子量化分析（原「内地财经热点榜」，2026-10-19 更名）的本地标题分析
+（jieba + 财经词表 + 情绪词典 + 风险词表）。
 
 在不请求外部大模型、也不读取新闻正文的前提下，对标题做分词、停用词过滤和词汇统计；
 主题词频按「提及该词的标题数」及「涉及媒体数」统计，不把重复出现次数包装成热度或概率。
-另保留概念映射与标题情绪词典接口供兼容使用；其中情绪分数是启发式词典分数，不是经校准的涨跌概率。
+2026-10-19 起新增三块本地「AI 分析」（全部规则合成、确定性、可复现）：
+  ① 情绪总览：标题级情绪词典折叠成 偏多 / 中性 / 偏空 计数与净情绪分；
+  ② 热点聚合：同一份标题词汇把跨媒体同题（≥2 条）聚成热点簇，附情绪与风险标注；
+  ③ 预警风险点：风险词表命中的标题按类别聚合，给出传播度等级（高 / 中 / 关注）。
+情绪分数与风险等级都是启发式词典结果，不是经校准的涨跌概率，也不构成投资建议。
+另保留概念映射与标题情绪词典接口供兼容使用。
 
 用法：
     from output.finance_analysis import analyze_finance_item, summarize_hotlist_vocabulary
+    from output.finance_analysis import (aggregate_hotlist_sentiment,
+                                         aggregate_hotlist_hotspots, analyze_hotlist_risks)
 
     item = analyze_finance_item("国务院发布新能源汽车产业发展规划")
     print(item["vocabulary_terms"])
@@ -551,6 +559,311 @@ class FinanceSentimentAnalyzer:
 
 concept_analyzer = FinanceConceptAnalyzer()
 sentiment_analyzer = FinanceSentimentAnalyzer()
+
+
+# ============================================================================
+# 情绪热点因子（2026-10-19 升级）：情绪总览 + 热点聚合 + 预警风险点
+#   与词汇分析同一口径：只读标题、本地 jieba 分词与固定词表命中、不调用外部大模型；
+#   同一批标题两次跑出同一份结果。情绪分是词典启发式分数、风险等级是传播度等级，
+#   都不是经校准的涨跌概率，也不构成投资建议。
+# ============================================================================
+
+# 情绪极性折叠：词典七档标签 → 偏多 / 中性 / 偏空 三档（阈值与 classify_sentiment 对齐）。
+_MOOD_POSITIVE_CLASSES = frozenset(("强烈利好", "利好", "弱利好"))
+_MOOD_NEGATIVE_CLASSES = frozenset(("强烈利空", "利空", "弱利空"))
+MOOD_POSITIVE = "偏多"
+MOOD_NEUTRAL = "中性"
+MOOD_NEGATIVE = "偏空"
+# 净情绪分 → 定调阈值（与弱利好 / 弱利空档位 ±0.05 对齐，避免自造第二套阈值）。
+_MOOD_AVG_THRESHOLD = 0.05
+
+# 风险词表：类别 → 关键词。匹配口径与热点主题词表一致——中文按子串命中；
+# 目前全部为中文词（短 ASCII 词如 ST 容易误命中 STOXX / FIRST 之类，宁缺毋滥不收）。
+FINANCE_RISK_LEXICON = (
+    ("监管与合规风险", ("立案", "调查", "处罚", "罚款", "违规", "违法", "警示函", "监管函",
+                     "问询", "整改", "整治", "约谈", "叫停", "暂停", "终止", "撤销", "查处",
+                     "谴责", "禁入", "内幕交易", "市场操纵")),
+    ("市场波动风险", ("大跌", "暴跌", "跌停", "跳水", "下挫", "重挫", "跌超", "低开", "收跌",
+                   "下探", "回调", "腰斩", "蒸发", "闪崩")),
+    ("信用与财务风险", ("违约", "暴雷", "爆雷", "预亏", "亏损", "债务", "逾期", "破产", "清算",
+                     "退市", "风险警示", "减值", "资不抵债", "流动性危机", "不及预期",
+                     "低于预期", "重整")),
+    ("资金流向风险", ("减持", "抛售", "净流出", "撤离", "赎回", "做空", "套现", "清仓", "出逃")),
+    ("外部冲击风险", ("关税", "制裁", "封锁", "禁运", "管制", "实体清单", "黑名单", "冲突",
+                   "战争", "加息", "断供", "短缺")),
+)
+_RISK_CATEGORY_ORDER = {name: i for i, (name, _) in enumerate(FINANCE_RISK_LEXICON)}
+RISK_LEVEL_HIGH = "高"
+RISK_LEVEL_MID = "中"
+RISK_LEVEL_WATCH = "关注"
+_RISK_LEVEL_ORDER = {RISK_LEVEL_HIGH: 0, RISK_LEVEL_MID: 1, RISK_LEVEL_WATCH: 2}
+# 等级只描述「传播度」（几条标题 / 几家媒体在说），不预测风险发生的概率。
+RISK_LEVEL_RULE = "高 = 同类 ≥3 条且 ≥2 家媒体；中 = ≥2 条或 ≥2 家媒体；关注 = 单条命中"
+
+
+def match_risk_keywords(title: str) -> List[Tuple[str, str]]:
+    """标题的风险词表命中：[(风险类别, 关键词)]，按词表顺序返回；未命中为空列表。
+
+    中文按子串命中（与热点主题词表同口径）；确定性——同一标题永远得到同一份命中。
+    """
+    text = str(title or "")
+    hits = []
+    for category, keywords in FINANCE_RISK_LEXICON:
+        for kw in keywords:
+            if kw in text:
+                hits.append((category, kw))
+    return hits
+
+
+def title_mood(title: str) -> Dict:
+    """标题级词典情绪：{"score": float, "label": 偏多/中性/偏空}。
+
+    只调用本地情绪词典（jieba 分词 + 正负词表），不读正文、不调外部模型；
+    分数是启发式词典分，不是校准概率。
+    """
+    score, _analysis = sentiment_analyzer.calculate_sentiment(str(title or ""))
+    sentiment_class = sentiment_analyzer.classify_sentiment(score)
+    if sentiment_class in _MOOD_POSITIVE_CLASSES:
+        label = MOOD_POSITIVE
+    elif sentiment_class in _MOOD_NEGATIVE_CLASSES:
+        label = MOOD_NEGATIVE
+    else:
+        label = MOOD_NEUTRAL
+    return {"score": round(score, 4), "label": label}
+
+
+def aggregate_titles_mood(titles: List[str]) -> Dict:
+    """标题列表 → 情绪折叠计数与净情绪分（确定性；空列表时 avg_score / label 为 None）。"""
+    titles = [str(t or "").strip() for t in (titles or [])]
+    titles = [t for t in titles if t]
+    pos = neu = neg = 0
+    scores = []
+    for t in titles:
+        mood = title_mood(t)
+        scores.append(mood["score"])
+        if mood["label"] == MOOD_POSITIVE:
+            pos += 1
+        elif mood["label"] == MOOD_NEGATIVE:
+            neg += 1
+        else:
+            neu += 1
+    avg = round(sum(scores) / len(scores), 3) if scores else None
+    if avg is None:
+        label = None
+    elif avg >= _MOOD_AVG_THRESHOLD:
+        label = MOOD_POSITIVE
+    elif avg <= -_MOOD_AVG_THRESHOLD:
+        label = MOOD_NEGATIVE
+    else:
+        label = MOOD_NEUTRAL
+    return {"pos_n": pos, "neu_n": neu, "neg_n": neg, "avg_score": avg, "label": label}
+
+
+def aggregate_hotlist_sentiment(headlines: List[Dict]) -> Dict:
+    """情绪总览（栏目因子行）：偏多 / 中性 / 偏空 条数 + 净情绪分 + 定调。
+
+    只读标题；样本不足时如实只报样本量，不硬造定调。
+    """
+    titles = [str((h or {}).get("title") or "").strip() for h in headlines if isinstance(h, dict)]
+    titles = [t for t in titles if t]
+    mix = aggregate_titles_mood(titles)
+    return {
+        "has_data": bool(titles),
+        "method": "本地情绪词典（jieba 分词 · 标题级）",
+        "counting_unit": "标题级",
+        "total_titles": len(titles),
+        **mix,
+        "note": "词典启发式情绪分，非校准概率，不构成投资建议",
+    }
+
+
+def aggregate_hotlist_hotspots(headlines: List[Dict], top_n: int = 8) -> Dict:
+    """热点聚合：把标题级词汇当聚合键，跨媒体同题（≥2 条）的标题聚成热点簇。
+
+    与 summarize_hotlist_vocabulary 用同一份分词、同一套排序
+    （-标题数 → 财经优先词表 → 首见次序），因此词汇口径与旧「AI词汇分析」完全一致；
+    每个簇再附：涉及媒体、情绪折叠（偏多/中性/偏空 + 净分 + 定调）、命中的风险类别。
+    `aggregated=True` 表示 ≥2 条标题同题（真正的「聚合」热点）；单条命中的词照常列出，
+    与旧词汇榜不丢信息。同一条标题可命中多个热点簇（按词聚合，不是划分），计数行如实说明。
+    """
+    headlines = headlines if isinstance(headlines, (list, tuple)) else []
+    try:
+        limit = max(0, int(top_n))
+    except (TypeError, ValueError):
+        limit = 8
+    clusters = {}          # term -> 聚合状态
+    first_seen = {}        # term -> 首见次序（稳定排序用）
+    analyzed_titles = 0
+
+    for headline in headlines:
+        if not isinstance(headline, dict):
+            continue
+        title = str(headline.get("title") or "").strip()
+        if not title:
+            continue
+        analyzed_titles += 1
+        # 与词汇摘要同口径：不信任缓存词条，按标题重新分词，绝不读取正文。
+        terms = extract_finance_vocabulary(title)
+        mood = title_mood(title)
+        risk_categories = list(dict.fromkeys(cat for cat, _kw in match_risk_keywords(title)))
+        source = str(headline.get("source") or "").strip()
+        for term in dict.fromkeys(str(t).strip() for t in terms if str(t).strip()):
+            if term not in clusters:
+                first_seen[term] = len(first_seen)
+                clusters[term] = {"term": term, "title_count": 0, "media": set(),
+                                  "pos_n": 0, "neu_n": 0, "neg_n": 0, "scores": [],
+                                  "risk_categories": [], "members": []}
+            c = clusters[term]
+            c["title_count"] += 1                 # 标题级去重：同一标题同一词只计一次
+            if source:
+                c["media"].add(source)
+            if mood["label"] == MOOD_POSITIVE:
+                c["pos_n"] += 1
+            elif mood["label"] == MOOD_NEGATIVE:
+                c["neg_n"] += 1
+            else:
+                c["neu_n"] += 1
+            c["scores"].append(mood["score"])
+            for cat in risk_categories:
+                if cat not in c["risk_categories"]:
+                    c["risk_categories"].append(cat)
+            c["members"].append(headline)
+
+    ordered = sorted(
+        clusters.values(),
+        key=lambda c: (-c["title_count"],
+                       _FINANCE_VOCABULARY_PRIORITY_RANK.get(c["term"], len(FINANCE_VOCABULARY_PRIORITY)),
+                       first_seen.get(c["term"], 0)),
+    )
+    top = []
+    for c in ordered[:limit]:
+        avg = round(sum(c["scores"]) / len(c["scores"]), 3) if c["scores"] else None
+        if avg is None:
+            label = None
+        elif avg >= _MOOD_AVG_THRESHOLD:
+            label = MOOD_POSITIVE
+        elif avg <= -_MOOD_AVG_THRESHOLD:
+            label = MOOD_NEGATIVE
+        else:
+            label = MOOD_NEUTRAL
+        members = sorted(c["members"], key=lambda h: str(h.get("published_cst") or ""), reverse=True)
+        top.append({
+            "term": c["term"],
+            "title_count": c["title_count"],
+            "media_count": len(c["media"]),
+            "media": sorted(c["media"]),
+            "pos_n": c["pos_n"], "neu_n": c["neu_n"], "neg_n": c["neg_n"],
+            "avg_score": avg, "label": label,
+            "risk_categories": c["risk_categories"],
+            "aggregated": c["title_count"] >= 2,
+            "samples": [{"title": str(m.get("title") or ""), "source": str(m.get("source") or ""),
+                         "url": str(m.get("url") or ""),
+                         "published_cst": str(m.get("published_cst") or "")}
+                        for m in members[:2]],
+        })
+    return {
+        "enabled": True,
+        "has_data": bool(clusters),
+        "method": "jieba 本地分词 + 财经停用词表 + 情绪/风险词表",
+        "counting_unit": "标题级去重",
+        "total_titles": analyzed_titles,
+        "aggregated_n": sum(1 for c in clusters.values() if c["title_count"] >= 2),
+        "clusters": top,
+        "note": "按词聚合，同一条标题可进多个热点簇；情绪与风险为词典启发式，非校准概率",
+    }
+
+
+def analyze_hotlist_risks(headlines: List[Dict], top_n: int = 5) -> Dict:
+    """预警风险点：风险词表命中的标题按类别聚合，附传播度等级（高 / 中 / 关注）。
+
+    口径：标题级计数——同一标题在同类别里命中多个词只算 1 条；同一标题可命中多个类别。
+    等级只看传播度（见 RISK_LEVEL_RULE），不是发生概率；每类附最多 2 条最新证据标题。
+    没有任何命中时 has_data=False（渲染层如实报「未命中」，不硬造风险）。
+    """
+    headlines = headlines if isinstance(headlines, (list, tuple)) else []
+    try:
+        limit = max(0, int(top_n))
+    except (TypeError, ValueError):
+        limit = 5
+    by_category = {}       # category -> 聚合状态
+    total_titles = 0
+    hit_n = 0
+
+    for headline in headlines:
+        if not isinstance(headline, dict):
+            continue
+        title = str(headline.get("title") or "").strip()
+        if not title:
+            continue
+        total_titles += 1
+        hits = match_risk_keywords(title)
+        if not hits:
+            continue
+        hit_n += 1
+        for category, kw in hits:
+            entry = by_category.setdefault(
+                category, {"titles": [], "keyword_counts": {}, "media": set()})
+            if not any(t is headline for t in entry["titles"]):
+                entry["titles"].append(headline)          # 标题级：同类别一条只计一次
+            entry["keyword_counts"][kw] = entry["keyword_counts"].get(kw, 0) + 1
+            source = str(headline.get("source") or "").strip()
+            if source:
+                entry["media"].add(source)
+
+    points = []
+    for category, entry in by_category.items():
+        count = len(entry["titles"])
+        media_n = len(entry["media"])
+        if count >= 3 and media_n >= 2:
+            level = RISK_LEVEL_HIGH
+        elif count >= 2 or media_n >= 2:
+            level = RISK_LEVEL_MID
+        else:
+            level = RISK_LEVEL_WATCH
+        # 关键词按命中次数降序、同频按词表次序——确定性排序，不用 dict 迭代序。
+        kw_order = {kw: i for i, (_c, kw) in enumerate(
+            (pair for pair in _iter_lexicon_pairs() if pair[0] == category))}
+        keywords = [kw for kw, _n in sorted(entry["keyword_counts"].items(),
+                                            key=lambda kv: (-kv[1], kw_order.get(kv[0], 0)))]
+        samples = sorted(entry["titles"],
+                         key=lambda h: str(h.get("published_cst") or ""), reverse=True)[:2]
+        points.append({
+            "category": category,
+            "level": level,
+            "count": count,
+            "media_n": media_n,
+            "media": sorted(entry["media"]),
+            "keywords": keywords,
+            "samples": [{
+                "title": str(s.get("title") or ""),
+                "source": str(s.get("source") or ""),
+                "url": str(s.get("url") or ""),
+                "published_cst": str(s.get("published_cst") or ""),
+                "matched": list(dict.fromkeys(kw for cat2, kw in match_risk_keywords(
+                    s.get("title")) if cat2 == category)),
+            } for s in samples],
+        })
+    points.sort(key=lambda p: (_RISK_LEVEL_ORDER.get(p["level"], 9), -p["count"],
+                               -p["media_n"], _RISK_CATEGORY_ORDER.get(p["category"], 99)))
+    return {
+        "enabled": True,
+        "has_data": hit_n > 0,
+        "method": "本地风险词表（标题级命中）",
+        "counting_unit": "标题级",
+        "total_titles": total_titles,
+        "hit_n": hit_n,
+        "level_rule": RISK_LEVEL_RULE,
+        "points": points[:limit],
+        "points_total": len(points),
+        "note": "等级是传播度等级，不是发生概率；不构成投资建议",
+    }
+
+
+def _iter_lexicon_pairs():
+    """按词表顺序展开 (类别, 关键词)，供确定性排序使用。"""
+    for category, keywords in FINANCE_RISK_LEXICON:
+        for kw in keywords:
+            yield category, kw
 
 
 # ============================================================================

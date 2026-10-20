@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""离线渲染证据生成器：把【沸腾花蛤】内地财经热点榜放进一份日报里逐主题抽出可见位置。
+"""离线渲染证据生成器：把【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）放进一份日报里逐主题抽出可见位置。
 
 夹具来源：**2026-10-13 沙箱内逐源实测**抓到的真实标题 / 真实原文链接 / 真实时间戳
 （Bing News site: 检索 RSS，与 mainland_news_rss 数据线模板逐字一致；IT之家走实测可用的
@@ -7,14 +7,14 @@
 它不是构造故事：标题、链接、时间都来自当天真实抓取，只是**离线重放**到渲染层。
 
 用途：沙箱 / CI 没有外网时，也能验证新栏目在 5 套主题（lime / pixel / forum / dossier /
-guizang）下都能渲染，且主题条数、时效体检、暂缺点名与本地词汇分析都如实显示。
+guizang）下都能渲染，且主题条数、时效体检、暂缺点名、情绪总览、热点聚合与预警风险点都如实显示。
 
 真实覆盖仍以联网机器为准：
     python3 output/pipeline.py --dry-run      # 每家 ✅/⚠️ + 「内地财经媒体 N/18 家…」
 
 用法：
     python3 tools/demo_mainland_hotlist.py [输出路径]
-默认输出 /home/user/02/样例-内地财经热点榜-渲染证据.md
+默认输出 <仓库根>/样例-情绪热点因子量化分析-渲染证据.md
 """
 import importlib.util
 import re
@@ -208,11 +208,11 @@ THEMES = (("lime", "青柠版（lime）"), ("pixel", "像素版（pixel）"),
 
 
 def main():
-    out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "样例-内地财经热点榜-渲染证据.md"
+    out_path = Path(sys.argv[1]) if len(sys.argv) > 1 else REPO_ROOT / "样例-情绪热点因子量化分析-渲染证据.md"
     data = build_data()
     hotlist = pl.build_mainland_hotlist(data[pl.MAINLAND_NEWS_SOURCE_NAME])
     lines = [
-        "# 样例：【沸腾花蛤】内地财经热点榜在日报里的可见位置",
+        "# 样例：【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）在日报里的可见位置",
         "",
         f"> 📌 本页由 `tools/demo_mainland_hotlist.py` 生成。夹具是 **2026-10-13 沙箱内逐源实测**"
         f"抓到的真实标题 / 真实原文链接 / 真实时间戳（Bing News `site:` 检索 RSS；IT之家走官方订阅），"
@@ -223,12 +223,20 @@ def main():
         f"- 聚类结果：{hotlist['theme_n']} 个主题 · 进榜 {hotlist['total']} 条 · "
         f"最新 {hotlist['newest_cst']}（滞后 {hotlist['lag_hours']:g} 小时，按 {NOW_CST} 计）",
         "- 主题条数（降序）：" + " · ".join(f"{b['label']} {b['count']}" for b in hotlist["themes"]),
+        f"- 情绪总览：偏多 {hotlist['sentiment_agg']['pos_n']} · 中性 {hotlist['sentiment_agg']['neu_n']} · "
+        f"偏空 {hotlist['sentiment_agg']['neg_n']} · 净情绪分 {hotlist['sentiment_agg']['avg_score']:+.2f}"
+        f"（{hotlist['sentiment_agg']['label']}）",
+        f"- 热点聚合：跨媒体同题（≥2 条）{hotlist['hotspots']['aggregated_n']} 个 · "
+        + " · ".join(f"{c['term']}×{c['title_count']}" for c in hotlist["hotspots"]["clusters"][:5]),
+        f"- 预警风险点：{hotlist['risk_report']['hit_n']}/{hotlist['risk_report']['total_titles']} 条标题命中 · "
+        + (" · ".join(f"[{p_['level']}]{p_['category']}×{p_['count']}"
+                      for p_ in hotlist["risk_report"]["points"]) or "0 命中（未命中 ≠ 没有风险）"),
         "",
     ]
     for theme, kit_name in THEMES:
         html = pl.generate_report(data, DATE_DISPLAY, DATE_STR, theme=theme)
         text = plain(html)
-        title_hit = text.count("内地财经热点榜")
+        title_hit = text.count("情绪热点因子量化分析")
         lines += [
             f"## {kit_name}", "",
             f"- 栏目标题出现 **{title_hit}** 次（栏目头 1 次 + 目录/锚点/分条头，0 次即整栏缺席）",
@@ -255,9 +263,17 @@ def main():
         lines += ["**⑤ 代表标题行**（可点原文 + 媒体名 + 时间 + 今日 / 昨日及更早）", ""]
         lines += [f"```\n{s}\n```" for s in item_rows] or ["```\n（未找到）\n```"]
         lines.append("")
-        vocab_rows = snippets(text, "AI词汇分析", width=360, limit=1)
-        lines += ["**⑥ AI词汇分析**（本地 jieba 分词 + 财经停用词表；标题数 / 媒体数，不是涨跌概率）", ""]
+        senti_rows = snippets(text, "情绪总览", width=300, limit=1)
+        lines += ["**⑥ 情绪总览**（本地情绪词典折叠成偏多/中性/偏空 + 净情绪分；词典启发式，非校准概率）", ""]
+        lines += [f"```\n{s}\n```" for s in senti_rows] or ["```\n（未找到）\n```"]
+        lines.append("")
+        vocab_rows = snippets(text, "热点聚合", width=360, limit=1)
+        lines += ["**⑦ 热点聚合**（原「AI词汇分析」升级：同一份 jieba 词频口径 + 同题聚合标记 + 情绪/风险标注）", ""]
         lines += [f"```\n{s}\n```" for s in vocab_rows] or ["```\n（未找到）\n```"]
+        lines.append("")
+        risk_rows = snippets(text, "预警风险点", width=420, limit=1)
+        lines += ["**⑧ 预警风险点**（本地风险词表标题级命中；等级 = 传播度 高/中/关注，不是发生概率）", ""]
+        lines += [f"```\n{s}\n```" for s in risk_rows] or ["```\n（未找到）\n```"]
         lines += ["", "---", ""]
     lines += [
         "## 真实覆盖怎么看（沙箱无外网，必须在本机跑）",

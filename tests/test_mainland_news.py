@@ -581,7 +581,7 @@ class CandidateFallbackTests(unittest.TestCase):
 
 
 # ======================================================================
-# ⑥ 【沸腾花蛤】内地财经热点榜（2026-10-13 新增栏目）
+# ⑥ 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增栏目「内地财经热点榜」，2026-10-19 更名）
 # ======================================================================
 def _hotlist_data(entries=(), missing=("北京商报（北京商报网）",), ok_n=2):
     """构造一份「内地财经媒体源头」结果：entries = (标题, 媒体, 链接, 北京时间)。"""
@@ -667,6 +667,41 @@ class HotlistBuildTests(unittest.TestCase):
         self.assertEqual([(t["label"], t["count"]) for t in a["themes"]],
                          [(t["label"], t["count"]) for t in b["themes"]])
         self.assertEqual(a["finance_summary"], b["finance_summary"])
+        # 2026-10-19 新增的三块本地 AI 分析也必须逐字段可复现
+        self.assertEqual(a["sentiment_agg"], b["sentiment_agg"])
+        self.assertEqual(a["hotspots"], b["hotspots"])
+        self.assertEqual(a["risk_report"], b["risk_report"])
+
+    def test_sentiment_risk_hotspot_summaries_are_attached(self):
+        hot = pipeline.build_mainland_hotlist(
+            _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        agg = hot["sentiment_agg"]
+        self.assertTrue(agg["has_data"])
+        self.assertEqual(agg["total_titles"], len(_HOT_ENTRIES))
+        self.assertEqual(agg["pos_n"] + agg["neu_n"] + agg["neg_n"], len(_HOT_ENTRIES))
+        self.assertIn(agg["label"], ("偏多", "中性", "偏空"))
+        # 「创业板指跌超2%」命中风险词表（市场波动），天气标题不命中
+        risk = hot["risk_report"]
+        self.assertTrue(risk["has_data"])
+        cats = [p["category"] for p in risk["points"]]
+        self.assertIn("市场波动风险", cats)
+        self.assertTrue(all(p["level"] in ("高", "中", "关注") for p in risk["points"]))
+        self.assertTrue(all(p["samples"] for p in risk["points"]), "每类风险点都附证据标题")
+        hotspots = hot["hotspots"]
+        self.assertTrue(hotspots["has_data"])
+        terms = {c["term"] for c in hotspots["clusters"]}
+        self.assertIn("A股", terms)
+        for c in hotspots["clusters"]:
+            self.assertEqual(c["pos_n"] + c["neu_n"] + c["neg_n"], c["title_count"])
+            self.assertEqual(c["aggregated"], c["title_count"] >= 2)
+
+    def test_theme_buckets_carry_mood_counts(self):
+        hot = pipeline.build_mainland_hotlist(
+            _hotlist_data(_HOT_ENTRIES)[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        for t in hot["themes"]:
+            self.assertEqual(t["pos_n"] + t["neu_n"] + t["neg_n"], t["count"],
+                             "主题级情绪折叠计数之和 = 主题条数")
+            self.assertIn(t["mood"], ("偏多", "中性", "偏空"))
 
     def test_health_and_missing_are_carried(self):
         hot = pipeline.build_mainland_hotlist(
@@ -698,8 +733,12 @@ class HotlistRenderTests(unittest.TestCase):
                 html = pipeline.generate_report(data, "2026年10月13日 · 周二", "20261013",
                                                 theme=theme)
                 self.assertIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
+                self.assertIn("情绪热点因子量化分析", html)
+                self.assertNotIn("内地财经热点榜", html, "2026-10-19 更名后旧栏目名不再出现")
                 self.assertIn("A股盘面", html)
-                self.assertIn("AI词汇分析", html)
+                self.assertIn("情绪总览", html)
+                self.assertIn("热点聚合", html)
+                self.assertIn("预警风险点", html)
                 self.assertIn("半导体", html)
                 self.assertIn("北京商报（北京商报网）", html, "暂缺的媒体要在栏目里点名")
         hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
@@ -716,9 +755,45 @@ class HotlistRenderTests(unittest.TestCase):
         self.assertIn("https://www.eeo.com.cn/2026/1013/1.shtml", block,
                       "代表标题要带可点原文链接")
         self.assertIn(pipeline.MAINLAND_HOT_OTHER_LABEL, block)
-        self.assertIn("AI词汇分析", block)
+        self.assertNotIn("AI词汇分析", block, "旧词汇分析已升级并入「热点聚合」")
+        self.assertIn("热点聚合", block)
         self.assertIn("jieba 本地分词", block)
         self.assertNotIn("利好概率", block, "词典分数不能伪装成预测概率")
+
+    def test_block_shows_sentiment_risk_and_hotspot_rows(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        # ⚖ 情绪总览行：三档计数 + 净情绪分 + 「非校准概率」如实标注
+        self.assertIn("情绪总览", block)
+        self.assertIn("净情绪分", block)
+        self.assertIn("非校准概率", block)
+        # 🔥 热点聚合行：同题聚合标记 + 主题级情绪折叠
+        self.assertIn("同题聚合", block)
+        self.assertIn("情绪中性", block)
+        # ⚠ 预警风险点行：等级 + 类别 + 命中词（「低开 / 跌超」来自创业板标题）
+        self.assertIn("预警风险点", block)
+        self.assertIn("市场波动风险", block)
+        self.assertIn("【关注】", block)
+        self.assertIn("命中词", block)
+
+    def test_risk_evidence_row_does_not_repeat_theme_headline(self):
+        data = _hotlist_data(_HOT_ENTRIES)
+        hot = pipeline.build_mainland_hotlist(data[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        with patch.object(pipeline, "LITE_ENABLED", False):
+            block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        # 唯一的风险证据标题（eeo）已在主题榜代表行出现 → 风险点不重复贴同一条原文
+        self.assertEqual(block.count("https://www.eeo.com.cn/2026/1013/1.shtml"), 1,
+                         "栏内同一条原文只列一次")
+
+    def test_block_reports_zero_risk_hits_honestly(self):
+        entries = (("白酒板块逆市拉升，多股涨停", "时代财经",
+                    "https://www.tfcaijing.com/article/page/9", "2026-10-13 02:35"),)
+        hot = pipeline.build_mainland_hotlist(
+            _hotlist_data(entries, missing=(), ok_n=1)[pipeline.MAINLAND_NEWS_SOURCE_NAME])
+        block = pipeline._mainland_hotlist_block(hot, pipeline.GUIZANG_KIT)
+        self.assertIn("预警风险点", block)
+        self.assertIn("未命中风险词表", block, "0 命中要如实说，不硬造风险")
 
     def test_plain_mode_keeps_a_compact_health_row(self):
         data = _hotlist_data(_HOT_ENTRIES)
