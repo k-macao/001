@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""🦑 AI帮你提鲜 —— 日报每个栏目的「00 后接地气版」翻译层（2026-09-29 新增）。
+"""🦑 AI帮你提鲜 —— 日报每个数据栏目的「先结论、后证据」翻译层（2026-09-29 新增）。
 
 用户是入门兼职投资者，看不懂专业术语。本模块把日报里每个栏目的关键数字
-翻译成一句到三句大白话 + 网络梗，附在每个栏目末尾「🦑 AI帮你提鲜」块里。
+翻译成一句到三句大白话，放在栏目正文开头：先告诉小散户「这栏怎么看」，
+再由正文展示数据、证据与详细分析。
 （2026-10-06 由「鲜鲜解读」更名：名字直接说人话——AI 帮你把这栏的数字「提鲜」；
 标题常量 REN_TITLE 统一出口，改名只改一处。）
 
@@ -12,7 +13,8 @@
      措辞变体按 `crc32(日期 + 栏目)` 选池，隔天自动换说法，当天重跑不跳变。
   2. 不伪造数字：解读里出现的每一个数字都来自当次渲染用的同一批实参
      （与「⌁ AI 研判」行同源，趋势跟踪等共享统计走同一个 helper，不另算一套）。
-  3. 数据缺失 → 返回空串，该栏目自动不加解读；绝不硬编、不用旧数据充数。
+  3. 数据缺失 → 返回空串，由渲染层在实际存在的栏目开头给出「证据不足、不硬判」
+     的后备结论；绝不硬编数字、方向，也不用旧数据充数。
   4. 不给投资建议：只做「翻译」，方向提示一律紧跟「非投资建议」式的提醒，
      并明确概率 ≈ 抛硬币的诚实口径（模型命中 52% 时就说它是抛硬币水平）。
   5. 环境变量 OCTOPUS_REN=0 整体关闭（默认开启）；单栏出错只丢该行，不影响日报。
@@ -22,6 +24,8 @@ ctx 约定（键全部可选，缺了就降级）：
   notes     build_section_ai_notes 的结果（与页面 ⌁ AI 研判行同源的方向定调）
   market/pan/policy/ai/quant/weekly/hk7/fed/geo/senti/cal/yt/google/em
             与 _collect_report_parts 里渲染正文用的同一批对象
+  retail_sentiment / media_risk / sector_rotation / industry_rotation / macd
+            散户情绪、媒体风险、板块轮动、行业轮动与 MACD 栏目的同源结构化结果
   uzi       _uzi_result(data) 的结果（【游资剑鱼】多专家流派趋势分析，与正文同一份）
   trend     _trend_section_stats(data) 的结果（趋势跟踪共享统计）
   coverage  {today, total, missing: [...]}（总结栏数据覆盖同源）
@@ -145,7 +149,7 @@ def _tip(seed):
 
 
 # ------------------------------------------------------------------
-# 各栏目生成器：只读 ctx，缺数据返回 ""（栏目末尾就不加解读行）
+# 各栏目生成器：只读 ctx，缺数据返回 ""（渲染层对已存在栏目给诚实后备结论）
 # ------------------------------------------------------------------
 def _ren_forecast(ctx):
     """【回游金枪鱼】今日预判：把「概率/倾向」一行行翻译成硬币梗。"""
@@ -435,11 +439,124 @@ def _ren_geo(ctx):
             f"定调「{verdict}」。翻译：{tone}。")
 
 
+def _ren_retail_sentiment(ctx):
+    """【麻辣大龙虾】散户情绪：只翻译社区样本，不把网友观点当事实。"""
+    result = ctx.get("retail_sentiment") or {}
+    if not result.get("available"):
+        return ""
+    bull = int(result.get("bull") or 0)
+    bear = int(result.get("bear") or 0)
+    directional_n = int(result.get("directional_n") or 0)
+    label = str(result.get("label") or "方向不足")
+    nbi = result.get("nbi")
+    if directional_n and isinstance(nbi, (int, float)):
+        text = (f"社区里可分方向的样本有 {directional_n} 条：看多 {bull} / 看空 {bear}，"
+                f"净情绪 NBI {float(nbi):+.1f}（{label}）。")
+    else:
+        text = "社区这次有热度样本，但可可靠归成看多或看空的内容不足，所以不硬判方向。"
+    dispersion = result.get("dispersion")
+    if isinstance(dispersion, (int, float)):
+        text += f"多空分歧度 {float(dispersion):.1f}/100；"
+    text += "小散户把它当「大家在聊什么」就好，社区观点未经公告或权威媒体印证，不是事实和买卖信号。"
+    return text
+
+
+def _ren_media_risk(ctx):
+    """【警戒爆炸豚】媒体风险：区分具体风险事件与单纯异常关注。"""
+    result = ctx.get("media_risk") or {}
+    if not result.get("available"):
+        return ""
+    stocks = [row for row in (result.get("stocks") or []) if isinstance(row, dict)]
+    risk_stock_n = int(result.get("risk_stock_n") or len(stocks))
+    event_n = int(result.get("risk_event_n") or 0)
+    attention_n = int(result.get("attention_evidence_n") or 0)
+    if event_n:
+        text = (f"近 {int(result.get('window_hours') or 0)} 小时媒体证据覆盖到 {risk_stock_n} 只 A/H 活跃标的，"
+                f"其中有 {event_n} 条具体风险事件证据、{attention_n} 条关注度证据。")
+    else:
+        text = (f"本栏覆盖 {risk_stock_n} 只 A/H 活跃标的，当前没有检出具体负面事件；"
+                f"{attention_n} 条证据只说明关注度变化，不能当成风险事实。")
+    top = result.get("top_stock") or {}
+    if top:
+        level = str((top.get("level") or {}).get("label") or "观察")
+        score = top.get("risk_index")
+        score_txt = f"，启发式风险分 {int(score)}/100" if isinstance(score, (int, float)) else ""
+        qualifier = "异常关注" if top.get("attention_only") else level
+        text += f"排在最前的是{top.get('name') or '未命名标的'}（{qualifier}{score_txt}）。"
+    text += "风险分用于排序，不是事件发生概率；先核对公告和原文，再决定是否继续观察，非投资建议。"
+    return text
+
+
+def _ren_sector_rotation(ctx):
+    """【滚滚翻车鱼】板块轮动：把最高分与覆盖门槛先讲清楚。"""
+    result = ctx.get("sector_rotation") or {}
+    if not result:
+        return ""
+    items = [row for row in (result.get("items") or []) if isinstance(row, dict)]
+    scored = [row for row in items if isinstance(row.get("overall_score"), (int, float))]
+    concepts = int(result.get("concept_total") or 0)
+    mapped = int(result.get("mapped_total") or 0)
+    if not scored:
+        return (f"这次读取 {concepts} 个 A 股概念、命中 {mapped} 个港股观察映射，"
+                "但没有概念达到综合评分门槛，所以本栏不硬选强弱。映射是仓库关键词观察篮子，不是官方成分。")
+    lead = scored[0]
+    score = float(lead["overall_score"])
+    vote_summary = lead.get("strategy_summary") or {}
+    consensus = str(vote_summary.get("consensus") or "数据不足")
+    available_n = int(vote_summary.get("available_n") or 0)
+    text = (f"{len(scored)} 个概念达到评分门槛，综合分最前的是「{lead.get('name') or '未命名概念'}」"
+            f"（{score:.1f}/100，{lead.get('score_label') or '未分档'}）")
+    if available_n:
+        text += f"，三套独立策略有 {available_n} 套可用，合议「{consensus}」"
+    text += "。分数用于同批候选相对比较，不是上涨概率；A/H 对应关系也不是官方成分，先看正文覆盖与缺项再判断。"
+    return text
+
+
+def _ren_industry_rotation(ctx):
+    """【巡游旗鱼】行业轮动：先报行业宽度、榜首与月度观察组合。"""
+    result = ctx.get("industry_rotation") or {}
+    if not result.get("available"):
+        return ""
+    breadth = result.get("breadth") or {}
+    total = int(breadth.get("total") or result.get("scored_count") or 0)
+    up_week = int(breadth.get("up_week") or 0)
+    text = f"本次有 {total} 个行业可评分，近 5 个交易日上涨 {up_week} 个"
+    avg_week = breadth.get("avg_week")
+    if isinstance(avg_week, (int, float)):
+        text += f"，全行业等权平均 {float(avg_week) * 100:+.2f}%"
+    scores = [row for row in (result.get("scores") or []) if isinstance(row, dict)]
+    if scores:
+        lead = scores[0]
+        text += f"；综合分第一是{lead.get('name') or '未命名行业'}（{float(lead.get('score') or 0):.1f}/100）"
+    holdings = ((result.get("state") or {}).get("holdings") or [])
+    names = [str(row.get("name") or "") for row in holdings if isinstance(row, dict) and row.get("name")]
+    if names:
+        text += f"。本月规则观察组合是{'、'.join(names[:5])}"
+    text += "。这是月频轮动规则的相对排序，不是个股买入清单；执行日、权重和跟踪表现见正文。"
+    return text
+
+
+def _ren_macd_only(macd):
+    """跨市场策略缺席时，用同栏已有 MACD 结果给出不越界的后备结论。"""
+    if not (isinstance(macd, dict) and macd.get("available")):
+        return ""
+    items = [row for row in (macd.get("items") or []) if isinstance(row, dict)]
+    if not items:
+        return ""
+    coverage = macd.get("coverage") or {}
+    counts = {key: sum(row.get("action_key") == key for row in items)
+              for key in ("entry", "hold", "watch", "exit")}
+    return (f"跨市场综合信号不足，本栏只解读已有 MACD 日线：有效 "
+            f"{int(coverage.get('valid') or len(items))}/{int(coverage.get('total') or len(items))} 只，"
+            f"规则状态为试探 {counts['entry']} / 持有 {counts['hold']} / 观察 {counts['watch']} / 规避 {counts['exit']}。"
+            "它只是趋势温度计，不是买卖指令；各标的收盘日期和信号细节见正文。")
+
+
 def _ren_strategy(ctx):
-    """策略研判：把量化策略讲成「程序写的剧本」。"""
+    """策略研判：优先翻译综合策略；缺席时只总结同栏已有 MACD。"""
     ai = ctx.get("ai") or {}
     if not ai.get("available"):
-        return ""
+        return _ren_macd_only(ctx.get("macd") or ai.get("macd"))
     label = str(ai.get("sentiment_label") or "中性")
     score = int(ai.get("score") or 0)
     confidence = str(ai.get("confidence") or "")
@@ -783,12 +900,16 @@ _GENERATORS = {
     "LIQUIDITY FLOW": _ren_liquidity,
     "WEEKLY FORECAST": _ren_weekly,
     "MARKET REVIEW": _ren_market_review,
+    "RETAIL SENTIMENT": _ren_retail_sentiment,
+    "MEDIA RISK": _ren_media_risk,
     "POLICY SHOCK": _ren_policy,
     "FED TREND": _ren_fed,
     "GEO TREND": _ren_geo,
     "STRATEGY READ": _ren_strategy,
     "UZI TREND": _ren_uzi_trend,
     "TREND TRACKING": _ren_trend,
+    "SECTOR ROTATION": _ren_sector_rotation,
+    "INDUSTRY ROTATION": _ren_industry_rotation,
     "GLOBAL HEADLINES": _ren_global_headlines,
     "EASTMONEY WIRE": _ren_eastmoney_wire,
     "HK GURU CHANNELS": _ren_guru,
@@ -835,6 +956,8 @@ def _garnish_obj(kicker, ctx):
     """kicker → ctx 里的主数据对象（与各栏生成器读的是同一批对象，状态一致）。"""
     ctx = ctx or {}
     quant = ctx.get("quant") or {}
+    ai = ctx.get("ai") or {}
+    strategy_obj = ai if ai.get("available") else (ctx.get("macd") or ai.get("macd"))
     table = {
         "FORECAST": quant,
         "ECON CALENDAR": ctx.get("cal"),
@@ -843,12 +966,16 @@ def _garnish_obj(kicker, ctx):
         "LIQUIDITY FLOW": quant.get("liquidity"),
         "WEEKLY FORECAST": ctx.get("weekly"),
         "MARKET REVIEW": ctx.get("market") or ctx.get("pan"),
+        "RETAIL SENTIMENT": ctx.get("retail_sentiment"),
+        "MEDIA RISK": ctx.get("media_risk"),
         "POLICY SHOCK": ctx.get("policy"),
         "FED TREND": ctx.get("fed"),
         "GEO TREND": ctx.get("geo"),
-        "STRATEGY READ": ctx.get("ai"),
+        "STRATEGY READ": strategy_obj,
         "UZI TREND": ctx.get("uzi"),
         "TREND TRACKING": ctx.get("trend"),
+        "SECTOR ROTATION": ctx.get("sector_rotation"),
+        "INDUSTRY ROTATION": ctx.get("industry_rotation"),
         "GLOBAL HEADLINES": ctx.get("google"),
         "EASTMONEY WIRE": ctx.get("em"),
         "HK GURU CHANNELS": ctx.get("yt"),

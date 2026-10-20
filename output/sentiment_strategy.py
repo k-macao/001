@@ -259,9 +259,13 @@ def _render_stocktwits_top(rows):
     return "；".join(bits)
 
 
-def build_section(kit, data):
-    """返回数据驱动栏目元组；两路社区源都没有样本时不占版面。"""
-    result = calculate(data)
+def build_section(kit, data, result=None):
+    """返回数据驱动栏目元组；两路社区源都没有样本时不占版面。
+
+    ``result`` 可由调用方传入同一次 ``calculate`` 的结果，让栏首大白话结论与正文
+    严格复用同一对象；省略时保持原有独立调用兼容性。
+    """
+    result = result if isinstance(result, dict) else calculate(data)
     if not result["available"]:
         return None
 

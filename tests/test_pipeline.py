@@ -3064,9 +3064,12 @@ class SectionAiJudgeTests(unittest.TestCase):
                     self.assertEqual(report.count("⌁ AI 研判"), 2)
                     self.assertIn("GLOBAL HEADLINES", notes)
                     self.assertNotIn("条头条", report)
-                    self.assertIn("多头", report)
-                    self.assertIn("空头", report)
-                    self.assertRegex(report, r"多头 \d{2}%")
+                    # 栏首大白话块统一展示一次上涨概率；后接的「AI 研判」只列数据依据，
+                    # 不再重复一遍多头 / 空头概率与同方向预测。
+                    self.assertIn("上涨概率", report)
+                    self.assertRegex(report, r"上涨概率 \d{2}%")
+                    self.assertNotRegex(report, r"多头 \d{2}%")
+                    self.assertNotRegex(report, r"空头 \d{2}%")
                     # 研判行位于所属栏目内：首条研判在趋势跟踪栏目之前
                     # （页面 <title> 也含「趋势跟踪」，必须用真实栏目标题定位）
                     trend_pin = ("TREND TRACKING" if theme == "pixel"

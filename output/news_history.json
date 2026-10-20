@@ -2,594 +2,6 @@
  "version": 1,
  "items": [
   {
-   "title": "美泰恢复交易，股价涨幅扩大至30%。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 02:39",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "市场消息：伊朗提出，若制裁得到放宽，将允许核核查人员开展核查。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 02:35",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【也门胡塞武装称24小时内遭沙特空袭47次】当地时间10月1日晚，也门胡塞武装发布声明称，过去24小时，沙特对胡塞武装控制区实施了47次空袭，目标覆盖塔伊兹省、萨达省等多地",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 02:35",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "WTI 11月原油期货收报92.87美元/桶。NYMEX 10月天然气期货收报2.9670美元/百万英热单位。NYMEX 10月汽油期货收报3.4026美元/加仑，NYMEX 10月取暖油期货收报4.6420美元/加仑。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 02:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国能源部长赖特：欧洲能够帮助缓解当前局势，我对此抱有十足信心。我认为我们很快会有一些利好消息。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 02:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国增兵中东叠加中国暂停成品油出口 国际油价大涨逾4%",
-   "source": "8world",
-   "section": "全球头条",
-   "ts": "2026-10-02 07:36",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "华为与赛力斯达成新五年合作，鸿蒙智行问界业务升级",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-02 12:57",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美债跌到位了吗？高盛交易台主管：长债“仍然完全无人问津”",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-10-02 09:52",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "东京通胀大超预期！日本央行“超调警报”拉响，12月加息稳了？_滚动新闻",
-   "source": "证券之星",
-   "section": "全球头条",
-   "ts": "2026-10-02 09:39",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "房贷贴息和公积金贷款只能二选一 新政利好如何选更省钱",
-   "source": "中华网",
-   "section": "全球头条",
-   "ts": "2026-10-02 09:11",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "广州商品住房销售新政细则落地",
-   "source": "同花顺",
-   "section": "全球头条",
-   "ts": "2026-10-02 10:17",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "华为首次在国庆日发布Mate 90系列旗舰手机",
-   "source": "观点网",
-   "section": "全球头条",
-   "ts": "2026-10-02 09:48",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "迅销9月优衣库日本销售额增长10.8%。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:32",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【泰国扩大家庭太阳能补贴计划规模】泰国计划将拟议的家庭太阳能补贴计划规模从最初的500亿泰铢扩大至最高750亿泰铢，并放宽资格范围，不再局限于屋顶安装",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【日韩股市收盘涨跌互现】日经225指数收跌0.94%，报68309.46点。韩国综指收涨0.46%，报7003.74点。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "阿斯利康：双方将各自提供药品用于联合试验。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "德国两年期国债收益率日内下跌6.1个基点，报2.9925%。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "港股午评：恒生指数跌2.64% 恒生科技指数跌2.45%",
-   "source": "finance.eastmoney.com",
-   "section": "全球头条",
-   "ts": "2026-10-02 12:16",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国威胁对欧洲禁运柴油，欧洲多国警告此举将破坏全球供应链",
-   "source": "中国日报网",
-   "section": "全球头条",
-   "ts": "2026-10-02 09:24",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "沃尔沃汽车：挑战导致销量不及预期，全年展望走弱。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:42",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "迪拜航空飞行员致印度总理莫迪：（袭击者）在我倒地遇袭时打开了驾驶舱门。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:41",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【全球最大液化天然气买方：预计卡塔尔液化天然气不会很快重返市场】全球最大液化天然气采购方负责人预计，霍尔木兹海峡的供应中断情况将持续，进一步削减该地区的出口",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:41",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【问界二手车价格上演过山车：10月M7均价上涨数千元，车商称“崩盘”传闻不实】问界系列车型二手车价格在经历9月小幅下滑后，于国庆假期出现回暖，部分车型报价上调幅度从数百元到数千元不等",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:41",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【市场监管总局开展 特种设备  检验质量提升行动】记者从国家市场监督管理总局了解到，市场监管总局近日印发《特种设备检验质量提升行动工作方案》，决定在全国范围组织开展特种设备检验质量提升行动，覆盖所有特种设备检验机构及电梯检测机构",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 14:41",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "恒指失守24000点，创近半年最大跌幅，AI牛股市值一日蒸发近100亿港元",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-02 17:24",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国张嘴就是1.2亿桶柴油，欧洲紧急开会商讨对策",
-   "source": "观察者网",
-   "section": "全球头条",
-   "ts": "2026-10-02 17:24",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "深化“AI+城市+金融”协同，杭州银行在数贸会写下“金融+科技”注脚",
-   "source": "chnfund.com",
-   "section": "全球头条",
-   "ts": "2026-10-02 14:00",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧洲主要股指开盘集体走高",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-02 15:08",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【耐克目标价遭大幅下调 盘前股价大跌】多家国际大行大幅下调耐克目标价",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:13",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧盟委员会批准塔塔集团与博世成立合资企业。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:12",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "ANTHROPIC 招股说明书：政府态度可能影响业务。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:11",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "法国债券风险溢价升至150个基点，为2012年以来首次。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:11",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "摩根士丹利将开云集团目标股价从320欧元下调至250欧元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:11",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【郭Sir財經 一週回顧】2026-10-03 十月首個交易日大幅急挫︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 17:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【郭Sir財經 直播】2026-10-02 匯豐裂口性低開拖累大市急跌︱收市直播︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 16:42",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【郭Sir財經 直播】2026-10-02 大市急跌並遺留下223點下降裂口︱午間TURBO時段︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 14:51",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【郭Sir財經 直播】2026-10-02 十月開局恒指大幅裂口低開︱早市直播︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 11:29",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美光業績狂飆，Apple裁員對銷成本，記憶體漲價逼慘下游？大沽空警告 AI 泡沫提前爆破！【LIVE AI 操盤手】2026/10/2 #王榮昆 #湯紹彰",
-   "source": "施凌部署",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 14:35",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "施永青因「走投無路」先創立中原？ 由5人團隊愉景灣殺出重圍制霸全港 全靠孫子兵法？｜Hero Talk EP 7｜Feat. ‪@WongsVibe  ​",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 16:47",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "2026海外销量冲千万 中国车企“出海”创新高",
-   "source": "亚洲电视新闻",
-   "section": "全球头条",
-   "ts": "2026-10-02 11:00",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国张嘴就是1.2亿桶柴油，欧洲紧急开会想招",
-   "source": "观察者网",
-   "section": "全球头条",
-   "ts": "2026-10-02 17:24",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "助力购房家庭减负！工行镇江分行落实住房贷款贴息政策",
-   "source": "紫牛新闻",
-   "section": "全球头条",
-   "ts": "2026-10-02 16:53",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "24年一见！全球市场突遭“利率风暴”：美债收益率创24年新高、油价冲破100美元，华尔街警报拉响",
-   "source": "黄金网",
-   "section": "全球头条",
-   "ts": "2026-10-02 08:38",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧盟委员会发言人：目前不存在迫在眉睫的供应问题。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:32",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "俄罗斯副总理帕特鲁舍夫表示，预计2026年俄罗斯谷物产量将达到1.4亿吨。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "德国探索如何避免其他类似裕信银行的收购。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:29",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧盟发言人：或将在今日下午进一步讨论。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:28",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧盟发言人：委员会与成员国协调会议已于今日上午召开。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:28",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "锚定需求端 房贷贴息政策折射“投资于人”",
-   "source": "人民网",
-   "section": "全球头条",
-   "ts": "2026-10-02 16:54",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "巴西航空工业公司在提交文件中表示，其第三季度已交付66架飞机。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:59",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "JSW：宣布不可抗力，预计2026年产量损失约15.7万吨，临时封闭采矿工作面以控制风险并防止内因火灾。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:56",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【高盛策略师：欧洲斯托克600三季度盈利预期高企】高盛策略师表示，在三季度财报季开启前，分析师对欧洲企业盈利增长抱有较高预期",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:51",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "英超联赛：曼城已就委员会裁决提出上诉。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:50",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【高盛：土耳其9月近半外流资金流入外汇黄金存款】高盛分析师在10月2日的报告中指出，截至9月的数据显示，土耳其当月130亿美元货币市场流出资金中，约有一半流入了国内外汇和黄金存款",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 18:49",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "广积粮、深扎根，中国汽车出海上演合纵连横",
-   "source": "电子工程专辑",
-   "section": "全球头条",
-   "ts": "2026-10-02 16:09",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "能源危机：欧盟开会商讨应对柴油价格飙升",
-   "source": "RFI",
-   "section": "全球头条",
-   "ts": "2026-10-02 18:53",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "详讯：东京9月物价同比上涨2.7% 受食品价格和水费影响",
-   "source": "共同网",
-   "section": "全球头条",
-   "ts": "2026-10-02 12:35",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "NBC：特朗普和马克龙昨晚通话讨论了能源形势。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 20:48",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【交易员们对12月加息预期有所回落】在非农就业人数增幅令人失望且失业率小幅上升后，交易员已不再完全消化12月加息预期，更不用说10月了。他们目前预计12月加息的概率约为86%，低于周四时对12月加息已完全消化甚至超出完全消化的程度。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 20:48",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美联储传声筒Nick Timiraos ： 8月三个月平均招聘人数初值为7.1万，现下修至5.1万，9月三个月平均招聘人数也为5.1万。私营部门就业情况类似，9月增加5.4万，8月数据下修后为增加4.8万。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 20:46",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【高盛：10月加息现在不太可能】高盛资产管理公司多部门固定收益投资主管林赛·罗斯纳表示，疲软的9月就业报告使美联储在本月晚些时候加息的可能性不大",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 20:44",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【美国9月新增就业人数远低于预期 8月就业数据被下修】美国9月新增就业人数远低于预期，显示劳动力市场乃至整体经济意外走弱",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 20:42",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【郭Sir財經 鍾極財智】2026-10-02 恆指大跌穿24000 匯控友邦拖累大市 港股下周有望反彈？︱鍾俊鏘︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 20:03",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "人民幣創兩年新高！轉定存賺匯價定買內需股？拆解官方升值劇本背後玄機：中港資產迎入市良機？【#佛系收息 #德兄】EP57",
-   "source": "施凌部署",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 20:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "示範單位｜Sierra Sea第2C(2)期4房1套大宅曝光 綺麗水晶廚房彰顯氣派",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 19:40",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "【就业数据推动收益率下行，建筑商股票上涨】美国建筑商股周五盘前走高，因不及预期的就业数据缓解了美联储本月加息的压力，同时推动10年期美债收益率下行",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 21:28",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "提示：哈塞特结束讲话。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 21:26",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国防长：我正指示各级指挥官与主管，在10月开展为期一天的停工休整。所有军人都将获得投票机会。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 21:26",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "法国10年期国债收益率相对于德国国债收益率的溢价跌破150个基点。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 21:24",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "白宫国家经济委员会主任哈塞特谈柴油：希望很快能有相关消息。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 21:23",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "恒指失守24000点创半年最大跌幅，物理AI概念股、科网股走弱",
-   "source": "thepaper.cn",
-   "section": "全球头条",
-   "ts": "2026-10-02 19:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "武汉发布楼市新政",
-   "source": "央广网",
-   "section": "全球头条",
-   "ts": "2026-10-02 09:50",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "华为赛力斯 分手15天后闪电复合 新五年协议敲定",
-   "source": "中华网",
-   "section": "全球头条",
-   "ts": "2026-10-02 18:03",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美国9月新增非农就业岗位大幅减少",
-   "source": "新华网客户端",
-   "section": "全球头条",
-   "ts": "2026-10-02 22:52",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧洲央行管委雷恩：债券收益率飙升将减弱能源价格冲击的传导效应",
-   "source": "搜狐网",
-   "section": "全球头条",
-   "ts": "2026-10-02 15:43",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美联储12月加息概率为72.6%",
-   "source": "新浪财经",
-   "section": "全球头条",
-   "ts": "2026-10-02 20:50",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "伊拉克官方声明称，除马汉航空外，伊朗其他航空公司获准每日飞往纳杰夫的航班共计40架次。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 23:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "爱尔兰财政部长：9月企业税款增收受时间因素推动。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 23:31",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "欧洲STOXX 600指数初步收涨0.72%，报631.17点，本周累计下跌大约1.1%。欧元区STOXX 50指数初步收涨0.99%，报6236.57点，本周累跌约1%。富时泛欧绩优300指数初步收涨0.71%，报2521.57点。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 23:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "截至9月底，爱尔兰国库结余为24亿欧元，去年同期为14亿欧元盈余。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 23:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "截至9月底，爱尔兰2026财年所得税收入同比增长7.8%，增值税收入同比增长8.9%。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-02 23:30",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美股开盘：9月非农不及预期，三大指数集体高开；存储芯片板块上涨，ARM涨近5%，迈威尔科技涨超3%，英伟达涨超2%",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-02 21:33",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "港股收盘：恒生指数跌2.6% 恒生科技指数跌2.26%_公司新闻_财经",
-   "source": "stockstar.com",
-   "section": "全球头条",
-   "ts": "2026-10-02 16:24",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "晶泰控股(02228)10月2日斥资1498.6万港元回购189.7万股",
-   "source": "jrj.com.cn",
-   "section": "全球头条",
-   "ts": "2026-10-02 21:08",
-   "date": "2026-10-02"
-  },
-  {
    "title": "美国商品期货交易委员会（CFTC）：截至9月29日当周，投机者增加CBOT美国国债期货净空头头寸31,070份合约，至186,875份；\n投机者削减CBOT美国超长期国债期货净空头头寸10,289份合约，至326,436份",
    "source": "东方财富",
    "section": "东财快讯",
@@ -629,7 +41,8 @@
    "source": "BofA Global Research（美銀研究）",
    "section": "港股名家频道",
    "ts": "2026-10-03 01:16",
-   "date": "2026-10-03"
+   "date": "2026-10-03",
+   "url": "https://www.youtube.com/watch?v=Yj2FbCz_pwY"
   },
   {
    "title": "布伦特原油期货日内转涨 此前一度跌近4%",
@@ -651,20 +64,6 @@
    "section": "全球头条",
    "ts": "2026-10-03 02:04",
    "date": "2026-10-03"
-  },
-  {
-   "title": "美股开盘：三大指数集体高开，存储芯片板块上涨",
-   "source": "凤凰网财经",
-   "section": "全球头条",
-   "ts": "2026-10-02 21:33",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "布油跌穿100美元",
-   "source": "21财经",
-   "section": "全球头条",
-   "ts": "2026-10-02 17:26",
-   "date": "2026-10-02"
   },
   {
    "title": "联合健康暗盘突破370美元，日内涨1.2%。",
@@ -744,20 +143,6 @@
    "date": "2026-10-03"
   },
   {
-   "title": "美银：第四季度黄金价格存在下探3750美元风险",
-   "source": "观点网",
-   "section": "全球头条",
-   "ts": "2026-10-02 16:44",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "美债回落华尔街“加息交易”依然凶猛 紧缩预期强烈",
-   "source": "中华网",
-   "section": "全球头条",
-   "ts": "2026-10-02 21:13",
-   "date": "2026-10-02"
-  },
-  {
    "title": "【重庆多景区发布限流公告】据重庆发布，10月3日，巫山小三峡景区、重庆三峡之巅景区、白鹤梁水下博物馆发布限流公告。",
    "source": "东方财富",
    "section": "东财快讯",
@@ -812,13 +197,6 @@
    "section": "全球头条",
    "ts": "2026-10-03 15:56",
    "date": "2026-10-03"
-  },
-  {
-   "title": "非农数据公布后 交易员降低对美联储12月加息的押注",
-   "source": "新浪财经",
-   "section": "全球头条",
-   "ts": "2026-10-02 20:51",
-   "date": "2026-10-02"
   },
   {
    "title": "据灯塔专业版实时数据，截至10月3日19时7分，影片《神探之痕迹》票房突破2亿。",
@@ -1150,20 +528,6 @@
    "date": "2026-10-03"
   },
   {
-   "title": "Signals & Noise: Earnings Over Elections",
-   "source": "BofA Global Research（美銀研究）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 21:34",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "Novel now, big scale shortly; AV speed reinforced by Bay Area trip",
-   "source": "BofA Global Research（美銀研究）",
-   "section": "港股名家频道",
-   "ts": "2026-10-02 21:34",
-   "date": "2026-10-02"
-  },
-  {
    "title": "伊拉克：此举旨在让国家石油销售机构 SOMO 在原油销售方面拥有更大灵活性。",
    "source": "东方财富",
    "section": "东财快讯",
@@ -1220,13 +584,6 @@
    "date": "2026-10-03"
   },
   {
-   "title": "港股2日跌2.6% 收报23972.29点",
-   "source": "xinhuanet.com",
-   "section": "全球头条",
-   "ts": "2026-10-02 18:24",
-   "date": "2026-10-02"
-  },
-  {
    "title": "据伊朗塔斯尼姆通讯社：由于也门的导弹袭击，沙特阿拉伯达曼的法赫德国王机场航班出现了中断和停飞。",
    "source": "东方财富",
    "section": "东财快讯",
@@ -1260,20 +617,6 @@
    "section": "东财快讯",
    "ts": "2026-10-04 05:35",
    "date": "2026-10-04"
-  },
-  {
-   "title": "恒生科技指数连跌一年，累计跌幅近四成｜市场观察",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-02 15:55",
-   "date": "2026-10-02"
-  },
-  {
-   "title": "港股午评：恒指、恒科跌超2%，生物科技指数大跌近4%；医药生物领跌；银行、有色、煤炭、半导体下挫；科网股普跌；赛力斯涨超8%",
-   "source": "21财经",
-   "section": "全球头条",
-   "ts": "2026-10-02 12:07",
-   "date": "2026-10-02"
   },
   {
    "title": "白宫新设专项工作组，需在 120 天内撰写报告，梳理人工智能的风险、机遇以及美国联邦政府的相关职责。",
@@ -1323,13 +666,6 @@
    "section": "全球头条",
    "ts": "2026-10-03 23:12",
    "date": "2026-10-03"
-  },
-  {
-   "title": "财联社10月2日电，美国9月平均时薪同比增长3.0%",
-   "source": "财联社",
-   "section": "全球头条",
-   "ts": "2026-10-02 20:35",
-   "date": "2026-10-02"
   },
   {
    "title": "A股休市港股为什么先跌了 流动性被“双重绞杀”",
@@ -2078,7 +1414,8 @@
    "source": "BofA Global Research（美銀研究）",
    "section": "港股名家频道",
    "ts": "2026-10-05 21:35",
-   "date": "2026-10-05"
+   "date": "2026-10-05",
+   "url": "https://www.youtube.com/watch?v=9fG3wmkv7f8"
   },
   {
    "title": "歐債危機2.0？法國國債被拋售 財政危機隨時累全球？專家：債務危機六警號全中",
@@ -3128,7 +2465,8 @@
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-08 20:30",
-   "date": "2026-10-08"
+   "date": "2026-10-08",
+   "url": "https://www.youtube.com/watch?v=kofRAIQROPI"
   },
   {
    "title": "共和國成立 77 周年 09V-A 核潛艇成獻禮！許楨：解放軍補齊最後短板丨許楨丨09VA丨核潛艇丨攻擊核潛艇丨國之重器丨解放軍短板丨X字舵丨單殼體丨自然循環反應堆丨艦艏聲納丨楨觀天下",
@@ -3382,7 +2720,8 @@
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-09 20:30",
-   "date": "2026-10-09"
+   "date": "2026-10-09",
+   "url": "https://www.youtube.com/watch?v=ghfXKShISu8"
   },
   {
    "title": "一片睇清安達臣首置盤醜聞！長實拆3幢重建補鑊 兩年8宗工程醜聞已成結構性問題？",
@@ -4341,28 +3680,32 @@
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-12 15:38",
-   "date": "2026-10-12"
+   "date": "2026-10-12",
+   "url": "https://www.youtube.com/watch?v=8VIKkAVm6gU"
   },
   {
    "title": "OpenAI「200億失蹤」真相！AI股暴跌是市場誤會，定泡沫爆破先兆？如何分辨？【期權收租寶 實戰攻略】2026-10-12 #期權 #ORCL #IREN #amzn",
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-12 13:00",
-   "date": "2026-10-12"
+   "date": "2026-10-12",
+   "url": "https://www.youtube.com/watch?v=OjbSoub9nWY"
   },
   {
    "title": "【股壇C見】中央推買樓送現金補貼，內房重現金九銀十小陽春？施永青嘆唔係咁易：貨尾俾多5年都消化唔晒（Part 2/2）｜20261008",
    "source": "C基金 - 李浩德",
    "section": "港股名家频道",
    "ts": "2026-10-12 10:28",
-   "date": "2026-10-12"
+   "date": "2026-10-12",
+   "url": "https://www.youtube.com/watch?v=natKHZ6v-Zg"
   },
   {
    "title": "【股壇C見】法國國債飆升、歐元跌至一年多新低！歐債危機2.0係陰謀論定金融核彈？施永青、李浩德拆解債務計時炸彈（Part 1/2）｜20261007",
    "source": "C基金 - 李浩德",
    "section": "港股名家频道",
    "ts": "2026-10-12 10:19",
-   "date": "2026-10-12"
+   "date": "2026-10-12",
+   "url": "https://www.youtube.com/watch?v=2JW1WJ4nWeo"
   },
   {
    "title": "新华传媒连续10个交易日涨停 将于2026年10月13日起停牌核查",
@@ -4460,7 +3803,8 @@
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-12 21:00",
-   "date": "2026-10-12"
+   "date": "2026-10-12",
+   "url": "https://www.youtube.com/watch?v=7K15VH2IXkk"
   },
   {
    "title": "9月物流业景气指数为51.5%",
@@ -7264,7 +6608,8 @@
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-14 14:43",
-   "date": "2026-10-14"
+   "date": "2026-10-14",
+   "url": "https://www.youtube.com/watch?v=VjmasBZCntU"
   },
   {
    "title": "社科院孙彦红：中欧有智慧有能力通过对话磋商处理经贸分歧",
@@ -8166,7 +7511,8 @@
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-14 20:41",
-   "date": "2026-10-14"
+   "date": "2026-10-14",
+   "url": "https://www.youtube.com/watch?v=oP6ZPCa2yLs"
   },
   {
    "title": "9月CPI温和回升PPI涨幅扩大，能读出哪些信息",
@@ -8931,35 +8277,40 @@
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-15 17:49",
-   "date": "2026-10-15"
+   "date": "2026-10-15",
+   "url": "https://www.youtube.com/watch?v=iQhLdaATKMY"
   },
   {
    "title": "【郭Sir財經 直播】2026-10-15 大市再呈反覆 欲試低弱態︱午間TURBO時段︱郭思治︱廣東話",
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-15 15:14",
-   "date": "2026-10-15"
+   "date": "2026-10-15",
+   "url": "https://www.youtube.com/watch?v=Myaxg__RB8c"
   },
   {
    "title": "【郭Sir財經 直播】2026-10-15 AI概念股 全線再急跌︱早市直播︱郭思治︱廣東話",
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-15 11:36",
-   "date": "2026-10-15"
+   "date": "2026-10-15",
+   "url": "https://www.youtube.com/watch?v=5o_m0ETNby4"
   },
   {
    "title": "美俄中輪番上陣，英法德四面楚歌許楨剖析：歐洲末日真與假丨雙普損丨歐洲危機丨柴油協議丨德國經濟丨英國重返歐盟丨法國經濟危機丨中歐關係丨楨觀天下丨許楨",
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-15 19:30",
-   "date": "2026-10-15"
+   "date": "2026-10-15",
+   "url": "https://www.youtube.com/watch?v=5Rqj33CmzWw"
   },
   {
    "title": "社會懲罰努力的人？打工仔拼盡全力卻過得慘過綜援？施永青、何濼生建議用工作回報社會：囚犯都要幫手整路牌啦｜股壇C見（Part 1/2）｜20261015",
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-15 18:00",
-   "date": "2026-10-15"
+   "date": "2026-10-15",
+   "url": "https://www.youtube.com/watch?v=HP4pBhbopQ0"
   },
   {
    "title": "在工博会生动场景里感知“智慧工业”",
@@ -10120,28 +9471,32 @@
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-16 17:16",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=8BhX0IRv2z4"
   },
   {
    "title": "【郭Sir財經 直播】2026-10-16 大市反彈 但氣氛淡薄︱早市直播︱郭思治︱廣東話",
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-16 11:07",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=ZcOqq3QgY3s"
   },
   {
    "title": "仲諗緊用咩 AI 幫你放投資分析？呢個分享會已經講晒比你知喇！最後重溫開放 ，加長版免費投資分享會連結已經放咗喺置頂留言喇，立即去睇啦！ 👇#shorts #215 #investment",
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-16 17:30",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=Qw-23n1NL1Q"
   },
   {
    "title": "Bull and Bear Markets",
    "source": "BofA Global Research（美銀研究）",
    "section": "港股名家频道",
    "ts": "2026-10-16 03:11",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=hJkWXsN4Nc0"
   },
   {
    "title": "居屋改制大辯論！如何重塑健康的置業階梯？施永青：告別抽籤，落實輪候制；何濼生：免入息資產審查 但禁出租出售｜股壇C見（Part 2/2）｜20261016",
@@ -10781,7 +10136,8 @@
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-16 19:28",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=zHXx4hVeJjw"
   },
   {
    "title": "第140届广交会开展 吸引境外采购商约34万名",
@@ -11089,28 +10445,32 @@
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-16 21:13",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=3Dfr-ynzuos"
   },
   {
    "title": "債基平返兼派12厘，加息尾聲隨時到，終於可以入場？德兄4大買入原則＋PCN、PTY實戰比較 【#佛系收息 #德兄】EP59 #債基#買入策略#PTY#PCN",
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-16 20:30",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=I3rUEYwp8go"
   },
   {
    "title": "Tesla飛天跑車震驚全球！配Space X火箭推進器破物理極限 一片拆解Roadster黑科技有幾勁｜財經recap",
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-16 20:29",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=o_6-07N1CRk"
   },
   {
    "title": "何濼生語重心長：勿推租置計劃 2.0！政府須吸取98年歷史教訓，避免樓市連鎖暴跌｜股壇C見（Part 2/2）｜20261016",
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-16 17:30",
-   "date": "2026-10-16"
+   "date": "2026-10-16",
+   "url": "https://www.youtube.com/watch?v=9wzIGH_XRiM"
   },
   {
    "title": "2026赤水河论坛启幕倒计时：全球酒业再赴东方之约",
@@ -11892,7 +11252,8 @@
    "source": "郭思治（郭Sir）",
    "section": "港股名家频道",
    "ts": "2026-10-17 10:00",
-   "date": "2026-10-17"
+   "date": "2026-10-17",
+   "url": "https://www.youtube.com/watch?v=jS0ilo-fqeo"
   },
   {
    "title": "2700平方米临港展示区将亮相第九届进博会 100余家企业共展产业创新生态",
@@ -12223,7 +11584,8 @@
    "source": "Finance730",
    "section": "港股名家频道",
    "ts": "2026-10-17 20:00",
-   "date": "2026-10-17"
+   "date": "2026-10-17",
+   "url": "https://www.youtube.com/watch?v=kSO-5CsUByY"
   },
   {
    "title": "盐津铺子获第十届“拉姆·查兰管理实践奖”杰出奖",
@@ -14112,14 +13474,16 @@
    "source": "新京报",
    "section": "全球头条",
    "ts": "2026-10-19 21:02",
-   "date": "2026-10-19"
+   "date": "2026-10-19",
+   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE55a1FFUDZJTlliWHZhTmdudFBKUF9SZTRzT3hpaUZtbkt5ZU1hQXNGVVpkU3otbXV3eHhsQ04tQzREekNGcGRnTXI3RHZHYVZXWFhvMEZ5SkdrQ3Q0bGxQT3MxeF8?oc=5"
   },
   {
    "title": "商品日报（10月19日）：燃料油续创新高 双焦盘中跳水焦煤跌超5%",
    "source": "中国金融信息网",
    "section": "全球头条",
    "ts": "2026-10-19 17:11",
-   "date": "2026-10-19"
+   "date": "2026-10-19",
+   "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTFBucm56RFJna3QxclRuSE1lM1lLaDd1c3VDT1A3UkdOT0RPNmxIM1p5emdkYkh2R01abFdHRXNJcnN5OXUtcHMyc1VBOWJUZDItYzF0SHhsa3dtaV9RZXUtbk1vNm5nc0xKWEE?oc=5"
   },
   {
    "title": "宇树科技将举办2026世界物理AI大会暨宇树合作伙伴生态大会",
@@ -14189,14 +13553,16 @@
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-19 20:30",
-   "date": "2026-10-19"
+   "date": "2026-10-19",
+   "url": "https://www.youtube.com/watch?v=a_p0itxqWp4"
   },
   {
    "title": "平倉 vs Roll倉：Short Put 想延遲接貨？拆解3大Cash-Secured Put 應對策略！【#期權收租寶｜#新手指南】EP17 #CashSecuredPut#期權#收租",
    "source": "施凌部署",
    "section": "港股名家频道",
    "ts": "2026-10-19 13:00",
-   "date": "2026-10-19"
+   "date": "2026-10-19",
+   "url": "https://www.youtube.com/watch?v=EymACUYf-2s"
   },
   {
    "title": "平陆运河累计过货量突破100万吨",
@@ -14533,11 +13899,459 @@
    "ts": "2026-10-19 06:58",
    "date": "2026-10-19",
    "url": "https://finance.ifeng.com/c/8xM9TYpqOnX"
+  },
+  {
+   "title": "吴清最新发言八大要点：谈中国资产、市场稳定和AI浪潮",
+   "source": "ThePaper.cn",
+   "section": "全球头条",
+   "ts": "2026-10-19 20:51",
+   "date": "2026-10-19",
+   "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTFBVVERFVFl4QzNyMEFEWHRqNGF5emh6MFJ1VElXUUM5TUhpQWt6S1dmeldQbU93dGZhVG1jWVAwVWhYZ1ZRMDJXbDE1YkJiNUVqcHgzMXR3T1VjamI2UkJPeg?oc=5"
+  },
+  {
+   "title": "前三季度国内生产总值同比增长4.6%",
+   "source": "人民网",
+   "section": "全球头条",
+   "ts": "2026-10-20 06:10",
+   "date": "2026-10-20",
+   "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE15dGFBeXE5TGxoVlhELURoMnNWOWQ0Ny04UlNJbFVUaEoxWV8tdWpaQkp1Q0dzZ2VLcloxWHZrUXZGSFh3eERwaS1ZLWl6YWxGOVFaRDItajVIWUk3ZGZ4dDVJMWttV3VYcURHdjFn?oc=5"
+  },
+  {
+   "title": "解码银行股迭创新高现象",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-10-20 02:11",
+   "date": "2026-10-20",
+   "url": "https://news.google.com/rss/articles/CBMiY0FVX3lxTE9UZHNPbnNBQkJOS0djcVNmS2VKaWgzLThsTXE5R2VjbXNnSW1XNGNqUnBZQ2tyTHRid3p6QV9uOGFOakU0OGdMSDFnSDBiYzlLeDdDbXpVTElUNUFfOTRmeTRjSQ?oc=5"
+  },
+  {
+   "title": "国际油价19日涨跌不一",
+   "source": "新华网",
+   "section": "全球头条",
+   "ts": "2026-10-20 04:17",
+   "date": "2026-10-20",
+   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPR0t3Zk1RWFVtZ1BqVEVyeDMyR0RySXE4OHJOSVYzZVpQekF4M2xfUG1WZmJoblBGMkh3T21yQktRYlNUMWtrbFNielNBM1Nqa1A5ZlNQQWxvdk9BODkzTmdXVS1YblhwNkhpR0RsbEJmQWl4Vmlhc1VrVXNrQ2pLWlZsUHVseEx2?oc=5"
+  },
+  {
+   "title": "纽约股市三大股指19日涨跌不一",
+   "source": "新华网",
+   "section": "全球头条",
+   "ts": "2026-10-20 04:47",
+   "date": "2026-10-20",
+   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNNWxBbDRhOHYyTzI5WlN0YXgzRGR2bVNNQXl2aTJIandsTGpURlhyaVJHX3ZGZnEtWTV2bzRQUXJ4dDE0Sm5fSzdOU0xqLWVkTFZ5SkxBbndWTEVFYV9Qc1o1VnB5OUYtSE1raFlGTVNTbXdZdktUZHVvQlBVU2Mxek4xWDdEMDYw?oc=5"
+  },
+  {
+   "title": "深市已有116家三季报预增，占已披露八成，业绩高增主线明确",
+   "source": "财联社",
+   "section": "全球头条",
+   "ts": "2026-10-19 19:58",
+   "date": "2026-10-19",
+   "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFBvbWdXZ2k0dVNYaDQtRmtnbm5waDBIMHNkZGdyMHM0QmU1aUpUWmFLRTUxaFpIM19zMHA4TTBYZ3BSY29BbU14ZQ?oc=5"
+  },
+  {
+   "title": "澳大利亚S&P/ASX 200指数下跌1%，至8757点。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-20 07:19",
+   "date": "2026-10-20",
+   "url": "https://finance.sina.cn/7x24/2026-10-20/detail-inivvnpt7533155.d.html"
+  },
+  {
+   "title": "【日本首相高市早苗称不排除通过发债为预算融资的可能性】日本首相高市早苗周一在X上发帖称，她并未排除发行国债来帮助筹集整体预算资金的可能性，同时重申她不会依靠特别赤字弥补债券来填补因临时销售税削减而造成的缺口",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-20 07:18",
+   "date": "2026-10-20",
+   "url": "https://finance.sina.cn/7x24/2026-10-20/detail-inivvnps0759560.d.html"
+  },
+  {
+   "title": "哥伦比亚圣巴巴拉德伊斯库安德发生矿难，造成14人死亡。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-20 07:17",
+   "date": "2026-10-20",
+   "url": "https://finance.sina.cn/7x24/2026-10-20/detail-inivvnpt7530697.d.html"
+  },
+  {
+   "title": "三星电机因保密协议拒绝透露客户详情。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-20 07:17",
+   "date": "2026-10-20",
+   "url": "https://finance.sina.cn/7x24/2026-10-20/detail-inivvnpt7530613.d.html"
+  },
+  {
+   "title": "【东山精密寻求在香港上市中募资至多107亿港元】根据香港交易所公告，苏州东山精密制造股份有限公司拟在香港发行约1.138亿股股份，最高发行价为每股93.80港元",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-20 07:16",
+   "date": "2026-10-20",
+   "url": "https://finance.sina.cn/7x24/2026-10-20/detail-inivvnpt7530254.d.html"
+  },
+  {
+   "title": "Why mainland Chinese still drive Hong Kong’s housing market despite Beijing’s 20% tax",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-19 14:00",
+   "date": "2026-10-19",
+   "url": "https://www.scmp.com/business/markets/article/3371345/why-mainland-chinese-still-drive-hong-kongs-housing-market-despite-beijings-20-tax?utm_source=rss_feed"
+  },
+  {
+   "title": "Hong Kong’s primary residential market sees wave of launches, successful sales",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-18 18:01",
+   "date": "2026-10-18",
+   "url": "https://www.scmp.com/business/article/3371302/hong-kongs-primary-residential-market-sees-wave-launches-successful-sales?utm_source=rss_feed"
+  },
+  {
+   "title": "Rokid launches ‘no man’s land’ retail experience with Hong Kong flagship store opening",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-18 17:36",
+   "date": "2026-10-18",
+   "url": "https://www.scmp.com/tech/tech-trends/article/3371300/rokid-launches-no-mans-land-retail-experience-hong-kong-flagship-store-opening?utm_source=rss_feed"
+  },
+  {
+   "title": "APEC Finance Ministers' Meeting is being held in Hong Kong",
+   "source": "TVB 新闻",
+   "section": "港股新闻源头",
+   "ts": "2026-10-19 19:58",
+   "date": "2026-10-19",
+   "url": "https://news.tvb.com/sc/1201617-APECFinanceMinistersMeetingisbeingheldinHongKong"
+  },
+  {
+   "title": "New Zealand judge Terence Arnold appointed to Hong Kong’s Court of Final Appeal",
+   "source": "香港自由新闻 HKFP",
+   "section": "港股新闻源头",
+   "ts": "2026-10-17 20:11",
+   "date": "2026-10-17",
+   "url": "https://hongkongfp.com/2026/10/17/new-zealand-judge-terence-arnold-appointed-to-hong-kongs-court-of-final-appeal/"
+  },
+  {
+   "title": "新股消息 | 创智芯联通过港交所聆讯 为镀层材料厂商及镀层服务提供商",
+   "source": "智通财经·推荐",
+   "section": "港股新闻源头",
+   "ts": "2026-10-19 20:18",
+   "date": "2026-10-19",
+   "url": "https://www.zhitongcaijing.com/content/detail/1508974.html"
+  },
+  {
+   "title": "蓝纳成港股IPO终止，东诚药业拟11.21亿元收购部分股权 - 东方财富",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-20 03:37",
+   "date": "2026-10-20",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE5YV0ZqZVQyTTdpZ0U5X3RjQ05XMUVxN2VNajllbkVNblZucEtieHF0QmdaR3huQzkyTGxtUlczUTFFNFh3WnkxRG1xb2VjaHZ6WWdUaDRIU3VKS0RMQjN0ZC1ZRTBaUQ?oc=5"
+  },
+  {
+   "title": "港股科技股终迎强势反弹 最坏时刻已过？ - finance.sina.com.cn",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-19 20:14",
+   "date": "2026-10-19",
+   "url": "https://news.google.com/rss/articles/CBMiswNBVV95cUxNRWFZQUN1eUpEdFlFRUVfek5xY1dqUEVPcE0xc0tiU3FNUnlYaUU5dHNFaVFNWmJHQ0xVaTBLekNuVldvd3o3R1BrM2ZWUmFXeWJVRXlPQ1ZRdE9MMmZwaUlITC14eTJ6c2prWXNEOGFVUFhxZTYxXzFoaFljMnhYQjlzUDNncGRobGpaX2FzZkpRTm5oY2dtdzE1Z1NURmdLdkR2S2dBdkw5Vm5ocWkxRk40bVNaLWNQOXBaTHRlTTRrelpsNW5KWFVabXR2cEkxVVY4RGI3R0hWQjNvS3FyRzZSMjh1M0p3cTU0bkJvOVJfV0JWSG5oN0tLZ0V0NTZBM0phYnZEcnd6aHh0RFZ0S3VUSFg4cm9vbDVkbXpTYm10R0dIWjdqeG9kdktucW56YURyUTEyUnVQZG8xcHBKaVc0SUt4RHhtQ25haE9LaUhyUUVIR2tqSEU5V1NoSDRMSzBzVFY3SmxMcWFvZjZ4V2xwWGdEQ3ZJWjY0cHJLTnp3eGZDRzQtZXZobDdBOU9rc1BPdExWRW1uUmtUSng0QTVBNVFUakRTVkd0eUR1aE9BWlk?oc=5"
+  },
+  {
+   "title": "富国恒生港股通创新药及医疗保健交易型开放式指数证券投资基金招募说明书（更新）（2026年第4号）- CFi.CN 中财网 - 中财网",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-19 19:41",
+   "date": "2026-10-19",
+   "url": "https://news.google.com/rss/articles/CBMiVkFVX3lxTE5lVWZDR25uWnhRWVBnUWR3bE5NRDRndmMwamM0Sl9VWUh2ckctenFVRDMzTEpJX09MeDU2M2dfWUpEZi1yWXJfUWQ3ZjNhUktTUzMwOGtR?oc=5"
+  },
+  {
+   "title": "Hong Kong Stock Exchange Closed for Chung Yeung Holiday: Hang Seng Holds at 24,186.83 Ahead of Tuesday's LPR Decision - BBN Times",
+   "source": "Google 新闻·英文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-20 06:35",
+   "date": "2026-10-20",
+   "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxPb08tTUlNVG54RU52V3pfS3VrUlZsTmxlT1NrOUFVeUhNMHhaa1RNS085dHJkZFRBVWJoSWpxaDRUbUJQajZrNmpjR0NRaGZ4bXhyam4tVUlfbktGUTA1RjM0QVl3a2VPcEhGX1lDQURPS3phYWE3c3NTZUcza0xlY3h2V281NFFKd3lKbGxIanRXeEQ1XzVyX1REanlMV3prYU01QktPaFYwcmV5al9FdEVZOVhkQm9JVFhlME1ZdmNpbmdoNFVtMHJBdTNqVVNHR1VuRWZhclEzOHIzSGRtQ25uWkw2RnByLVhCXw?oc=5"
+  },
+  {
+   "title": "Hang Seng Tech: Improving earnings can't stop the technical breakdown - StoneX",
+   "source": "Google 新闻·英文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-17 14:56",
+   "date": "2026-10-17",
+   "url": "https://news.google.com/rss/articles/CBMitwFBVV95cUxPSEVmenZLVldiR3hscUFuYmV5TGpiZDFlUkMyVk14aFJ0ZElJd0xXc00xSzZLYmU0UTFvaURaVjRSc0VaM1RmdEw0dXctT1pOWFFFLV8wb2pLTU5HV3dDaGt0alh3ZVpSbTJRRGxVLWFYZnB5Ulh2Q2ZoT25heFFnRFNPX1BWVkVGQUprUk9kMW5udy1PdDkzLWZzY29WMTI4MmxnQjc5amp6STN1R29Wb1FFOGE2OVU?oc=5"
+  },
+  {
+   "title": "Invest Smarter in Hong Kong Stocks - Moomoo",
+   "source": "Google 新闻·英文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-18 16:48",
+   "date": "2026-10-18",
+   "url": "https://news.google.com/rss/articles/CBMi4AJBVV95cUxPa2NBeWhVSHRNa3dRbEtNSEtkUkVrbmNRZHh1SDJ4QUx0OUptdkdtd2d3MHhMUmo3eDYzeVBxUE9RNlZLeGk1VWtxSTlxRmNjMFBJeEE5U052NmdBQjN1NmU4R2xEaFp4Y0FfWVFpSGpRS0VzZEhuTkxvS1N4anNBZkJsblNVQ01fTlBlNUdpZ2ZkTWI4OFpZYS1rb2ZHUTdkVDYzNzJoMDhuLWh0VFJ3RWp3cVJVNW9xMG55YjdxR1d1dHMyS3JiZU9tZHJpUXFlenlzcmVZWU5DdmZCb2lLaEw0VzVURkk1TTgzTEdrM3Y1MkZjOVlSc2RLSWVINmR4S2FkY015Zi1mU1p6UzRsaGRIcV9ya0I1RFFRbnJzZE52M1FDYlFQaUpwb09nWEVhMzNSTWx2RUZoNUNPczIxTldKWGllTlNfV1pkaGlZblhCYkZtbmNKYUlWczZSUGZi?oc=5"
+  },
+  {
+   "title": "乘“蛟龙”入深海",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 09:46",
+   "date": "2026-10-19",
+   "url": "https://www.cs.com.cn/xwzx/01/2026/10/19/detail_2026101910045428.html"
+  },
+  {
+   "title": "顺丰控股：9月速运物流业务、供应链及国际业务合计营收287.19亿元 ...",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 23:56",
+   "date": "2026-10-19",
+   "url": "https://www.cs.com.cn/ssgs/01/2026/10/19/detail_2026101910045738.html"
+  },
+  {
+   "title": "为人民币资产吸引力上升点赞",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 12:24",
+   "date": "2026-10-19",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ad6a5efb24f470781fb22b257785940&url=http%3a%2f%2fwww.zqrb.cn%2freview%2fjinrishidian%2f2026-10-20%2fA1792400056518.html&c=10081867973135137722&mkt=en-us"
+  },
+  {
+   "title": "外汇局近期拟集中推出一批增量措施！",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 19:25",
+   "date": "2026-10-19",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ad6a5efb24f470781fb22b257785940&url=http%3a%2f%2fwww.zqrb.cn%2ffinance%2fhongguanjingji%2f2026-10-19%2fA1792400055839.html&c=16975161866082337069&mkt=en-us"
+  },
+  {
+   "title": "海天股份10月20日起复牌",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:10",
+   "date": "2026-10-20",
+   "url": "https://www.chnfund.com/article/AR8a5e5e2c-e735-afe2-0e07-3a2466c617eb"
+  },
+  {
+   "title": "一条轮胎亏80元，涨价函却发了70份",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:06",
+   "date": "2026-10-20",
+   "url": "https://www.chnfund.com/article/ARdf746c78-7485-a642-a6f5-3a2466b132b1"
+  },
+  {
+   "title": "*ST威领：控股股东拟变更为山南锑金",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 22:24",
+   "date": "2026-10-19",
+   "url": "https://www.caiwennews.com/article/1658316.shtml"
+  },
+  {
+   "title": "存储板块迎催化！美光盘前涨超4%，10月21日释放HBM与NAND技术蓝图",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 22:19",
+   "date": "2026-10-19",
+   "url": "https://www.caiwennews.com/article/1658308.shtml"
+  },
+  {
+   "title": "顺丰控股：披露9月经营简报，速运单票收入连升七月",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 21:54",
+   "date": "2026-10-19",
+   "url": "https://www.caiwennews.com/article/1658271.shtml"
+  },
+  {
+   "title": "4 台 HomePod 组苹果最强家庭影院，tvOS 27.2 新环绕声功能进入倒计时",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 07:14",
+   "date": "2026-10-20",
+   "url": "https://www.ithome.com/1/015/070.htm"
+  },
+  {
+   "title": "微软警示前沿 AI 模型不可信：AI 智能体堪比内部威胁，推出 Guardian Agents 防护方案",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 07:13",
+   "date": "2026-10-20",
+   "url": "https://www.ithome.com/1/015/069.htm"
+  },
+  {
+   "title": "日本 MMX 火星卫星探测任务发射升空，将首次尝试登陆火卫一并采样返回",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 07:00",
+   "date": "2026-10-20",
+   "url": "https://www.ithome.com/1/015/068.htm"
+  },
+  {
+   "title": "央行等十一部门联合发文 优化三大国际科创中心金融资源布局",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:21",
+   "date": "2026-10-20",
+   "url": "https://www.stcn.com/article/detail/4226677.html"
+  },
+  {
+   "title": "从消费白马到硬科技：近十年A股“股王”轮动折射产业变迁",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:21",
+   "date": "2026-10-20",
+   "url": "https://www.stcn.com/article/detail/4226662.html"
+  },
+  {
+   "title": "多只银行股创年内新高 高股息资产受机构看好",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:21",
+   "date": "2026-10-20",
+   "url": "https://www.stcn.com/article/detail/4226663.html"
+  },
+  {
+   "title": "C位易主！这届武汉酒博会：高端酒让位，“微醺搭子”登场",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 21:52",
+   "date": "2026-10-19",
+   "url": "https://m.nbd.com.cn/articles/2026-10-19/4608725.html"
+  },
+  {
+   "title": "圆通速递就“客户取消快递订单被记为投诉”事件致歉",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 10:36",
+   "date": "2026-10-19",
+   "url": "https://m.nbd.com.cn/articles/2026-10-19/4608942.html"
+  },
+  {
+   "title": "北交所上市公司南方乳业登龙虎榜：当日收盘价跌幅达到-25.84%",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 18:02",
+   "date": "2026-10-19",
+   "url": "https://m.nbd.com.cn/articles/2026-10-19/4608464.html"
+  },
+  {
+   "title": "昔日年入50亿的汇源，决定割肉另起炉灶",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 20:00",
+   "date": "2026-10-19",
+   "url": "https://m.21jingji.com/article/20261019/herald/be558f7c2351ae8e1d25c7a50003e427.html"
+  },
+  {
+   "title": "慈文传媒净流入2.16亿元居榜首，游资抢筹AI、云游戏板块",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 20:55",
+   "date": "2026-10-19",
+   "url": "https://m.21jingji.com/article/20261019/herald/84a73d63f08dbefd3e5133586b2dfca4.html"
+  },
+  {
+   "title": "泰胜风能10月19日回应商业航天话题：东台基地已投产，广州基地仍在 ...",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:21",
+   "date": "2026-10-20",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ad6a5ef13e741fe8cfa7aad8f3309cd&url=https%3a%2f%2fstock.stockstar.com%2fRB2026102000003717.shtml&c=3372582760662511855&mkt=en-us"
+  },
+  {
+   "title": "达嘉维康10月19日回应再生医学话题：聚焦诊断治疗及健康管理，部分 ...",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 18:04",
+   "date": "2026-10-19",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ad6a5ef13e741fe8cfa7aad8f3309cd&url=https%3a%2f%2fstock.stockstar.com%2fRB2026102000003729.shtml&c=2143637651594428873&mkt=en-us"
+  },
+  {
+   "title": "西安奕材三季报扭亏为盈！AI需求拉动12英寸硅片供需趋紧 涨价订单 ...",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 10:33",
+   "date": "2026-10-19",
+   "url": "https://wap.stockstar.com/detail/IG2026101900030825"
+  },
+  {
+   "title": "国家邮政局：9月中国快递发展指数463.9 同比提升0.9个百分点",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 23:42",
+   "date": "2026-10-19",
+   "url": "https://news.hexun.com/2026-10-19/225139815.html"
+  },
+  {
+   "title": "银行股全线收涨，行情能否持续？专家：要看盈利兑现，板块大概率 ...",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 19:53",
+   "date": "2026-10-19",
+   "url": "https://stock.hexun.com/2026-10-19/225138769.html"
+  },
+  {
+   "title": "民生在线",
+   "source": "金融投资报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-18 17:00",
+   "date": "2026-10-18",
+   "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE14RWFGZEVMb3ZtVGdNRnJpeVZMbkgxNDhYdE1WNTVDdEhPVkJ6Wmw5eVAxVVp1WWZhX1ZlVXVZNlRaMi1ybm0za19va0Ywek9Eci1Lbg?oc=5"
+  },
+  {
+   "title": "企业资讯",
+   "source": "金融投资报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-18 17:00",
+   "date": "2026-10-18",
+   "url": "https://news.google.com/rss/articles/CBMiXEFVX3lxTE1SSnBEaUNFcTBvdjNILTBxdkREcE0weHlKMDBvT2ZtYmlIeWVrWHVfWWhJMzZER2FfaVdqVTZ4OHhHQ0s3cDBsUk9WWDFzNGtnUVBYdHBFQzFvUUEx?oc=5"
+  },
+  {
+   "title": "74岁山东果汁大王再创业，切割“汇源”后新品牌首次直播：4场累计 ...",
+   "source": "时代财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:13",
+   "date": "2026-10-20",
+   "url": "https://www.tfcaijing.com/article/page/336d6b2f623968316a4e5a782b47343274334a4147673d3d"
+  },
+  {
+   "title": "豆包刘星回应“国内超一半算力造爽剧”；MiniMax M3.1 Flash上线｜未来 ...",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 11:00",
+   "date": "2026-10-19",
+   "url": "https://www.eeo.com.cn/2026/1020/1069982.shtml"
+  },
+  {
+   "title": "卡普空《怪物猎人 Puzzles》将停运；2026英雄联盟全球总决赛瑞士轮 ...",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 11:00",
+   "date": "2026-10-19",
+   "url": "https://www.eeo.com.cn/2026/1020/1069983.shtml"
+  },
+  {
+   "title": "【环球财经】欧盟理事会推动解决住房困难和无家可归问题",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-20 00:21",
+   "date": "2026-10-20",
+   "url": "https://www.eeo.com.cn/2026/1019/1069939.shtml"
+  },
+  {
+   "title": "中水三立北交所IPO终止，原拟6000万元募资用于补流",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 16:56",
+   "date": "2026-10-19",
+   "url": "https://finance.ifeng.com/c/8xMUI6oQvrW"
+  },
+  {
+   "title": "今夜反攻，集体大涨，华尔街重磅发声，AI暴跌虚惊一场？",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-19 23:12",
+   "date": "2026-10-19",
+   "url": "https://finance.ifeng.com/c/8xMGNexKwjT"
   }
  ],
- "updated_cst": "2026-10-19 22:17:34",
+ "updated_cst": "2026-10-20 07:21:43",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-19 22:17:17",
+  "ran_at": "2026-10-20 07:21:35",
   "cutoff": "2026-10-19",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
