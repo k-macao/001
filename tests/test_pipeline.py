@@ -2449,6 +2449,48 @@ class PolicyFactorTests(unittest.TestCase):
             policy_result=None)  # 缺省时渲染侧兜底构建
         self.assertIn("政策因子<span", html2)
 
+    def _many_policy_data(self):
+        """10 条跨日政策标题：08-02 两条最新，07-24~08-01 各一条（窗口内）。"""
+        heads = [{"title": f"央行宣布降准0.5个百分点（样本{i}）", "source": "测试源",
+                  "url": "", "published_cst": f"2026-07-{24 + i:02d} 10:00",
+                  "is_today": False} for i in range(8)]
+        heads.append({"title": "今日政策：央行降准释放长期资金并下调LPR报价，"
+                               "同时加大再贷款投放力度支持实体经济", "source": "新华社",
+                      "url": "", "published_cst": "2026-08-02 09:00", "is_today": True})
+        heads.append({"title": "今日政策：新能源汽车补贴延续最高补2万", "source": "财联社",
+                      "url": "", "published_cst": "2026-08-02 10:00", "is_today": True})
+        return {"全球头条": pipeline._source_result(
+            "test", "success", is_today=True, content_date="2026-08-02",
+            headlines=heads)}
+
+    def test_plain_mode_compresses_and_sorts_policy_headlines(self):
+        """2026-10-21 压缩：入门版 6 条、标题 34 字补「…」、最新在前；
+        全量版 --full 仍 8 条 / 60 字。排序只作用于渲染层。"""
+        data = self._many_policy_data()
+        res = pipeline.build_policy_factor(data, "20260802")
+        self.assertEqual(res["policy_n"], 10)
+        with patch.object(pipeline, "LITE_ENABLED", True), \
+                patch.object(pipeline, "NOTES_REQUESTED", False):
+            plain = pipeline.gz_policy_block(res)
+        with patch.object(pipeline, "LITE_ENABLED", False), \
+                patch.object(pipeline, "NOTES_REQUESTED", False):
+            full = pipeline.gz_policy_block(res)
+        self.assertEqual(plain.count("◆"), 6)
+        self.assertEqual(full.count("◆"), 8)
+        self.assertIn("最新 6/10 条", plain)
+        self.assertIn("最新 8/10 条", full)
+        # 最新在前：当天两条排最前，最旧的那条被挤出入门版
+        self.assertLess(plain.find("今日政策：央行降准"), plain.find("今日政策：新能源汽车"))
+        self.assertIn("（样本4）", plain)          # 入门版第 6 条 = 07-28
+        self.assertNotIn("（样本3）", plain)       # 07-27 起被挤出
+        self.assertIn("（样本2）", full)           # 全量版第 8 条 = 07-26
+        self.assertNotIn("（样本1）", full)        # 07-25 及更早被挤出
+        # 长标题截断并补省略号；短标题不补
+        self.assertIn("…", plain)
+        self.assertNotIn("加大再贷款投放力度支持实体经济", plain)
+        self.assertIn("加大再贷款投放力度支持实体经济", full)
+        self.assertNotIn("今日政策：新能源汽车补贴延续最高补2万…", plain)
+
 
 
 class NationalPolicySourceTests(unittest.TestCase):
