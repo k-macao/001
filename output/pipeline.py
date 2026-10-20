@@ -12960,7 +12960,15 @@ def gz_sentiment_empty_block(res):
 # 栏目缺席，不伪造。
 # ============================================================
 POLICY_DISPLAY_INDUSTRIES = 5   # 受益/承压榜单各展示的行业数
-POLICY_DISPLAY_HEADLINES = 8    # 政策新闻逐条展示上限
+POLICY_DISPLAY_HEADLINES = 8    # 政策新闻逐条展示上限（全量版）
+# 2026-10-21 政策栏目压缩：入门版（默认版面）逐条更短、更少，全量版 --full 保持原样。
+# 展示顺序同时改为「最新在前、同日按影响力度」，避免 15 日窗口把最旧的 8 条顶到最前。
+POLICY_DISPLAY_HEADLINES_PLAIN = 6   # 入门版逐条上限
+POLICY_TITLE_MAX = 60                # 标题渲染字数上限（全量版）
+POLICY_TITLE_MAX_PLAIN = 34          # 标题渲染字数上限（入门版，超出补省略号）
+POLICY_HEAD_INDUSTRIES_PLAIN = 2     # 入门版每条「影响行业」上限
+POLICY_BOARD_ROWS = 5                # 强度榜展示行数（全量版）
+POLICY_BOARD_ROWS_PLAIN = 4          # 强度榜展示行数（入门版）
 
 # 政策维度矩阵：triggers 命中即该维度命中（同一维度每条只计一次，
 # 权重只落一次）；weights 为固定行业映射，needs_industry 为行业归因。
@@ -13282,14 +13290,25 @@ def build_daily_quant_policy(data, date_str=None, news_corpus=None):
     return build_policy_factor(data, date_str, news_corpus)
 
 
-def _policy_headline_markup(headline, color=C_INK):
+def _policy_title_limit():
+    """标题渲染字数上限：入门版更短，超出补省略号。"""
+    return POLICY_TITLE_MAX_PLAIN if PLAIN() else POLICY_TITLE_MAX
+
+
+def _policy_headline_markup(headline, color=C_INK, limit=None):
     """渲染政策标题，并为官方发布条目保留可点击的原文链接。
 
     标题来自外部页面，正文必须先转义；仅允许 http/https 链接进入 href，
     避免把存档中的异常值变成脚本属性。中国政府网解析器本身还会限制域名为
     ``*.gov.cn``，这里的通用校验用于兼容手工注入的测试/历史数据。
+
+    limit 缺省按版面取 `_policy_title_limit()`：入门版 34 字、全量版 60 字；
+    超出时补「…」，让读者知道这是截断而不是原文就这么短。
     """
-    title = _esc((headline.get("title") or "")[:60])
+    full = str(headline.get("title") or "")
+    limit = _policy_title_limit() if limit is None else limit
+    shown = full[:limit] + ("…" if len(full) > limit else "")
+    title = _esc(shown)
     url = str(headline.get("url") or "").strip()
     parsed = urlparse(url)
     if parsed.scheme.lower() in {"http", "https"} and parsed.netloc:
@@ -13299,6 +13318,26 @@ def _policy_headline_markup(headline, color=C_INK):
             title += (f' <span style="font-size:10px;color:{color};font-weight:900;">'
                       "[官方原文]</span>")
     return title
+
+
+def _policy_display_headlines(res):
+    """政策新闻展示顺序：最新在前，同日按影响力度（|net|）降序，再按原顺序稳定。
+
+    2026-10-21 起只在渲染层排序，不改 PSI / 量化分：15 日窗口语料按抓取先后追加，
+    原顺序会把窗口最旧的几条顶到「重点政策新闻」最前面（实测 10-20 日报展示的是
+    10-06~10-08 的旧闻，当天的政策反而被 8 条上限截掉）。排序后旧闻照常带
+    MM-DD 日期前缀披露，只是不再抢占头部。
+    """
+    heads = list(res.get("headlines") or [])
+    indexed = list(enumerate(heads))
+    indexed.sort(key=lambda pair: ((pair[1].get("date") or ""),
+                                   abs(int(pair[1].get("net") or 0)),
+                                   -pair[0]), reverse=True)
+    return [head for _, head in indexed]
+
+
+def _policy_display_limit():
+    return POLICY_DISPLAY_HEADLINES_PLAIN if PLAIN() else POLICY_DISPLAY_HEADLINES
 
 
 def _policy_source_text(headline):
@@ -13324,8 +13363,13 @@ def _pixel_policy_block(res):
         f'<div style="font-size:12px;color:{C_INK};font-weight:700;line-height:1.8;'
         f'font-family:{FONT_MONO};padding-top:4px;">{_esc(res["summary"])}</div>'
         f'</td></tr></table>')
-    dims_line = " · ".join(f"{k}×{v}" for k, v in sorted(
-        res["dim_counts"].items(), key=lambda kv: (-kv[1], kv[0]))) or "—"
+    dims_sorted = sorted(res["dim_counts"].items(), key=lambda kv: (-kv[1], kv[0]))
+    if PLAIN() and len(dims_sorted) > 4:
+        # 入门版：维度计数只列前 4 类，其余按类数收口（与 gz 主题一致）
+        dims_line = (" · ".join(f"{k}×{v}" for k, v in dims_sorted[:4])
+                     + f" 等 {len(dims_sorted)} 类")
+    else:
+        dims_line = " · ".join(f"{k}×{v}" for k, v in dims_sorted) or "—"
     head = _mini_table([
         ("政策新闻", f'{res["policy_n"]} 条（占近 {res.get("window_days") or POLICY_WINDOW_DAYS} 日窗口资讯 '
                      f'{res["policy_n"]}/{res["total_headlines"]}）'),
@@ -13337,16 +13381,25 @@ def _pixel_policy_block(res):
         head += _mini_table([("官方来源", f'中国政府网官方发布 {res["official_n"]} 条')])
     quant_composite = res.get("quant_composite")
     if quant_composite is not None:
-        head += _mini_table([
-            ("量化趋势分", f'<b style="color:{color};">{quant_composite:+.2f}</b> · {_esc(res.get("quant_trend") or "—")}'),
-            ("趋势预判信号", f'<b style="color:{color};">{_esc(res.get("quant_signal") or "—")}</b>'),
-        ])
+        if PLAIN():
+            # 入门版压缩：趋势分与预判信号并成一行
+            head += _mini_table([
+                ("量化趋势", f'<b style="color:{color};">{quant_composite:+.2f}</b> · '
+                             f'{_esc(res.get("quant_trend") or "—")} · '
+                             f'{_esc(res.get("quant_signal") or "—")}'),
+            ])
+        else:
+            head += _mini_table([
+                ("量化趋势分", f'<b style="color:{color};">{quant_composite:+.2f}</b> · {_esc(res.get("quant_trend") or "—")}'),
+                ("趋势预判信号", f'<b style="color:{color};">{_esc(res.get("quant_signal") or "—")}</b>'),
+            ])
         if res.get("quant_risk"):
             head += _mini_table([("风险预算", _esc(res["quant_risk"]))])
     board = []
     quant_inds = res.get("quant_industries") or []
+    board_rows = POLICY_BOARD_ROWS_PLAIN if PLAIN() else POLICY_BOARD_ROWS
     if quant_inds:
-        for s in quant_inds[:5]:
+        for s in quant_inds[:board_rows]:
             arrow = "▲" if s["composite"] > 0.5 else ("▼" if s["composite"] < -0.5 else "■")
             color_s = C_GREEN if s["composite"] > 0.5 else (C_RED if s["composite"] < -0.5 else C_AMBER)
             board.append((f'{arrow} {_esc(s["name"])} <span style="color:{color_s};">{s["composite"]:+.2f}</span>',
@@ -13361,14 +13414,17 @@ def _pixel_policy_block(res):
                           f'PSI <b style="color:{C_RED};">{s["score"]}</b>'
                           f'（{s["count"]}条 · {_esc("/".join(s["dims"]))}）'))
     rows = []
-    for h in res["headlines"][:POLICY_DISPLAY_HEADLINES]:
+    head_limit = _policy_display_limit()
+    ind_limit = POLICY_HEAD_INDUSTRIES_PLAIN if PLAIN() else 4
+    display_heads = _policy_display_headlines(res)
+    for h in display_heads[:head_limit]:
         if h["direction"] > 0:
             arrow, bcolor = "▲", C_GREEN
         elif h["direction"] < 0:
             arrow, bcolor = "▼", C_RED
         else:
             arrow, bcolor = "■", C_AMBER
-        inds = "、".join(h["industries"][:4]) if h["industries"] else "大盘（宽基）"
+        inds = "、".join(h["industries"][:ind_limit]) if h["industries"] else "大盘（宽基）"
         sub = (f'{"/".join(h["dims"])} · 影响：{inds} · {h["section"]} · '
                f'{_policy_source_text(h)}')
         if h.get("old") and h.get("date"):
@@ -13376,12 +13432,12 @@ def _pixel_policy_block(res):
         rows.append(_item_row(
             "◆", f'<b style="color:{bcolor};">[{arrow} {h["net"]:+d}]</b> '
             f'{_policy_headline_markup(h, C_INK)}', _esc(sub)))
-    more = len(res["headlines"]) - POLICY_DISPLAY_HEADLINES
+    more = len(display_heads) - head_limit
     if more > 0:
         rows.append(
             f'<div style="font-size:10px;color:{C_MUTED};padding:4px 0;'
             f'line-height:1.7;font-family:{FONT_MONO};">'
-            f'＋其余 {more} 条已计入指数（仅展示前 {POLICY_DISPLAY_HEADLINES} 条）</div>')
+            f'＋其余 {more} 条已计入指数（仅展示前 {head_limit} 条）</div>')
     body = head + (_mini_table(board) if board else "") + "".join(rows)
     note = _note(f"政策因子口径：近 {res.get('window_days') or POLICY_WINDOW_DAYS} 日窗口标题 → 政策维度触发词命中 → "
                  "关键词矩阵映射行业权重 → 汇总PSI + 量化复合分(PSI50%+新闻量30%+维度20%)；触发词被否定修饰时跳过 // RULESET v3 // 非投资建议")
@@ -13405,15 +13461,22 @@ def gz_policy_block(res):
         ("覆盖维度", _esc(dims_line)),
     ]
     if res.get("quant_composite") is not None:
-        pairs.append(("量化趋势分", f'{res["quant_composite"]:+.2f} · {_esc(res.get("quant_trend") or "—")}'))
-        pairs.append(("趋势预判信号", _esc(res.get("quant_signal") or "—")))
+        if PLAIN():
+            # 入门版压缩：趋势分与预判信号并成一行
+            pairs.append(("量化趋势", f'{res["quant_composite"]:+.2f} · '
+                                    f'{_esc(res.get("quant_trend") or "—")} · '
+                                    f'{_esc(res.get("quant_signal") or "—")}'))
+        else:
+            pairs.append(("量化趋势分", f'{res["quant_composite"]:+.2f} · {_esc(res.get("quant_trend") or "—")}'))
+            pairs.append(("趋势预判信号", _esc(res.get("quant_signal") or "—")))
         if res.get("quant_risk"):
             pairs.append(("风险预算", _esc(res["quant_risk"])))
     out = [gz_kv_table(pairs)]
     board = []
     quant_inds = res.get("quant_industries") or []
+    board_rows = POLICY_BOARD_ROWS_PLAIN if PLAIN() else POLICY_BOARD_ROWS
     if quant_inds:
-        for s in quant_inds[:5]:
+        for s in quant_inds[:board_rows]:
             arrow = "▲" if s["composite"] > 0.5 else ("▼" if s["composite"] < -0.5 else "■")
             board.append([f'{arrow} {_esc(s["name"])} {s["composite"]:+.2f}', f'{s["score"]:+d}', f'{s["count"]}条',
                           _esc("/".join(s["dims"])) + f' · {s["trend"]}'])
@@ -13427,14 +13490,21 @@ def gz_policy_block(res):
     if board:
         out.append(gz_subsection("政策冲击强度榜 · 量化趋势")
                    + gz_data_table(["行业", "PSI", "条数", "维度"], board))
-    # 政策新闻逐条不裁：条数已由 POLICY_DISPLAY_HEADLINES 封顶（8 条），而且旧闻
-    # （报告日前一天）必须留在正文里，读者才看得见「08-01 ·」这个日期前缀披露。
-    heads = res["headlines"][:POLICY_DISPLAY_HEADLINES]
+    # 政策新闻逐条：展示顺序「最新在前、同日按影响力度」，条数由版面封顶
+    # （入门版 6 条 / 全量版 8 条）。旧闻照常带 MM-DD 日期前缀披露，只是不再
+    # 因为语料按时间追加而把窗口最旧的几条顶到最前面（2026-10-21 压缩）。
+    heads = _policy_display_headlines(res)[:_policy_display_limit()]
+    ind_limit = POLICY_HEAD_INDUSTRIES_PLAIN if PLAIN() else 4
     if heads:
-        out.append(gz_subsection("重点政策新闻"))
+        total_heads = len(res.get("headlines") or [])
+        label = "重点政策新闻"
+        if total_heads > len(heads):
+            # 入门版脚注不输出，条数披露放在小标题里，避免「只看到 6 条」的错觉
+            label += f" · 最新 {len(heads)}/{total_heads} 条"
+        out.append(gz_subsection(label))
     for h in heads:
         badge = "▲" if h["direction"] > 0 else ("▼" if h["direction"] < 0 else "■")
-        inds = "、".join(h["industries"][:4]) if h["industries"] else "大盘"
+        inds = "、".join(h["industries"][:ind_limit]) if h["industries"] else "大盘"
         bits = [h["date"][5:] if h.get("date") else "", "/".join(h["dims"]),
                 f"影响 {inds}", _policy_source_text(h)]
         sub = " · ".join(_esc(x) for x in bits if x)
