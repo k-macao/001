@@ -8269,17 +8269,27 @@ def _summary_pairs(ai_result, pan, policy, source_items, today_n, total, quant=N
     if ai_result and ai_result.get("themes"):
         pairs.append(("明日关注", _esc(ai_result["themes"])))
     risk_notes = []
-    if isinstance(media_risk, dict) and media_risk.get("available"):
-        levels = media_risk.get("level_counts") or {}
-        top = media_risk.get("top_stock") or {}
-        alert_n = int(levels.get("red") or 0) + int(levels.get("orange") or 0)
-        detail = (f'结构化预警 {media_risk.get("risk_stock_n") or 0} 只（红/橙 {alert_n}）'
-                  f' · 异常关注 {media_risk.get("abnormal_attention_n") or 0} 只')
-        if top.get("name"):
-            detail += (f' · 最高 {top["name"]} '
-                       f'{(top.get("level") or {}).get("label") or "观察"} '
-                       f'{int(top.get("risk_index") or 0)}/100')
-        risk_notes.append(detail)
+    if isinstance(media_risk, dict) and media_risk:
+        # 2026-10-21 起即使清洁态也给出监控中说明，避免总结里完全不提媒体风险
+        if media_risk.get("available"):
+            levels = media_risk.get("level_counts") or {}
+            top = media_risk.get("top_stock") or {}
+            alert_n = int(levels.get("red") or 0) + int(levels.get("orange") or 0)
+            detail = (f'媒体舆情 结构化预警 {media_risk.get("risk_stock_n") or 0} 只（红/橙 {alert_n}）'
+                      f' · 异常关注 {media_risk.get("abnormal_attention_n") or 0} 只')
+            if top.get("name"):
+                detail += (f' · 最高 {top["name"]} '
+                           f'{(top.get("level") or {}).get("label") or "观察"} '
+                           f'{int(top.get("risk_index") or 0)}/100')
+            risk_notes.append(detail)
+        elif MEDIA_RISK_ENABLED:
+            headline_n = int(media_risk.get("headline_n") or 0)
+            universe_n = int(media_risk.get("universe_n") or 0)
+            if universe_n == 0:
+                reason = str(media_risk.get("reason") or "监控范围暂空")
+                risk_notes.append(f'媒体舆情 72h筛查中：{reason}（标题{headline_n}条）')
+            else:
+                risk_notes.append(f'媒体舆情 72h筛查：监控{universe_n}只 · 未检出预警（标题{headline_n}条）')
     if ai_result and ai_result.get("risks"):
         counts = {}
         for r in ai_result["risks"]:
@@ -10233,7 +10243,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     #    因此保留完整标题、不生成指向已隐藏栏目的死链锚点。
 
     # ⑦ 媒体舆情风险点：A/H 成交活跃标的，具体事件事实优先于模糊情绪。
-    #     复用同一 72h 标题池与 sentiment_history 新闻量基线；无具体事件且无可靠异常时整栏缺席。
+    #     复用同一 72h 标题池与 sentiment_history 新闻量基线；2026-10-21 起
+    #     无风险时展示“监控中”占位，不再静默缺席（避免“栏目不见”误判）。
     media_risk_result = {}
     if MEDIA_RISK_ENABLED:
         media_risk_result = build_media_risk(
@@ -10248,6 +10259,16 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 kit.badge(f"{red_orange} 项高等级" if red_orange else "风险观察",
                           "bad" if red_orange else "warn"),
                 "" if PLAIN() else "A股＋港股 · 72 小时标题事件 · 风险指数非概率",
+            )
+        else:
+            # 清洁态：仍展示占位（监控中），不静默缺席；监控范围为空时亦给出诊断
+            badge_text = "监控范围待恢复" if not media_risk_result.get("universe_n") else "监控中"
+            badge_kind = "warn" if not media_risk_result.get("universe_n") else "ok"
+            blocks["MEDIA RISK"] = (
+                "MEDIA RISK", SECTION_TITLE_MEDIA_RISK,
+                _media_risk_block(media_risk_result, kit),
+                kit.badge(badge_text, badge_kind),
+                "" if PLAIN() else "A股＋港股 · 72 小时标题事件 · 持续监控",
             )
 
     # ⑧ 新闻情绪：只有真正归因到个股时才出现（样本不足不再占位）
@@ -11979,13 +12000,12 @@ def build_media_risk(data, date_str, history=None, news_corpus=None):
     标题严格复用新闻情绪的 72 小时时间窗：分钟时间晚于报告锚点的条目被排除；
     只有日期、没有分钟时间的当日条目可以进入日级观察，但渲染时明确标注
     「日级时间，禁用于日内回测」。美股不进入首期范围。
+
+    2026-10-21 起即使热门榜单暂缺、或窗口内未检出风险，也返回可渲染的诊断
+    结果（available=False 但带 headline_n / universe_n / window_text 等）与
+    明确 reason，供占位渲染“监控中”而不静默消失；调用方不再以 available 为
+    唯一渲染门禁。
     """
-    universe = [stock for stock in _extract_stock_universe(
-        (data or {}).get("热门榜单", {}) or {})
-        if stock.get("market") in ("A股", "港股")]
-    if not universe:
-        return {"available": False, "scope": "A股＋港股成交活跃标的",
-                "universe_n": 0, "stocks": []}
     anchor_dt = _factor_anchor_dt(date_str)
     anchor_date = anchor_dt.strftime("%Y-%m-%d")
     if isinstance(news_corpus, dict) and isinstance(news_corpus.get("items"), list):
@@ -11993,6 +12013,76 @@ def build_media_risk(data, date_str, history=None, news_corpus=None):
     else:
         raw = _collect_headline_items(data or {}, anchor_date)
     headlines = _filter_headlines_window(raw, anchor_dt, hours=_media_risk.WINDOW_HOURS)
+    # 预计算通用诊断（无论是否能建 universe 都需要，供占位渲染）
+    headline_n = len(headlines)
+    precise_ts_n = sum(1 for item in headlines if str(item.get("ts") or "").strip())
+    # 热门榜单主宇宙
+    universe = [stock for stock in _extract_stock_universe(
+        (data or {}).get("热门榜单", {}) or {})
+        if stock.get("market") in ("A股", "港股")]
+    fallback_used = False
+    fallback_reason = ""
+    if not universe:
+        # 热门榜单暂缺时，尝试用 sentiment_history 的已建档个股作兜底，避免
+        # “热门榜一挂，风险监控整栏消失”的误判；兜底失败则仍返回诊断占位。
+        if isinstance(history, dict) and isinstance(history.get("stocks"), dict):
+            for key, val in history["stocks"].items():
+                if not isinstance(val, dict):
+                    continue
+                market = str(val.get("market") or "")
+                if market not in ("A股", "港股"):
+                    continue
+                code = str(val.get("code") or "").strip()
+                name = str(val.get("name") or "").strip()
+                if not name and not key:
+                    continue
+                # key 形如 "A股:600000" / "港股:00700"
+                derived_key = key if ":" in str(key) else f"{market}:{code or name}"
+                if not derived_key or ":" not in derived_key:
+                    continue
+                universe.append({
+                    "market": market,
+                    "code": code or derived_key.split(":", 1)[1],
+                    "name": name or derived_key.split(":", 1)[1],
+                    "key": derived_key,
+                })
+            if universe:
+                # 去重并按名长排序，与 _extract_stock_universe 保持一致口径
+                seen = set()
+                deduped = []
+                for item in universe:
+                    key = item.get("key")
+                    if key in seen:
+                        continue
+                    seen.add(key)
+                    deduped.append(item)
+                deduped.sort(key=lambda u: len(u.get("name") or ""), reverse=True)
+                universe = deduped
+                fallback_used = True
+                fallback_reason = "热门榜单暂缺，已用近30日情绪基线个股兜底"
+    if not universe:
+        # 仍无法建立监控范围：返回可渲染的诊断占位，而非静默缺席
+        reason = "热门榜单暂缺且情绪基线无可用个股，监控范围暂时为空"
+        return {
+            "available": False,
+            "reason": reason,
+            "scope": "A股＋港股成交活跃标的",
+            "universe_n": 0,
+            "stocks": [],
+            "window_hours": int(_media_risk.WINDOW_HOURS),
+            "window_text": f"{anchor_dt:%m-%d %H:%M}",
+            "headline_n": headline_n,
+            "precise_ts_n": precise_ts_n,
+            "noise_filtered_n": 0,
+            "level_counts": {},
+            "top_categories": [],
+            "risk_stock_n": 0,
+            "risk_event_n": 0,
+            "abnormal_attention_n": 0,
+            "agent_schema_version": _media_risk.AGENT_SCHEMA_VERSION,
+            "agent_records": [],
+            "fallback_used": False,
+        }
     prices = {}
     markets = (((data or {}).get("热门榜单") or {}).get("markets") or {})
     for market in ("A股", "港股"):
@@ -12010,6 +12100,16 @@ def build_media_risk(data, date_str, history=None, news_corpus=None):
         window_hours=_media_risk.WINDOW_HOURS,
     )
     result["window_text"] = f"{anchor_dt:%m-%d %H:%M}"
+    result["window_hours"] = int(_media_risk.WINDOW_HOURS)
+    result["fallback_used"] = fallback_used
+    if fallback_reason:
+        result["fallback_reason"] = fallback_reason
+    # available=False 时调用方仍需 headline_n 等诊断，已由 analyze 给出；补齐 window_text
+    if not result.get("available"):
+        result.setdefault("reason", "本期72小时窗口内未检出具体风险事件或可靠异常关注，系统持续监控中")
+        result.setdefault("headline_n", headline_n)
+        result.setdefault("precise_ts_n", precise_ts_n)
+        result["window_text"] = f"{anchor_dt:%m-%d %H:%M}"
     return result
 
 
@@ -12059,30 +12159,71 @@ def _media_risk_attention_text(stock):
 
 
 def _media_risk_block(res, kit):
-    """五套主题共用的媒体风险栏目正文（只用 kit 原语，保持微信全内联表格）。"""
-    if not (isinstance(res, dict) and res.get("available") and res.get("stocks")):
+    """五套主题共用的媒体风险栏目正文（只用 kit 原语，保持微信全内联表格）。
+
+    2026-10-21 起有风险时展示详细预警；无风险或监控范围暂时为空时展示
+    “监控中”占位（headline_n / universe_n / 诊断原因），不静默消失。
+    """
+    if not isinstance(res, dict):
         return ""
-    levels = res.get("level_counts") or {}
-    level_line = (f'红 {int(levels.get("red") or 0)} · 橙 {int(levels.get("orange") or 0)} · '
-                  f'黄 {int(levels.get("yellow") or 0)} · 蓝 {int(levels.get("blue") or 0)}')
-    categories = "、".join(f"{name}×{count}" for name, count in res.get("top_categories") or []) or "—"
-    head_pairs = [
-        ("监控范围", f'{_esc(str(res.get("scope") or "A股＋港股"))} · {int(res.get("universe_n") or 0)} 只'),
-        ("风险/异常命中", f'{int(res.get("risk_stock_n") or 0)} 只 · '
-                          f'具体风险 {int(res.get("risk_event_n") or 0)} 个 · '
-                          f'异常关注 {int(res.get("abnormal_attention_n") or 0)} 只 · {level_line}'),
-        ("事件类型", _esc(categories)),
-        ("时间窗口", f'近 {int(res.get("window_hours") or _media_risk.WINDOW_HOURS)} 小时 · 截至 {_esc(str(res.get("window_text") or "—"))}'),
-    ]
-    if not PLAIN():
-        headline_n = int(res.get("headline_n") or 0)
-        head_pairs.extend([
-            ("时间戳覆盖", f'{int(res.get("precise_ts_n") or 0)}/{headline_n} 条标题有分钟级发布时间'),
-            ("噪音剔除", f'{int(res.get("noise_filtered_n") or 0)} 条明确营销/导流标题'),
-            ("Agent Schema", _esc(str(res.get("agent_schema_version") or "—")) + " · JSON 可解析"),
-            ("风险指数", "0–100 规则排序分；JSON 的 0–1 值仅为归一化序数（不是发生概率、不是涨跌概率）"),
-        ])
-    out = [kit.kv(head_pairs)]
+    # 有可用预警：走原有详细渲染
+    if res.get("available") and res.get("stocks"):
+        levels = res.get("level_counts") or {}
+        level_line = (f'红 {int(levels.get("red") or 0)} · 橙 {int(levels.get("orange") or 0)} · '
+                      f'黄 {int(levels.get("yellow") or 0)} · 蓝 {int(levels.get("blue") or 0)}')
+        categories = "、".join(f"{name}×{count}" for name, count in res.get("top_categories") or []) or "—"
+        head_pairs = [
+            ("监控范围", f'{_esc(str(res.get("scope") or "A股＋港股"))} · {int(res.get("universe_n") or 0)} 只'),
+            ("风险/异常命中", f'{int(res.get("risk_stock_n") or 0)} 只 · '
+                              f'具体风险 {int(res.get("risk_event_n") or 0)} 个 · '
+                              f'异常关注 {int(res.get("abnormal_attention_n") or 0)} 只 · {level_line}'),
+            ("事件类型", _esc(categories)),
+            ("时间窗口", f'近 {int(res.get("window_hours") or _media_risk.WINDOW_HOURS)} 小时 · 截至 {_esc(str(res.get("window_text") or "—"))}'),
+        ]
+        if not PLAIN():
+            headline_n = int(res.get("headline_n") or 0)
+            head_pairs.extend([
+                ("时间戳覆盖", f'{int(res.get("precise_ts_n") or 0)}/{headline_n} 条标题有分钟级发布时间'),
+                ("噪音剔除", f'{int(res.get("noise_filtered_n") or 0)} 条明确营销/导流标题'),
+                ("Agent Schema", _esc(str(res.get("agent_schema_version") or "—")) + " · JSON 可解析"),
+                ("风险指数", "0–100 规则排序分；JSON 的 0–1 值仅为归一化序数（不是发生概率、不是涨跌概率）"),
+            ])
+        if res.get("fallback_used"):
+            head_pairs.append(("监控兜底", _esc(str(res.get("fallback_reason") or "已用情绪基线兜底"))))
+        out = [kit.kv(head_pairs)]
+    else:
+        # 无风险 / 监控范围为空：渲染“监控中”占位，而非空白
+        reason = str(res.get("reason") or "本期72小时窗口内未检出具体风险事件或可靠异常关注，系统持续监控中")
+        head_pairs = [
+            ("监控范围", f'{_esc(str(res.get("scope") or "A股＋港股成交活跃标的"))} · {int(res.get("universe_n") or 0)} 只'),
+            ("时间窗口", f'近 {int(res.get("window_hours") or _media_risk.WINDOW_HOURS)} 小时 · 截至 {_esc(str(res.get("window_text") or "—"))}'),
+            ("标题覆盖", f'{int(res.get("headline_n") or 0)} 条标题 · {int(res.get("precise_ts_n") or 0)} 条有分钟级时间 · {int(res.get("noise_filtered_n") or 0)} 条营销噪音已剔除'),
+            ("监控状态", _esc(reason)),
+        ]
+        if res.get("fallback_used"):
+            head_pairs.append(("监控兜底", _esc(str(res.get("fallback_reason") or "已用情绪基线兜底"))))
+        if not PLAIN():
+            head_pairs.extend([
+                ("Agent Schema", _esc(str(res.get("agent_schema_version") or _media_risk.AGENT_SCHEMA_VERSION)) + " · JSON 可解析"),
+                ("风险指数", "0–100 规则排序分；JSON 的 0–1 值仅为归一化序数（不是发生概率、不是涨跌概率）"),
+            ])
+        out = [kit.kv(head_pairs)]
+        # 入门版也给一行明确提示，避免“栏目消失”的误判
+        out.append(kit.note(
+            "说明：本栏目为 A/H 成交活跃标的的 72 小时标题事件实时筛查（词表×来源权威×归因强度＋跨源确认＋近30日新闻量异常）；"
+            "当前窗口内未触发红/橙/黄预警，不代表未来无风险，系统持续监控中。标题是线索而非事实定论，需回看监管/公司原文；"
+            "风险指数仅用于排序与风控观察，不触发自动交易。"
+        ))
+        # 占位态提前返回，不再走标的明细渲染
+        if not PLAIN():
+            out.append(kit.note(
+                "口径：具体风险事件词表 × 来源权威度 × 公司归因强度，叠加跨源确认与近30日新闻量异常；"
+                "无事件词时仅在基线≥5日、（z≥2 或达到历史均值3倍）且当日≥3条时输出异常关注，"
+                "并明确不代表负面事实。营销/导流噪音先剔除；行业链映射与澄清语境均降权。"
+                "标题是线索而非事实定论，需回看监管/公司原文；"
+                "下游 JSON 给出时态、标准动作与可审计判定摘要，不输出隐藏思维链。"
+                "风险指数只用于排序与风控观察，不是概率，不触发自动交易。"))
+        return "".join(out)
 
     cat_rows = []
     for name, count in (res.get("top_categories") or []):
