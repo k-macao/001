@@ -620,6 +620,7 @@ class MediaRiskPipelineTests(unittest.TestCase):
         self.assertIn(pipeline.SECTION_TITLE_NEWS_SENTIMENT, html)
 
     def test_section_absent_without_event_or_reliable_attention_baseline(self):
+        # 2026-10-21 起：无风险时不再静默缺席，改为“监控中”占位，避免“栏目不见”误判
         data = self._data([
             {"title": "测试股份发布例行经营公告", "source": "公司",
              "published_cst": "2026-08-02 09:30", "url": "https://example.com/normal"},
@@ -627,10 +628,15 @@ class MediaRiskPipelineTests(unittest.TestCase):
         result = pipeline.build_media_risk(
             data, self.DATE, {}, news_corpus=self._corpus(data))
         self.assertFalse(result["available"])
+        self.assertIn("headline_n", result)
+        self.assertIn("window_text", result)
         html = pipeline.generate_report(
             data, "2026年8月2日 · 周日", self.DATE,
             theme="guizang", news_corpus=self._corpus(data))
-        self.assertNotIn(pipeline.SECTION_TITLE_MEDIA_RISK, html)
+        self.assertIn(pipeline.SECTION_TITLE_MEDIA_RISK, html)
+        self.assertIn("监控中", html)
+        self.assertIn("未检出", html)
+        self.assertIn("标题覆盖", html)
 
 
 if __name__ == "__main__":
