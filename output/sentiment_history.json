@@ -894,6 +894,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1125,6 +1132,13 @@
      "neg": 2,
      "total": 11,
      "score": 0.1818
+    },
+    "20261020": {
+     "pos": 1,
+     "neu": 4,
+     "neg": 0,
+     "total": 5,
+     "score": 0.2
     }
    }
   },
@@ -1594,6 +1608,13 @@
      "neg": 1,
      "total": 1,
      "score": -1.0
+    },
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1825,6 +1846,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261020": {
+     "pos": 0,
+     "neu": 1,
+     "neg": 0,
+     "total": 1,
+     "score": 0.0
     }
    }
   },
@@ -2030,6 +2058,13 @@
      "score": null
     },
     "20261019": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    },
+    "20261020": {
      "pos": 0,
      "neu": 0,
      "neg": 0,
@@ -2273,6 +2308,13 @@
      "neg": 0,
      "total": 6,
      "score": 0.3333
+    },
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -2496,6 +2538,13 @@
      "neu": 8,
      "neg": 2,
      "total": 15,
+     "score": 0.2
+    },
+    "20261020": {
+     "pos": 1,
+     "neu": 4,
+     "neg": 0,
+     "total": 5,
      "score": 0.2
     }
    }
@@ -2952,6 +3001,13 @@
      "neg": 0,
      "total": 1,
      "score": 0.0
+    },
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -4128,9 +4184,100 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
+  },
+  "A股:689009": {
+   "market": "A股",
+   "code": "689009",
+   "name": "九号公司-WD",
+   "days": {
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
+  },
+  "A股:688836": {
+   "market": "A股",
+   "code": "688836",
+   "name": "宇树科技-W",
+   "days": {
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
+  },
+  "A股:688981": {
+   "market": "A股",
+   "code": "688981",
+   "name": "中芯国际",
+   "days": {
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
+  },
+  "A股:688835": {
+   "market": "A股",
+   "code": "688835",
+   "name": "高凯技术",
+   "days": {
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
+  },
+  "A股:688837": {
+   "market": "A股",
+   "code": "688837",
+   "name": "信诺维",
+   "days": {
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
+  },
+  "美股:AMZN": {
+   "market": "美股",
+   "code": "AMZN",
+   "name": "亚马逊",
+   "days": {
+    "20261020": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   }
  },
- "updated_cst": "2026-10-20 07:21:43"
+ "updated_cst": "2026-10-20 08:55:37"
 }
