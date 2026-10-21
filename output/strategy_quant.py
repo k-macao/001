@@ -633,6 +633,11 @@ def render_overview(res, kit):
     by_major = res.get("by_major") or {}
     overview = res.get("overview") or {}
     out = []
+    if res.get("index_checks"):
+        import index_crosscheck
+        out.append(index_crosscheck.render(res["index_checks"], kit))
+    if not strategies:
+        return "".join(out)
     # 1) 分类表
     out.append(_kit_sub(kit, "策略分类（图中）"))
     out.append(render_strategy_classification_table(kit))
