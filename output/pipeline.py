@@ -5148,9 +5148,14 @@ def fetch_strategy_quant(date_str=None):
         ds = date_str or datetime.now(CST).strftime("%Y%m%d")
         res = _strategy_quant.run_strategy_quant(
             safe_request, date_str=ds, allow_synthetic=STRATEGY_QUANT_DEMO)
+        # 独立双供应商同标的核验；缺数也展示状态，不打开当天推送门禁。
+        import index_crosscheck
+        res["index_checks"] = index_crosscheck.collect(safe_request)
+        if any(r.get("overseas_date") or r.get("mainland_date") for r in res["index_checks"]):
+            res["available"] = True
         if not res.get("available"):
             print(f"  ⚠️ 策略量化暂不可用：{res.get('reason')}")
-            return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=None,
+            return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=res,
                                   error=str(res.get("reason") or "数据不足"))
         diag = res.get("diag") or {}
         syn_n = diag.get("synthetic_n", 0)
@@ -5163,7 +5168,7 @@ def fetch_strategy_quant(date_str=None):
                               is_today=False, snapshot=True)
     except Exception as exc:
         print(f"  ⚠️ 策略量化异常：{type(exc).__name__}: {exc}")
-        return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=None,
+        return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result={"index_checks": []},
                               error=f"策略量化异常（{type(exc).__name__}）")
 
 
@@ -10138,6 +10143,21 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     news_corpus: 跨运行标题存档（output/news_history.json），缺省时因子只用
     本次抓取标题（测试 / 冷启动路径）。
     """
+    # 新采集快照带指数核验契约：全页仅使用这些指数级证据，
+    # 在旧港股专属AI装饰器之前分流，防止旧概率/个股结论泄漏到新页面。
+    index_result = (data.get(STRATEGY_QUANT_SOURCE) or {}).get("result") or {}
+    if ("index_checks" in index_result and
+            os.environ.get("OCTOPUS_INDEX_PAGE", "1").strip().lower() not in ("0", "false", "no")):
+        import index_page
+        parts = index_page.build_parts(index_result["index_checks"], kit, REPORT_SECTION_ORDER,
+                                       calendar=data.get("财经日历"), date_str=date_str)
+        parts["poem"] = _shiquan.get_opening_poem(data, allow_network=False) if (SHIQUAN_ENABLED and _shiquan.is_enabled()) else None
+        if _bagua.ENABLED:
+            try:
+                parts["bagua_html"] = _bagua.render_bagua_html(day=_bagua_report_day(date_str))
+            except Exception:
+                pass
+        return parts
     # 审计口径（当天源 / 总源）基于原始抓取结果；正文渲染用裁剪掉过期内容的副本。
     raw_yt = data.get("港股名家频道", {})
     raw_google = data.get("全球头条", {})
