@@ -411,6 +411,34 @@
       · 历史归档日报（output/daily_report_*.html）按仓库惯例不改写，仍是当时的真实
         快照；output/latest.html 已按新口径去掉该栏并重排后续栏目序号。
 
+  31. 新增「策略量化分析」5 个栏目（2026-10-21 按用户提供的「策略大类 → 细分策略」图）：
+      图中 **权益多头{主观多头 / 量化多头}、纯债策略{纯债基金}、CTA策略{主观CTA /
+      量化CTA}、套利策略{综合指数}** 共 4 大类 6 细分，落地为 1 个总览 + 4 个大类栏目：
+        · 【策略总览】量化策略全景（kicker STRATEGY OVERVIEW）：分类映射表 → 大类横向
+          对比（细分均值）→ 细分全景排名（按信号分）→ 市场状态 / 最强-最弱 / 离散度；
+        · 【权益多头】【纯债策略】【CTA策略】【套利策略·综合指数】（STRATEGY EQUITY /
+          BOND / CTA / ARBITRAGE）：大类小结 → 细分量化明细 → 成对细分对比或单细分
+          收益 / 风险 / 趋势特征 → 结论句。
+      方法（output/strategy_quant.py）：每个细分映射一个**可验证基准指数**——
+      沪深300（000300.SS）/ 中证500（000905.SS）/ 国债ETF（511010.SS，缺则 BND）/
+      GSG / DBC / 上证指数（000001.SS），经 providers.fetch_bars 取近 1 年已收盘日线，
+      计算 5/20/60 日收益、年化波动、夏普（20 日）、最大回撤（60 日）、胜率（20 日）、
+      MA20/MA60 趋势与信号分（−100~+100，只用于大类内排序，不是涨跌概率）。
+      大类 = 细分均值，趋势一致沿用、分歧标「分化」；市场状态按权益 / 纯债 / CTA
+      三类信号均值判定。
+      **缺数不造假**：主基准取不到自动试备用基准（^GSPC / ^IXIC / BND / DBC / GSG /
+      ^HSI），仍然取不到的细分如实标「暂缺」并把指标留空，绝不补造数字；整类无可用
+      细分 → 该大类栏目缺席，并在「数据覆盖」点名。合成序列**默认关闭**，只有显式
+      OCTOPUS_STRATEGY_DEMO=1（离线演示 / 测试）才启用确定性序列，结果 synthetic=True、
+      页面额外点名「演示序列」并注明不可用于判断行情。
+      编排与边界：collect_all_data 在行业轮动之后调用 fetch_strategy_quant()，写入
+      data["策略量化"]，计入数据覆盖总源数；但本栏是**已收盘回看的内部衍生**
+      （is_today=False + snapshot=True），不虚增当天源、不单独打开推送门禁；
+      取数 / 计算 / 渲染各自 try，单栏异常只影响该栏。
+      OCTOPUS_STRATEGY_QUANT=0 关闭全部 5 栏（不采集、不渲染、不进审计）。
+      规则合成的统计口径，非投资建议；逐条口径见《策略量化分析-接入说明.md》，
+      回归见 tests/test_strategy_quant.py。
+
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
   1 = 应当推送却失败，或用法错误。
@@ -492,6 +520,10 @@ import dedup as _dedup  # noqa: E402
 import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）卷首随机一首古诗词
 import finance_analysis as _finance  # noqa: E402  # 🧩 本地 jieba 财经标题分析（情绪热点因子量化分析增强：词汇 + 情绪 + 风险词表）
 import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（「诗与远方的海」卷首栏）
+try:
+    import strategy_quant as _strategy_quant  # noqa: E402  # 📊 策略大类量化（图中 4 大类 6 细分，可离线兜底）
+except Exception:  # pragma: no cover
+    _strategy_quant = None
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
 # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首诗开关：OCTOPUS_SHIQUAN=0 可关闭。
@@ -5095,6 +5127,47 @@ def fetch_industry_rotation():
 
 
 # ============================================================
+# 📊 策略大类量化（图中 4 大类 6 细分，2026-10-21 新增）
+# ------------------------------------------------------------
+# 对应图中：权益多头{主观多头/量化多头} / 纯债策略{纯债基金} /
+#           CTA策略{主观CTA/量化CTA} / 套利策略{综合指数}
+# 每个细分映射一个可验证基准指数，取近 1 年日线计算 5/20/60 日收益、
+# 年化波动、夏普、最大回撤、胜率、MA 趋势与信号分；大类为细分均值。
+# 取数失败用确定性合成兜底（不因行情暂缺整栏消失），内部衍生、
+# 不新增联网口、不计入当天检验 / 总源数审计。
+# ============================================================
+def fetch_strategy_quant(date_str=None):
+    """策略量化主入口：取数失败走合成兜底，始终可渲染（关闭时返回 None，栏目与审计都不出现）。"""
+    if not STRATEGY_QUANT_ENABLED:
+        return None
+    if _strategy_quant is None:
+        return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=None,
+                              error="strategy_quant 模块未加载")
+    try:
+        print("📡 正在计算策略大类量化（6 细分 · 4 大类 · 基准指数日线）...")
+        ds = date_str or datetime.now(CST).strftime("%Y%m%d")
+        res = _strategy_quant.run_strategy_quant(
+            safe_request, date_str=ds, allow_synthetic=STRATEGY_QUANT_DEMO)
+        if not res.get("available"):
+            print(f"  ⚠️ 策略量化暂不可用：{res.get('reason')}")
+            return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=None,
+                                  error=str(res.get("reason") or "数据不足"))
+        diag = res.get("diag") or {}
+        syn_n = diag.get("synthetic_n", 0)
+        print(f"  ✅ 策略量化：{len(res.get('strategies') or [])} 细分 · "
+              f"{len(res.get('by_major') or [])} 大类 · {res.get('as_of')} 收盘"
+              + (f" · 合成兜底 {syn_n} 项" if syn_n else ""))
+        # 内部衍生：已收盘回看，不计入当天检验（snapshot），content_date 供页面显示。
+        return _source_result(STRATEGY_QUANT_SOURCE, "success", result=res,
+                              content_date=res.get("as_of"),
+                              is_today=False, snapshot=True)
+    except Exception as exc:
+        print(f"  ⚠️ 策略量化异常：{type(exc).__name__}: {exc}")
+        return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=None,
+                              error=f"策略量化异常（{type(exc).__name__}）")
+
+
+# ============================================================
 # 每周量化走势预测：未来 7 个交易日逐日表格（恒指升跌方向 / 概率 / 理由 / 分析 / AI 操作建议）
 # ------------------------------------------------------------
 # 方法来自 GitHub 无未来函数（look-ahead）量化工程实践调研：
@@ -6028,6 +6101,13 @@ def collect_all_data():
     data[INDUSTRY_ROTATION_SOURCE_NAME] = fetch_industry_rotation()
     time.sleep(0.5)
 
+    # 策略大类量化（图中 4 大类 6 细分）：内部衍生、可离线兜底，不计入当天检验 / 总源审计。
+    if STRATEGY_QUANT_ENABLED:
+        sq = fetch_strategy_quant(date_str=datetime.now(CST).strftime("%Y%m%d"))
+        if sq is not None:
+            data[STRATEGY_QUANT_SOURCE] = sq
+            time.sleep(0.2)
+
     # === 新增：全栏目新鲜度检查 ===
     print("\n🕐 正在检查全栏目数据新鲜度...")
     try:
@@ -6352,6 +6432,12 @@ _SECTION_ICON_META = {
     # 情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
     # 18 家内地财经媒体的主题热度 + 情绪/风险因子榜，✦ = 热度
     "MAINLAND HOTLIST": ("✦", "SENT-HOT", C_AMBER, C_FLAT_BG),
+    # 策略大类量化（2026-10-21 新增，图中 4 大类 6 细分）
+    "STRATEGY OVERVIEW": ("▣", "STRAT-MAP", C_LEMON, C_AI_BG),
+    "STRATEGY EQUITY": ("▲", "EQT-LONG", C_LEMON, C_UP_BG),
+    "STRATEGY BOND": ("▬", "BOND", C_GREEN, C_UP_BG),
+    "STRATEGY CTA": ("↗", "CTA", C_AMBER, C_FLAT_BG),
+    "STRATEGY ARBITRAGE": ("◇", "ARB", C_CYAN, "#092836"),
     "POETRY & SEA": ("✦", "VERSE", C_CYAN, "#092836"),
 }
 
@@ -8449,6 +8535,18 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
 SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
 SECTION_TITLE_MEDIA_RISK = "【警戒爆炸豚】媒体舆情风险点量化分析"
+# 2026-10-21 新增：策略量化分析（图中 4 大类 6 细分，见 /strategy_quant.py）。
+# 1 个总览 + 4 个大类栏目，均基于基准指数日线量化计算，内部衍生、可离线兜底。
+SECTION_TITLE_STRATEGY_OVERVIEW = "【策略总览】量化策略全景"
+SECTION_TITLE_STRATEGY_EQUITY = "【权益多头】量化分析"
+SECTION_TITLE_STRATEGY_BOND = "【纯债策略】量化分析"
+SECTION_TITLE_STRATEGY_CTA = "【CTA策略】量化分析"
+SECTION_TITLE_STRATEGY_ARBITRAGE = "【套利策略·综合指数】量化分析"
+STRATEGY_QUANT_SOURCE = "策略量化"
+STRATEGY_QUANT_ENABLED = os.environ.get("OCTOPUS_STRATEGY_QUANT", "1").strip().lower() not in ("0", "false", "no")
+# 合成演示序列开关：**默认关闭**（取不到日线就如实标暂缺，绝不编造数字）；
+# 只有离线演示 / 测试显式设置 OCTOPUS_STRATEGY_DEMO=1 才用确定性合成序列兜底。
+STRATEGY_QUANT_DEMO = os.environ.get("OCTOPUS_STRATEGY_DEMO", "0").strip().lower() in ("1", "true", "yes")
 
 # 每个实际渲染的数据栏目都先输出栏首结论。data 属性只供回归测试/下游解析定位，
 # 页面不可见；不要用标题文字做结构判断（主题与栏名会变）。
@@ -8478,8 +8576,12 @@ REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
 REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
     "QUANT FORECAST", "LIQUIDITY FLOW", "WEEKLY FORECAST",
 )
+REPORT_STRATEGY_SECTIONS = (                   # ④' 策略量化（图中 4 大类 6 细分）
+    "STRATEGY OVERVIEW", "STRATEGY EQUITY", "STRATEGY BOND", "STRATEGY CTA", "STRATEGY ARBITRAGE",
+)
 REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
     "STRATEGY READ", "UZI TREND", "SECTOR ROTATION", "INDUSTRY ROTATION",
+    *REPORT_STRATEGY_SECTIONS,
 )
 # 2026-10-02 起 GLOBAL HEADLINES（【无敌帝王蟹】全球头条）与 HK GURU CHANNELS
 # （港股名家频道）按用户要求从页面隐藏，与此前隐藏的 EASTMONEY WIRE（东方财富快讯）
@@ -10074,6 +10176,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 多专家流派趋势分析：独立栏目 + 独立来源行（关闭时不写 data 键，审计口径不变）。
     if isinstance(data.get(UZI_TREND_SOURCE_NAME), dict):
         source_items.append((UZI_TREND_SOURCE_NAME, data[UZI_TREND_SOURCE_NAME]))
+    # 策略大类量化（图中 4 大类 6 细分）：内部衍生自基准指数日线；取不到时在「数据覆盖」点名。
+    if isinstance(data.get(STRATEGY_QUANT_SOURCE), dict):
+        source_items.append((STRATEGY_QUANT_SOURCE, data[STRATEGY_QUANT_SOURCE]))
     # 前瞻日程（「时间节点」栏目）：关掉采集时不进审计，总源数保持不变。
     # 它是「今日抓取的日程快照」而非当天发布的内容，因此不计入当天源（当天检验不受影响）。
     if isinstance(data.get("财经日历"), dict):
@@ -10193,6 +10298,36 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             blocks["INDUSTRY ROTATION"] = (
                 "INDUSTRY ROTATION", SECTION_TITLE_INDUSTRY_ROTATION, industry_html,
                 kit.source_badge(industry_src), _short_source(industry_src))
+
+    # 📊 策略大类量化（图中 4 大类 6 细分，2026-10-21 新增）：总览 + 4 大类。
+    #     内部衍生、可离线兜底；只读基准指数日线，不计入当天检验 / 总源审计。
+    #     任一栏渲染异常只影响该栏（整段 try），绝不拖垮整份日报。
+    try:
+        sq_src = data.get(STRATEGY_QUANT_SOURCE) or {}
+        sq_res = sq_src.get("result") if isinstance(sq_src, dict) else None
+        if _strategy_quant is not None and isinstance(sq_res, dict) and sq_res.get("available"):
+            sq_badge = kit.badge("策略量化", "ai")
+            ov_html = _strategy_quant.render_overview(sq_res, kit)
+            if ov_html:
+                blocks["STRATEGY OVERVIEW"] = (
+                    "STRATEGY OVERVIEW", SECTION_TITLE_STRATEGY_OVERVIEW, ov_html, sq_badge,
+                    "" if PLAIN() else
+                    "图中 4 大类 6 细分 · 基准指数日线 · 20/60日收益 · 波动 · 夏普 · 回撤 · 胜率 · 趋势 · 信号（规则合成，非投资建议）")
+            for major, kicker, title, note in (
+                    ("权益多头", "STRATEGY EQUITY", SECTION_TITLE_STRATEGY_EQUITY,
+                     "权益多头：主观多头（沪深300） vs 量化多头（中证500） · 收益 / 波动 / 趋势 / 信号对比"),
+                    ("纯债策略", "STRATEGY BOND", SECTION_TITLE_STRATEGY_BOND,
+                     "纯债策略：国债ETF / 中证全债基准 · 低波动稳定器特征"),
+                    ("CTA策略", "STRATEGY CTA", SECTION_TITLE_STRATEGY_CTA,
+                     "CTA 策略：主观CTA（GSG） vs 量化CTA（DBC） · 商品趋势双视角"),
+                    ("套利策略", "STRATEGY ARBITRAGE", SECTION_TITLE_STRATEGY_ARBITRAGE,
+                     "套利策略 · 综合指数：私募综合 / 上证指数代理 · 市场中性合成表现")):
+                major_html = _strategy_quant.render_major(major, sq_res, kit)
+                if major_html:
+                    blocks[kicker] = (kicker, title, major_html, sq_badge,
+                                      "" if PLAIN() else note)
+    except Exception as _sq_exc:  # 单栏失败不拖垮整份日报
+        print(f"  ⚠️ 策略量化渲染异常：{_sq_exc}")
 
     # ⓪ 时间节点（原「未来 N 天影响经济时间点」，2026-09-29 改名）：
     #    开头栏目——先看清日程窗口，再读今天的盘；窗口天数仍在栏目内「窗口摘要 · 时间窗口」显示。
@@ -13768,6 +13903,11 @@ DOSSIER_ICONS = {
     "QUANT POLICY": ("◉", D_RED_INK, "■", D_BLACK),
     "FED TREND": ("$", D_GREEN_INK, "●", D_RED_INK),
     "GEO TREND": ("◎", D_RED_INK, "■", D_BLACK),
+    "STRATEGY OVERVIEW": ("▣", D_GREEN_INK, "●", D_RED_INK),
+    "STRATEGY EQUITY": ("▲", D_RED_INK, "●", D_GREEN_INK),
+    "STRATEGY BOND": ("▬", D_GREEN_INK, "■", D_BLACK),
+    "STRATEGY CTA": ("↗", D_RED_INK, "■", D_BLACK),
+    "STRATEGY ARBITRAGE": ("◇", D_GREEN_INK, "▲", D_RED_INK),
     "AI READ": ("●", D_GREEN_INK, "▲", D_RED_INK),
     "HK GURU CHANNELS": ("▶", D_GREEN_INK, "■", D_RED_INK),
 }
@@ -14166,6 +14306,11 @@ FORUM_ICONS = {
     "QUANT POLICY": ("📄", F_ORANGE),
     "FED TREND": ("💵", F_GREEN),
     "GEO TREND": ("🌏", F_CYAN),
+    "STRATEGY OVERVIEW": ("📊", F_PURPLE),
+    "STRATEGY EQUITY": ("📈", F_RED),
+    "STRATEGY BOND": ("🏦", F_GREEN),
+    "STRATEGY CTA": ("🌊", F_ORANGE),
+    "STRATEGY ARBITRAGE": ("⚖️", F_CYAN),
     "AI READ": ("🤖", F_PURPLE),
     "HK GURU CHANNELS": ("📺", F_RED),
 }
