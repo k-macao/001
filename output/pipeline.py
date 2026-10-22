@@ -5150,17 +5150,8 @@ def fetch_strategy_quant(date_str=None):
             safe_request, date_str=ds, allow_synthetic=STRATEGY_QUANT_DEMO)
         # 独立双供应商同标的核验；缺数也展示状态，不打开当天推送门禁。
         import index_crosscheck
-        res["index_checks"] = index_crosscheck.collect(
-            safe_request, db_dir=os.path.join(REPORT_DIR, "market_db")
-        )
-        ic_rows = res["index_checks"]
-        ic_ok = sum(1 for r in ic_rows if r.get("usable"))
-        ic_brief = " | ".join(
-            f"{r['name']}:{r['status']}({r.get('overseas_source')}/{r.get('mainland_source')})"
-            for r in ic_rows
-        )
-        print(f"  🔍 三地指数核验：{ic_ok}/{len(ic_rows)} 双源一致 · {ic_brief}")
-        if any(r.get("overseas_date") or r.get("mainland_date") for r in ic_rows):
+        res["index_checks"] = index_crosscheck.collect(safe_request)
+        if any(r.get("overseas_date") or r.get("mainland_date") for r in res["index_checks"]):
             res["available"] = True
         if not res.get("available"):
             print(f"  ⚠️ 策略量化暂不可用：{res.get('reason')}")

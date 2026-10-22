@@ -310,10 +310,6 @@ class PipelineAndFreshnessTests(unittest.TestCase):
         catalog = {"items": concepts[:2], "total": 2, "complete": True,
                    "served_urls": [], "errors": []}
         with patch.object(pipeline, "SECTOR_ROTATION_ENABLED", True), \
-             patch.object(pipeline, "_sector_rotation_is_today",
-                          side_effect=lambda d: pipeline._sector_rotation_is_today.__wrapped__(d)
-                          if hasattr(pipeline._sector_rotation_is_today, "__wrapped__")
-                          else d == "2026-09-30"), \
              patch.object(pipeline._quant.providers, "fetch_concept_boards", return_value=catalog), \
              patch.object(pipeline, "_sector_rotation_market_inputs",
                           return_value=(stocks, benchmark)), \

@@ -641,7 +641,7 @@ class RenderIntegrationTests(unittest.TestCase):
         self.assertEqual(pairs[0][0], "量化分析")
         panel = pipeline._conclusion_panel(pipeline.GUIZANG_KIT, pairs)
         self.assertIn("量化分析", panel)
-        self.assertNotIn("量化预测", panel)
+        self.assertNotIn("量化分析", panel)
 
     def test_report_includes_quant_sections_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:

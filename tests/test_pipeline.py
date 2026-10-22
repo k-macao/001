@@ -11,7 +11,6 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 # pipeline 在导入时只需要 requests 存在；本测试不发出 HTTP 请求。
 sys.modules.setdefault("requests", types.SimpleNamespace())
 MODULE_PATH = Path(__file__).parents[1] / "output" / "pipeline.py"
