@@ -186,16 +186,19 @@ class DailyDatabaseTests(unittest.TestCase):
         us_docs[0]["slots"]["1700"]["pulled_at"] = "2026-10-02 05:00:00"
         self.assertEqual(market_db.load_daily_bars(docs=us_docs, now=NOW)["^GSPC"][0]["date"], "2026-10-01")
 
-    def test_consensus_requires_post_close_timestamp_and_quorum_and_is_index_only(self):
-        quote = {"quote_time": "2026-09-30 16:20:00", "consensus": {"price": 100.0, "n_agree": 2, "verdict": "一致"}}
-        doc = {"slots": {"1700": {"pulled_at": "2026-09-30 17:00:00", "quotes": {"^HSTECH": quote}}}}
+    def test_index_quote_accepts_single_source_post_close_and_rejects_intraday_or_legacy_conflict(self):
+        single = {"quote_time": "2026-09-30 16:20:00", "price": 100.0, "source": "yahoo", "n_sources": 1}
+        doc = {"slots": {"1700": {"pulled_at": "2026-09-30 17:00:00", "quotes": {"^HSTECH": single}}}}
         self.assertEqual(market_db.load_daily_bars(docs=[doc], now=NOW)["^HSTECH"][0]["close"], 100.0)
-        for changes in ({"quote_time": None}, {"quote_time": "2026-09-30 12:30:00"},
-                        {"consensus": {"price": 100.0, "n_agree": 1}},
-                        {"consensus": {"price": 100.0, "n_agree": 3, "verdict": "冲突"}}):
-            doc["slots"]["1700"]["quotes"]["^HSTECH"] = {**quote, **changes}
+        legacy_single = {"quote_time": "2026-09-30 16:20:00", "consensus": {"price": 101.0, "n_agree": 1}}
+        doc["slots"]["1700"]["quotes"]["^HSTECH"] = legacy_single
+        self.assertEqual(market_db.load_daily_bars(docs=[doc], now=NOW)["^HSTECH"][0]["close"], 101.0)
+        for bad in ({"quote_time": None, "price": 100.0},
+                    {"quote_time": "2026-09-30 12:30:00", "price": 100.0},
+                    {"quote_time": "2026-09-30 16:20:00", "consensus": {"price": 100.0, "n_agree": 3, "verdict": "冲突"}}):
+            doc["slots"]["1700"]["quotes"]["^HSTECH"] = bad
             self.assertEqual(market_db.load_daily_bars(docs=[doc], now=NOW), {})
-        doc["slots"]["1700"]["quotes"] = {"0700.HK": quote}
+        doc["slots"]["1700"]["quotes"] = {"0700.HK": single}
         self.assertEqual(market_db.load_daily_bars(docs=[doc], now=NOW), {})
 
     def test_price_bases_are_never_stitched_and_known_actions_force_refetch(self):

@@ -6,55 +6,37 @@
     每天三次（北京时间 08:00 / 12:30 / 17:00）把股票行情快照落库，写进
     ``output/market_db/YYYYMMDD.json``（**文件以日期为名字**，当天三次快照按
     0800 / 1230 / 1700 三档依次写进同一个文件）。这份库是 AI 分析 / AI 预测 /
-    AI 模型的**基础数据**：既提供逐快照的原始多源明细，也提供交叉验证后的共识价、
+    AI 模型的**基础数据**：记录单源行情快照（Yahoo 主源优先、备用源待命兜底）、
     特征与标签（见 build_dataset / export_dataset / ai_context）。
 
 三条硬规则
-    ① 多源（源头 > 3）：每只标的都从 6 路独立源取数 ——
-       东方财富 push2 快照 / 新浪财经 hq / 腾讯财经 qt / Yahoo Finance chart /
-       东方财富 push2his 日K（收盘校验源，只校验昨收与收盘，不参与盘中比价）/
-       通达信行情 mootdx（沪深，多主站自动选路；2026-10-01 升级加入）。
-       每路都可换镜像主机（通达信本身是 38 个主站的服务器池）；单路失败只影响该路，
-       全部失败**不落库**；
-    ② 交叉验证：同一标的多源比价（中位数 + MAD 稳健离群），逐源判定「滞后」，
-       输出共识价 / 离群源 / 价差百分比 / 置信度；只有 ≥2 路一致才计入「有效共识」；
-    ③ 自我检查：每次落库对自己做一遍体检（结构 / 时段 / 源覆盖 / 标的覆盖 /
-       数值合理性 / 跨源冲突 / 跨时段与跨日跳变 / 文件哈希），结果写进文件
-       ``self_check``，可随时 ``verify`` 复核。
+    ① 单源优先（Yahoo 主源）：默认仅从主源 ``Yahoo Finance chart``（query1 → query2 镜像）
+       取数，成功覆盖全部标的时**不触发任何备用源请求**，不做多源并发比价交叉验证；
+    ② 备用源待命（按序故障切换）：仅当主源失败或漏采部分标的时，按顺序依次启用备用源 ——
+       ``东方财富 push2 快照`` → ``腾讯财经 qt`` → ``新浪财经 hq`` →
+       ``通达信行情 mootdx（沪深）`` → ``东方财富 push2his 日K``，且只补拉仍缺失的标的；
+       未被调用的备用源标记为 ``standby``（备用待命）；全部源失败**不落库**；
+    ③ 自我检查：每次落库对自己做一遍体检（结构 / 时段 / 主备源可用性 / 标的覆盖 /
+       数值合理性 / 跨时段与跨日跳变 / 当天行情时效 / 文件哈希），结果写进文件
+       ``self_check``，可随时 ``verify`` 复核（兼容历史版本库文件）。
 
-通达信通道（mootdx，2026-10-01 升级；同日加固防卡死，见「防卡死四道闸」）
+通达信通道（mootdx，作为沪深备用源待命；保留防卡死四道闸）
     · 行情：``Quotes.factory(market='std')`` → ``quotes()``，覆盖沪深股票与指数
-      （代码映射 sh600519 / sz000858 / sh000001）；港美股不在通达信标准行情内
-      （mootdx 自己的扩展市场接口已失效），因此该源只参与沪深标的的比价；
+      （代码映射 sh600519 / sz000858 / sh000001）；港美股不在通达信标准行情内，
+      仅在前序 HTTP 源仍缺失沪深标的（或显式指定 ``--sources tdx``）时启用；
     · 多主站：``OCTOPUS_DB_TDX_SERVERS="ip:port,…"`` 可指定，否则用 mootdx / tdxpy
       内置主站池依次试连（连不上自动换站，最多 4 站），命中站点写进 ``sources.tdx.host``；
-
-    · 收盘校验：每档都用 ``bars(frequency=9)`` 取最近一根日K收盘，与 em_kline 一起做
-      双源收盘核对（两个独立通道的收盘价一致，昨收 / 标签才可信）；
-    · 财务 / 除权除息：17:00 档附带 ``fundamentals``（总股本 / 流通股本 / 每股净资产 /
-      净利润 → 总市值 / 流通市值 / PE / PB）与 ``corporate_actions``（近 45 天除权除息），
-      既进 AI 特征，也用来解释「跨日跳变」（除权日的大幅跳空不再当成数据错误）；
-    · 未安装 mootdx（或所有主站都连不上）→ 该源记 ``unavailable`` / ``failed``，其余 5 路照常，
-      绝不伪造数字。安装：``pip install mootdx``（Actions 已装）。
+    · 财务 / 除权除息：当通达信通道在 17:00 档被启用时，可附带 ``fundamentals`` 与
+      ``corporate_actions``；未启用或未安装 mootdx 时绝不伪造数字。
 
 防卡死四道闸（2026-10-01：一次 20 分钟作业被单台死主站拖到超时取消，逐条对症）
-    ① 预置配置：创建客户端前先写好 ``~/.mootdx/config.json``（SERVER 主机池 + BESTIP），
-       mootdx 就不会在首次使用时跑 bestip 探测。原来那条
-       「未找到配置文件 … / 请手动运行 python -m mootdx bestip」既吓人又真写坏了配置：
-       在线程池里 ``asyncio.get_event_loop()`` 直接 RuntimeError，写出的 BESTIP 是空串；
-    ② TCP 预检：先用自己的 socket 探一次（``TDX_PROBE_TIMEOUT`` 3s），连不上的站**不交给
-       mootdx**。因为 tdxpy 的 ``connect()`` 会把 socket.timeout 吞掉并 return False，
-       mootdx 又不检查返回值 —— 死站会被当成「连上了」；
-    ③ 先验活后明细：每台主站先做一次 ``quotes()``（全部标的、一次调用）验活，行情为空
-       立刻换站，绝不在一台死站上逐只跑 bars/finance/xdxr（11 只标的 34 次调用 × 每次
-       tdxpy auto_retry 阶梯 4 次重连 × 5s ≈ 十几分钟，4 台主站直接拖爆 20 分钟上限）；
-       客户端显式 ``auto_retry=False``，重试责任交给「主站池逐个降级」；
-    ④ 总预算：``TDX_BUDGET_SEC``（90s，可用 ``OCTOPUS_DB_TDX_BUDGET`` 覆盖）是整条通道的
-       墙钟上限，超预算立即收工并把原因写进 ``error``，其余 5 路照常入库。
+    ① 预置配置：创建客户端前先写好 ``~/.mootdx/config.json``（SERVER 主机池 + BESTIP）；
+    ② TCP 预检：先用自己的 socket 探一次（``TDX_PROBE_TIMEOUT`` 3s），连不上的站不交给 mootdx；
+    ③ 先验活后明细：每台主站先做一次 ``quotes()`` 验活，行情为空立刻换站，``auto_retry=False``；
+    ④ 总预算：``TDX_BUDGET_SEC``（90s，可用 ``OCTOPUS_DB_TDX_BUDGET`` 覆盖）为通道墙钟上限。
 
 绝不伪造
-    任一路取不到就如实记 ``failed``（不猜数、不补历史数字）；全部源失败不写文件；
-    Yahoo 与东财的「昨收 / 收盘」只做校验与留痕，绝不替换实时价。
+    主源与全部备用源都取不到某只标的就如实缺席（不猜数、不补历史数字）；全部源失败不写文件。
 
 用法（隐藏入口二选一）
     python3 output/market_db.py pull      [--slot auto|0800|1230|1700] [--no-enrich] [--no-tdx]
@@ -68,7 +50,7 @@
 
 给 AI 用（Python）
     import market_db
-    ctx = market_db.ai_context()                       # 最近一档共识价 + 新鲜度 + 质量标记
+    ctx = market_db.ai_context()                       # 最近一档单源行情 + 新鲜度 + 质量标记
     rows, meta = market_db.build_dataset()             # 特征（只用过去）+ 标签（只用未来）
     market_db.export_dataset("ai.jsonl", fmt="jsonl")  # 落盘给训练 / 分析
 """
@@ -103,18 +85,17 @@ SLOTS: Tuple[str, ...] = ("0800", "1230", "1700")
 SLOT_LABELS = {"0800": "盘前 08:00", "1230": "午间 12:30", "1700": "盘后 17:00"}
 SLOT_HM = {"0800": (8, 0), "1230": (12, 30), "1700": (17, 0)}
 
+PRIMARY_SOURCE = "yahoo"
+BACKUP_SOURCES: Tuple[str, ...] = ("eastmoney", "tencent", "sina", "tdx", "em_kline")
+SOURCE_ORDER: Tuple[str, ...] = (PRIMARY_SOURCE, *BACKUP_SOURCES)
+
 CONF_HIGH, CONF_MID, CONF_LOW, CONF_SINGLE = 3, 2, 1, 0
 CONF_LABELS = {3: "高", 2: "中", 1: "低", 0: "单源"}
-SOFT_TOL_PCT = 0.6        # 价差 ≤0.6% 视为「同价」（同源不同镜像 / 不同通道的正常抖动）
-CONFLICT_PCT = 3.0        # 价差 >3% 视为「冲突」（要么错价，要么极端行情）
-OUTLIER_PCT = 1.0         # 单源偏离中位数 >1% 记为离群
-LAG_TOL_MIN = 30          # 行情时间比其它源落后 >30 分钟 → 判「滞后」
-MIN_SOURCES = 4           # 至少 4 路源成功（注册表 5 路；「源头 >3」落地为硬门禁）
+MIN_SOURCES = 1           # 单源优先：主源（或任一备用源）成功即可落库，不要求多源并发比价
 MIN_SYMBOL_COVER = 0.80   # 标的覆盖率下限
-MIN_QUORUM_RATE = 0.90    # 有效共识覆盖率下限
 SCHEDULE_TOL_MIN = 180    # 拉取时刻与计划时刻的容差（GitHub 定时常有延迟）
-SLOT_JUMP_PCT = 15.0      # 同日相邻时段共识价跳变告警阈值
-DAY_JUMP_PCT = 30.0       # 与前一交易日收盘共识价跳变告警阈值
+SLOT_JUMP_PCT = 15.0      # 同日相邻时段价格跳变告警阈值
+DAY_JUMP_PCT = 30.0       # 与前一交易日收盘价格跳变告警阈值
 DEFAULT_TIMEOUT = 12
 MAX_WORKERS = 6
 TDX_SERVER_LIMIT = 4       # 通达信主站最多试连几个（内置池 38+ 个，逐个降级）
@@ -125,41 +106,39 @@ TDX_BUDGET_SEC = 90        # 整个通达信通道的墙钟预算（秒）：到
 
 
 # ------------------------------------------------------------
-# 数据源注册表（≥4 路独立源；每路可换镜像主机）
+# 数据源注册表（1 个主源 + 5 个备用源待命；每路内部可换镜像主机）
 # ------------------------------------------------------------
 SOURCES: Dict[str, Dict[str, Any]] = {
-    "eastmoney": {
-        "label": "东方财富 push2 行情快照",
-        "kind": "quote", "price_peer": True, "delay": "实时",
-        "hosts": ("push2.eastmoney.com", "82.push2.eastmoney.com", "72.push2.eastmoney.com"),
-    },
-    "sina": {
-        "label": "新浪财经 hq.sinajs.cn",
-        "kind": "quote", "price_peer": True, "delay": "实时",
-        "hosts": ("hq.sinajs.cn",),
-    },
-    "tencent": {
-        "label": "腾讯财经 qt.gtimg.cn",
-        "kind": "quote", "price_peer": True, "delay": "实时",
-        "hosts": ("qt.gtimg.cn",),
-    },
     "yahoo": {
-        "label": "Yahoo Finance chart",
-        "kind": "quote", "price_peer": True, "delay": "可能延迟 15 分钟",
+        "label": "Yahoo Finance chart（主源）",
+        "role": "primary", "kind": "quote", "delay": "可能延迟 15 分钟",
         "hosts": ("query1.finance.yahoo.com", "query2.finance.yahoo.com"),
     },
-    "em_kline": {
-        "label": "东方财富 push2his 日K收盘（校验源）",
-        "kind": "close", "price_peer": False, "delay": "收盘后",
-        "hosts": ("push2his.eastmoney.com", "91.push2his.eastmoney.com", "63.push2his.eastmoney.com"),
+    "eastmoney": {
+        "label": "东方财富 push2 行情快照（备用源）",
+        "role": "backup", "kind": "quote", "delay": "实时",
+        "hosts": ("push2.eastmoney.com", "82.push2.eastmoney.com", "72.push2.eastmoney.com"),
     },
-    # 通达信通道（mootdx，2026-10-01 升级）：沪深行情 + 财务 + 除权除息。
-    # 主站是服务器池（mootdx/tdxpy 内置 38+ 个），由 _tdx_servers() 依次试连，
-    # 命中的站点写进 host，便于审计「这次是哪台机子供的数」。
+    "tencent": {
+        "label": "腾讯财经 qt.gtimg.cn（备用源）",
+        "role": "backup", "kind": "quote", "delay": "实时",
+        "hosts": ("qt.gtimg.cn",),
+    },
+    "sina": {
+        "label": "新浪财经 hq.sinajs.cn（备用源）",
+        "role": "backup", "kind": "quote", "delay": "实时",
+        "hosts": ("hq.sinajs.cn",),
+    },
+    # 通达信通道（mootdx）：作为沪深备用源待命，主站池由 _tdx_servers() 依次试连。
     "tdx": {
-        "label": "通达信行情 mootdx（沪深 · 多主站）",
-        "kind": "quote", "price_peer": True, "delay": "实时",
+        "label": "通达信行情 mootdx（沪深 · 备用源）",
+        "role": "backup", "kind": "quote", "delay": "实时",
         "hosts": ("mootdx-tdx-server-pool",),
+    },
+    "em_kline": {
+        "label": "东方财富 push2his 日K收盘（兜底备用源）",
+        "role": "backup", "kind": "close", "delay": "收盘后",
+        "hosts": ("push2his.eastmoney.com", "91.push2his.eastmoney.com", "63.push2his.eastmoney.com"),
     },
 }
 
@@ -265,7 +244,7 @@ def em_secid(symbol: str) -> str:
     except Exception:
         pass
     sym = str(symbol or "").strip()
-    table = {"^HSI": "100.HSI", "^HSTECH": "100.HSTECH", "^HSCEI": "100.HSCEI",
+    table = {"^HSI": "100.HSI", "^HSTECH": "100.HSTECH", "^HSCEI": "100.HSCEI", "^HSCE": "100.HSCEI",
              "^DJI": "100.DJIA", "^GSPC": "100.SPX", "^IXIC": "100.NDX"}
     if sym in table:
         return table[sym]
@@ -280,10 +259,19 @@ def em_secid(symbol: str) -> str:
     return ""
 
 
+def em_secids(symbol: str) -> Tuple[str, ...]:
+    """东财 secid 候选列表（恒生科技同时尝试 100.HSTECH 与 124.HSTECH）。"""
+    sym = str(symbol or "").strip()
+    if sym == "^HSTECH":
+        return ("100.HSTECH", "124.HSTECH")
+    sec = em_secid(sym)
+    return (sec,) if sec else ()
+
+
 def sina_code(symbol: str) -> str:
     """Yahoo 代码 → 新浪 hq 代码。新浪美股字段顺序与 A/港不同，不纳入（避免误读数字）。"""
     sym = str(symbol or "").strip()
-    hk_index = {"^HSI": "hkHSI", "^HSTECH": "hkHSTECH", "^HSCEI": "hkHSCEI"}
+    hk_index = {"^HSI": "hkHSI", "^HSTECH": "hkHSTECH", "^HSCEI": "hkHSCEI", "^HSCE": "hkHSCEI"}
     if sym in hk_index:
         return hk_index[sym]
     if sym.endswith(".HK") and sym[:-3].isdigit():
@@ -438,9 +426,9 @@ def _source_result(key: str, status: str, *, quotes: Optional[Dict[str, Any]] = 
                    quote_time: Optional[str] = None) -> Dict[str, Any]:
     return {
         "key": key, "label": SOURCES[key]["label"], "status": status,
+        "role": SOURCES[key].get("role", "backup"),
         "host": host, "error": error or None, "elapsed_ms": int(elapsed_ms),
         "quote_time": quote_time, "quotes": quotes or {},
-        "price_peer": bool(SOURCES[key]["price_peer"]),
         "symbols": len(quotes or {}),
     }
 
@@ -468,8 +456,10 @@ def _quote(price, *, prev_close=None, open_=None, high=None, low=None, volume=No
 def fetch_eastmoney(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
                     **_kw) -> Dict[str, Any]:
     started = time.time()
-    pairs = [(em_secid(s), s) for s in symbols]
-    secids = {sec: sym for sec, sym in pairs if sec}
+    secids: Dict[str, str] = {}
+    for s in symbols:
+        for sec in em_secids(s):
+            secids.setdefault(sec, s)
     if not secids:
         return _source_result("eastmoney", "failed", error="无可用 secid 映射")
     params = {
@@ -660,6 +650,13 @@ def _yahoo_quote_from_chart(data) -> Optional[Dict[str, Any]]:
                   quote_time=quote_time, name=meta.get("shortName") or "")
 
 
+_YAHOO_ALIASES: Dict[str, Tuple[str, ...]] = {
+    "^HSTECH": ("^HSTECH", "HSTECH.HK"),
+    "^HSCEI": ("^HSCEI", "^HSCE"),
+    "^HSCE": ("^HSCE", "^HSCEI"),
+}
+
+
 def fetch_yahoo(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
                 **_kw) -> Dict[str, Any]:
     started = time.time()
@@ -668,14 +665,15 @@ def fetch_yahoo(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
         # 单只标的的异常绝不允许拖垮整路源（网络抖动 / 返回结构变化只丢这一只）
         try:
             for host in SOURCES["yahoo"]["hosts"]:
-                url = (f"https://{host}/v8/finance/chart/{sym}"
-                       f"?range=1d&interval=1d&includePrePost=false")
-                data, err = http.get(url, timeout=timeout)
-                if err:
-                    continue
-                item = _yahoo_quote_from_chart(data)
-                if item is not None:
-                    return sym, item
+                for cand in _YAHOO_ALIASES.get(sym, (sym,)):
+                    url = (f"https://{host}/v8/finance/chart/{cand}"
+                           f"?range=1d&interval=1d&includePrePost=false")
+                    data, err = http.get(url, timeout=timeout)
+                    if err:
+                        continue
+                    item = _yahoo_quote_from_chart(data)
+                    if item is not None:
+                        return sym, item
         except Exception:                                           # noqa: BLE001
             return sym, None
         return sym, None
@@ -719,35 +717,37 @@ def fetch_em_kline(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
                    **_kw) -> Dict[str, Any]:
     """返回 {代码: {close, date, …}}：注意 close 是**最近一个已收盘交易日**的收盘价。"""
     started = time.time()
-    pairs = {em_secid(s): s for s in symbols if em_secid(s)}
-    if not pairs:
+    sym_cands = [(s, em_secids(s)) for s in symbols if em_secids(s)]
+    if not sym_cands:
         return _source_result("em_kline", "failed", error="无可用 secid 映射")
 
-    def one(secid: str):
-        # 单只标的的异常只丢这一只，不影响整路收盘校验源
+    def one(pair: Tuple[str, Tuple[str, ...]]):
+        sym, cands = pair
+        # 单只标的的异常只丢这一只，不影响整路兜底源
         try:
-            params = {"secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
-                      "fields2": "f51,f52,f53,f54,f55,f56,f57", "klt": "101", "fqt": "1",
-                      "end": "20500101", "lmt": "3"}
-            for host in SOURCES["em_kline"]["hosts"]:
-                url = f"https://{host}/api/qt/stock/kline/get?{urlencode(params)}"
-                data, err = http.get(url, timeout=timeout)
-                if err:
-                    continue
-                item = _em_kline_last_close(data)
-                if item is not None:
-                    return secid, item
+            for secid in cands:
+                params = {"secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
+                          "fields2": "f51,f52,f53,f54,f55,f56,f57", "klt": "101", "fqt": "1",
+                          "end": "20500101", "lmt": "3"}
+                for host in SOURCES["em_kline"]["hosts"]:
+                    url = f"https://{host}/api/qt/stock/kline/get?{urlencode(params)}"
+                    data, err = http.get(url, timeout=timeout)
+                    if err:
+                        continue
+                    item = _em_kline_last_close(data)
+                    if item is not None:
+                        return sym, item
         except Exception:                                           # noqa: BLE001
-            return secid, None
-        return secid, None
+            return sym, None
+        return sym, None
 
-    rows, stamps, workers = {}, [], max(1, min(MAX_WORKERS, len(pairs)))
+    rows, stamps, workers = {}, [], max(1, min(MAX_WORKERS, len(sym_cands)))
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        for secid, item in pool.map(one, list(pairs)):
+        for sym, item in pool.map(one, sym_cands):
             if item is None:
                 continue
             stamps.append(item["date"])
-            rows[pairs[secid]] = item
+            rows[sym] = item
     if not rows:
         return _source_result("em_kline", "failed", error="三主机均无有效日K",
                               elapsed_ms=(time.time() - started) * 1000)
@@ -1210,28 +1210,66 @@ def fetch_tdx(symbols: Sequence[str], http=None, timeout: int = DEFAULT_TIMEOUT,
 
 
 FETCHERS: Dict[str, Callable[..., Dict[str, Any]]] = {
-    "eastmoney": fetch_eastmoney, "sina": fetch_sina, "tencent": fetch_tencent,
-    "yahoo": fetch_yahoo, "em_kline": fetch_em_kline, "tdx": fetch_tdx,
+    "yahoo": fetch_yahoo, "eastmoney": fetch_eastmoney, "tencent": fetch_tencent,
+    "sina": fetch_sina, "tdx": fetch_tdx, "em_kline": fetch_em_kline,
 }
+
+
+def _normalize_quote(key: str, raw: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """将各源（含兜底日K源 em_kline）统一归一化为单源行情字典。"""
+    if not isinstance(raw, dict):
+        return None
+    if raw.get("price") is not None:
+        return _quote(
+            raw.get("price"), prev_close=raw.get("prev_close"), open_=raw.get("open"),
+            high=raw.get("high"), low=raw.get("low"), volume=raw.get("volume"),
+            amount=raw.get("amount"), quote_time=raw.get("quote_time"), name=raw.get("name") or "",
+        )
+    if key == "em_kline" and raw.get("close") is not None:
+        day = str(raw.get("date") or "").strip()
+        return _quote(
+            raw.get("close"), prev_close=None, open_=raw.get("open"),
+            high=raw.get("high"), low=raw.get("low"), volume=raw.get("volume"),
+            amount=raw.get("amount"), quote_time=f"{day} 15:00:00" if day else None,
+            name=raw.get("name") or "",
+        )
+    return None
 
 
 def collect(symbols: Sequence[str], http, sources: Optional[Sequence[str]] = None,
             timeout: int = DEFAULT_TIMEOUT, **extra) -> Dict[str, Any]:
-    """并行跑完全部源（单源异常只记 failed，绝不影响其它源）。"""
-    keys = list(sources or SOURCES.keys())
+    """按「主源优先 → 备用源待命」顺序取数：仅对未覆盖标的依次启用下一备用源，不做多源并发比价。
+
+    特例：收盘档 enrich=True 且含沪深标的时，通达信通道作为财务/除权除息的唯一单源运行，但行情仍只取主源。
+    """
+    keys = list(sources or SOURCE_ORDER)
+    remaining = list(symbols)
+    has_a_share = any(tdx_code(s) for s in symbols)
     out: Dict[str, Any] = {}
-    with ThreadPoolExecutor(max_workers=min(len(keys), MAX_WORKERS)) as pool:
-        futures = {key: pool.submit(FETCHERS[key], symbols, http, timeout, **extra) for key in keys}
-        for key, fut in futures.items():
-            try:
-                out[key] = fut.result()
-            except Exception as exc:                                # noqa: BLE001
-                out[key] = _source_result(key, "failed", error=f"{type(exc).__name__}: {exc}")
+    for idx, key in enumerate(keys):
+        role = "primary" if idx == 0 else "backup"
+        need_enrich = (key == "tdx" and bool(extra.get("enrich")) and has_a_share)
+        if not remaining and not need_enrich:
+            out[key] = {**_source_result(key, "standby"), "role": role}
+            continue
+        target_syms = remaining if remaining else [s for s in symbols if tdx_code(s)]
+        try:
+            res = FETCHERS[key](target_syms, http, timeout, **extra)
+        except Exception as exc:                                # noqa: BLE001
+            res = _source_result(key, "failed", error=f"{type(exc).__name__}: {exc}")
+        res["role"] = role
+        out[key] = res
+        if res.get("status") == "ok" and remaining:
+            covered = {
+                sym for sym, q in (res.get("quotes") or {}).items()
+                if _normalize_quote(key, q) is not None
+            }
+            remaining = [s for s in remaining if s not in covered]
     return out
 
 
 # ============================================================
-# 交叉验证：跨源比价 + 滞后识别 + 共识
+# 价格工具与自我检查（无多源交叉验证）
 # ============================================================
 def _pct_diff(a: Optional[float], b: Optional[float]) -> Optional[float]:
     if a is None or b is None or b == 0:
@@ -1239,114 +1277,26 @@ def _pct_diff(a: Optional[float], b: Optional[float]) -> Optional[float]:
     return abs(a - b) / abs(b) * 100.0
 
 
-def cross_validate(symbol: str, by_source: Dict[str, Dict[str, Any]],
-                   eod_close: Optional[Dict[str, Any]] = None,
-                   eod_closes: Optional[Sequence[Dict[str, Any]]] = None) -> Dict[str, Any]:
-    """对单只标的做跨源交叉验证。
-
-    by_source  —— {源: quote}（只有取到该标的的源才在里面）
-    eod_close  —— 单个收盘校验源（em_kline，向后兼容）
-    eod_closes —— 多个收盘校验源 [{"source": "tdx", "close": …, "date": …}]（东财日K + 通达信日K）
-    返回 {consensus, by_source(标注 lagged/outlier/dev_pct), eod_close_check(s), verdict…}
-    """
-    peers = [(key, q) for key, q in by_source.items() if SOURCES[key]["price_peer"] and q]
-    prices = [q["price"] for _k, q in peers]
-    detail: Dict[str, Any] = {}
-    consensus: Dict[str, Any] = {
-        "price": None, "n_sources": len(peers), "n_agree": 0, "spread_pct": None,
-        "outliers": [], "lagged": [], "sources": sorted(k for k, _q in peers),
-        "verdict": "无数据", "confidence": CONF_SINGLE, "confidence_label": CONF_LABELS[CONF_SINGLE],
-        "prev_close": None, "prev_close_sources": 0,
-    }
-    if not prices:
-        for key, q in by_source.items():
-            detail[key] = {"price": (q or {}).get("price"), "lagged": False, "outlier": False,
-                           "dev_pct": None, "quote_time": (q or {}).get("quote_time")}
-        consensus["by_source"] = detail
-        return consensus
-
-    median = statistics.median(prices)
-    times = [q["quote_time"] for _k, q in peers if q.get("quote_time")]
-    latest = max(times) if times else None
-
-    agree, outliers, lagged = 0, [], []
-    for key, q in peers:
-        dev = _pct_diff(q["price"], median)
-        is_outlier = bool(dev is not None and dev > OUTLIER_PCT)
-        is_lagged = False
-        if latest and q.get("quote_time"):
-            try:
-                gap = (datetime.strptime(latest, "%Y-%m-%d %H:%M:%S")
-                       - datetime.strptime(q["quote_time"], "%Y-%m-%d %H:%M:%S")).total_seconds() / 60.0
-                is_lagged = gap > LAG_TOL_MIN
-            except ValueError:
-                is_lagged = False
-        if dev is not None and dev <= SOFT_TOL_PCT:
-            agree += 1
-        if is_outlier:
-            outliers.append(key)
-        if is_lagged:
-            lagged.append(key)
-        detail[key] = {"price": q["price"], "lagged": is_lagged, "outlier": is_outlier,
-                       "dev_pct": round(dev, 4) if dev is not None else None,
-                       "quote_time": q.get("quote_time")}
-
-    spread = _pct_diff(max(prices), min(prices))
-    trusted = [q["price"] for key, q in peers if key not in outliers and key not in lagged]
-    trust_pool = trusted or prices
-
-    if spread is not None and spread > CONFLICT_PCT and not lagged:
-        verdict, conf = "冲突", CONF_LOW
-    elif agree >= 3:
-        verdict, conf = "一致", CONF_HIGH
-    elif agree == 2:
-        verdict, conf = "一致（双源）", CONF_MID
-    elif agree == 1:
-        verdict, conf = "孤证", CONF_SINGLE
-    else:
-        verdict, conf = "分歧", CONF_LOW
-
-    prev_closes = [q["prev_close"] for _k, q in peers if q.get("prev_close") is not None]
-    prev_consensus = statistics.median(prev_closes) if prev_closes else None
-    closes: List[Tuple[str, Dict[str, Any]]] = []
-    if eod_close and eod_close.get("close") is not None:
-        closes.append((str(eod_close.get("source") or "em_kline"), eod_close))
-    for item in eod_closes or []:
-        if item and item.get("close") is not None:
-            closes.append((str(item.get("source") or "?"), item))
-    close_checks = []
-    for source, item in closes:
-        dev = _pct_diff(item["close"], prev_consensus) if prev_consensus is not None else None
-        close_checks.append({
-            "source": source, "close": item["close"], "date": item.get("date"),
-            "close_kind": item.get("source_kind"),
-            "consensus_prev_close": prev_consensus,
-            "dev_pct": round(dev, 4) if dev is not None else None,
-            "ok": bool(dev is not None and dev <= SOFT_TOL_PCT),
-        })
-    prev_check = close_checks[0] if close_checks else None
-    if prev_check is not None:                     # 兼容旧字段名（em_kline 口径）
-        prev_check = {**prev_check, "kline_close": prev_check["close"], "kline_date": prev_check["date"]}
-
-    consensus.update({
-        "price": round(statistics.median(trust_pool), 6),
-        "median_all": round(median, 6),
-        "n_agree": agree, "outliers": outliers, "lagged": lagged,
-        "spread_pct": round(spread, 4) if spread is not None else None,
-        "verdict": verdict, "confidence": conf, "confidence_label": CONF_LABELS[conf],
-        "prev_close": round(prev_consensus, 6) if prev_consensus is not None else None,
-        "prev_close_sources": len(prev_closes),
-        "eod_close_check": prev_check,
-        "eod_close_checks": close_checks,
-        "by_source": detail,
-        "symbol": symbol,
-    })
-    return consensus
+def _slot_prices(slot_doc: Optional[Dict[str, Any]]) -> Dict[str, float]:
+    """提取一档快照的价格字典（兼容单源新结构与历史 cross_check 旧结构）。"""
+    if not isinstance(slot_doc, dict):
+        return {}
+    ss = slot_doc.get("source_summary") or {}
+    if isinstance(ss.get("prices"), dict) and ss["prices"]:
+        return {k: float(v) for k, v in ss["prices"].items() if _num(v) is not None}
+    cc = slot_doc.get("cross_check") or {}
+    if isinstance(cc.get("median_prices"), dict) and cc["median_prices"]:
+        return {k: float(v) for k, v in cc["median_prices"].items() if _num(v) is not None}
+    out: Dict[str, float] = {}
+    for sym, q in (slot_doc.get("quotes") or {}).items():
+        if not isinstance(q, dict):
+            continue
+        p = _num(q.get("price") if q.get("price") is not None else (q.get("consensus") or {}).get("price"))
+        if p is not None and p > 0:
+            out[sym] = p
+    return out
 
 
-# ============================================================
-# 自我检查
-# ============================================================
 def _check(name: str, ok: bool, detail: str, *, warn_only: bool = False) -> Dict[str, Any]:
     return {"name": name, "ok": bool(ok), "warn_only": bool(warn_only), "detail": detail}
 
@@ -1371,9 +1321,9 @@ def _explain_action(actions: Optional[Dict[str, List[Dict[str, Any]]]], sym: str
 def self_check(slot_doc: Dict[str, Any], *, prev_slot: Optional[Dict[str, Any]] = None,
                prev_day: Optional[Dict[str, Any]] = None, trading_day: bool = True,
                corporate_actions: Optional[Dict[str, List[Dict[str, Any]]]] = None) -> Dict[str, Any]:
-    """对一次落库做体检：结构 / 时段 / 源覆盖 / 标的覆盖 / 数值 / 跨源 / 跳变 / 时效。
+    """对一次落库做体检：结构 / 时段 / 主备源可用性 / 标的覆盖 / 数值 / 跳变 / 时效。
 
-    corporate_actions —— 通达信通道给出的近 45 天除权除息；若跳变日正好有除权除息，
+    corporate_actions —— 近 45 天除权除息；若跳变日正好有除权除息，
     该跳变会写明原因且不计分（正常的除权缺口不是数据错误）。
     """
     checks: List[Dict[str, Any]] = []
@@ -1393,27 +1343,28 @@ def self_check(slot_doc: Dict[str, Any], *, prev_slot: Optional[Dict[str, Any]] 
                          f"拉取时刻距计划 ±{drift:.0f} 分钟（容差 {SCHEDULE_TOL_MIN}）" if drift is not None
                          else "拉取时刻无法解析", warn_only=True))
 
-    ok_sources = [k for k, s in (slot_doc.get("sources") or {}).items() if s.get("status") == "ok"]
-    checks.append(_check("sources_min", len(ok_sources) >= MIN_SOURCES,
-                         f"成功源 {len(ok_sources)}/{len(SOURCES)}：{', '.join(sorted(ok_sources)) or '无'}"))
+    sources_meta = slot_doc.get("sources") or {}
+    ok_sources = [k for k, s in sources_meta.items() if s.get("status") == "ok"]
+    standby_sources = [k for k, s in sources_meta.items() if s.get("status") == "standby"]
+    checks.append(_check(
+        "source_available", len(ok_sources) >= MIN_SOURCES,
+        f"启用源 {len(ok_sources)}（{', '.join(ok_sources) or '无'}）"
+        + (f" · 备用待命 {len(standby_sources)}" if standby_sources else ""),
+    ))
 
     quotes = slot_doc.get("quotes") or {}
-    cc = slot_doc.get("cross_check") or {}
-    total = int(cc.get("symbols_total") or 0)
-    ok_n = int(cc.get("symbols_ok") or 0)
-    quorum = int(cc.get("symbols_with_quorum") or 0)
+    summary = slot_doc.get("source_summary") or slot_doc.get("cross_check") or {}
+    total = int(summary.get("symbols_total") or len(quotes))
+    ok_n = int(summary.get("symbols_ok") or len(quotes))
     cover = (ok_n / total) if total else 0.0
-    quorum_rate = (quorum / ok_n) if ok_n else 0.0
     checks.append(_check("symbol_coverage", cover >= MIN_SYMBOL_COVER,
                          f"标的覆盖 {ok_n}/{total}（{cover*100:.0f}%，下限 {MIN_SYMBOL_COVER*100:.0f}%）"))
-    checks.append(_check("quorum_rate", quorum_rate >= MIN_QUORUM_RATE,
-                         f"有效共识 {quorum}/{ok_n}（{quorum_rate*100:.0f}%，下限 {MIN_QUORUM_RATE*100:.0f}%）"))
 
     bad_numeric = []
     for sym, q in quotes.items():
         c = q.get("consensus") or {}
-        price = c.get("price")
-        prev = c.get("prev_close")
+        price = q.get("price") if q.get("price") is not None else c.get("price")
+        prev = q.get("prev_close") if q.get("prev_close") is not None else c.get("prev_close")
         pct = _pct(price, prev) if (price and prev) else None
         if price is None or price <= 0:
             bad_numeric.append(f"{sym} 价≤0")
@@ -1422,20 +1373,10 @@ def self_check(slot_doc: Dict[str, Any], *, prev_slot: Optional[Dict[str, Any]] 
     checks.append(_check("numeric_sanity", not bad_numeric,
                          "全部价格 >0 且涨跌幅在容差内" if not bad_numeric else "；".join(bad_numeric[:5])))
 
-    conflicts = cc.get("conflicts") or []
-    checks.append(_check("cross_source", not conflicts,
-                         "无跨源冲突" if not conflicts
-                         else "；".join(f"{sym} 价差 {d}%" for sym, d in conflicts[:5])))
-
-    lagged = cc.get("lagged") or []
-    checks.append(_check("lag_detected", True,
-                         "无滞后源" if not lagged else f"滞后源 {len(lagged)} 处：{'、'.join(lagged[:6])}",
-                         warn_only=True))
-
     jump = None
-    if prev_slot and (prev_slot.get("cross_check") or {}).get("consensus_ok"):
-        p_prev = (prev_slot["cross_check"]).get("median_prices") or {}
-        p_now = cc.get("median_prices") or {}
+    p_prev = _slot_prices(prev_slot)
+    p_now = _slot_prices(slot_doc)
+    if p_prev and p_now:
         worst = max(((sym, _pct_diff(p_now.get(sym), p_prev.get(sym))) for sym in p_now
                      if sym in p_prev and p_now.get(sym) and p_prev.get(sym)),
                     key=lambda x: (x[1] is None, x[1] or 0), default=(None, None))
@@ -1449,14 +1390,13 @@ def self_check(slot_doc: Dict[str, Any], *, prev_slot: Optional[Dict[str, Any]] 
 
     if prev_day:
         prev_slots = sorted((prev_day.get("slots") or {}).keys())
-        prev_prices = {}
+        prev_prices: Dict[str, float] = {}
         for s in reversed(prev_slots):
-            prev_prices = ((prev_day["slots"][s].get("cross_check") or {}).get("median_prices") or {})
+            prev_prices = _slot_prices(prev_day["slots"][s])
             if prev_prices:
                 break
-        now_prices = cc.get("median_prices") or {}
-        worst = max(((sym, _pct_diff(now_prices.get(sym), prev_prices.get(sym)))
-                     for sym in now_prices if sym in prev_prices and prev_prices.get(sym)),
+        worst = max(((sym, _pct_diff(p_now.get(sym), prev_prices.get(sym)))
+                     for sym in p_now if sym in prev_prices and prev_prices.get(sym)),
                     key=lambda x: (x[1] is None, x[1] or 0), default=(None, None))
         if worst[1] is not None and worst[1] > DAY_JUMP_PCT:
             note = _explain_action(corporate_actions, str(worst[0]), str(slot_doc.get("date") or ""))
@@ -1464,9 +1404,13 @@ def self_check(slot_doc: Dict[str, Any], *, prev_slot: Optional[Dict[str, Any]] 
             explained += 1 if note else 0
 
     live = False
+    target_date = str(slot_doc.get("date") or "")
     for _sym, q in quotes.items():
+        if str(q.get("quote_time") or "").startswith(target_date) and target_date:
+            live = True
+            break
         for st in (q.get("consensus") or {}).get("by_source", {}).values():
-            if (st.get("quote_time") or "").startswith(slot_doc.get("date", "")):
+            if str(st.get("quote_time") or "").startswith(target_date) and target_date:
                 live = True
                 break
         if live:
@@ -1474,7 +1418,7 @@ def self_check(slot_doc: Dict[str, Any], *, prev_slot: Optional[Dict[str, Any]] 
     checks.append(_check("freshness", live or not trading_day,
                          "本时段存在当天行情" if live else
                          ("非交易日（休市）：沿用最近收盘，不计缺陷" if not trading_day
-                          else "全部源的行情时间都不是当天：可能休市或源延迟"), warn_only=True))
+                          else "行情时间不是当天：可能休市或源延迟"), warn_only=True))
 
     penalty = sum(0 if c["ok"] or c["warn_only"] else 12 for c in checks)
     penalty += sum(4 for c in checks if not c["ok"] and c["warn_only"])
@@ -1537,9 +1481,9 @@ def load_daily_bars(*, symbols: Optional[Sequence[str]] = None, root: str = DB_R
                     now: Optional[datetime] = None) -> Dict[str, List[Dict[str, Any]]]:
     """只读重建已收盘日线，供 MACD 等研究使用；绝不把三档快照当成三根日 K。
 
-    优先用 eod_close / eod_close_tdx 的实际行情日；指数另可用 ≥2 源一致、
-    有收盘后报价时间的共识价。原采集时刻尚未收盘的日 K 永远不采纳，即使
-    现在已经收盘；同一行情日去重，不以文件名 / 抓取日为行情日期。
+    优先用 eod_close / eod_close_tdx 的实际行情日；指数另可用有收盘后报价时间的
+    单源报价（兼容历史共识快照，历史冲突/分歧条目仍排除）。原采集时刻尚未收盘的日 K
+    永远不采纳，即使现在已经收盘；同一行情日去重，不以文件名 / 抓取日为行情日期。
     个股的东财前复权与通达信未复权序列分组，选择最长一组，不混接价格口径。
     已知除权除息落在个股序列窗口内时不供数，交给免费源重取完整历史。
     """
@@ -1551,7 +1495,7 @@ def load_daily_bars(*, symbols: Optional[Sequence[str]] = None, root: str = DB_R
     wanted = set(symbols) if symbols is not None else None
     groups: Dict[Tuple[str, str], Dict[str, Dict[str, Any]]] = {}
     actions: Dict[str, set] = {}
-    index_symbols = {code for _name, code, _mk in CORE_SYMBOLS[:9]}
+    index_symbols = {code for _name, code, _mk in CORE_SYMBOLS[:9]} | {"000300.SS", "^HSCE"}
 
     def _moment(text):
         try:
@@ -1606,19 +1550,19 @@ def load_daily_bars(*, symbols: Optional[Sequence[str]] = None, root: str = DB_R
                      "指数点位" if is_index else "东财前复权留存", 2)
                 _add(sym, quote.get("eod_close_tdx"), collected, "市场库·通达信日K",
                      "指数点位" if is_index else "未复权", 1)
-                cons = quote.get("consensus") or {}
-                if not isinstance(cons, dict):
-                    continue
-                # 原始报价时间必须真的在收盘后；只用指数共识，不混入个股复权序列。
+                cons = quote.get("consensus") if isinstance(quote.get("consensus"), dict) else {}
+                spot_price = _num(quote.get("price") if quote.get("price") is not None else cons.get("price"), None)
+                # 原始报价时间必须真的在收盘后；只用指数快照，不混入个股复权序列。
                 stamp = _moment(quote.get("quote_time"))
-                if (not is_index or stamp is None or stamp > collected + timedelta(minutes=5)
-                        or (_num(cons.get("n_agree")) or 0) < 2
+                if (not is_index or spot_price is None or spot_price <= 0
+                        or stamp is None or stamp > collected + timedelta(minutes=5)
                         or cons.get("verdict") in ("冲突", "分歧", "无数据")):
                     continue
                 day = stamp.astimezone(providers.market_timezone(sym)).strftime("%Y-%m-%d")
                 if providers.is_session_closed(sym, day, now=stamp):
-                    _add(sym, {**quote, "date": day, "close": cons.get("price")},
-                         collected, "市场库·收盘共识", "指数点位", 0)
+                    src_tag = f"市场库·{quote.get('source') or '收盘快照'}"
+                    _add(sym, {**quote, "date": day, "close": spot_price},
+                         collected, src_tag, "指数点位", 0)
 
     result: Dict[str, List[Dict[str, Any]]] = {}
     for (sym, _basis), dates in groups.items():
@@ -1648,9 +1592,9 @@ def pull(slot: str = "auto", *, root: str = DB_ROOT, symbols: Optional[Sequence[
          now: Optional[datetime] = None, timeout: int = DEFAULT_TIMEOUT,
          dry_run: bool = False, verbose: bool = True, enrich: Optional[bool] = None,
          tdx_client: Optional[Any] = None) -> Dict[str, Any]:
-    """拉一次快照：多源采集 → 交叉验证 → 自检 → 合并写进当天文件（以日期为名字）。
+    """拉一次快照：主源优先采集（失败切备用源）→ 自检 → 合并写进当天文件（以日期为名字）。
 
-    enrich —— 是否附带通达信财务 / 除权除息（默认 auto：只在 17:00 收盘档抓）。
+    enrich —— 当通达信通道被调用时，是否附带财务 / 除权除息（默认 auto：只在 17:00 收盘档抓）。
     tdx_client —— 测试注入的通达信客户端；生产走 mootdx 主站池。
     """
     log = (lambda msg: print(msg)) if verbose else (lambda msg: None)
@@ -1663,82 +1607,101 @@ def pull(slot: str = "auto", *, root: str = DB_ROOT, symbols: Optional[Sequence[
     universe = list(symbols) if symbols else [code for _n, code, _m in symbol_universe()]
     names = {code: name for name, code, _m in symbol_universe()}
     http = http or Http(timeout=timeout)
-    chosen = list(sources) if sources else list(SOURCES)
+    chosen = list(sources) if sources else list(SOURCE_ORDER)
     if os.environ.get("OCTOPUS_DB_TDX", "1").strip() == "0" and "tdx" in chosen:
         chosen.remove("tdx")                                   # 显式关闭通达信通道
     enrich = (slot == SLOTS[-1]) if enrich is None else bool(enrich)
+    primary_key = chosen[0] if chosen else PRIMARY_SOURCE
 
     log(f"🗄️ 市场数据库 · 拉取 {date_str} {SLOT_LABELS[slot]}（{slot}）")
-    log(f"   标的 {len(universe)} 只 · 源 {len(chosen)} 路" + (" · 通达信附带财务" if enrich else ""))
+    log(f"   标的 {len(universe)} 只 · 主源 {primary_key} · 备用源 {max(0, len(chosen) - 1)} 路待命")
     source_results = collect(universe, http, sources=chosen, timeout=timeout,
                              enrich=enrich, slot=slot, date_str=date_str, client=tdx_client)
     ok = {k: s for k, s in source_results.items() if s["status"] == "ok"}
     for key, s in source_results.items():
         if s["status"] == "ok":
             extra = f" · {s['summary']}" if s.get("summary") else ""
-            log(f"   ✅ {s['label']}：{s['symbols']} 只 · {s['elapsed_ms']/1000:.1f}s{extra}")
+            tag = "主源" if key == primary_key else "备用源启用"
+            log(f"   ✅ [{tag}] {s['label']}：{s['symbols']} 只 · {s['elapsed_ms']/1000:.1f}s{extra}")
+        elif s["status"] == "standby":
+            log(f"   ⏸️ [备用待命] {s['label']}")
         elif s["status"] == "unavailable":
             log(f"   🚫 {s['label']}：跳过（{s['error']}）")
         else:
             log(f"   ⚠️ {s['label']}：{s['error']}")
     if not ok:
-        log("❌ 全部源失败：按「绝不伪造」原则不写文件。")
+        log("❌ 主源与备用源均失败：按「绝不伪造」原则不写文件。")
         return {"status": "failed", "written": False, "date": date_str, "slot": slot,
                 "sources": source_results}
 
-    # ---- 逐标的交叉验证 ----
-    kline = (source_results.get("em_kline") or {}).get("quotes") or {}
+    # ---- 单源定标（按主源 → 备用源顺序取首个有效行情，不做多源比价交叉验证）----
     tdx_closes = (source_results.get("tdx") or {}).get("eod_closes") or {}
     fundamentals = (source_results.get("tdx") or {}).get("fundamentals") or {}
     corporate_actions = (source_results.get("tdx") or {}).get("corporate_actions") or {}
-    quotes, conflicts, lagged_pairs = {}, [], []
-    median_prices = {}
+    quotes: Dict[str, Dict[str, Any]] = {}
+    prices_map: Dict[str, float] = {}
+    primary_hits, backup_hits = 0, 0
+    backup_used_set = []
     for sym in universe:
-        by_source = {k: s["quotes"][sym] for k, s in ok.items() if sym in s["quotes"]}
-        peer_quotes = {k: q for k, q in by_source.items() if SOURCES[k]["price_peer"] and q.get("price")}
-        if not peer_quotes:
+        picked_src, picked_q, raw_q = None, None, None
+        for key in chosen:
+            s = ok.get(key)
+            if not s or sym not in s["quotes"]:
+                continue
+            raw_item = s["quotes"][sym]
+            norm = _normalize_quote(key, raw_item)
+            if norm is not None:
+                picked_src, picked_q, raw_q = key, norm, raw_item
+                break
+        if picked_src is None or picked_q is None:
             continue
-        closes = []
-        if kline.get(sym):
-            closes.append({"source": "em_kline", **kline[sym]})
-        if tdx_closes.get(sym):
-            closes.append({"source": "tdx", **tdx_closes[sym]})
-        consensus = cross_validate(sym, by_source, eod_closes=closes)
-        entry = {
-            "name": names.get(sym) or next((q.get("name") for q in peer_quotes.values() if q.get("name")), sym),
+        is_backup = picked_src != primary_key
+        if is_backup:
+            backup_hits += 1
+            if picked_src not in backup_used_set:
+                backup_used_set.append(picked_src)
+        else:
+            primary_hits += 1
+        entry: Dict[str, Any] = {
+            "name": names.get(sym) or picked_q.get("name") or sym,
             "market": market_of(sym),
-            "price": consensus["price"],
-            "prev_close": consensus["prev_close"],
-            "change_pct": _pct(consensus["price"], consensus["prev_close"]),
-            "open": next((q["open"] for q in peer_quotes.values() if q.get("open")), None),
-            "high": next((q["high"] for q in peer_quotes.values() if q.get("high")), None),
-            "low": next((q["low"] for q in peer_quotes.values() if q.get("low")), None),
-            "volume": next((q["volume"] for q in peer_quotes.values() if q.get("volume")), None),
-            "amount": next((q["amount"] for q in peer_quotes.values() if q.get("amount")), None),
-            "quote_time": max((q.get("quote_time") or "" for q in peer_quotes.values()), default="") or None,
-            "sources": sorted(peer_quotes),
-            "n_sources": len(peer_quotes),
-            "consensus": consensus,
-            "eod_close": kline.get(sym),
-            "eod_close_tdx": tdx_closes.get(sym),
+            "price": picked_q["price"],
+            "prev_close": picked_q.get("prev_close"),
+            "change_pct": _pct(picked_q["price"], picked_q.get("prev_close")),
+            "open": picked_q.get("open"),
+            "high": picked_q.get("high"),
+            "low": picked_q.get("low"),
+            "volume": picked_q.get("volume"),
+            "amount": picked_q.get("amount"),
+            "quote_time": picked_q.get("quote_time"),
+            "source": picked_src,
+            "source_label": SOURCES[picked_src]["label"],
+            "source_role": "备用源" if is_backup else "主源",
+            "is_backup": is_backup,
+            "sources": [picked_src],
+            "n_sources": 1,
         }
-        if consensus["verdict"] == "冲突":
-            conflicts.append((sym, consensus["spread_pct"]))
-        for k in consensus["lagged"]:
-            lagged_pairs.append(f"{sym}·{k}")
-        if consensus["price"] is not None:
-            median_prices[sym] = consensus["price"]
+        if picked_src == "em_kline" and isinstance(raw_q, dict):
+            entry["eod_close"] = raw_q
+        if tdx_closes.get(sym):
+            entry["eod_close_tdx"] = tdx_closes[sym]
+        prices_map[sym] = picked_q["price"]
         quotes[sym] = entry
 
-    quorum = sum(1 for q in quotes.values()
-                 if (q["consensus"]["n_agree"] >= 2 and q["consensus"]["verdict"] != "冲突"))
-    cross_check = {
-        "symbols_total": len(universe), "symbols_ok": len(quotes), "symbols_with_quorum": quorum,
-        "sources_ok": len(ok), "sources_total": len(source_results),
-        "sources_ok_list": sorted(ok), "median_prices": median_prices,
-        "conflicts": [(s, d) for s, d in conflicts], "lagged": sorted(set(lagged_pairs))[:20],
-        "agreement_rate": round(quorum / len(quotes), 4) if quotes else 0.0,
-        "consensus_ok": bool(quorum),
+    standby_list = [k for k, s in source_results.items() if s.get("status") == "standby"]
+    source_summary = {
+        "mode": "single_with_backup",
+        "primary_source": primary_key,
+        "active_sources": list(ok),
+        "backup_sources_used": backup_used_set,
+        "standby_sources": standby_list,
+        "sources_ok": len(ok),
+        "sources_total": len(source_results),
+        "symbols_total": len(universe),
+        "symbols_ok": len(quotes),
+        "primary_hit": primary_hits,
+        "backup_hit": backup_hits,
+        "prices": prices_map,
     }
 
     slot_doc: Dict[str, Any] = {
@@ -1749,7 +1712,7 @@ def pull(slot: str = "auto", *, root: str = DB_ROOT, symbols: Optional[Sequence[
         "sources": {k: {kk: vv for kk, vv in s.items()
                         if kk not in ("quotes", "fundamentals", "corporate_actions", "eod_closes")}
                     for k, s in source_results.items()},
-        "quotes": quotes, "cross_check": cross_check,
+        "quotes": quotes, "source_summary": source_summary,
     }
     if fundamentals:
         slot_doc["fundamentals"] = fundamentals
@@ -1851,21 +1814,22 @@ def verify(root: str = DB_ROOT, date_compact: Optional[str] = None, all_days: bo
         missing = [s for s in SLOTS if s not in (doc.get("slots") or {})]
         if missing:
             alerts.append(f"{doc.get('db_date')}：缺 {len(missing)} 档（{', '.join(missing)}）")
-        day_alerts, scores, sources_n, quorum_n, total_n = [], [], [], 0, 0
+        day_alerts, scores, sources_n, symbols_n, backup_n = [], [], [], [], []
         for slot, slot_doc in (doc.get("slots") or {}).items():
             sc = slot_doc.get("self_check") or {}
             scores.append(int(sc.get("score") or 0))
             for a in sc.get("alerts") or []:
                 day_alerts.append(f"{slot} {a}")
                 alerts.append(f"{doc.get('db_date')} {slot}：{a}")
-            cc = slot_doc.get("cross_check") or {}
-            sources_n.append(int(cc.get("sources_ok") or 0))
-            quorum_n += int(cc.get("symbols_with_quorum") or 0)
-            total_n += int(cc.get("symbols_ok") or 0)
+            summary = slot_doc.get("source_summary") or slot_doc.get("cross_check") or {}
+            sources_n.append(int(summary.get("sources_ok") or 0))
+            symbols_n.append(int(summary.get("symbols_ok") or 0))
+            backup_n.append(int(summary.get("backup_hit") or 0))
         per_day.append({
             "date": doc.get("db_date"), "slots": len(doc.get("slots") or {}),
             "sources_avg": round(sum(sources_n) / len(sources_n), 2) if sources_n else 0,
-            "quorum_rate": round(quorum_n / total_n, 4) if total_n else 0,
+            "symbols_max": max(symbols_n) if symbols_n else 0,
+            "backup_hits": sum(backup_n),
             "score_avg": round(sum(scores) / len(scores), 1) if scores else 0,
             "alerts": day_alerts, "integrity_ok": integ["ok"],
         })
@@ -1874,8 +1838,9 @@ def verify(root: str = DB_ROOT, date_compact: Optional[str] = None, all_days: bo
         print(f"🗄️ 市场数据库复核 · {len(docs)} 个日期文件")
         for row in per_day:
             flag = "✅" if row["integrity_ok"] and row["score_avg"] >= 60 else "⚠️"
-            print(f"   {flag} {row['date']}：{row['slots']}/3 档 · 源均 {row['sources_avg']}"
-                  f" · 共识率 {row['quorum_rate']*100:.0f}% · 自检均分 {row['score_avg']}")
+            bk_txt = f" · 备用兜底 {row['backup_hits']} 次" if row["backup_hits"] else ""
+            print(f"   {flag} {row['date']}：{row['slots']}/3 档 · 启用源均 {row['sources_avg']}"
+                  f" · 标的 {row['symbols_max']}{bk_txt} · 自检均分 {row['score_avg']}")
             for a in row["alerts"]:
                 print(f"      · {a}")
         for p in problems:
@@ -1890,6 +1855,7 @@ def verify(root: str = DB_ROOT, date_compact: Optional[str] = None, all_days: bo
 def _timeline(docs: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]:
     """按标的重建时间线：{代码: [ {ts, date, slot, price, …} ]}（先排序，供因果特征使用）。
 
+    兼容单源新结构（直接读 q.price / q.source_role）与历史旧结构（读 q.consensus）。
     以 (日期, 档位, 标的) 去重：同一天的文件可能被多次读到（同一档被重拉覆盖），
     保留**后出现**的版本（docs 按日期排序，同日多份时后一份是最新快照）。
     """
@@ -1904,17 +1870,23 @@ def _timeline(docs: Sequence[Dict[str, Any]]) -> Dict[str, List[Dict[str, Any]]]
             ts = slot_doc.get("pulled_at") or f"{date_str} 00:00:00"
             for sym, q in (slot_doc.get("quotes") or {}).items():
                 cons = q.get("consensus") or {}
-                if cons.get("price") is None:
+                price = _num(q.get("price") if q.get("price") is not None else cons.get("price"))
+                if price is None:
                     continue
+                prev_close = _num(q.get("prev_close") if q.get("prev_close") is not None else cons.get("prev_close"))
+                n_src = int(q.get("n_sources") or cons.get("n_agree") or 1)
+                verdict = q.get("source_role") or cons.get("verdict") or "主源"
                 key = (date_str, slot, sym)
                 row = {
-                    "ts": ts, "date": date_str, "slot": slot, "price": cons["price"],
-                    "prev_close": cons.get("prev_close"), "change_pct": q.get("change_pct"),
-                    "spread_pct": cons.get("spread_pct"), "n_agree": cons.get("n_agree"),
-                    "confidence": cons.get("confidence"), "name": q.get("name"), "market": q.get("market"),
+                    "ts": ts, "date": date_str, "slot": slot, "price": price,
+                    "prev_close": prev_close, "change_pct": q.get("change_pct"),
+                    "spread_pct": cons.get("spread_pct"), "n_agree": n_src,
+                    "confidence": cons.get("confidence", CONF_SINGLE), "name": q.get("name"), "market": q.get("market"),
                     "volume": q.get("volume"), "amount": q.get("amount"), "high": q.get("high"),
                     "low": q.get("low"), "open": q.get("open"),
-                    "lagged": cons.get("lagged") or [], "verdict": cons.get("verdict"),
+                    "lagged": cons.get("lagged") or [], "verdict": verdict,
+                    "source": q.get("source") or (q.get("sources") or [None])[0],
+                    "is_backup": bool(q.get("is_backup")),
                     "day": doc.get("date_compact"),
                     "fund": (slot_doc.get("fundamentals") or {}).get(sym),
                     "actions": (slot_doc.get("corporate_actions") or {}).get(sym) or [],
@@ -2028,8 +2000,10 @@ def build_dataset(*, root: Optional[str] = DB_ROOT, docs: Optional[Sequence[Dict
                     "eod_ret": _ret(eod_today["price"] if eod_today else None),
                     "next_day_eod_ret": _ret(next_day_eod),
                 },
-                "quality": {"verdict": row.get("verdict"), "lagged": row.get("lagged") or [],
-                            "consensus": bool((row.get("n_agree") or 0) >= 2)},
+                "quality": {"verdict": row.get("verdict"), "source": row.get("source"),
+                            "is_backup": bool(row.get("is_backup")),
+                            "lagged": row.get("lagged") or [],
+                            "consensus": bool(row.get("price") is not None)},
             })
     meta = {
         "rows": len(rows_out), "symbols": len(series), "slots": sorted({r["slot"] for r in rows_out}),
@@ -2096,7 +2070,7 @@ def _recent_actions(docs: Sequence[Dict[str, Any]], sym: str,
 def ai_context(date_compact: Optional[str] = None, *, root: str = DB_ROOT,
                symbols: Optional[Sequence[str]] = None,
                max_age_hours: int = 18, now: Optional[datetime] = None) -> Dict[str, Any]:
-    """给 AI 分析 / 预测的紧凑上下文：最近一次共识价 + 新鲜度 + 质量标记。
+    """给 AI 分析 / 预测的紧凑上下文：最近一次单源行情（含主备来源）+ 新鲜度 + 质量标记。
 
     只读库文件，不联网；没有任何可用档位时返回空上下文（调用方自行降级）。
     """
@@ -2123,21 +2097,27 @@ def ai_context(date_compact: Optional[str] = None, *, root: str = DB_ROOT,
         if keep and sym not in keep:
             continue
         cons = q.get("consensus") or {}
+        price = q.get("price") if q.get("price") is not None else cons.get("price")
+        prev_close = q.get("prev_close") if q.get("prev_close") is not None else cons.get("prev_close")
         fund = _latest_fundamentals(docs, sym)
         actions = _recent_actions(docs, sym)
-        quotes[sym] = {"name": q.get("name"), "market": q.get("market"),
-                       "price": cons.get("price"), "change_pct": q.get("change_pct"),
-                       "prev_close": cons.get("prev_close"), "confidence": cons.get("confidence_label"),
-                       "n_agree": cons.get("n_agree"), "spread_pct": cons.get("spread_pct"),
-                       "verdict": cons.get("verdict"), "lagged": cons.get("lagged") or [],
-                       "close_checks": cons.get("eod_close_checks") or [],
-                       "fundamentals": fund, "recent_actions": actions}
+        quotes[sym] = {
+            "name": q.get("name"), "market": q.get("market"),
+            "price": price, "change_pct": q.get("change_pct"),
+            "prev_close": prev_close,
+            "source": q.get("source") or (q.get("sources") or [None])[0],
+            "source_role": q.get("source_role") or ("历史共识" if cons else "主源"),
+            "is_backup": bool(q.get("is_backup")),
+            "fundamentals": fund, "recent_actions": actions,
+        }
+    summary = slot.get("source_summary") or slot.get("cross_check") or {}
     return {
         "available": bool(quotes), "db_date": doc.get("db_date"), "slot": slot_key,
         "pulled_at": slot.get("pulled_at"), "age_hours": age_h,
         "stale": bool(age_h is not None and age_h > max_age_hours),
-        "sources_ok": (slot.get("cross_check") or {}).get("sources_ok"),
-        "agreement_rate": (slot.get("cross_check") or {}).get("agreement_rate"),
+        "primary_source": summary.get("primary_source", PRIMARY_SOURCE),
+        "backup_sources_used": summary.get("backup_sources_used") or [],
+        "sources_ok": summary.get("sources_ok"),
         "self_check_score": (slot.get("self_check") or {}).get("score"),
         "alerts": (slot.get("self_check") or {}).get("alerts") or [],
         "quotes": quotes,
@@ -2156,11 +2136,13 @@ def _print_stats(root: str = DB_ROOT, days: int = 7) -> int:
     for doc in docs:
         slots = doc.get("slots") or {}
         scores = [int((s.get("self_check") or {}).get("score") or 0) for s in slots.values()]
-        src = [int((s.get("cross_check") or {}).get("sources_ok") or 0) for s in slots.values()]
-        sym = [int((s.get("cross_check") or {}).get("symbols_ok") or 0) for s in slots.values()]
-        agree = [float((s.get("cross_check") or {}).get("agreement_rate") or 0) for s in slots.values()]
-        print(f"   {doc.get('db_date')}：{len(slots)}/3 档 · 源 {max(src) if src else 0}/{len(SOURCES)}"
-              f" · 标的 {max(sym) if sym else 0} · 共识率 {(sum(agree)/len(agree)*100 if agree else 0):.0f}%"
+        summaries = [(s.get("source_summary") or s.get("cross_check") or {}) for s in slots.values()]
+        src = [int(sm.get("sources_ok") or 0) for sm in summaries]
+        sym = [int(sm.get("symbols_ok") or 0) for sm in summaries]
+        backups = sum(int(sm.get("backup_hit") or 0) for sm in summaries)
+        bk_note = f" · 备用兜底 {backups}" if backups else ""
+        print(f"   {doc.get('db_date')}：{len(slots)}/3 档 · 启用源 {max(src) if src else 0}"
+              f" · 标的 {max(sym) if sym else 0}{bk_note}"
               f" · 自检均分 {(sum(scores)/len(scores) if scores else 0):.0f}")
     return 0
 
@@ -2193,13 +2175,13 @@ def main(argv: Optional[Sequence[str]] = None, *, http: Optional[Any] = None,
          root: str = DB_ROOT, now: Optional[datetime] = None) -> int:
     parser = argparse.ArgumentParser(
         prog="market_db", add_help=True,
-        description="🗄️ 市场数据库（隐藏功能）：每天 3 次多源快照落库 + 交叉验证 + 自检，供 AI 分析 / 预测使用")
+        description="🗄️ 市场数据库（隐藏功能）：每天 3 次单源快照落库（备用源待命兜底）+ 自检，供 AI 分析 / 预测使用")
     sub = parser.add_subparsers(dest="cmd")
 
     p_pull = sub.add_parser("pull", help="拉一次快照并写进当天文件（以日期为名字）")
     p_pull.add_argument("--slot", default="auto", choices=["auto", *SLOTS], help="时段（默认按北京时间就近匹配）")
     p_pull.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT)
-    p_pull.add_argument("--sources", default="", help="只跑指定源（逗号分隔），默认全部")
+    p_pull.add_argument("--sources", default="", help="指定主备源顺序（逗号分隔），默认 yahoo 主源 + 备用源待命")
     p_pull.add_argument("--symbols", default="", help="只取指定代码（逗号分隔），默认全部标的池")
     p_pull.add_argument("--dry-run", action="store_true", help="只采集与自检，不写文件")
     p_pull.add_argument("--no-enrich", action="store_true",

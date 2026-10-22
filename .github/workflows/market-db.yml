@@ -4,11 +4,10 @@ name: 🗄️ 市场数据库 · 定时入库（隐藏功能）
 # output/market_db/YYYYMMDD.json（文件以日期为名字，当天三档写同一个文件），
 # 作为 AI 分析 / AI 预测 / AI 模型的基础数据。
 #
-#   · 源头 >3：东方财富 push2 / 新浪财经 hq / 腾讯财经 qt / Yahoo chart /
-#     东财 push2his 日K收盘校验 / 通达信 mootdx（沪深，2026-10-01 升级），共 6 路
-#     （HTTP 源每路带镜像主机，通达信走主站池逐个降级）；
-#   · 交叉验证：同标的多源比价（中位数 + MAD 稳健离群）、逐源判滞后、共识价与置信度；
-#   · 自我检查：源覆盖 / 标的覆盖 / 数值 / 冲突 / 跨时段与跨日跳变 / 文件哈希。
+#   · 单主源 + 备用源待命（已取消多源交叉验证）：
+#     主源 Yahoo chart（query1 / query2）优先；仅对主源失败或未覆盖的标的按序切换
+#     东方财富 push2 → 腾讯财经 qt → 新浪财经 hq → 通达信 mootdx（沪深）→ 东财 push2his 日K；
+#   · 自我检查：主备源可用性 / 标的覆盖 / 数值 / 跨时段与跨日跳变 / 文件哈希。
 #
 # 防卡死（2026-10-01：一次运行被单台死主站拖到 20 分钟上限取消，日志只剩
 # 「未找到配置文件 … / 请手动运行 mootdx bestip / Error: The operation was canceled.」）：
@@ -79,7 +78,7 @@ jobs:
           # 装不上或连不上主站时该源标记 unavailable，其余 5 路照常（绝不编数）。
           pip install --quiet mootdx || echo "::warning::mootdx 安装失败，本次跳过通达信通道"
 
-      - name: 🗄️ 多源采集 → 交叉验证 → 自检 → 落库
+      - name: 🗄️ 单主源采集（备用源待命兜底）→ 自检 → 落库
         timeout-minutes: 8        # 兜底：真卡住就快速失败，别耗满整作业的 20 分钟
         env:
           SLOT: ${{ github.event.inputs.slot || 'auto' }}
@@ -92,10 +91,10 @@ jobs:
         run: |
           set -euo pipefail
           if [ "$DRY_RUN" = "true" ]; then
-            echo "运行模式：采集 + 自检（不写库文件）"
+            echo "运行模式：主源优先采集（备用源待命）+ 自检（不写库文件）"
             python3 output/market_db.py pull --slot "$SLOT" --dry-run
           else
-            echo "运行模式：采集 → 交叉验证 → 自检 → 写库"
+            echo "运行模式：主源优先采集（备用源待命）→ 自检 → 写库"
             python3 output/market_db.py pull --slot "$SLOT"
           fi
 

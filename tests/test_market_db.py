@@ -1,14 +1,16 @@
 """🗄️ 市场数据库（隐藏功能）回归测试 —— 全部离线，不发任何网络请求。
 
 覆盖五件事：
-  ① 多源契约：源头 >3（6 路，其中 5 路参与比价）、每路可换镜像、代码映射正确、
-     单只标的异常不拖垮整路源、单路全失败只记 failed；
-  ⑤ 通达信通道（mootdx）：代码映射只认沪深、未装 mootdx / 连不上就明确降级、
-     注入假客户端时行情 / 日K / 财务 / 除权除息全通、17:00 档才附带财务、
-  ② 交叉验证：一致 / 离群 / 滞后 / 冲突 / 孤证五种判定，共识价只用可信源；
-  ③ 自我检查：源覆盖、标的覆盖、数值合理性、跨时段与跨日跳变、非交易日不误判；
+  ① 主源 + 备用源契约：Yahoo chart 为主源，其余 5 路（东财快照 / 腾讯 / 新浪 / 通达信 / 东财日K）
+     作为待命备用源；每路带镜像主机，代码映射正确，单只标的异常不拖垮整路源；
+  ② 顺序故障切换（无多源交叉验证）：主源成功时备用源保持 standby 不发请求；主源整路失败或
+     漏掉部分标的时，仅对缺失标的按序启用备用源兜底；
+  ③ 自我检查：主备源可用性、标的覆盖、数值合理性、跨时段与跨日跳变、非交易日不误判；
   ④ 落库与 AI 数据集：日期命名文件、同日三档合并、同档重拉覆盖留痕、哈希防改写、
-     特征只用过去（截断不变性）、标签只用未来、jsonl / csv 导出、ai_context 新鲜度。
+     特征只用过去（截断不变性）、标签只用未来、jsonl / csv 导出、ai_context 新鲜度，
+     并完全向后兼容历史 cross_check / consensus 旧库文件；
+  ⑤ 通达信通道（mootdx）：防卡死四道闸、代码映射只认沪深、收盘档唯一提供财务与除权除息、
+     主源失败时可顶上沪深备用行情。
 
 网络层用 FixtureHttp 注入（与 octopus_quant 的 fetch_json 注入同一思路），
 因此本测试可在无网络环境下完整跑通。
@@ -262,10 +264,14 @@ class TempRootCase(unittest.TestCase):
 # ① 注册表与代码映射
 # ======================================================================
 class RegistryTests(unittest.TestCase):
-    def test_more_than_three_sources_and_price_peers(self):
-        """源头 >3：注册表至少 4 路，其中至少 4 路参与比价。"""
-        self.assertGreaterEqual(len(m.SOURCES), 4)
-        self.assertGreaterEqual(sum(1 for s in m.SOURCES.values() if s["price_peer"]), 4)
+    def test_primary_and_standby_backup_registry(self):
+        """单主源 + 多路待命备用源注册表契约。"""
+        self.assertEqual(m.PRIMARY_SOURCE, "yahoo")
+        self.assertEqual(m.MIN_SOURCES, 1)
+        self.assertEqual(m.SOURCES["yahoo"]["role"], "primary")
+        self.assertGreaterEqual(len(m.BACKUP_SOURCES), 4)
+        for key in m.BACKUP_SOURCES:
+            self.assertEqual(m.SOURCES[key]["role"], "backup")
         for key, spec in m.SOURCES.items():
             with self.subTest(source=key):
                 self.assertTrue(spec["hosts"])
@@ -280,6 +286,7 @@ class RegistryTests(unittest.TestCase):
     def test_code_mappings(self):
         self.assertEqual(m.em_secid("0700.HK"), "116.00700")
         self.assertEqual(m.em_secid("^HSI"), "100.HSI")
+        self.assertEqual(m.em_secids("^HSTECH"), ("100.HSTECH", "124.HSTECH"))
         self.assertEqual(m.em_secid("000001.SS"), "1.000001")
         self.assertEqual(m.em_secid("399006.SZ"), "0.399006")
         self.assertEqual(m.em_secid("MSFT"), "105.MSFT")
@@ -372,66 +379,67 @@ class AdapterTests(unittest.TestCase):
 
 
 # ======================================================================
-# ③ 交叉验证
+# ③ 单主源 + 备用源待命（已取消多源交叉验证）
 # ======================================================================
-class CrossValidateTests(unittest.TestCase):
-    def _by_source(self, price=100.0, **overrides):
-        out = {}
-        for key in ("eastmoney", "sina", "tencent", "yahoo"):
-            value = overrides.get(key, price)
-            out[key] = {"price": value, "prev_close": 99.0, "quote_time": "2026-10-01 12:30:00",
-                        "name": key, "open": None, "high": None, "low": None, "volume": None,
-                        "amount": None, "change_pct": None}
-        return out
+class PrimaryAndBackupFailoverTests(TempRootCase):
+    def test_primary_success_leaves_all_backups_on_standby_without_requests(self):
+        http = FixtureHttp()
+        result = self.pull(http=http, slot="1230", now=DAY1.replace(hour=12, minute=30, second=12))
+        slot = result["doc"]["slots"]["1230"]
+        self.assertTrue(all("finance.yahoo.com" in u for u in http.calls))
+        self.assertEqual(slot["sources"]["yahoo"]["status"], "ok")
+        for bk in ("eastmoney", "tencent", "sina", "em_kline"):
+            self.assertEqual(slot["sources"][bk]["status"], "standby")
+        summary = slot["source_summary"]
+        self.assertEqual(summary["primary_source"], "yahoo")
+        self.assertEqual(summary["primary_hit"], len(SYMBOLS))
+        self.assertEqual(summary["backup_hit"], 0)
+        self.assertEqual(summary["backup_sources_used"], [])
+        for sym in SYMBOLS:
+            q = slot["quotes"][sym]
+            self.assertEqual(q["source"], "yahoo")
+            self.assertEqual(q["source_role"], "主源")
+            self.assertFalse(q["is_backup"])
+            self.assertEqual(q["n_sources"], 1)
+            self.assertNotIn("consensus", q)
 
-    def test_agree_high_confidence(self):
-        res = m.cross_validate("0700.HK", self._by_source())
-        self.assertEqual(res["verdict"], "一致")
-        self.assertEqual(res["confidence"], m.CONF_HIGH)
-        self.assertEqual(res["n_agree"], 4)
-        self.assertAlmostEqual(res["price"], 100.0, places=6)
-        self.assertEqual(res["outliers"], [])
+    def test_partial_primary_failure_queries_backup_only_for_missing_symbol(self):
+        http = FixtureHttp(raise_for={"000001.SS"})
+        result = self.pull(http=http, slot="1230", now=DAY1.replace(hour=12, minute=30, second=12))
+        slot = result["doc"]["slots"]["1230"]
+        self.assertEqual(slot["sources"]["yahoo"]["status"], "ok")
+        self.assertEqual(slot["sources"]["eastmoney"]["status"], "ok")
+        self.assertEqual(slot["sources"]["tencent"]["status"], "standby")
+        self.assertEqual(slot["quotes"]["0700.HK"]["source"], "yahoo")
+        self.assertFalse(slot["quotes"]["0700.HK"]["is_backup"])
+        self.assertEqual(slot["quotes"]["000001.SS"]["source"], "eastmoney")
+        self.assertTrue(slot["quotes"]["000001.SS"]["is_backup"])
+        self.assertEqual(slot["quotes"]["000001.SS"]["source_role"], "备用源")
+        self.assertEqual(slot["source_summary"]["primary_hit"], 3)
+        self.assertEqual(slot["source_summary"]["backup_hit"], 1)
+        self.assertEqual(slot["source_summary"]["backup_sources_used"], ["eastmoney"])
 
-    def test_outlier_flagged_and_excluded(self):
-        res = m.cross_validate("0700.HK", self._by_source(yahoo=103.0))
-        self.assertIn("yahoo", res["outliers"])
-        self.assertTrue(res["by_source"]["yahoo"]["outlier"])
-        self.assertEqual(res["verdict"], "一致")
-        self.assertAlmostEqual(res["price"], 100.0, places=6)     # 共识价不含离群源
+    def test_full_primary_failure_switches_to_first_healthy_backup(self):
+        http = FixtureHttp(fail={"yahoo", "eastmoney"})
+        result = self.pull(http=http, slot="1230", now=DAY1.replace(hour=12, minute=30, second=12))
+        slot = result["doc"]["slots"]["1230"]
+        self.assertEqual(slot["sources"]["yahoo"]["status"], "failed")
+        self.assertEqual(slot["sources"]["eastmoney"]["status"], "failed")
+        self.assertEqual(slot["sources"]["tencent"]["status"], "ok")
+        self.assertEqual(slot["sources"]["sina"]["status"], "standby")
+        for sym in SYMBOLS:
+            self.assertEqual(slot["quotes"][sym]["source"], "tencent")
+            self.assertTrue(slot["quotes"][sym]["is_backup"])
 
-    def test_lagged_source_flagged(self):
-        by_source = self._by_source()
-        by_source["yahoo"]["quote_time"] = "2026-10-01 11:30:00"   # 落后 60 分钟
-        res = m.cross_validate("0700.HK", by_source)
-        self.assertIn("yahoo", res["lagged"])
-        self.assertTrue(res["by_source"]["yahoo"]["lagged"])
-        self.assertEqual(res["n_agree"], 4)                        # 滞后源仍参与一致性统计
-
-    def test_conflict_verdict(self):
-        res = m.cross_validate("0700.HK", {"eastmoney": self._by_source()["eastmoney"],
-                                           "sina": dict(self._by_source()["sina"], price=106.0)})
-        self.assertEqual(res["verdict"], "冲突")
-        self.assertEqual(res["confidence"], m.CONF_LOW)
-        self.assertGreater(res["spread_pct"], m.CONFLICT_PCT)
-
-    def test_single_source_is_single_evidence(self):
-        res = m.cross_validate("0700.HK", {"eastmoney": self._by_source()["eastmoney"]})
-        self.assertEqual(res["verdict"], "孤证")
-        self.assertEqual(res["confidence"], m.CONF_SINGLE)
-
-    def test_eod_close_cross_check(self):
-        res = m.cross_validate("0700.HK", self._by_source(),
-                               eod_close={"close": 99.05, "date": "2026-09-30"})
-        check = res["eod_close_check"]
-        self.assertTrue(check["ok"])
-        self.assertLess(check["dev_pct"], m.SOFT_TOL_PCT)
-
-    def test_non_peer_source_excluded_from_price_consensus(self):
-        by_source = self._by_source()
-        by_source["em_kline"] = {"close": 12.0, "date": "2026-09-30"}
-        res = m.cross_validate("0700.HK", by_source)
-        self.assertAlmostEqual(res["price"], 100.0, places=6)
-        self.assertNotIn("em_kline", res["sources"])
+    def test_last_resort_em_kline_backup_normalizes_close_into_quote(self):
+        http = FixtureHttp(fail={"yahoo", "eastmoney", "tencent", "sina"})
+        result = self.pull(http=http, slot="1700", now=DAY1.replace(hour=17, minute=0, second=5))
+        slot = result["doc"]["slots"]["1700"]
+        self.assertEqual(slot["sources"]["em_kline"]["status"], "ok")
+        self.assertEqual(slot["quotes"]["0700.HK"]["source"], "em_kline")
+        self.assertTrue(slot["quotes"]["0700.HK"]["is_backup"])
+        self.assertAlmostEqual(slot["quotes"]["0700.HK"]["price"], PREV["0700.HK"], places=2)
+        self.assertIn("eod_close", slot["quotes"]["0700.HK"])
 
 
 # ======================================================================
@@ -443,16 +451,15 @@ class SelfCheckTests(TempRootCase):
         slot = result["doc"]["slots"]["1230"]
         self.assertEqual(slot["self_check"]["score"], 100)
         self.assertTrue(slot["self_check"]["ok"])
-        self.assertEqual(slot["cross_check"]["sources_ok"], 5)
-        self.assertEqual(slot["cross_check"]["symbols_ok"], len(SYMBOLS))
-        self.assertEqual(slot["cross_check"]["agreement_rate"], 1.0)
+        self.assertEqual(slot["source_summary"]["sources_ok"], 1)
+        self.assertEqual(slot["source_summary"]["symbols_ok"], len(SYMBOLS))
 
-    def test_source_shortage_and_coverage_penalised(self):
-        result = self.pull(http=FixtureHttp(fail={"sina", "tencent"}))
+    def test_single_backup_source_scores_full_without_quorum_penalty(self):
+        result = self.pull(http=FixtureHttp(fail={"yahoo", "sina", "tencent"}))
+        self.assertEqual(result["self_check"]["score"], 100)
+        self.assertTrue(result["self_check"]["ok"])
         check = {c["name"]: c for c in result["self_check"]["checks"]}
-        self.assertFalse(check["sources_min"]["ok"])
-        self.assertLess(result["self_check"]["score"], 100)
-        self.assertFalse(result["self_check"]["ok"])
+        self.assertTrue(check["source_available"]["ok"])
 
     def test_low_symbol_coverage_penalised(self):
         http = FixtureHttp(prices={"^HSI": PRICES["^HSI"]}, prev={"^HSI": PREV["^HSI"]})
@@ -630,7 +637,10 @@ class DatasetTests(TempRootCase):
         self.assertEqual(list(ctx["quotes"]), ["^HSI"])
         self.assertEqual(ctx["self_check_score"], 100)
         self.assertFalse(ctx["stale"])
-        self.assertEqual(ctx["sources_ok"], 5)
+        self.assertEqual(ctx["sources_ok"], 1)
+        self.assertEqual(ctx["primary_source"], "yahoo")
+        self.assertEqual(ctx["quotes"]["^HSI"]["source"], "yahoo")
+        self.assertFalse(ctx["quotes"]["^HSI"]["is_backup"])
         later = m.ai_context(root=self.root, now=last_slot + timedelta(days=2))
         self.assertTrue(later["stale"])                     # 超过 max_age_hours 默认 18 小时
         self.assertEqual(m.load_days(self.root)[0]["date_compact"], "20261001")
@@ -718,10 +728,10 @@ A_PREV = {"600519.SS": 1680.5, "300750.SZ": 399.8, "000001.SS": 3830.3}
 class TdxChannelTests(unittest.TestCase):
     """全部用注入的假客户端验证：不需要 mootdx / pandas / 网络。"""
 
-    def test_registry_has_six_sources_with_tdx_peer(self):
+    def test_registry_has_six_sources_with_tdx_backup(self):
         self.assertEqual(len(m.SOURCES), 6)
         self.assertIn("tdx", m.SOURCES)
-        self.assertTrue(m.SOURCES["tdx"]["price_peer"])
+        self.assertEqual(m.SOURCES["tdx"]["role"], "backup")
         self.assertIn("通达信", m.SOURCES["tdx"]["label"])
 
     def test_code_mapping_only_a_shares(self):
@@ -872,7 +882,7 @@ class TdxChannelTests(unittest.TestCase):
                          "--dry-run", "--no-tdx", "--no-enrich"],
                         http=FixtureHttp(prices=A_PRICES, prev=A_PREV), root=root, now=DAY1)
         self.assertEqual(rc, 0)
-        self.assertIn("源 5 路", buf.getvalue())          # --no-tdx → 只剩 5 路
+        self.assertIn("备用源 4 路待命", buf.getvalue())    # --no-tdx → 备用源只剩 4 路
         self.assertNotIn("通达信", buf.getvalue())
         self.assertEqual(os.listdir(root), [])
 
@@ -1117,37 +1127,47 @@ class TdxAntiHangTests(unittest.TestCase):
         self.assertIsNone(quotes["000001.SS"]["quote_time"])         # 没日K就别动
 
 
-class TdxCrossCheckTests(unittest.TestCase):
-    def _by_source(self):
-        return {"eastmoney": {"price": 100.0, "prev_close": 99.0,
-                              "quote_time": "2026-10-01 12:30:00", "name": "x", "open": None,
-                              "high": None, "low": None, "volume": None, "amount": None,
-                              "change_pct": None}}
+class LegacyCompatibilityTests(unittest.TestCase):
+    """兼容已落库的历史 cross_check / consensus 旧格式快照。"""
 
-    def test_single_close_source_keeps_backward_compatible_fields(self):
-        res = m.cross_validate("600519.SS", self._by_source(),
-                               eod_close={"close": 99.05, "date": "2026-09-30"})
-        self.assertEqual(len(res["eod_close_checks"]), 1)
-        self.assertEqual(res["eod_close_check"]["kline_close"], 99.05)
-        self.assertTrue(res["eod_close_check"]["ok"])
-
-    def test_two_close_sources_listed(self):
-        res = m.cross_validate("600519.SS", self._by_source(), eod_closes=[
-            {"source": "em_kline", "close": 99.05, "date": "2026-09-30"},
-            {"source": "tdx", "close": 99.0, "date": "2026-09-30", "source_kind": "day_bar"}])
-        self.assertEqual([c["source"] for c in res["eod_close_checks"]], ["em_kline", "tdx"])
-        self.assertTrue(all(c["ok"] for c in res["eod_close_checks"]))
-        self.assertEqual(res["eod_close_check"]["source"], "em_kline")
-
-    def test_disagreeing_tdx_close_flagged(self):
-        res = m.cross_validate("600519.SS", self._by_source(),
-                               eod_closes=[{"source": "tdx", "close": 120.0, "date": "2026-09-30"}])
-        self.assertFalse(res["eod_close_checks"][0]["ok"])
-        self.assertGreater(res["eod_close_checks"][0]["dev_pct"], m.SOFT_TOL_PCT)
+    def test_legacy_slot_doc_readable_in_timeline_and_self_check(self):
+        legacy_doc = {
+            "db_date": "2026-10-15",
+            "date_compact": "20261015",
+            "slots": {
+                "1700": {
+                    "slot": "1700", "date": "2026-10-15",
+                    "pulled_at": "2026-10-15 17:01:00",
+                    "scheduled_at": "2026-10-15 17:00:00",
+                    "trading_day": True,
+                    "sources": {"eastmoney": {"status": "ok", "symbols": 1}},
+                    "quotes": {
+                        "600519.SS": {
+                            "name": "贵州茅台", "market": "A", "change_pct": 1.0,
+                            "consensus": {
+                                "price": 1690.0, "prev_close": 1673.0,
+                                "n_agree": 3, "verdict": "一致",
+                                "by_source": {"eastmoney": {"quote_time": "2026-10-15 15:00:00"}},
+                            },
+                        }
+                    },
+                    "cross_check": {
+                        "symbols_total": 1, "symbols_ok": 1, "sources_ok": 1,
+                        "median_prices": {"600519.SS": 1690.0},
+                    },
+                }
+            },
+        }
+        rows, _meta = m.build_dataset(docs=[legacy_doc])
+        self.assertEqual(len(rows), 1)
+        self.assertEqual(rows[0]["features"]["price"], 1690.0)
+        sc = m.self_check(legacy_doc["slots"]["1700"])
+        self.assertTrue(sc["ok"])
+        self.assertEqual(sc["score"], 100)
 
 
 class TdxPullIntegrationTests(TempRootCase):
-    """整链：Fixtures(HTTP) + 假通达信客户端 → 落库文件里能看到 6 路源与附带数据。"""
+    """整链：主源正常时通达信盘中待命、收盘档补财务/除权除息；主源失败时通达信顶上沪深备用行情。"""
 
     def setUp(self):
         super().setUp()
@@ -1158,27 +1178,36 @@ class TdxPullIntegrationTests(TempRootCase):
     def _http(self, **kw):
         return FixtureHttp(prices=A_PRICES, prev=A_PREV, **kw)
 
-    def _pull(self, slot, when, **kw):
-        return m.pull(slot, root=self.root, http=self._http(), now=when, symbols=A_SYMBOLS,
+    def _pull(self, slot, when, http=None, **kw):
+        return m.pull(slot, root=self.root, http=http or self._http(), now=when, symbols=A_SYMBOLS,
                       verbose=False, tdx_client=FakeTdxClient(prices=A_PRICES, prev=A_PREV), **kw)
 
-    def test_six_sources_and_two_close_checks(self):
+    def test_tdx_stays_standby_at_morning_and_serves_backup_when_http_fails(self):
         self._pull("0800", DAY1)
-        doc = json.load(open(os.path.join(self.root, "20261001.json"), encoding="utf-8"))
+        with open(os.path.join(self.root, "20261001.json"), encoding="utf-8") as fh:
+            doc = json.load(fh)
         self.assertEqual(len(doc["slots"]["0800"]["sources"]), 6)
-        self.assertEqual(doc["slots"]["0800"]["sources"]["tdx"]["status"], "ok")
-        self.assertEqual(doc["slots"]["0800"]["cross_check"]["sources_ok"], 6)
-        self.assertIn("pe", doc["ai"]["feature_names"])
+        self.assertEqual(doc["slots"]["0800"]["sources"]["yahoo"]["status"], "ok")
+        self.assertEqual(doc["slots"]["0800"]["sources"]["tdx"]["status"], "standby")
         quote = doc["slots"]["0800"]["quotes"]["600519.SS"]
-        self.assertEqual(quote["n_sources"], 5)                # 5 路参与比价（em_kline 不在内）
-        self.assertEqual([c["source"] for c in quote["consensus"]["eod_close_checks"]],
-                         ["em_kline", "tdx"])
-        self.assertTrue(all(c["ok"] for c in quote["consensus"]["eod_close_checks"]))
+        self.assertEqual(quote["source"], "yahoo")
+        self.assertEqual(quote["n_sources"], 1)
+
+        # HTTP 源全挂时，通达信作为备用源顶上沪深行情
+        fail_http = self._http(fail={"yahoo", "eastmoney", "tencent", "sina"})
+        self._pull("1230", DAY1.replace(hour=12, minute=30), http=fail_http)
+        with open(os.path.join(self.root, "20261001.json"), encoding="utf-8") as fh:
+            doc2 = json.load(fh)
+        self.assertEqual(doc2["slots"]["1230"]["sources"]["tdx"]["status"], "ok")
+        q_bk = doc2["slots"]["1230"]["quotes"]["600519.SS"]
+        self.assertEqual(q_bk["source"], "tdx")
+        self.assertTrue(q_bk["is_backup"])
 
     def test_fundamentals_only_at_closing_slot(self):
         self._pull("0800", DAY1)
         self._pull("1700", DAY1.replace(hour=17, minute=0))
-        doc = json.load(open(os.path.join(self.root, "20261001.json"), encoding="utf-8"))
+        with open(os.path.join(self.root, "20261001.json"), encoding="utf-8") as fh:
+            doc = json.load(fh)
         self.assertNotIn("fundamentals", doc["slots"]["0800"])
         self.assertNotIn("corporate_actions", doc["slots"]["0800"])
         fund = doc["slots"]["1700"]["fundamentals"]["600519.SS"]
@@ -1205,16 +1234,17 @@ class TdxPullIntegrationTests(TempRootCase):
         item = ctx["quotes"]["600519.SS"]
         self.assertAlmostEqual(item["fundamentals"]["pb"], round(1690.0 / 160.0, 4))
         self.assertEqual(item["recent_actions"][0]["date"], "2026-09-30")
-        self.assertEqual(len(item["close_checks"]), 2)
+        self.assertEqual(item["source"], "yahoo")
 
     def test_enrich_can_be_forced_off_at_closing_slot(self):
         self._pull("1700", DAY1.replace(hour=17, minute=0), enrich=False)
-        doc = json.load(open(os.path.join(self.root, "20261001.json"), encoding="utf-8"))
+        with open(os.path.join(self.root, "20261001.json"), encoding="utf-8") as fh:
+            doc = json.load(fh)
         slot = doc["slots"]["1700"]
         self.assertNotIn("fundamentals", slot)
         self.assertNotIn("corporate_actions", slot)
-        self.assertEqual(slot["sources"]["tdx"]["status"], "ok")
-        self.assertIn("收盘核对", slot["sources"]["tdx"]["summary"])
+        self.assertEqual(slot["sources"]["yahoo"]["status"], "ok")
+        self.assertEqual(slot["sources"]["tdx"]["status"], "standby")
 
     def test_self_check_explains_dividend_jump(self):
         """除权除息造成的跳变：写明原因，且不再按数据错误扣分。"""

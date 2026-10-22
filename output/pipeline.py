@@ -274,16 +274,14 @@
       不是栏目标题。风险提示里的跨栏目引用（「『栏目名』第NN条」）指向正文栏目头，
       因此同步用新标题，读者按名字能找到栏目。历史归档日报不改写。
 
-  22. 隐藏功能「市场数据库」（2026-10-01 按用户要求，output/market_db.py）：
-      每天三次（北京时间 08:00 / 12:30 / 17:00）多源抓取股票行情快照，落库到
+  22. 隐藏功能「市场数据库」（2026-10-01 按用户要求，output/market_db.py；2026-10-23 改为单源 + 备用源待命）：
+      每天三次（北京时间 08:00 / 12:30 / 17:00）抓取股票行情快照，落库到
       output/market_db/YYYYMMDD.json（**文件以日期为名字**，当天三档写同一个文件），
       作为 AI 分析 / AI 预测 / AI 模型的基础数据（特征 + 标签数据集 / ai_context）。
-      ① 源头 >3：东方财富 push2、新浪财经 hq、腾讯财经 qt、Yahoo chart、东财 push2his
-         日K收盘校验、通达信 mootdx（沪深，2026-10-01 升级），共 6 路（HTTP 源每路带
-         镜像主机，通达信走主站池逐个降级；单路失败不影响其它路，全失败不落库）；
-      ② 交叉验证：同标的多源比价（中位数 + MAD 稳健离群）、逐源判「滞后」、
-         输出共识价 / 离群源 / 价差 / 置信度，≥2 路一致才计入有效共识；
-      ③ 自我检查：结构 / 时段 / 源覆盖 / 标的覆盖 / 数值合理性 / 跨源冲突 /
+      ① 单源优先 + 备用源待命：Yahoo Finance chart 为主源直取；仅当主源失败或漏采某只标的时，
+         按顺序依次切换东方财富 push2、腾讯财经 qt、新浪财经 hq、通达信 mootdx（沪深）、
+         东方财富 push2his 日K 等备用源补齐（主源已覆盖的标的绝不重复并发多源比价，全部失败不落库）；
+      ② 自我检查：结构 / 时段 / 主备源可用性 / 标的覆盖 / 数值合理性 /
          跨时段与跨日跳变 / 当天行情时效 / 文件哈希，结论写进 self_check，可随时 verify。
       **边界**：不进日报正文、不进微信推送、不出现在 --help（隐藏入口 --stock-db，
       见 .github/workflows/market-db.yml），因此不改动日报的当天检验与推送门禁。
@@ -5148,10 +5146,19 @@ def fetch_strategy_quant(date_str=None):
         ds = date_str or datetime.now(CST).strftime("%Y%m%d")
         res = _strategy_quant.run_strategy_quant(
             safe_request, date_str=ds, allow_synthetic=STRATEGY_QUANT_DEMO)
-        # 独立双供应商同标的核验；缺数也展示状态，不打开当天推送门禁。
+        # 三地指数单源采集（Yahoo 主源，失败自动切换备用源）；缺数也展示状态，不打开当天推送门禁。
         import index_crosscheck
         res["index_checks"] = index_crosscheck.collect(safe_request)
-        if any(r.get("overseas_date") or r.get("mainland_date") for r in res["index_checks"]):
+        for row in res["index_checks"]:
+            url = row.get("source_url")
+            if url and row.get("is_backup"):
+                if "eastmoney.com" in url:
+                    em_primary = _backup.DATA_LINES["yahoo_bars"]["backups"][1][1]
+                    _note_backup_served("yahoo_bars", em_primary, symbol=row["symbol"])
+                    _note_backup_served("em_kline", url)
+                else:
+                    _note_backup_served("yahoo_bars", url, symbol=row["symbol"])
+        if any(r.get("as_of") or r.get("date") or r.get("close") is not None for r in res["index_checks"]):
             res["available"] = True
         if not res.get("available"):
             print(f"  ⚠️ 策略量化暂不可用：{res.get('reason')}")
@@ -10143,7 +10150,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     news_corpus: 跨运行标题存档（output/news_history.json），缺省时因子只用
     本次抓取标题（测试 / 冷启动路径）。
     """
-    # 新采集快照带指数核验契约：全页仅使用这些指数级证据，
+    # 新采集快照带三地指数单源快照（含备用源兜底状态）：全页仅使用这些指数级证据，
     # 在旧港股专属AI装饰器之前分流，防止旧概率/个股结论泄漏到新页面。
     index_result = (data.get(STRATEGY_QUANT_SOURCE) or {}).get("result") or {}
     if ("index_checks" in index_result and

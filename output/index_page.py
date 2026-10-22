@@ -57,14 +57,14 @@ def _table(rows, kit, columns):
     for r in rows:
         usable = r.get('usable', False)
         line = [escape(r['market'] + ' · ' + r['name']),
-                escape(r.get('as_of') or r.get('overseas_date') or r.get('mainland_date') or '暂缺')]
+                escape(r.get('as_of') or r.get('date') or r.get('overseas_date') or r.get('mainland_date') or '暂缺')]
         for key, label in columns:
             value = r.get(key) if usable else None
             line.append(_num(value, key.startswith('ret_') or key in ('vol_20', 'max_dd_60', 'win_20'))
                         if value is None or isinstance(value, (int, float)) else escape(str(value)))
-        line.append(escape(r.get('status', '双源缺失')))
+        line.append(escape(r.get('status', '暂缺')))
         cells.append(line)
-    return _kit_table(kit, ['指数', '交易日'] + [c[1] for c in columns] + ['核验状态'], cells)
+    return _kit_table(kit, ['指数', '交易日'] + [c[1] for c in columns] + ['状态'], cells)
 
 
 def relative_rows(rows):
@@ -88,13 +88,15 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
     # 即使整个接口断线，也保留全部标的和全部栏目，不静默回退到旧港股页面。
     lookup = {r.get('symbol'): r for r in rows}
     rows = [lookup.get(symbol, dict(market=m, name=n, symbol=symbol,
-             overseas_date=None, mainland_date=None, status='双源缺失', usable=False))
+             date=None, as_of=None, status='暂缺', usable=False))
             for m, n, symbol, _ in SPECS]
     rows.sort(key=lambda r: ('A股', '港股', '美股').index(r['market']))
     checked = [r for r in rows if r.get('usable')]
+    backups = [r for r in checked if r.get('is_backup')]
+    cover_note = f'（备用源启用 {len(backups)} 个）' if backups else ('（主源供数）' if checked else '')
     sections = []
     scope = ('分析标的仅限A股、港股、美股指数；各市场按当地最近已收盘日观察，不视为同一时刻。'
-             '仅最新收盘经境内外核验，历史指标取Yahoo未复权日线；历史未逐日双源核验。'
+             '采用单源未复权已收盘日线计算指标（Yahoo主源优先，失败时自动切换备用源，不做多源交叉核验）。'
              '信号为规则状态，不是未来概率、策略净值或交易建议。')
     for key in order:
         if key not in TITLES:
@@ -114,8 +116,8 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
             note = '日程仅作三地指数的背景窗口；未经指数级事件研究，不判定正负影响。'
         elif key in ('FORECAST', 'SUMMARY'):
             body = _kit_kv(kit, [('分析范围', 'A股 / 港股 / 美股 · ' + str(len(rows)) + '个指数'),
-                                 ('数据覆盖', str(len(checked)) + '/' + str(len(rows)) + '个最新收盘通过双源核验'),
-                                 ('判断边界', '未通过核验的指数暂停判断；不同市场不混排；不输出未经回测校准的涨跌概率')])
+                                 ('数据覆盖', str(len(checked)) + '/' + str(len(rows)) + '个指数最新收盘可用' + cover_note),
+                                 ('判断边界', '缺数或过期的指数暂停判断；不同市场不混排；不输出未经回测校准的涨跌概率')])
             body += _table(rows, kit, [('trend', '趋势'), ('momentum_signal', '20日动量')])
             note = scope
         elif key in ('SECTOR ROTATION', 'INDUSTRY ROTATION', 'STRATEGY ARBITRAGE'):
@@ -140,7 +142,8 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
         if note:
             body += _disclosure(kit, note)
         sections.append((key, TITLES[key], body, kit.badge('指数量化', 'ai'), ''))
-    # 不将两个供应商×9指数冒充18个独立来源，也不打开当天源门禁。
-    source_present = [any(r.get(k + '_date') for r in rows) for k in ('overseas', 'mainland')]
-    return dict(sections=sections, total=2, today_n=0, content_n=sum(source_present),
+    # 单源直取（备用源待命），不将9只指数冒充9个独立来源，也不打开当天新闻源门禁。
+    has_data = any(r.get('as_of') or r.get('date') or r.get('close') is not None
+                   or r.get('overseas_date') or r.get('mainland_date') for r in rows)
+    return dict(sections=sections, total=1, today_n=0, content_n=int(has_data),
                 market={}, poem=None, bagua_html='', beginner_tips_html='')
