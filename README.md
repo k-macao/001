@@ -293,7 +293,7 @@
 | 资讯 | `OCTOPUS_MAINLAND_NEWS_PER_SOURCE`、`OCTOPUS_MAINLAND_NEWS_MAX` | 内地财经媒体每源条数（默认 3）、全栏目条数上限（默认 48） |
 | 资讯 | `OCTOPUS_MAINLAND_HOTLIST=0` | 关闭【沸腾花蛤】情绪热点因子量化分析栏目（原内地财经热点榜；默认开启；采集、标题池与审计口径都不变） |
 | 资讯 | `OCTOPUS_TREND_PLATFORMS=Reddit,StockTwits` | 只启用指定的趋势跟踪社区平台 |
-| 推送 | `PUSHPLUS_TOPIC=oai.1` | 默认一对多群组推送（topic=`oai.1`）；可覆盖群组编码，设为空字符串回退一对一 |
+| 推送 | `PUSHPLUS_TOPIC`（默认空） | 默认一对一推送（不携带 topic，一对多群组推送已取消）；如需改回群组推送可填群组编码（如 `oai.1`） |
 | 推送 | `PUSHPLUS_MAX_CONTENT_CHARS=20000` | 修改单条内容上限；默认 100000 |
 | 推送 | `PUSHPLUS_MAX_PARTS=6`、`PUSHPLUS_PART_DELAY=5` | 修改最多推送条数与条间隔；默认 12 条 / 2 秒 |
 | 推送 | `PUSHPLUS_RATE_MAX=5`、`PUSHPLUS_RATE_WINDOW=60` | 频率排队窗口；默认每 60 秒最多 5 次，设 `0` 关闭排队 |
