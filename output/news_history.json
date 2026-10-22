@@ -19256,26 +19256,72 @@
    "ts": "2026-10-22 08:43",
    "date": "2026-10-22",
    "url": "https://finance.ifeng.com/c/8xRBWXe1UGT"
+  },
+  {
+   "title": "银行板块局部回暖 工商银行涨超2%创历史新高",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-10-22 14:06",
+   "date": "2026-10-22",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE8xZENweklyLTVSZURoQmRJOWgwT0tuUDJVcmwxOHpXcnpJMllDUDFFTEVDZkZ4djdlOUkyZTI0bTV6dE5IOHY1Ty1hUVBzZTVyLU15U3hwNjRXVXlFcG1obEwtY1VyZw?oc=5"
+  },
+  {
+   "title": "布伦特原油突破113美元/桶，日内涨3.87%。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-23 01:49",
+   "date": "2026-10-23",
+   "url": "https://finance.sina.cn/7x24/2026-10-23/detail-iniwctca8163012.d.html"
+  },
+  {
+   "title": "【伦敦股市22日下跌】英国伦敦股市《金融时报》100种股票平均价格指数22日报收于10725.03点，较前一交易日下跌27.85点，跌幅为0.26%",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-23 01:49",
+   "date": "2026-10-23",
+   "url": "https://finance.sina.cn/7x24/2026-10-23/detail-iniwctca8162797.d.html"
+  },
+  {
+   "title": "【摩根大通：与特斯拉合并或将成为SpaceX跻身标普500指数的入场券】摩根大通的分析师指出，SpaceX与特斯拉的合并可能为SpaceX悄然进入标普500指数铺平道路——特斯拉目前已是该指数的成分股",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-23 01:48",
+   "date": "2026-10-23",
+   "url": "https://finance.sina.cn/7x24/2026-10-23/detail-iniwctce4934694.d.html"
+  },
+  {
+   "title": "纽约联储接受了隔夜回购操作中100万美元的投标。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-23 01:46",
+   "date": "2026-10-23",
+   "url": "https://finance.sina.cn/7x24/2026-10-23/detail-iniwctca8161202.d.html"
+  },
+  {
+   "title": "【西藏军区那曲军分区出动98名官兵赶赴震区】22日22时33分，西藏那曲市巴青县发生7.0级地震。地震发生后，西藏军区迅即启动抗震救灾预案，指挥那曲军分区出动98名官兵、6台车辆，携带救援装备物资，连夜赶赴震区。（新华社）",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-23 01:45",
+   "date": "2026-10-23",
+   "url": "https://finance.sina.cn/7x24/2026-10-23/detail-iniwctce4933397.d.html"
+  },
+  {
+   "title": "港股通（深）净卖出59.93亿港元 - 证券之星",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-22 22:02",
+   "date": "2026-10-22",
+   "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1tYnNGQmxqTDdNbElvaUtQSEI5eC1IQWV2dWUwZlNVZGlYT1ZYOGtXUmRpLXZ4dE96aVR6SUQ4dzdTWlR4c1p0el9FdFBSMlhZM3VYcTlwVS1TYVU5N0ZZeg?oc=5"
   }
  ],
- "updated_cst": "2026-10-23 01:44:36",
+ "updated_cst": "2026-10-23 01:51:18",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-23 01:44:26",
+  "ran_at": "2026-10-23 01:51:06",
   "cutoff": "2026-10-22",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
-  "fqt": "1",
-  "kline_series": 31,
-  "sources": {
-   "eastmoney": 31
-  },
-  "missing": [],
-  "asof": "2026-10-22",
-  "asof_hits": 31,
-  "scored": 31,
-  "required": 19,
-  "state": "reused",
-  "holdings": 5
+  "fqt": null,
+  "reason": "行业日K接口未返回数据（东财前复权/不复权两种口径均无有效日线，申万官方源亦无数据）"
  },
  "industry_rotation": {
   "month": "2026-10",
