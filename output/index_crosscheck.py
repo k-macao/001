@@ -1,4 +1,9 @@
-"""三地指数：单源直取未复权已收盘日线，Yahoo 主源优先、备用源待命兜底。只经注入请求联网。"""
+"""三地指数：单源直取未复权已收盘日线，Yahoo 主源优先、备用源待命兜底。只经注入请求联网。
+
+🔙 2026-10-23 已回滚为**纯港股日报**：默认不再调用 `collect()`（不发起这 9 个指数的请求），
+`render()` 的指数表也只在 `OCTOPUS_INDEX_PAGE=1` 时由 strategy_quant.render_overview 输出。
+开关判断见 output/pipeline.py:_index_page_enabled 与 output/strategy_quant.py:index_page_enabled。
+"""
 from datetime import datetime, timezone
 import math
 from octopus_quant import providers
