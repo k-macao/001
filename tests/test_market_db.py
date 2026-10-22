@@ -1240,3 +1240,16 @@ class TdxPullIntegrationTests(TempRootCase):
         self.assertEqual(m._explain_action(actions, "600519.SS", "2026-10-01"), "")
         self.assertEqual(m._explain_action(actions, "000001.SS", "2026-10-01"), "")
         self.assertEqual(m._explain_action(None, "600519.SS", "2026-10-01"), "")
+
+    def test_index_symbols_include_csi300_and_tencent_timestamp_validation(self):
+        idx_syms = [s for _, s, _ in m.INDEX_SYMBOLS]
+        self.assertIn("000300.SS", idx_syms)
+        self.assertIn("^HSTECH", idx_syms)
+        # 14 位成交额数字绝不能被误判为时间戳，合法斜杠/短横线时间必须正常解析
+        us_line = 'v_usIXIC="200~纳斯达克~IXIC~26702.86~26500.00~26520.00~100~~~~~~2026-10-21 16:05:31~~~~~~~~~~~~~~~22414147754046";'
+        parsed_us = m._parse_tencent_line(us_line)
+        self.assertEqual(parsed_us["quote_time"], "2026-10-21 16:05:31")
+        hk_line = 'v_hkHSTECH="100~恒生科技指数~HSTECH~3793.93~3810.00~3805.00~100~~~~~~2026/10/22 16:08:58~";'
+        parsed_hk = m._parse_tencent_line(hk_line)
+        self.assertEqual(parsed_hk["quote_time"], "2026-10-22 16:08:58")
+
