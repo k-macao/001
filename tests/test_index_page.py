@@ -106,11 +106,23 @@ class FullPageTests(unittest.TestCase):
         self.assertIn('不是未来概率', html)
 
     def test_split_push_preserves_all_sections(self):
-        html = pipeline.generate_report(self.data(rows()), '2026年10月21日', '20261021', theme='guizang')
-        chunks = pipeline._split_html_for_push(html, 20000)
-        self.assertIsNotNone(chunks)
-        for title in index_page.TITLES.values():
-            self.assertTrue(any(title in chunk for chunk in chunks), title)
+        for theme in ('lime', 'pixel', 'forum', 'dossier', 'guizang'):
+            with self.subTest(theme=theme):
+                html = pipeline.generate_report(self.data(rows()), '2026年10月21日', '20261021', theme=theme)
+                chunks = pipeline._split_html_for_push(html, 20000)
+                self.assertIsNotNone(chunks)
+                self.assertLessEqual(len(chunks), pipeline.PUSHPLUS_MAX_PARTS)
+                for title in index_page.TITLES.values():
+                    self.assertTrue(any(title in chunk for chunk in chunks), f"{theme}: {title}")
+
+    def test_today_sources_counts_verified_same_day_only(self):
+        same_day = pipeline._collect_report_parts(self.data(rows()), pipeline.LIME_KIT, date_str='20261020')
+        self.assertEqual(same_day['today_n'], 2)
+        unverified = rows()
+        for r in unverified:
+            r['usable'] = False
+        unverified_parts = pipeline._collect_report_parts(self.data(unverified), pipeline.LIME_KIT, date_str='20261020')
+        self.assertEqual(unverified_parts['today_n'], 0)
 
     def test_legacy_rollback_switch(self):
         with patch.dict('os.environ', {'OCTOPUS_INDEX_PAGE': '0'}):

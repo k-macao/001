@@ -583,6 +583,7 @@ class PushRenderTests(unittest.TestCase):
                 patch.object(ir, "STATE_FILE", os.path.join(tmp, "news_history.json")), \
                 patch.object(pipeline, "REPORT_DIR", tmp), \
                 patch.object(pipeline, "safe_request", api), \
+                patch.object(pipeline, "datetime", _FrozenDatetime(fixed_now)), \
                 patch.object(ir, "datetime", _FrozenDatetime(fixed_now)), redirect_stdout(io.StringIO()):
             src = pipeline.fetch_industry_rotation()
             events = list(pipeline.BACKUP_EVENTS)
@@ -603,6 +604,7 @@ class PushRenderTests(unittest.TestCase):
             with patch.object(ir, "STATE_FILE", os.path.join(tmp, "news_history.json")), \
                     patch.object(pipeline, "REPORT_DIR", tmp), \
                     patch.object(pipeline, "safe_request", api), \
+                    patch.object(pipeline, "datetime", _FrozenDatetime(fixed_now)), \
                     patch.object(ir, "datetime", _FrozenDatetime(fixed_now)), redirect_stdout(buf):
                 src = pipeline.fetch_industry_rotation()
         self.assertEqual(src["status"], "success", buf.getvalue())
