@@ -44,13 +44,17 @@ _YAHOO_SYMBOL_CANDIDATES = {
 }
 
 _STOOQ_SYMBOL = {
-    "^HSI": "^hsi",
-    "^HSTECH": "hstech.hk",
-    "^HSCE": "^hsce",
-    "000001.SS": "^shc",
-    "^GSPC": "^spx",
-    "^IXIC": "^ndq",
-    "^DJI": "^dji",
+    "^HSI": ("^hsi",),
+    "^HSTECH": ("hstech.hk", "^hstech"),
+    "^HSCE": ("^hsce",),
+    "000001.SS": ("^shc",),
+    "^GSPC": ("^spx",),
+    "^IXIC": ("^ndq",),
+    "^DJI": ("^dji",),
+}
+
+_DB_SYMBOL_ALIASES = {
+    "^HSCE": ("^HSCE", "^HSCEI"),
 }
 
 _EM_SECID_CANDIDATES = {
@@ -186,6 +190,20 @@ def _fetch_tencent_kline(fetch_json, tx_code):
     return [(str(item[0]), item[2]) for item in raw if isinstance(item, (list, tuple)) and len(item) >= 3], None
 
 
+def _quote_time_to_market_day(qt_raw, symbol):
+    qt = str(qt_raw or "").strip()
+    if len(qt) < 10 or qt[4] != "-" or qt[7] != "-":
+        return ""
+    mkt_tz = providers.market_timezone(symbol)
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M"):
+        try:
+            dt_cst = datetime.strptime(qt, fmt).replace(tzinfo=providers.CST)
+            return dt_cst.astimezone(mkt_tz).strftime("%Y-%m-%d")
+        except ValueError:
+            continue
+    return qt[:10]
+
+
 def _mainland_from_db(db_dir, symbol, now):
     if not db_dir or not os.path.isdir(db_dir):
         return {}, None
@@ -194,6 +212,7 @@ def _mainland_from_db(db_dir, symbol, now):
         return {}, None
     rows = []
     src_used = None
+    db_keys = _DB_SYMBOL_ALIASES.get(symbol, (symbol,))
     for fname in files[-120:]:
         try:
             with open(os.path.join(db_dir, fname), encoding="utf-8") as fh:
@@ -202,8 +221,9 @@ def _mainland_from_db(db_dir, symbol, now):
             continue
         slots = doc.get("slots") or {}
         for slot in ("2100", "1700", "0830"):
-            q = ((slots.get(slot) or {}).get("quotes") or {}).get(symbol)
-            if not isinstance(q, dict):
+            quotes = (slots.get(slot) or {}).get("quotes") or {}
+            q = next((quotes[k] for k in db_keys if isinstance(quotes.get(k), dict)), None)
+            if q is None:
                 continue
             cons = q.get("consensus") or {}
             eod = cons.get("eod_close_check") or {}
@@ -217,8 +237,7 @@ def _mainland_from_db(db_dir, symbol, now):
                 rec = by_src.get(dom_src)
                 if not isinstance(rec, dict) or not _valid_price(rec.get("price")):
                     continue
-                qt = str(rec.get("quote_time") or "")
-                qday = qt[:10] if len(qt) >= 10 and qt[4] == "-" and qt[7] == "-" else ""
+                qday = _quote_time_to_market_day(rec.get("quote_time"), symbol)
                 if qday:
                     rows.append((qday, float(rec["price"])))
                     src_used = label
@@ -258,8 +277,7 @@ def _collect_overseas(fetch_json, symbol, now, strikes=None):
             except Exception as exc2:
                 last_err = type(exc2).__name__
                 strikes[tmpl] = strikes.get(tmpl, 0) + 1
-    stooq_sym = _STOOQ_SYMBOL.get(symbol)
-    if stooq_sym:
+    for stooq_sym in _STOOQ_SYMBOL.get(symbol, ()):
         rows, exc = _fetch_stooq(fetch_json, stooq_sym)
         if exc is not None:
             last_err = type(exc).__name__
