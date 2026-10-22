@@ -5135,6 +5135,18 @@ def fetch_industry_rotation():
 # 取数失败用确定性合成兜底（不因行情暂缺整栏消失），内部衍生、
 # 不新增联网口、不计入当天检验 / 总源数审计。
 # ============================================================
+def _index_page_enabled():
+    """🔙 三地指数开关：2026-10-23 回滚为**纯港股日报**，默认关闭。
+
+    关闭时（默认）：不联网采集 A股 / 美股 / 港股 9 指数、不写 ``index_checks`` 契约、
+    全页不分流到 ``index_page``、【策略总览】也不出现三地指数表 —— 页面回到原港股口径
+    （恒指七日预测 / 港股量化 / 个股与栏目照旧）。
+    显式 ``OCTOPUS_INDEX_PAGE=1``（或 true / yes / on）才把三地指数全页开回来，代码与
+    文档都保留，便于一键恢复。环境变量在**调用时**读取，测试与手工切换即时生效。
+    """
+    return os.environ.get("OCTOPUS_INDEX_PAGE", "0").strip().lower() in ("1", "true", "yes", "on")
+
+
 def fetch_strategy_quant(date_str=None):
     """策略量化主入口：取数失败走合成兜底，始终可渲染（关闭时返回 None，栏目与审计都不出现）。"""
     if not STRATEGY_QUANT_ENABLED:
@@ -5147,20 +5159,23 @@ def fetch_strategy_quant(date_str=None):
         ds = date_str or datetime.now(CST).strftime("%Y%m%d")
         res = _strategy_quant.run_strategy_quant(
             safe_request, date_str=ds, allow_synthetic=STRATEGY_QUANT_DEMO)
-        # 三地指数单源采集（Yahoo 主源，失败自动切换备用源）；缺数也展示状态，不打开当天推送门禁。
-        import index_crosscheck
-        res["index_checks"] = index_crosscheck.collect(safe_request)
-        for row in res["index_checks"]:
-            url = row.get("source_url")
-            if url and row.get("is_backup"):
-                if "eastmoney.com" in url:
-                    em_primary = _backup.DATA_LINES["yahoo_bars"]["backups"][1][1]
-                    _note_backup_served("yahoo_bars", em_primary, symbol=row["symbol"])
-                    _note_backup_served("em_kline", url)
-                else:
-                    _note_backup_served("yahoo_bars", url, symbol=row["symbol"])
-        if any(r.get("as_of") or r.get("date") or r.get("close") is not None for r in res["index_checks"]):
-            res["available"] = True
+        # 三地指数单源采集（Yahoo 主源，失败自动切换备用源）：**默认不采集**。
+        # 只有 OCTOPUS_INDEX_PAGE=1 才联网取 9 指数并写 index_checks 契约；关闭时
+        # 快照里不出现该键，页面与【策略总览】都不会显示三地指数（回滚为纯港股日报）。
+        if _index_page_enabled():
+            import index_crosscheck
+            res["index_checks"] = index_crosscheck.collect(safe_request)
+            for row in res["index_checks"]:
+                url = row.get("source_url")
+                if url and row.get("is_backup"):
+                    if "eastmoney.com" in url:
+                        em_primary = _backup.DATA_LINES["yahoo_bars"]["backups"][1][1]
+                        _note_backup_served("yahoo_bars", em_primary, symbol=row["symbol"])
+                        _note_backup_served("em_kline", url)
+                    else:
+                        _note_backup_served("yahoo_bars", url, symbol=row["symbol"])
+            if any(r.get("as_of") or r.get("date") or r.get("close") is not None for r in res["index_checks"]):
+                res["available"] = True
         if not res.get("available"):
             print(f"  ⚠️ 策略量化暂不可用：{res.get('reason')}")
             return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result=res,
@@ -5176,7 +5191,9 @@ def fetch_strategy_quant(date_str=None):
                               is_today=False, snapshot=True)
     except Exception as exc:
         print(f"  ⚠️ 策略量化异常：{type(exc).__name__}: {exc}")
-        return _source_result(STRATEGY_QUANT_SOURCE, "unavailable", result={"index_checks": []},
+        # 关闭三地指数时异常兜底也不写 index_checks（否则页面会被空的指数全页接管）。
+        return _source_result(STRATEGY_QUANT_SOURCE, "unavailable",
+                              result={"index_checks": []} if _index_page_enabled() else None,
                               error=f"策略量化异常（{type(exc).__name__}）")
 
 
@@ -10151,11 +10168,11 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     news_corpus: 跨运行标题存档（output/news_history.json），缺省时因子只用
     本次抓取标题（测试 / 冷启动路径）。
     """
-    # 新采集快照带三地指数单源快照（含备用源兜底状态）：全页仅使用这些指数级证据，
-    # 在旧港股专属AI装饰器之前分流，防止旧概率/个股结论泄漏到新页面。
+    # 三地指数全页拼版：2026-10-23 已回滚，默认**不启用**（见 _index_page_enabled）。
+    # 只有显式 OCTOPUS_INDEX_PAGE=1 且快照带 index_checks 契约时才分流到指数全页；
+    # 默认路径回到原港股日报（恒指七日 / 港股量化 / 个股栏目与旧AI装饰器全部照旧）。
     index_result = (data.get(STRATEGY_QUANT_SOURCE) or {}).get("result") or {}
-    if ("index_checks" in index_result and
-            os.environ.get("OCTOPUS_INDEX_PAGE", "1").strip().lower() not in ("0", "false", "no")):
+    if (_index_page_enabled() and "index_checks" in index_result):
         import index_page
         parts = index_page.build_parts(index_result["index_checks"], kit, REPORT_SECTION_ORDER,
                                        calendar=data.get("财经日历"), date_str=date_str)

@@ -1,4 +1,10 @@
-"""指数限定的全页拼版：保持栏目顺序，不复用个股/港股专属模型的结论。"""
+"""指数限定的全页拼版：保持栏目顺序，不复用个股/港股专属模型的结论。
+
+🔙 2026-10-23 已回滚为**纯港股日报**：本模块默认不再被调用。
+`output/pipeline.py:_index_page_enabled()` 只在显式 `OCTOPUS_INDEX_PAGE=1` 时为真，
+关闭时既不采集 9 指数（无 `index_checks` 契约），也不分流到本文件，页面回到原港股口径。
+代码保留以便一键恢复；回归见 tests/test_index_page.py（默认关闭 + 开启后口径不变）。
+"""
 from html import escape
 from index_crosscheck import SPECS, render as render_crosscheck
 from strategy_quant import _kit_table, _kit_kv

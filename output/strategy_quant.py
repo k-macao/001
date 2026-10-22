@@ -129,6 +129,16 @@ MAJOR_GROUPS = [
 # 环境开关
 ENABLED = os.environ.get("OCTOPUS_STRATEGY_QUANT", "1").strip().lower() not in ("0", "false", "no")
 
+
+def index_page_enabled():
+    """🔙 三地指数开关：2026-10-23 回滚为纯港股日报，默认关闭。
+
+    与 ``output/pipeline.py:_index_page_enabled`` 同口径（显式 ``OCTOPUS_INDEX_PAGE=1``
+    才启用）。历史快照里即使仍带 ``index_checks`` 契约，默认也不渲染三地指数表，
+    保证【策略总览】只显示原港股/策略大类口径。调用时读环境，测试即时生效。
+    """
+    return os.environ.get("OCTOPUS_INDEX_PAGE", "0").strip().lower() in ("1", "true", "yes", "on")
+
 # ------------------------------------------------------------------
 # 工具函数（纯 Python，无 numpy）
 # ------------------------------------------------------------------
@@ -633,7 +643,8 @@ def render_overview(res, kit):
     by_major = res.get("by_major") or {}
     overview = res.get("overview") or {}
     out = []
-    if res.get("index_checks"):
+    # 三地指数表默认关闭（回滚为纯港股日报）；OCTOPUS_INDEX_PAGE=1 才渲染。
+    if res.get("index_checks") and index_page_enabled():
         import index_crosscheck
         out.append(index_crosscheck.render(res["index_checks"], kit))
     if not strategies:
