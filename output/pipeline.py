@@ -1890,9 +1890,10 @@ def _quote_value(market, label, precision=2):
     pct = float(quote["change_pct"])
     color = C_GREEN if pct > 0 else (C_RED if pct < 0 else C_AMBER)
     # 数值用白色、涨跌用带箭头的高对比色块；即使用户存在色觉差异，也能靠 ▲/▼/■ 判断。
-    value = (f'<span style="display:inline-block;color:{C_INK};font-size:13px;font-weight:900;'
-             f'font-family:{FONT_MONO};padding-right:6px;">{price:,.{precision}f}</span>'
-             f'{_trend_badge(pct)}')
+    # 这段数值只出现在账本表单元格里，因此跟随表格口径：缩小一号（13→12）且不加粗。
+    value = (f'<span style="display:inline-block;color:{C_INK};font-size:{PIXEL_FS_LEDGER_NUM}px;'
+             f'font-weight:{GZ_W_TABLE};font-family:{FONT_MONO};padding-right:6px;">'
+             f'{price:,.{precision}f}</span>{_trend_badge(pct)}')
     return value, color
 
 
@@ -6230,6 +6231,16 @@ FONT = ("'Courier New', Courier, 'Lucida Console', monospace, "
         "PingFang SC, Microsoft YaHei, sans-serif")
 FONT_MONO = "'Courier New', Courier, monospace"
 
+# pixel（DOS 终端）表格字号阶梯：2026-10-23 按用户要求「表格内文字缩小一号 + 不加粗」，
+# 每档各收 1px（数据表表身 11→10、表头 10→9；账本双列 12→11；资讯行 12→11、序号 11→10）。
+# 字重统一走 GZ_W_TABLE（400）；颜色与等宽字形不变，终端观感保持。
+PIXEL_FS_GRID = 10          # 数据表表身
+PIXEL_FS_GRID_HEAD = 9      # 数据表表头
+PIXEL_FS_LEDGER = 11        # 账本式双列表（行情 / KV）
+PIXEL_FS_ITEM = 11          # 资讯行正文
+PIXEL_FS_ITEM_ICON = 10     # 资讯行序号 / 图标
+PIXEL_FS_LEDGER_NUM = 12    # 账本表内的关键数值（原 13px，随表格一起收一号）
+
 # ============================================================
 # 归藏简洁排版（Guizang Concise）× 克莱因蓝 + 深灰（2026-09-29）
 # —— 一页推送优先：结构扁平、样式全内联、去掉装饰性包装，把全量内容压进单条微信消息
@@ -6308,6 +6319,7 @@ GZ_W_BODY = 400             # 正文常规
 GZ_W_MEDIUM = 500
 GZ_W_BOLD = 700             # 标题 / 数值 / 徽标
 GZ_W_HERO = 700
+GZ_W_TABLE = 400            # 表格内文字一律常规字重（2026-10-23 用户要求：表格不加粗）
 # 字号阶梯：一页推送优先，整体比 SaaS 版收一档，保证单条消息装得下全量内容
 GZ_FS_DISPLAY = 26    # 刊头标题
 GZ_FS_SECTION = 18    # 栏目标题
@@ -6315,7 +6327,7 @@ GZ_FS_PRICE = 20      # 关键数字
 GZ_FS_BODY = 14       # 正文（SaaS 版为 15，一页推送收一档）
 GZ_FS_META = 12       # 次要文字
 GZ_FS_METER = 12      # 信号格
-GZ_FS_TABLE = 13      # 表格正文（比正文小一档，密而不挤）
+GZ_FS_TABLE = 12      # 表格正文（2026-10-23 起再缩小一号：13 → 12，仍高于 GZ_FS_FLOOR）
 DEFAULT_FONT_SCALE = 1.0
 GZ_FS_FLOOR = 11      # 字号下限（任何情况下不低于 11px）
 
@@ -6532,22 +6544,24 @@ def _pixel_table(headers, rows, aligns=None, widths=None):
     def _width_attr(i):
         return f' width="{widths[i]}"' if widths[i] else ""
 
+    # 表格内文字：pixel 终端字号阶梯同样整体收一号（表头 10→9、表身 11→10），且一律不加粗。
     head = "".join(
         f'<td{_width_attr(i)} align="{aligns[i]}" style="{_width_css(i)}padding:3px 5px;'
         f'border-bottom:1px solid {C_ACCENT};'
-        f'font-size:10px;font-weight:900;color:{C_CYAN};letter-spacing:.5px;'
+        f'font-size:{PIXEL_FS_GRID_HEAD}px;font-weight:{GZ_W_TABLE};color:{C_CYAN};letter-spacing:.5px;'
         f'font-family:{FONT_MONO};text-align:{aligns[i]};">{_esc(h)}</td>'
         for i, h in enumerate(headers or []))
     body = []
     for row in rows:
         body.append("<tr>" + "".join(
             f'<td{_width_attr(i)} align="{aligns[i]}" valign="top" style="{_width_css(i)}padding:3px 5px;'
-            f'border-bottom:1px solid {C_HAIR};font-size:11px;color:{C_INK};'
+            f'border-bottom:1px solid {C_HAIR};font-size:{PIXEL_FS_GRID}px;color:{C_INK};'
             f'line-height:1.5;font-family:{FONT_MONO};text-align:{aligns[i]};">'
-            f'{row[i] if i < len(row) else ""}</td>' for i in range(n)) + "</tr>")
+            f'{_table_text(row[i]) if i < len(row) else ""}</td>' for i in range(n)) + "</tr>")
     head_row = f"<tr>{head}</tr>" if headers else ""
     return (f'<table width="100%" cellpadding="0" cellspacing="0" '
-            f'style="width:100%!important;border-collapse:collapse;table-layout:fixed;">'
+            f'style="width:100%!important;border-collapse:collapse;table-layout:fixed;'
+            f'font-weight:{GZ_W_TABLE};">'
             f'{head_row}{"".join(body)}</table>')
 
 
@@ -6570,17 +6584,19 @@ def _alert(text, color=C_AMBER, bg=None):
             f'[ ! ALERT ]&nbsp;{text}</td></tr></table>')
 
 def _ledger_table(rows, pad):
-    html = '<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;">'
+    # 账本式双列表（行情 / KV）：表格内文字缩小一号（12→11）并取消数值加粗，只留颜色区分。
+    html = (f'<table width="100%" cellpadding="0" cellspacing="0" '
+            f'style="border-collapse:collapse;font-weight:{GZ_W_TABLE};">')
     for label, value, *color in rows:
         val_color = color[0] if color else C_INK
         html += (f'<tr><td style="padding:{pad} 0;border-bottom:1px solid {C_HAIR};'
-                 f'font-size:12px;color:{C_INK};vertical-align:top;line-height:1.5;'
+                 f'font-size:{PIXEL_FS_LEDGER}px;color:{C_INK};vertical-align:top;line-height:1.5;'
                  f'font-family:{FONT_MONO};" '
-                 f'width="46%">{label}</td>'
+                 f'width="46%">{_table_text(label)}</td>'
                  f'<td style="padding:{pad} 0;border-bottom:1px solid {C_HAIR};'
-                 f'font-size:12px;font-weight:900;color:{val_color};text-align:right;'
+                 f'font-size:{PIXEL_FS_LEDGER}px;font-weight:{GZ_W_TABLE};color:{val_color};text-align:right;'
                  f'line-height:1.5;font-variant-numeric:tabular-nums;'
-                 f'font-family:{FONT_MONO};" width="54%">{value}</td></tr>')
+                 f'font-family:{FONT_MONO};" width="54%">{_table_text(value)}</td></tr>')
     return html + '</table>'
 
 def _data_table(rows):
@@ -6609,16 +6625,17 @@ def _source_badge(item):
     return _badge(f"LAG {item.get('content_date') or '-'}", "warn")
 
 def _item_row(icon, text, sub="", icon_color=C_ACCENT, row_bg="transparent", anchor=None):
+    # 资讯行也是表格：正文 12→11、序号 11→10，并取消加粗（颜色仍区分序号与正文）。
     sub_html = (f'<div style="font-size:10px;color:{C_MUTED};letter-spacing:.3px;'
-                f'padding-top:3px;line-height:1.6;font-family:{FONT_MONO};">{sub}</div>' if sub else "")
+                f'padding-top:3px;line-height:1.6;font-family:{FONT_MONO};">{_table_text(sub)}</div>' if sub else "")
     anchor_attr = f' id="{_esc(anchor)}"' if anchor else ""
     return (f'<table width="100%" cellpadding="0" cellspacing="0"{anchor_attr} style="border-collapse:collapse;'
-            f'background:{row_bg};">'
+            f'font-weight:{GZ_W_TABLE};background:{row_bg};">'
             f'<tr><td width="32" valign="top" style="padding:8px 4px 8px 0;border-bottom:1px solid {C_HAIR};'
-            f'font-size:11px;font-weight:900;color:{icon_color};line-height:1.6;'
-            f'font-family:{FONT_MONO};">{icon}</td>'
-            f'<td style="padding:8px 0;border-bottom:1px solid {C_HAIR};font-size:12px;'
-            f'color:{C_INK};line-height:1.7;font-family:{FONT_MONO};">{text}{sub_html}</td></tr></table>')
+            f'font-size:{PIXEL_FS_ITEM_ICON}px;font-weight:{GZ_W_TABLE};color:{icon_color};line-height:1.6;'
+            f'font-family:{FONT_MONO};">{_table_text(icon)}</td>'
+            f'<td style="padding:8px 0;border-bottom:1px solid {C_HAIR};font-size:{PIXEL_FS_ITEM}px;'
+            f'color:{C_INK};line-height:1.7;font-family:{FONT_MONO};">{_table_text(text)}{sub_html}</td></tr></table>')
 
 def _headline_row(it, index=None):
     marker = f"{index:02d}" if isinstance(index, int) else "--"
@@ -6848,6 +6865,29 @@ def _gz_num(text):
 
 
 
+# 表格内文字的「非加粗」归一（2026-10-23 用户要求：表格内文字缩小一号 + 不加粗）。
+# 微信 / PushPlus 会清洗 <style> 块，只保留内联样式，所以不能用一条 CSS 规则统一处理，
+# 只能在**表格单元格内容**这一层把粗体标记与粗体字重就地改写：
+#   · <b> / <strong> → <span>（颜色、字号等其他内联样式原样保留）；
+#   · font-weight:600/700/800/900/bold/bolder → font-weight:400（500 及以下视为常规，不动）。
+# 只作用于数据表 / KV 表 / 资讯表 / AI 结论表的单元格，不动刊头、栏目标题、
+# 徽标与正文段落（它们不在表格里，或属于版面装饰）。
+_TABLE_BOLD_WEIGHT_RE = re.compile(r"font-weight:\s*(?:600|700|800|900|bold|bolder)")
+_TABLE_BOLD_TAG_RE = re.compile(r"<(/?)(b|strong)(?=[\s>/])", re.IGNORECASE)
+
+
+def _table_text(html):
+    """表格单元格文字统一为常规字重（非加粗），其余内联样式保持不变。"""
+    if not html:
+        return html
+    text = str(html)
+    if "<" not in text:
+        return text
+    text = _TABLE_BOLD_TAG_RE.sub(lambda m: f"<{m.group(1)}span", text)
+    return _TABLE_BOLD_WEIGHT_RE.sub(f"font-weight:{GZ_W_TABLE}", text)
+
+
+
 def _gz_flow_rows(pairs, headers=None):
     """微信正文的多行双列表：左侧项目，右侧内容（仅 1 行或显式传表头时自动带表头行，确保多行多列）。"""
     pairs = list(pairs or [])
@@ -6863,11 +6903,11 @@ def _gz_flow_rows(pairs, headers=None):
                     f'color:{GZ_FAINT}">{h1}</td></tr>')
     for label, value in pairs:
         rows.append(f'<tr><td width="28%" valign="top" style="border-bottom:1px solid {GZ_HAIR};'
-                    f'color:{GZ_META}">{label or ""}</td>'
+                    f'color:{GZ_META}">{_table_text(label or "")}</td>'
                     f'<td valign="top" style="border-bottom:1px solid {GZ_HAIR};'
-                    f'color:{GZ_INK}">{value}</td></tr>')
+                    f'color:{GZ_INK}">{_table_text(value)}</td></tr>')
     return (f'<table width="100%" cellpadding="3" cellspacing="0" '
-            f'style="width:100%!important;font-size:{GZ_FS_TABLE}px;'
+            f'style="width:100%!important;font-size:{GZ_FS_TABLE}px;font-weight:{GZ_W_TABLE};'
             f'line-height:1.45;table-layout:fixed;word-break:break-word">'
             f'{"".join(rows)}</table>')
 
@@ -6912,7 +6952,7 @@ def gz_data_table(headers, rows, aligns=None, kv=False, row_anchors=None, widths
             css.append(f"text-align:{aligns[i]}")
         attr = f' id="{_esc(anchor)}"' if anchor else ""
         style = f' style="{";".join(css)}"' if css else ""
-        return f"<td{attr}{style}>{html}</td>"
+        return f"<td{attr}{style}>{_table_text(html)}</td>"
 
     trs = []
     if headers:
@@ -6929,7 +6969,8 @@ def gz_data_table(headers, rows, aligns=None, kv=False, row_anchors=None, widths
     return (
         f'<table width="100%" cellpadding="0" cellspacing="0" '
         f'style="width:100%!important;border-collapse:separate;'
-        f'border-spacing:5px 2px;{align_css}font-size:{GZ_FS_TABLE}px;line-height:1.45;color:{GZ_INK}">'
+        f'border-spacing:5px 2px;{align_css}font-size:{GZ_FS_TABLE}px;font-weight:{GZ_W_TABLE};'
+        f'line-height:1.45;color:{GZ_INK}">'
         f'{cols}{"".join(trs)}</table>'
     )
 
@@ -7329,11 +7370,11 @@ def _gz_news_card(marker, title, sub="", anchor=None):
     meta = f'<br><small style="color:{GZ_FAINT}">{sub}</small>' if sub else ""
     return (f'<table width="100%" cellpadding="0" cellspacing="0"{attr} '
             f'style="width:100%!important;border-collapse:collapse;'
-            f'font-size:{GZ_FS_TABLE}px;color:{GZ_INK};">'
+            f'font-size:{GZ_FS_TABLE}px;font-weight:{GZ_W_TABLE};color:{GZ_INK};">'
             f'<tr><td width="32" valign="top" style="padding:6px 4px;'
-            f'border-bottom:1px solid {GZ_HAIR_SOFT};color:{GZ_META};">{marker}</td>'
+            f'border-bottom:1px solid {GZ_HAIR_SOFT};color:{GZ_META};">{_table_text(marker)}</td>'
             f'<td valign="top" style="padding:6px 4px;border-bottom:1px solid {GZ_HAIR_SOFT};'
-            f'word-break:break-word;line-height:1.55;">{title}{meta}</td></tr></table>')
+            f'word-break:break-word;line-height:1.55;">{_table_text(title)}{_table_text(meta)}</td></tr></table>')
 
 
 def gz_headline_row(it, index=None):
@@ -7557,9 +7598,11 @@ def gz_section(num, kicker_en, title, content, badge_html="", caption=""):
     """
     content = content or ""
     if content.lstrip().startswith("<tr"):
+        # 栏目正文本身就是表格行：套一层数据表外壳，沿用表格字号与常规字重。
         content = (f'<table width="100%" cellpadding="0" cellspacing="0" '
                    f'style="width:100%!important;border-collapse:collapse;'
-                   f'font-size:{GZ_FS_TABLE}px;color:{GZ_INK}">{content}</table>')
+                   f'font-size:{GZ_FS_TABLE}px;font-weight:{GZ_W_TABLE};color:{GZ_INK}">'
+                   f'{_table_text(content)}</table>')
     # 微信正文逐内容块表格化；数据表保留原结构，文字说明也有稳定内边距与分段。
     content = _gz_zebra_bands(content)
     meta_bits = [x for x in (badge_html, caption) if x]
@@ -9256,10 +9299,10 @@ def _ren_judgment_row(text, kit, meta=None):
         bar_fill_c, bar_empty_c = GZ_KLEIN, GZ_FAINT
         box = (f'border:1px solid {GZ_HAIR};border-left:4px solid {GZ_KLEIN};'
                f'background:{GZ_KLEIN_WASH};')
-        head_row = (f'<tr><td width="28%" valign="top" style="padding:8px 10px 4px;font-size:13px;font-weight:900;'
+        head_row = (f'<tr><td width="28%" valign="top" style="padding:8px 10px 4px;font-size:12px;font-weight:400;'
                     f'color:{GZ_KLEIN};line-height:1.5;font-family:{FONT_MONO};border-bottom:1px solid {GZ_HAIR_SOFT};">'
                     f'█▓▒░ {_ren.REN_ICON} <span style="letter-spacing:1px;">{_esc(_ren.REN_TITLE)}</span> ░▒▓█</td>'
-                    f'<td valign="top" style="padding:8px 10px 4px;font-size:10px;font-weight:700;color:{GZ_FAINT};'
+                    f'<td valign="top" style="padding:8px 10px 4px;font-size:9px;font-weight:400;color:{GZ_FAINT};'
                     f'line-height:1.5;font-family:{FONT_MONO};border-bottom:1px solid {GZ_HAIR_SOFT};">'
                     f'本栏 AI 结论 · 大白话 · 先结论后证据</td></tr>')
     else:
@@ -9268,10 +9311,10 @@ def _ren_judgment_row(text, kit, meta=None):
         bar_empty_c = C_FAINT                # ░ 恒用暗灰；▓ 的颜色在方向分支里定
         box = f'border:1px solid {C_CYAN};background:#0A0E1D;box-shadow:5px 5px 0 #000;'
         head_row = (f'<tr><td width="28%" valign="top" style="padding:5px 10px;background:{C_CYAN};color:{C_BG};'
-                    f'font-size:11px;font-weight:900;letter-spacing:1px;font-family:{FONT_MONO};">'
+                    f'font-size:10px;font-weight:400;letter-spacing:1px;font-family:{FONT_MONO};">'
                     f'█▓▒░ {_ren.REN_ICON} {_esc(_ren.REN_TITLE)} ░▒▓█</td>'
                     f'<td valign="top" style="padding:5px 10px;background:{C_CYAN};color:{C_BG};'
-                    f'font-size:9px;font-weight:900;letter-spacing:2px;font-family:{FONT_MONO};">'
+                    f'font-size:8px;font-weight:400;letter-spacing:2px;font-family:{FONT_MONO};">'
                     f'// 本栏 AI 结论 · 大白话 · 先结论后证据</td></tr>')
 
     # 方向与上色：偏多 → 涨色 ▲、偏空 → 跌色 ▼、其余 → 中性色 ■（不只靠颜色区分）。
@@ -9287,32 +9330,34 @@ def _ren_judgment_row(text, kit, meta=None):
     meter_html = ""
     if meter:
         p_int = int(round(float(p_pct)))
-        label_html = (f' <span style="font-size:11px;font-weight:900;color:{muted};">'
+        label_html = (f' <span style="font-size:10px;font-weight:400;color:{muted};">'
                       f'{_esc(label)}</span>') if label else ""
         bar = (f'<span style="color:{bar_fill_c};">{"▓" * meter["filled"]}</span>'
                f'<span style="color:{bar_empty_c};">{"░" * meter["empty"]}</span>')
         meter_html = (
-            f'<tr><td width="28%" valign="top" style="padding:8px 10px 4px;font-size:9px;font-weight:900;'
+            f'<tr><td width="28%" valign="top" style="padding:8px 10px 4px;font-size:8px;font-weight:400;'
             f'letter-spacing:1px;color:{muted};font-family:{FONT_MONO};border-bottom:1px dashed {GZ_HAIR_SOFT if gz else C_HAIR};">'
             f'涨跌概率 / 几率 ODDS METER</td>'
             f'<td valign="top" style="padding:8px 10px 4px;border-bottom:1px dashed {GZ_HAIR_SOFT if gz else C_HAIR};">'
-            f'<div style="font-size:17px;font-weight:900;color:{dir_c};line-height:1.35;'
+            f'<div style="font-size:16px;font-weight:400;color:{dir_c};line-height:1.35;'
             f'font-family:{FONT_MONO};">{mark} 上涨概率 {p_int}%{label_html}</div>'
-            f'<div style="font-size:13px;font-weight:900;line-height:1.5;font-family:{FONT_MONO};'
+            f'<div style="font-size:12px;font-weight:400;line-height:1.5;font-family:{FONT_MONO};'
             f'letter-spacing:3px;padding-top:1px;">{bar}'
-            f'<span style="font-size:10px;font-weight:700;letter-spacing:0;color:{muted};">'
+            f'<span style="font-size:9px;font-weight:400;letter-spacing:0;color:{muted};">'
             f' 几率 {_esc(meter["odds"])} · 每格 10% · 与研判行同源</span></div></td></tr>')
 
-    sub_html = (f'<div style="font-size:10px;color:{muted};letter-spacing:.3px;'
+    sub_html = (f'<div style="font-size:9px;color:{muted};letter-spacing:.3px;'
                 f'padding-top:6px;line-height:1.6;font-family:{FONT_MONO};">'
                 f'{_esc(_ren.DISCLAIMER)}</div>') if not PLAIN() else ""
+    # AI 结论表也是表格：整表字号收一号、字重统一常规（见 GZ_W_TABLE / 2026-10-23 用户要求）。
     return (f'<table {SECTION_AI_CONCLUSION_MARKER} width="100%" cellpadding="0" cellspacing="0"'
-            f' style="width:100%!important;border-collapse:collapse;margin-top:10px;{box}">'
+            f' style="width:100%!important;border-collapse:collapse;margin-top:10px;'
+            f'font-weight:{GZ_W_TABLE};{box}">'
             f'{head_row}'
             f'{meter_html}'
-            f'<tr><td width="28%" valign="top" style="padding:8px 10px 10px;font-size:11px;font-weight:700;'
+            f'<tr><td width="28%" valign="top" style="padding:8px 10px 10px;font-size:10px;font-weight:400;'
             f'color:{muted};line-height:1.75;font-family:{FONT_MONO};">本栏结论</td>'
-            f'<td valign="top" style="padding:8px 10px 10px;font-size:12px;color:{ink};line-height:1.75;'
+            f'<td valign="top" style="padding:8px 10px 10px;font-size:11px;color:{ink};line-height:1.75;'
             f'font-family:{FONT_MONO};">{_esc(text)}{sub_html}</td></tr></table>')
 
 

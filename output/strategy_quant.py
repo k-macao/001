@@ -29,6 +29,7 @@ import hashlib
 import math
 import os
 import random
+import re
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Tuple
 
@@ -591,11 +592,12 @@ def _kit_table(kit, headers, rows, aligns=None):
             except Exception:
                 pass
     # fallback: simple html table
-    h = "".join(f'<th style="padding:4px 8px;background:#F1F3F4;border:1px solid #ddd;text-align:left;font-size:12px;">{_esc(c)}</th>' for c in (headers or []))
+    # 兜底表也遵守「表格内文字缩小一号 + 不加粗」（2026-10-23）：12px → 11px，字重 400。
+    h = "".join(f'<th style="padding:4px 8px;background:#F1F3F4;border:1px solid #ddd;text-align:left;font-size:11px;font-weight:400;">{_esc(c)}</th>' for c in (headers or []))
     b = ""
     for r in rows:
-        b += "<tr>" + "".join(f'<td style="padding:4px 8px;border:1px solid #eee;font-size:12px;">{c}</td>' for c in r) + "</tr>"
-    return f'<table style="width:100%;border-collapse:collapse;">' + (f'<tr>{h}</tr>' if h else '') + b + '</table>'
+        b += "<tr>" + "".join(f'<td style="padding:4px 8px;border:1px solid #eee;font-size:11px;font-weight:400;">{_plain_cell(c)}</td>' for c in r) + "</tr>"
+    return f'<table style="width:100%;border-collapse:collapse;font-weight:400;">' + (f'<tr>{h}</tr>' if h else '') + b + '</table>'
 
 def _kit_kv(kit, pairs):
     fn = getattr(kit, "kv", None)
@@ -604,9 +606,9 @@ def _kit_kv(kit, pairs):
             return fn(pairs)
         except Exception:
             pass
-    # fallback
-    rows = "".join(f'<tr><td style="padding:4px 8px;color:#666;font-size:12px;border:1px solid #eee;">{_esc(k)}</td><td style="padding:4px 8px;font-size:12px;border:1px solid #eee;">{v}</td></tr>' for k, v in pairs)
-    return f'<table style="width:100%;border-collapse:collapse;">{rows}</table>'
+    # fallback（同样遵守「表格内文字缩小一号 + 不加粗」：12px → 11px，字重 400）
+    rows = "".join(f'<tr><td style="padding:4px 8px;color:#666;font-size:11px;font-weight:400;border:1px solid #eee;">{_esc(k)}</td><td style="padding:4px 8px;font-size:11px;font-weight:400;border:1px solid #eee;">{_plain_cell(v)}</td></tr>' for k, v in pairs)
+    return f'<table style="width:100%;border-collapse:collapse;font-weight:400;">{rows}</table>'
 
 def _kit_note(kit, text):
     fn = getattr(kit, "note", None)
@@ -621,6 +623,24 @@ def _esc(text):
     if text is None:
         return ""
     return str(text).replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+
+
+# 表格内文字一律不加粗（2026-10-23 用户要求）：兜底渲染路径没有 kit 可用，
+# 所以在单元格内容这一层把 <b>/<strong> 降级成 <span>、粗体字重写成 400，
+# 与 output/pipeline.py:_table_text 同口径；颜色等其他内联样式原样保留。
+_BOLD_TAG_RE = re.compile(r"<(/?)(b|strong)(?=[\s>/])", re.IGNORECASE)
+_BOLD_WEIGHT_RE = re.compile(r"font-weight:\s*(?:600|700|800|900|bold|bolder)")
+
+
+def _plain_cell(html):
+    """单元格内容去粗：只改字重与粗体标签，不动文字与其他样式。"""
+    if html is None:
+        return ""
+    text = str(html)
+    if "<" not in text:
+        return text
+    text = _BOLD_TAG_RE.sub(lambda m: f"<{m.group(1)}span", text)
+    return _BOLD_WEIGHT_RE.sub("font-weight:400", text)
 
 def render_strategy_classification_table(kit):
     """图中分类的表格化呈现（用于总览顶部）"""

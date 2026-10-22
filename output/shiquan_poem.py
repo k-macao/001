@@ -627,7 +627,10 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
 
     设计约束：
     - 不另起 ``<h2>`` 或 ``SECTION_BODY_MARK``，诗卡与卦象共属一个卷首栏目；
-    - 全表（``<table>``）内联样式排版，兼容微信 / PushPlus ``v-html`` 清洗与所有字色对比度门禁。
+    - 全表（``<table>``）内联样式排版，兼容微信 / PushPlus ``v-html`` 清洗与所有字色对比度门禁；
+    - 表格内文字缩小一号且不加粗（2026-10-23 用户要求，与日报数据表同口径）：
+      诗题 15→14、诗句 14→13、左栏标签 11/12→10/11、徽标 10→9，字重一律 400；
+      颜色、字距、圆角与底色不变，五套主题同步收一档。
     """
     if not isinstance(poem, dict):
         return ""
@@ -654,13 +657,13 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'style="width:100%!important;border-collapse:collapse;margin:12px 0;'
             'background:#101426;border:1px solid #39FFB6;box-shadow:5px 5px 0 #000;color:#F4F7FF;">'
             '<tr><td width="28%" valign="top" style="padding:8px 10px;border-bottom:1px solid #1E2440;'
-            'font-size:11px;font-weight:900;letter-spacing:0.12em;color:#39FFB6;">'
+            'font-size:10px;font-weight:400;letter-spacing:0.12em;color:#39FFB6;">'
             '📜 今日一首诗 // 诗泉</td>'
             f'<td valign="top" style="padding:8px 10px;border-bottom:1px solid #1E2440;'
-            f'font-size:15px;font-weight:900;color:#FFE66D;">'
-            f'《{title}》 <span style="font-size:12px;font-weight:700;color:#A6AEC9;">{meta_str}</span></td></tr>'
-            '<tr><td width="28%" valign="top" style="padding:8px 10px;font-size:12px;color:#A6AEC9;">诗句正文</td>'
-            f'<td valign="top" style="padding:8px 10px;font-size:14px;line-height:1.75;color:#F4F7FF;">{verse_html}</td></tr>'
+            f'font-size:14px;font-weight:400;color:#FFE66D;">'
+            f'《{title}》 <span style="font-size:11px;font-weight:400;color:#A6AEC9;">{meta_str}</span></td></tr>'
+            '<tr><td width="28%" valign="top" style="padding:8px 10px;font-size:11px;color:#A6AEC9;">诗句正文</td>'
+            f'<td valign="top" style="padding:8px 10px;font-size:13px;line-height:1.75;color:#F4F7FF;">{verse_html}</td></tr>'
             '</table>'
         )
 
@@ -671,13 +674,13 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'style="width:100%!important;border-collapse:collapse;margin:12px 0;'
             'background:#2C2C2E;border:1px solid #3A3A3C;border-radius:10px;color:#F2F2F7;">'
             '<tr><td width="28%" valign="top" style="padding:8px 12px;border-bottom:1px solid #3A3A3C;'
-            'font-size:11px;font-weight:700;letter-spacing:0.10em;color:#BF5AF2;">'
+            'font-size:10px;font-weight:400;letter-spacing:0.10em;color:#BF5AF2;">'
             '📜 今日一首诗 · 诗泉</td>'
             f'<td valign="top" style="padding:8px 12px;border-bottom:1px solid #3A3A3C;'
-            f'font-size:15px;font-weight:800;color:#FFFFFF;">'
-            f'《{title}》 <span style="font-size:12px;font-weight:600;color:#A1A1AA;">{meta_str}</span></td></tr>'
-            '<tr><td width="28%" valign="top" style="padding:8px 12px;font-size:12px;color:#A1A1AA;">诗句正文</td>'
-            f'<td valign="top" style="padding:8px 12px;font-size:14px;line-height:1.75;color:#F2F2F7;">{verse_html}</td></tr>'
+            f'font-size:14px;font-weight:400;color:#FFFFFF;">'
+            f'《{title}》 <span style="font-size:11px;font-weight:400;color:#A1A1AA;">{meta_str}</span></td></tr>'
+            '<tr><td width="28%" valign="top" style="padding:8px 12px;font-size:11px;color:#A1A1AA;">诗句正文</td>'
+            f'<td valign="top" style="padding:8px 12px;font-size:13px;line-height:1.75;color:#F2F2F7;">{verse_html}</td></tr>'
             '</table>'
         )
 
@@ -688,14 +691,14 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'style="width:100%!important;border-collapse:collapse;margin:12px 0;'
             'background:#EFECE6;border-top:2px solid #0E0E0E;border-bottom:1px solid #C8C4BC;color:#1F1F1F;">'
             '<tr><td width="28%" valign="top" style="padding:8px 10px;border-bottom:1px solid #D8D4CC;'
-            'font-size:10px;font-weight:700;letter-spacing:0.12em;color:#0E0E0E;">'
+            'font-size:9px;font-weight:400;letter-spacing:0.12em;color:#0E0E0E;">'
             '<span style="background:#39FF14;color:#0E0E0E;padding:1px 6px;margin-right:6px;">诗泉</span>'
             '📜 今日一首诗</td>'
             f'<td valign="top" style="padding:8px 10px;border-bottom:1px solid #D8D4CC;'
-            f'font-size:15px;font-weight:800;color:#0E0E0E;">'
-            f'《{title}》 <span style="font-size:12px;font-weight:600;color:#333333;">{meta_str}</span></td></tr>'
-            '<tr><td width="28%" valign="top" style="padding:8px 10px;font-size:12px;color:#333333;">诗句正文</td>'
-            f'<td valign="top" style="padding:8px 10px;font-size:14px;line-height:1.75;color:#1F1F1F;">{verse_html}</td></tr>'
+            f'font-size:14px;font-weight:400;color:#0E0E0E;">'
+            f'《{title}》 <span style="font-size:11px;font-weight:400;color:#333333;">{meta_str}</span></td></tr>'
+            '<tr><td width="28%" valign="top" style="padding:8px 10px;font-size:11px;color:#333333;">诗句正文</td>'
+            f'<td valign="top" style="padding:8px 10px;font-size:13px;line-height:1.75;color:#1F1F1F;">{verse_html}</td></tr>'
             '</table>'
         )
 
@@ -707,13 +710,13 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
             'background:#F6F6F6;border-left:3px solid #002FA7;border-top:1px solid #DDDDDD;'
             'border-right:1px solid #DDDDDD;border-bottom:1px solid #DDDDDD;color:#222222;">'
             '<tr><td width="28%" valign="top" style="padding:8px 12px;border-bottom:1px solid #E5E5E5;'
-            'font-size:11px;font-weight:700;letter-spacing:0.10em;color:#002FA7;">'
+            'font-size:10px;font-weight:400;letter-spacing:0.10em;color:#002FA7;">'
             '📜 今日一首诗 · 诗泉</td>'
             f'<td valign="top" style="padding:8px 12px;border-bottom:1px solid #E5E5E5;'
-            f'font-size:15px;font-weight:800;color:#111111;">'
-            f'《{title}》 <span style="font-size:12px;font-weight:600;color:#333333;">{meta_str}</span></td></tr>'
-            '<tr><td width="28%" valign="top" style="padding:8px 12px;font-size:12px;color:#333333;">诗句正文</td>'
-            f'<td valign="top" style="padding:8px 12px;font-size:14px;line-height:1.75;color:#222222;">{verse_html}</td></tr>'
+            f'font-size:14px;font-weight:400;color:#111111;">'
+            f'《{title}》 <span style="font-size:11px;font-weight:400;color:#333333;">{meta_str}</span></td></tr>'
+            '<tr><td width="28%" valign="top" style="padding:8px 12px;font-size:11px;color:#333333;">诗句正文</td>'
+            f'<td valign="top" style="padding:8px 12px;font-size:13px;line-height:1.75;color:#222222;">{verse_html}</td></tr>'
             '</table>'
         )
 
@@ -724,14 +727,14 @@ def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime"
         'style="width:100%!important;border-collapse:collapse;margin:12px 0;'
         'background:#FFFFFF;border:1px solid #E2E5EC;border-radius:16px;color:#18181B;">'
         '<tr><td width="28%" valign="top" style="padding:8px 12px;border-bottom:1px solid #ECEEF3;'
-        'font-size:11px;font-weight:800;letter-spacing:0.08em;color:#111111;">'
+        'font-size:10px;font-weight:400;letter-spacing:0.08em;color:#111111;">'
         '<span style="display:inline-block;padding:1px 8px;margin-right:6px;border-radius:999px;'
-        'background:#D4FF00;color:#111111;font-size:10px;font-weight:900;">诗泉</span>'
+        'background:#D4FF00;color:#111111;font-size:9px;font-weight:400;">诗泉</span>'
         '📜 今日一首诗</td>'
         f'<td valign="top" style="padding:8px 12px;border-bottom:1px solid #ECEEF3;'
-        f'font-size:15px;font-weight:800;color:#111111;">'
-        f'《{title}》 <span style="font-size:12px;font-weight:600;color:#333333;">{meta_str}</span></td></tr>'
-        '<tr><td width="28%" valign="top" style="padding:8px 12px;font-size:12px;color:#333333;">诗句正文</td>'
-        f'<td valign="top" style="padding:8px 12px;font-size:14px;line-height:1.75;color:#18181B;">{verse_html}</td></tr>'
+        f'font-size:14px;font-weight:400;color:#111111;">'
+        f'《{title}》 <span style="font-size:11px;font-weight:400;color:#333333;">{meta_str}</span></td></tr>'
+        '<tr><td width="28%" valign="top" style="padding:8px 12px;font-size:11px;color:#333333;">诗句正文</td>'
+        f'<td valign="top" style="padding:8px 12px;font-size:13px;line-height:1.75;color:#18181B;">{verse_html}</td></tr>'
         '</table>'
     )
