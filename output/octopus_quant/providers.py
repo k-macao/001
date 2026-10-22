@@ -314,20 +314,9 @@ def fetch_bars(fetch_json, symbol, *, rng="1y", interval="1d", timeout=15,
         bars = parse_chart_result(result, with_meta=interval == "1d") if result else []
         return bool(bars) and (validate_bars(bars) if validate_bars else True)
 
-    # 数据线 yahoo_bars：query1 → query2（含同指数候选代码）→ 东财日 K（独立解析）
-    norm_sym = str(symbol or "").strip().upper().replace("%5E", "^")
-    sym_cands = [symbol]
-    if norm_sym == "^HSTECH":
-        sym_cands.append("HSTECH.HK")
-    elif norm_sym == "^HSCEI":
-        sym_cands.append("^HSCE")
-    urls = []
-    for cand in sym_cands:
-        for u in chain_urls("yahoo_chart", symbol=cand):
-            if u not in urls:
-                urls.append(u)
+    # 数据线 yahoo_bars：query1 → query2 → 东财日 K（独立解析）
     data, url = fetch_json_chain(
-        fetch_json, urls,
+        fetch_json, chain_urls("yahoo_chart", symbol=symbol),
         {"range": rng, "interval": interval}, ok=_ok, timeout=timeout)
     if data is not None:
         bars = parse_chart_result(_result(data), with_meta=interval == "1d")
@@ -381,14 +370,8 @@ def fetch_bars_eastmoney(fetch_json, symbol, *, rng="1y", timeout=15, interval="
         bars = _parse_eastmoney_bars(data)
         return bool(bars) and (validate_bars(bars) if validate_bars else True)
 
-    secid_cands = ("100.HSTECH", "124.HSTECH") if secid == "100.HSTECH" else (secid,)
-    data, url = None, None
-    for cand_secid in secid_cands:
-        cand_params = {**params, "secid": cand_secid}
-        data, url = fetch_json_chain(fetch_json, chain_urls("em_kline"), cand_params,
-                                     ok=_ok, timeout=timeout)
-        if data is not None:
-            break
+    data, url = fetch_json_chain(fetch_json, chain_urls("em_kline"), params,
+                                 ok=_ok, timeout=timeout)
     if data is None:
         return empty if with_source else []
     bars = _parse_eastmoney_bars(data)

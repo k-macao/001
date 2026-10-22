@@ -191,14 +191,11 @@ A_STOCKS: List[Tuple[str, str, str]] = [
     ("五粮液", "000858.SZ", "A"), ("美的集团", "000333.SZ", "A"),
 ]
 
-INDEX_SYMBOLS: List[Tuple[str, str, str]] = [
+CORE_SYMBOLS: List[Tuple[str, str, str]] = [
     ("恒生指数", "^HSI", "HK"), ("恒生科技", "^HSTECH", "HK"), ("国企指数", "^HSCEI", "HK"),
     ("上证指数", "000001.SS", "A"), ("深证成指", "399001.SZ", "A"), ("创业板指", "399006.SZ", "A"),
-    ("沪深300", "000300.SS", "A"),
     ("道琼斯", "^DJI", "US"), ("标普500", "^GSPC", "US"), ("纳斯达克", "^IXIC", "US"),
-]
-
-CORE_SYMBOLS: List[Tuple[str, str, str]] = INDEX_SYMBOLS + US_STOCKS + A_STOCKS
+] + US_STOCKS + A_STOCKS
 
 _EM_EXTRA_US = "105."        # 东财美股 secid 前缀（105 = 纳斯达克）
 
@@ -473,8 +470,6 @@ def fetch_eastmoney(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT
     started = time.time()
     pairs = [(em_secid(s), s) for s in symbols]
     secids = {sec: sym for sec, sym in pairs if sec}
-    if "^HSTECH" in symbols:
-        secids.setdefault("124.HSTECH", "^HSTECH")
     if not secids:
         return _source_result("eastmoney", "failed", error="无可用 secid 映射")
     params = {
@@ -587,20 +582,9 @@ def _parse_tencent_line(payload: str) -> Optional[Dict[str, Any]]:
     for token in parts:
         token = token.strip()
         if re.fullmatch(r"\d{14}", token):
-            try:
-                stamp = datetime.strptime(token, "%Y%m%d%H%M%S").strftime("%Y-%m-%d %H:%M:%S")
-                break
-            except ValueError:
-                continue
-        m = re.match(r"^(20\d{2})[-/](\d{2})[-/](\d{2})\s+(\d{2}:\d{2}(?::\d{2})?)$", token)
-        if m:
-            try:
-                datetime(int(m.group(1)), int(m.group(2)), int(m.group(3)))
-                hhmmss = m.group(4) if len(m.group(4)) == 8 else f"{m.group(4)}:00"
-                stamp = f"{m.group(1)}-{m.group(2)}-{m.group(3)} {hhmmss}"
-                break
-            except ValueError:
-                continue
+            stamp = (f"{token[0:4]}-{token[4:6]}-{token[6:8]} "
+                     f"{token[8:10]}:{token[10:12]}:{token[12:14]}")
+            break
     price = _num(parts[3])
     high, low = None, None
     if len(parts) > 34 and price:
@@ -682,18 +666,16 @@ def fetch_yahoo(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
 
     def one(sym: str):
         # 单只标的的异常绝不允许拖垮整路源（网络抖动 / 返回结构变化只丢这一只）
-        cands = ("^HSTECH", "HSTECH.HK") if sym == "^HSTECH" else (("^HSCEI", "^HSCE") if sym == "^HSCEI" else (sym,))
         try:
             for host in SOURCES["yahoo"]["hosts"]:
-                for cand in cands:
-                    url = (f"https://{host}/v8/finance/chart/{cand}"
-                           f"?range=1d&interval=1d&includePrePost=false")
-                    data, err = http.get(url, timeout=timeout)
-                    if err:
-                        continue
-                    item = _yahoo_quote_from_chart(data)
-                    if item is not None:
-                        return sym, item
+                url = (f"https://{host}/v8/finance/chart/{sym}"
+                       f"?range=1d&interval=1d&includePrePost=false")
+                data, err = http.get(url, timeout=timeout)
+                if err:
+                    continue
+                item = _yahoo_quote_from_chart(data)
+                if item is not None:
+                    return sym, item
         except Exception:                                           # noqa: BLE001
             return sym, None
         return sym, None
@@ -743,20 +725,18 @@ def fetch_em_kline(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
 
     def one(secid: str):
         # 单只标的的异常只丢这一只，不影响整路收盘校验源
-        cands = ("100.HSTECH", "124.HSTECH") if secid == "100.HSTECH" else (secid,)
         try:
-            for cand in cands:
-                params = {"secid": cand, "fields1": "f1,f2,f3,f4,f5,f6",
-                          "fields2": "f51,f52,f53,f54,f55,f56,f57", "klt": "101", "fqt": "1",
-                          "end": "20500101", "lmt": "3"}
-                for host in SOURCES["em_kline"]["hosts"]:
-                    url = f"https://{host}/api/qt/stock/kline/get?{urlencode(params)}"
-                    data, err = http.get(url, timeout=timeout)
-                    if err:
-                        continue
-                    item = _em_kline_last_close(data)
-                    if item is not None:
-                        return secid, item
+            params = {"secid": secid, "fields1": "f1,f2,f3,f4,f5,f6",
+                      "fields2": "f51,f52,f53,f54,f55,f56,f57", "klt": "101", "fqt": "1",
+                      "end": "20500101", "lmt": "3"}
+            for host in SOURCES["em_kline"]["hosts"]:
+                url = f"https://{host}/api/qt/stock/kline/get?{urlencode(params)}"
+                data, err = http.get(url, timeout=timeout)
+                if err:
+                    continue
+                item = _em_kline_last_close(data)
+                if item is not None:
+                    return secid, item
         except Exception:                                           # noqa: BLE001
             return secid, None
         return secid, None
@@ -1571,7 +1551,7 @@ def load_daily_bars(*, symbols: Optional[Sequence[str]] = None, root: str = DB_R
     wanted = set(symbols) if symbols is not None else None
     groups: Dict[Tuple[str, str], Dict[str, Dict[str, Any]]] = {}
     actions: Dict[str, set] = {}
-    index_symbols = {code for _name, code, _mk in INDEX_SYMBOLS}
+    index_symbols = {code for _name, code, _mk in CORE_SYMBOLS[:9]}
 
     def _moment(text):
         try:

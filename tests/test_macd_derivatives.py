@@ -4,11 +4,8 @@ import json
 import math
 import unittest
 from datetime import date, timedelta
-from pathlib import Path
-import sys
 from unittest.mock import Mock, patch
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_macd_strategy import NOW, bars, chart as close_chart, macd, market_db, pipeline, providers, stats
 from octopus_quant import macd_derivatives as d
 
