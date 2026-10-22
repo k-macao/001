@@ -114,14 +114,24 @@ def metrics(history):
 
 
 def render(rows, kit):
-    from strategy_quant import _kit_sub, _kit_table, _kit_kv, _esc
+    from html import escape
+    from strategy_quant import _kit_sub, _kit_kv
     def number(value):
         return "—" if value is None else f"{value:.2f}"
-    cells = [[_esc(r["market"] + "·" + r["name"]),
-              _esc(str(r["overseas_date"] or "暂缺")) + " / " + number(r.get("overseas_close")),
-              _esc(str(r["mainland_date"] or "暂缺")) + " / " + number(r.get("mainland_close")),
-              number(r.get("difference_pct")), _esc(r["status"]),
-              number(r.get("ret_20d") if r.get("usable") else None), _esc(r.get("trend", "样本不足") if r.get("usable") else "暂停判断")] for r in rows]
-    return (_kit_sub(kit, "港股 / A股 / 美股指数 · 境内外交叉核验") +
-            _kit_table(kit, ["指数", "Yahoo日期 / 收盘", "东方财富日期 / 收盘", "差异%", "核验", "20日%", "趋势"], cells) +
-            _kit_kv(kit, [("核验口径", "同指数、同交易日、未复权已收盘日线；容差0.1%，超过4个日历日保守标过期（长假需人工核查）。仅双源一致输出动量与趋势；单源、错位、冲突暂停判断。两供应商一致不等于交易所认证；20日收益不是策略回测收益。"), ("境外 / 境内", "Yahoo Chart（query1.finance.yahoo.com） / 东方财富历史K线（push2his.eastmoney.com）"), ("采集时间", _esc(max((r.get("collected_at", "") for r in rows), default="") or "暂缺"))]))
+    cards = []
+    for r in rows:
+        fields = [
+            ("Yahoo 日期 / 收盘", f'{r.get("overseas_date") or "暂缺"} / {number(r.get("overseas_close"))}'),
+            ("东方财富日期 / 收盘", f'{r.get("mainland_date") or "暂缺"} / {number(r.get("mainland_close"))}'),
+            ("差异", number(r.get("difference_pct")) + ("%" if r.get("difference_pct") is not None else "")),
+            ("核验状态", r.get("status", "双源缺失")),
+            ("20日收益", number(r.get("ret_20d") if r.get("usable") else None) + ("%" if r.get("usable") and r.get("ret_20d") is not None else "")),
+            ("趋势", r.get("trend", "样本不足") if r.get("usable") else "暂停判断"),
+        ]
+        body = ''.join('<tr><td width="42%" style="padding:7px 9px;border-bottom:1px solid #E8E8EB;color:#666;font-size:13px;">'
+                       + escape(str(k)) + '</td><td style="padding:7px 9px;border-bottom:1px solid #E8E8EB;color:#222;font-size:13px;font-weight:600;word-break:break-word;">'
+                       + escape(str(v)) + '</td></tr>' for k, v in fields)
+        cards.append('<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 12px;background:#fff;border:1px solid #E5E5E8;"><tr><td colspan="2" style="padding:10px 9px;background:#F0F1F3;font-size:15px;font-weight:700;color:#222;">'
+                     + escape(r["market"] + " · " + r["name"]) + '</td></tr>' + body + '</table>')
+    return (_kit_sub(kit, "港股 / A股 / 美股指数 · 境内外交叉核验") + ''.join(cards) +
+            _kit_kv(kit, [("核验口径", "同指数、同交易日、未复权已收盘日线；容差0.1%，超过4个日历日保守标过期（长假需人工核查）。仅双源一致输出动量与趋势；单源、错位、冲突暂停判断。两供应商一致不等于交易所认证；20日收益不是策略回测收益。"), ("境外 / 境内", "Yahoo Chart（query1.finance.yahoo.com） / 东方财富历史K线（push2his.eastmoney.com）"), ("采集时间", escape(max((r.get("collected_at", "") for r in rows), default="") or "暂缺"))]))

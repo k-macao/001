@@ -53,18 +53,23 @@ def _num(value, pct=False):
 
 
 def _table(rows, kit, columns):
-    cells = []
+    """窄屏微信友好的逐指数卡片；避免宽表格把每列挤成竖排文字。"""
+    cards = []
     for r in rows:
         usable = r.get('usable', False)
-        line = [escape(r['market'] + ' · ' + r['name']),
-                escape(r.get('as_of') or r.get('overseas_date') or r.get('mainland_date') or '暂缺')]
+        values = [('交易日', r.get('as_of') or r.get('overseas_date') or r.get('mainland_date') or '暂缺')]
         for key, label in columns:
             value = r.get(key) if usable else None
-            line.append(_num(value, key.startswith('ret_') or key in ('vol_20', 'max_dd_60', 'win_20'))
-                        if value is None or isinstance(value, (int, float)) else escape(str(value)))
-        line.append(escape(r.get('status', '双源缺失')))
-        cells.append(line)
-    return _kit_table(kit, ['指数', '交易日'] + [c[1] for c in columns] + ['核验状态'], cells)
+            shown = (_num(value, key.startswith('ret_') or key in ('vol_20', 'max_dd_60', 'win_20'))
+                     if value is None or isinstance(value, (int, float)) else str(value))
+            values.append((label, shown))
+        values.append(('核验状态', r.get('status', '双源缺失')))
+        body = ''.join('<tr><td width="38%" style="padding:7px 9px;border-bottom:1px solid #E8E8EB;color:#666;font-size:13px;">'
+                       + escape(str(label)) + '</td><td style="padding:7px 9px;border-bottom:1px solid #E8E8EB;color:#222;font-size:13px;font-weight:600;word-break:break-word;">'
+                       + escape(str(value)) + '</td></tr>' for label, value in values)
+        cards.append('<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 12px;background:#fff;border:1px solid #E5E5E8;"><tr><td colspan="2" style="padding:10px 9px;background:#F0F1F3;font-size:15px;font-weight:700;color:#222;">'
+                     + escape(r['market'] + ' · ' + r['name']) + '</td></tr>' + body + '</table>')
+    return ''.join(cards)
 
 
 def relative_rows(rows):
@@ -103,9 +108,9 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
         if key == 'MARKET REVIEW':
             body = render_crosscheck(rows, kit)
         elif key in FACTOR_LIMITS:
-            body = _kit_table(kit, ['市场指数范围', '因子状态', '处理'],
-                [[escape(m + '：' + '、'.join(r['name'] for r in rows if r['market'] == m)),
-                  '证据不足', '暂停评分与方向归因'] for m in ('A股', '港股', '美股')])
+            body = ''.join('<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 12px;background:#fff;border:1px solid #E5E5E8;"><tr><td style="padding:10px 9px;background:#F0F1F3;font-size:15px;font-weight:700;color:#222;">'
+                + escape(m) + '</td></tr><tr><td style="padding:8px 9px;border-bottom:1px solid #E8E8EB;color:#666;font-size:13px;">指数范围</td></tr><tr><td style="padding:7px 9px;color:#222;font-size:13px;word-break:break-word;">'
+                + escape('、'.join(r['name'] for r in rows if r['market'] == m)) + '</td></tr><tr><td style="padding:8px 9px;border-top:1px solid #E8E8EB;color:#222;font-size:13px;">证据不足 · 暂停评分与方向归因</td></tr></table>' for m in ('A股', '港股', '美股'))
             note = FACTOR_LIMITS[key]
         elif key == 'ECON CALENDAR':
             body = kit.calendar_block(calendar, date_str=date_str) if calendar and calendar.get('status') == 'success' else ''
@@ -120,7 +125,8 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
             note = scope
         elif key in ('SECTOR ROTATION', 'INDUSTRY ROTATION', 'STRATEGY ARBITRAGE'):
             ranks = relative_rows(rows)
-            body = _kit_table(kit, ['市场', '交易日', '排名', '指数', '20日收益', '相对组内末位差(百分点)'], ranks) if ranks else _disclosure(kit, '同市场、同截止日、有效20日收益的指数不足两个，暂停比较。')
+            body = ''.join('<table width="100%" cellpadding="0" cellspacing="0" style="width:100%;table-layout:fixed;border-collapse:collapse;margin:8px 0 12px;background:#fff;border:1px solid #E5E5E8;"><tr><td colspan="2" style="padding:10px 9px;background:#F0F1F3;font-size:15px;font-weight:700;color:#222;">'
+                + row[0] + ' · ' + row[3] + '</td></tr>' + ''.join('<tr><td width="42%" style="padding:7px 9px;border-bottom:1px solid #E8E8EB;color:#666;font-size:13px;">' + label + '</td><td style="padding:7px 9px;border-bottom:1px solid #E8E8EB;color:#222;font-size:13px;font-weight:600;word-break:break-word;">' + value + '</td></tr>' for label, value in [('交易日', row[1]), ('组内排名', row[2]), ('20日收益', row[4] + '%'), ('较组内末位差', row[5] + '个百分点')]) + '</table>' for row in ranks) if ranks else _disclosure(kit, '同市场、同截止日、有效20日收益的指数不足两个，暂停比较。')
             note = ('仅市场内部指数相对强弱；不代表行业轮动持仓、市场中性组合或可执行套利。'
                     '指数成分可能重叠，收益差不等于无风险价差；不生成买卖配对。')
         elif key in ('TREND TRACKING', 'UZI TREND', 'STRATEGY CTA', 'WEEKLY FORECAST'):
