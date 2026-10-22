@@ -1,0 +1,106 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>微信推送页表格重整预览 — 375px 容器内效果</title>
+<style>
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:#f2f2f2;color:#111}
+.page{max-width:980px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:0 0 8px} h2{font-size:16px;margin:24px 0 8px} h3{font-size:14px;margin:16px 0 6px;color:#333}
+.note{font-size:13px;color:#555;line-height:1.6;background:#fff;border:1px solid #e4e4e7;border-radius:12px;padding:12px}
+.phone{width:375px;max-width:100%;margin:12px auto;background:#fff;border:1px solid #ddd;border-radius:18px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.phone-bar{height:22px;background:#111;color:#fff;text-align:center;font-size:11px;line-height:22px} 
+.phone-body{padding:0;background:#fff}
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:12px} @media(max-width:760px){.compare{grid-template-columns:1fr}}
+.old{background:#fff9f9;border:1px solid #f3c1c1;border-radius:12px;padding:10px} .new{background:#f0f9c4;border:1px solid #c8f03c;border-radius:12px;padding:10px}
+.tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-right:6px} .tag-old{background:#fee;color:#b91c1c} .tag-new{background:#c8f03c;color:#111}
+table.demo{width:100%;border-collapse:collapse;font-size:12px} table.demo th{background:#f5f5f6;padding:6px 4px;text-align:left;font-size:11px;color:#333;border-bottom:1px solid #e4e4e7} table.demo td{padding:6px 4px;border-bottom:1px solid #eee;vertical-align:top;word-break:break-word}
+.badge{display:inline-block;padding:2px 7px;border-radius:999px;font-size:11px;font-weight:700} .ok{background:#e6f4ea;color:#137333} .warn{background:#fef3c7;color:#92400e} .bad{background:#fee;color:#b91c1c}
+</style>
+</head><body>
+<div class="page">
+<h1>表格重整 · 适合微信推送页的宽度</h1>
+<div class="note">
+原表为 5-7 列宽表（<b>指数 · 交易日 · 趋势 · 20日动量 · 核验状态</b> 以及 <b>指数 · Yahoo日期/收盘 · 东财日期/收盘 · 差异% · 核验 · 20日% · 趋势</b>），在 340px 推送宽度下每列不足 48px，日期 “2026-10-22” 被挤成两行，表头亦被竖向折断（见你截图）。<br>
+<b>改动：</b> 7列 → 4列紧凑表（指数·核验·境外/境内·20日·趋势），5-7列 → 3列紧凑表（指数·交易日·指标），指标合并为 “趋势 空头排列 · 动量 非正动量” 一行或两行。保持单表体积不变，分条数 6/12 以内。
+</div>
+
+<h2>一、境内外交叉核验（原 7 列 → 现 4 列）</h2>
+<div class="compare">
+<div class="old"><span class="tag tag-old">旧版 7 列</span> 宽度溢出，日期折行
+<table class="demo"><tr><th>指数</th><th>Yahoo日期/收盘</th><th>东财日期/收盘</th><th>差异%</th><th>核验</th><th>20日%</th><th>趋势</th></tr>
+<tr><td>A股·沪深300</td><td>2026-10-22 / 4036.30</td><td>暂缺 / —</td><td>—</td><td>单源待核验</td><td>—</td><td>暂停判断</td></tr>
+<tr><td>A股·上证指数</td><td>2026-10-22 / 3658.03</td><td>2026-10-22 / 3658.03</td><td>0.00</td><td>双源一致</td><td>-6.00</td><td>空头排列</td></tr>
+</table>
+<div style="margin-top:8px;font-size:11px;color:#b91c1c">截图中 7 列均被竖向挤压，日期与价格分行显示</div>
+</div>
+<div class="new"><span class="tag tag-new">新版 4 列</span> 一行完整，徽标居中
+<table class="demo"><tr><th>指数</th><th>核验</th><th>境外/境内</th><th>20日·趋势</th></tr>
+<tr><td>A股·沪深300</td><td><span class="badge warn">单源待核验</span></td><td>Yahoo 2026-10-22 · 4036.30<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr>
+<tr><td>A股·上证指数</td><td><span class="badge ok">双源一致</span></td><td>Yahoo 2026-10-22 · 3658.03<br><span style="color:#666">东财 2026-10-22 · 3658.03</span></td><td><span style="color:#666;font-size:11px">差异 0.00%</span><br><b style="color:#b91c1c">▼ -6.00%</b><br>空头排列</td></tr>
+</table>
+</div>
+</div>
+
+<h2>二、趋势与动量（原 5 列 → 现 3 列）</h2>
+<div class="compare">
+<div class="old"><span class="tag tag-old">旧版 5 列</span> 指数·交易日·趋势·动量·核验
+<table class="demo"><tr><th>指数</th><th>交易日</th><th>趋势</th><th>20日动量</th><th>核验</th></tr>
+<tr><td>A股·上证</td><td>2026-10-22</td><td>空头排列</td><td>非正动量</td><td>双源一致</td></tr>
+</table>
+</div>
+<div class="new"><span class="tag tag-new">新版 3 列</span> 指数列内含徽标，指标合并为一行
+<table class="demo"><tr><th>指数</th><th>交易日</th><th>指标</th></tr>
+<tr><td>A股·上证指数<br><span style="font-size:11px"><span class="badge ok">双源一致</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 空头排列 · 20日动量 非正动量</td></tr>
+<tr><td>A股·沪深300<br><span style="font-size:11px"><span class="badge warn">单源待核验</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr>
+</table>
+</div>
+</div>
+
+<h2>三、均线信号（原 5-6 列 → 现 3 列，分两行）</h2>
+<div class="new">
+<table class="demo"><tr><th>指数</th><th>交易日</th><th>指标</th></tr>
+<tr><td>A股·上证指数<br><span class="badge ok">双源一致</span></td><td style="text-align:center">2026-10-22</td><td>MA20 3600.00 · MA60 3750.00<br>均线状态 空头排列 · 规则观察 防守观察</td></tr>
+<tr><td>港股·恒生科技<br><span class="badge ok">双源一致</span></td><td style="text-align:center">2026-10-22</td><td>MA20 5500.00 · MA60 5400.00<br>均线状态 震荡 · 规则观察 等待确认</td></tr>
+</table>
+<div style="font-size:11px;color:#666;margin-top:6px">≤2 指标时一行 “·” 连接，>2 指标时自动分两行，每行仍用 “·” 连接，单格高度可控。</div>
+</div>
+
+<h2>四、相对强弱（原 6 列 → 现 4 列分组）</h2>
+<div class="new">
+<div style="font-weight:700;font-size:13px;margin:6px 0">A股 · 2026-10-22 20日收益排名</div>
+<table class="demo"><tr><th>排名</th><th>指数</th><th>20日收益</th><th>超额</th></tr>
+<tr><td style="text-align:center">1</td><td>上证指数</td><td style="text-align:right">-6.00%</td><td style="text-align:right">9.59</td></tr>
+<tr><td style="text-align:center">2</td><td>深证成指</td><td style="text-align:right">-15.59%</td><td style="text-align:right">0.00</td></tr>
+</table>
+<div style="font-size:11px;color:#666;margin-top:4px">市场/日期提升为小标题，重复字段不再逐行重复，6列减为4列，表头 “相对组内末位差” 简化为 “超额”。</div>
+</div>
+
+<h2>五、375px 真机容器预览（lime 主题真实 HTML，内联样式已兼容微信 v-html 清洗）</h2>
+<p style="font-size:13px;color:#555">下方为 pipeline 生成的真实日报片段，置于 375px 手机框内，无横向滚动、无日期折行：</p>
+<div class="phone"><div class="phone-bar">微信 · 上水日报 · 2026-10-22</div><div class="phone-body" style="padding:0">
+<div style="padding:0 0 4px;background:#FFFFFF;color:#222222;">
+<div style="color:#333333;font-size:11px;font-weight:700;letter-spacing:0.12em;"><span style="color:#3D5200;">■</span> OCTOPUS AI · FIELD GUIDE</div>
+<h1 style="margin:6px 0 8px;font-size:22px;font-weight:900;color:#111111;">章鱼 AI · 上水日报</h1>
+<div style="color:#333333;font-size:12px;">每日上水，新鲜活泼 · 更新于 2026-10-22 00:51:26</div>
+</div>
+<div style="margin-top:14px;padding:14px 10px 12px;border-radius:22px;background:#F5F5F6;">
+<h2 style="font-size:16px;font-weight:900;color:#111111;margin:0;padding-bottom:8px;border-bottom:1px solid #E4E4E7;">【及时秋刀鱼】三地指数行情复盘</h2>
+<div style="margin-top:12px;color:#333333;font-weight:700">港股 / A股 / 美股指数 · 境内外交叉核验</div><table width="100%" cellpadding="0" cellspacing="0" style="width:100%!important;border-collapse:separate;border-spacing:5px 2px;font-size:13px;line-height:1.45;color:#222222"><tr><td style="color:#333333">指数</td><td style="color:#333333">核验</td><td style="color:#333333">境外 / 境内</td><td style="color:#333333">20日·趋势</td></tr><tr><td>A股 · 沪深300</td><td style="text-align:center"><span style="color:#B91C1C">单源待核验</span></td><td>Yahoo 2026-10-22 · 4036.30<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr><tr><td>A股 · 上证指数</td><td style="text-align:center"><span style="color:#3D5200">双源一致</span></td><td>Yahoo 2026-10-22 · 3658.03<br><span style="color:#666">东财 2026-10-22 · 3658.03</span></td><td><span style="color:#666;font-size:11px">差异 0.00%</span><br><b style="color:#B91C1C">▼ -6.00%</b><br>空头排列</td></tr><tr><td>A股 · 深证成指</td><td style="text-align:center"><span style="color:#3D5200">双源一致</span></td><td>Yahoo 2026-10-22 · 11357.32<br><span style="color:#666">东财 2026-10-22 · 11357.32</span></td><td><span style="color:#666;font-size:11px">差异 0.00%</span><br><b style="color:#B91C1C">▼ -15.59%</b><br>空头排列</td></tr><tr><td>港股 · 恒生指数</td><td style="text-align:center"><span style="color:#B91C1C">单源待核验</span></td><td>Yahoo 2026-10-22 · 22934.68<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr><tr><td>港股 · 恒生科技</td><td style="text-align:center"><span style="color:#3D5200">双源一致</span></td><td>Yahoo 2026-10-22 · 11357.32<br><span style="color:#666">东财 2026-10-22 · 11357.32</span></td><td><span style="color:#666;font-size:11px">差异 0.00%</span><br><b style="color:#3D5200">▲ +2.30%</b><br>震荡</td></tr><tr><td>港股 · 国企指数</td><td style="text-align:center"><span style="color:#B91C1C">单源待核验</span></td><td>Yahoo 2026-10-22 · 7689.19<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr><tr><td>美股 · 标普500</td><td style="text-align:center"><span style="color:#B91C1C">数据过期</span></td><td>Yahoo 2026-10-22 · 6870.00<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr><tr><td>美股 · 纳斯达克综合</td><td style="text-align:center"><span style="color:#B91C1C">双源缺失</span></td><td>Yahoo 2026-10-22 · 25500.00<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr><tr><td>美股 · 道琼斯工业</td><td style="text-align:center"><span style="color:#B91C1C">双源缺失</span></td><td>Yahoo 2026-10-22 · 47000.00<br><span style="color:#666">东财 暂缺 · —</span></td><td>—<br>暂停判断</td></tr></table><table width="100%" cellpadding="3" cellspacing="0" style="width:100%!important;font-size:13px;line-height:1.45;table-layout:fixed;word-break:break-word"><tr><td width="28%" valign="top" style="border-bottom:1px solid #E4E4E7;color:#333333">核验口径</td><td valign="top" style="border-bottom:1px solid #E4E4E7;color:#222222">同指数、同交易日、未复权已收盘日线；容差0.1%，超过4个日历日保守标过期（长假需人工核查）。仅双源一致输出动量与趋势；单源、错位、冲突暂停判断。两供应商一致不等于交易所认证；20日收益不是策略回测收益。</td></tr><tr><td width
+</div>
+<div style="margin-top:14px;padding:14px 10px 12px;border-radius:22px;background:#F5F5F6;">
+<h2 style="font-size:16px;font-weight:900;color:#111111;margin:0;padding-bottom:8px;border-bottom:1px solid #E4E4E7;">今日预判 · 三地指数</h2>
+<table width="100%" cellpadding="3" cellspacing="0" style="width:100%!important;font-size:13px;line-height:1.45;table-layout:fixed;word-break:break-word"><tr><td width="28%" valign="top" style="border-bottom:1px solid #E4E4E7;color:#333333">分析范围</td><td valign="top" style="border-bottom:1px solid #E4E4E7;color:#222222">A股 / 港股 / 美股 · 9个指数</td></tr><tr><td width="28%" valign="top" style="border-bottom:1px solid #E4E4E7;color:#333333">数据覆盖</td><td valign="top" style="border-bottom:1px solid #E4E4E7;color:#222222">3/9个最新收盘通过双源核验</td></tr><tr><td width="28%" valign="top" style="border-bottom:1px solid #E4E4E7;color:#333333">判断边界</td><td valign="top" style="border-bottom:1px solid #E4E4E7;color:#222222">未通过核验的指数暂停判断；不同市场不混排；不输出未经回测校准的涨跌概率</td></tr></table><table width="100%" cellpadding="0" cellspacing="0" style="width:100%!important;border-collapse:separate;border-spacing:5px 2px;font-size:13px;line-height:1.45;color:#222222"><tr><td style="color:#333333">指数</td><td style="color:#333333">交易日</td><td style="color:#333333">指标</td></tr><tr><td>A股 · 沪深300<br><span style="font-size:11px"><span style="color:#B91C1C">单源待核验</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr><tr><td>A股 · 上证指数<br><span style="font-size:11px"><span style="color:#3D5200">双源一致</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 空头排列 · 20日动量 非正动量</td></tr><tr><td>A股 · 深证成指<br><span style="font-size:11px"><span style="color:#3D5200">双源一致</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 空头排列 · 20日动量 非正动量</td></tr><tr><td>港股 · 恒生指数<br><span style="font-size:11px"><span style="color:#B91C1C">单源待核验</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr><tr><td>港股 · 恒生科技<br><span style="font-size:11px"><span style="color:#3D5200">双源一致</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 震荡 · 20日动量 正动量</td></tr><tr><td>港股 · 国企指数<br><span style="font-size:11px"><span style="color:#B91C1C">单源待核验</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr><tr><td>美股 · 标普500<br><span style="font-size:11px"><span style="color:#B91C1C">数据过期</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr><tr><td>美股 · 纳斯达克综合<br><span style="font-size:11px"><span style="color:#B91C1C">双源缺失</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr><tr><td>美股 · 道琼斯工业<br><span style="font-size:11px"><span style="color:#B91C1C">双源缺失</span></span></td><td style="text-align:center">2026-10-22</td><td>趋势 — · 20日动量 —</td></tr></table><table width="100%" cellpadding="3" cellspacing="0" style="width:100%!important;font-size:13px;line-height:1.45;table-layout:fixed;word-break:break-word"><tr><td width="28%" valign="top" style="border-bottom:1px solid #E4E4E7;color:#333333">项目</td><td valign="top" style="border-bottom:1px solid #E4E4E7;color:#333333">内容</td></tr><tr><td width="28%" valign=
+</div>
+</div></div>
+
+<h2>六、技术说明</h2>
+<div class="note">
+<b>文件改动：</b> <code>output/index_crosscheck.py</code>（7列→4列：境内外合并为一格用 &lt;br&gt; 分行，差异并入量化格小字）<br>
+<code>output/index_page.py::_table</code>（5-7列→3列：指数列内嵌徽标，指标合并为 “标签 值 · 标签 值” 且 &gt;2 项时分两行）<br>
+<code>output/index_page.py::_render_relative</code>（6列→4列分组表，市场/日期提升为小标题）<br><br>
+<b>适配性：</b> 仅用内联样式与 &lt;table&gt;，无媒体查询，兼容 PushPlus v-html 清洗（已保留 width:100%!important 与 border-collapse）。4列在 340px 下每列约 80-110px，3列在 340px 下指数110px + 交易日70px + 指标160px，均可完整保留日期与价格一行。3列指标列合并避免列数膨胀，体积与原表相当，分条数 6/12 以内。<br>
+<b>合规：</b> 仍显示 “单源待核验/双源一致/交易日错位/数据过期” 全量状态，未通过核验的指标显示 “— / 暂停判断”，不外推。<br>
+<b>主题：</b> lime/guizang/dossier/forum 四主题共用同一紧凑结构，forum 下自动切深色边框（已通过全主题测试）。
+</div>
+
+</div>
+</body></html>

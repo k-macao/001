@@ -113,15 +113,61 @@ def metrics(history):
     return out
 
 
+def _badge_for_status(status, kit):
+    """微信友好徽标：用 kit.badge 做主题自适应，fallback 为纯文字"""
+    try:
+        if status == "双源一致":
+            return kit.badge(status, "ok")
+        if status == "单源待核验":
+            return kit.badge(status, "warn")
+        if status in ("双源缺失", "交易日错位", "来源冲突", "数据过期"):
+            return kit.badge(status, "bad")
+        return kit.badge(status, "bad")
+    except Exception:
+        return status
+
+
 def render(rows, kit):
     from strategy_quant import _kit_sub, _kit_table, _kit_kv, _esc
     def number(value):
         return "—" if value is None else f"{value:.2f}"
-    cells = [[_esc(r["market"] + "·" + r["name"]),
-              _esc(str(r["overseas_date"] or "暂缺")) + " / " + number(r.get("overseas_close")),
-              _esc(str(r["mainland_date"] or "暂缺")) + " / " + number(r.get("mainland_close")),
-              number(r.get("difference_pct")), _esc(r["status"]),
-              number(r.get("ret_20d") if r.get("usable") else None), _esc(r.get("trend", "样本不足") if r.get("usable") else "暂停判断")] for r in rows]
-    return (_kit_sub(kit, "港股 / A股 / 美股指数 · 境内外交叉核验") +
-            _kit_table(kit, ["指数", "Yahoo日期 / 收盘", "东方财富日期 / 收盘", "差异%", "核验", "20日%", "趋势"], cells) +
-            _kit_kv(kit, [("核验口径", "同指数、同交易日、未复权已收盘日线；容差0.1%，超过4个日历日保守标过期（长假需人工核查）。仅双源一致输出动量与趋势；单源、错位、冲突暂停判断。两供应商一致不等于交易所认证；20日收益不是策略回测收益。"), ("境外 / 境内", "Yahoo Chart（query1.finance.yahoo.com） / 东方财富历史K线（push2his.eastmoney.com）"), ("采集时间", _esc(max((r.get("collected_at", "") for r in rows), default="") or "暂缺"))]))
+    # —— 微信窄屏重构：7 列宽表 → 4 列紧凑表，不再把日期挤成两行 ——
+    # 原 7 列每列不足 48px，截图中 “2026-10-22” 被折成 “2026-10-” / “22”；
+    # 4 列布局下每列约 80-110px，日期/价格与徽标均可完整保留一行，且整体仍是一张表，体积与分条数不膨胀。
+    out = _kit_sub(kit, "港股 / A股 / 美股指数 · 境内外交叉核验")
+    order_map = {"A股": 0, "港股": 1, "美股": 2}
+    rows_sorted = sorted(rows, key=lambda r: order_map.get(r.get("market"), 9))
+    cells = []
+    for r in rows_sorted:
+        name = _esc(r["market"] + " · " + r["name"])
+        status = r.get("status") or "双源缺失"
+        badge = _badge_for_status(status, kit)
+        ov_date = _esc(str(r.get("overseas_date") or "暂缺"))
+        ov_close = number(r.get("overseas_close"))
+        ml_date = _esc(str(r.get("mainland_date") or "暂缺"))
+        ml_close = number(r.get("mainland_close"))
+        pair_html = f"Yahoo {ov_date} · {ov_close}<br><span style=\"color:#666\">东财 {ml_date} · {ml_close}</span>"
+        diff_raw = r.get("difference_pct")
+        diff_str = f"差异 {number(diff_raw)}%" if diff_raw is not None else ""
+        usable = r.get("usable")
+        if usable:
+            ret20_raw = r.get("ret_20d")
+            if ret20_raw is not None:
+                try:
+                    ret20 = kit.trend(ret20_raw, compact=True) if hasattr(kit, "trend") else f"{ret20_raw:.2f}%"
+                except Exception:
+                    ret20 = f"{ret20_raw:.2f}%"
+            else:
+                ret20 = "—"
+            trend = _esc(r.get("trend") or "样本不足")
+            quant_html = f"{ret20}<br>{trend}"
+            if diff_str:
+                quant_html = f"<span style=\"color:#666;font-size:11px\">{_esc(diff_str)}</span><br>{quant_html}"
+        else:
+            quant_html = "—<br>暂停判断"
+            if diff_str:
+                quant_html = f"<span style=\"color:#666;font-size:11px\">{_esc(diff_str)}</span><br>暂停判断"
+        cells.append([name, badge, pair_html, quant_html])
+    out += _kit_table(kit, ["指数", "核验", "境外 / 境内", "20日·趋势"], cells, aligns=("left", "center", "left", "left"))
+    out += _kit_kv(kit, [("核验口径", "同指数、同交易日、未复权已收盘日线；容差0.1%，超过4个日历日保守标过期（长假需人工核查）。仅双源一致输出动量与趋势；单源、错位、冲突暂停判断。两供应商一致不等于交易所认证；20日收益不是策略回测收益。"), ("境外 / 境内", "Yahoo Chart（query1.finance.yahoo.com） / 东方财富历史K线（push2his.eastmoney.com）"), ("采集时间", _esc(max((r.get("collected_at", "") for r in rows), default="") or "暂缺"))])
+    return out

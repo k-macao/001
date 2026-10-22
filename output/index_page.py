@@ -1,7 +1,7 @@
 """指数限定的全页拼版：保持栏目顺序，不复用个股/港股专属模型的结论。"""
 from html import escape
 from index_crosscheck import SPECS, render as render_crosscheck
-from strategy_quant import _kit_table, _kit_kv
+from strategy_quant import _kit_sub, _kit_table, _kit_kv
 
 
 def _disclosure(kit, text):
@@ -52,19 +52,67 @@ def _num(value, pct=False):
     return '—' if value is None else f'{value:.2f}' + ('%' if pct else '')
 
 
+def _badge_for_status(status, kit):
+    try:
+        if status == "双源一致":
+            return kit.badge(status, "ok")
+        if status == "单源待核验":
+            return kit.badge(status, "warn")
+        return kit.badge(status, "bad")
+    except Exception:
+        return escape(status)
+
+
 def _table(rows, kit, columns):
+    """微信推送页重整：7 列宽表 → 3 列紧凑表，避免日期被挤断。
+
+    原 ['指数','交易日',metrics..., '核验状态'] 在 340px 下每列约 45-70px，
+    交易日 “2026-10-22” 会被折成两行（见截图），且列数多导致横向滚动或换行错位。
+    重构后仅保留 3 列：
+      指数（指数名 + 核验徽标右下角） | 交易日 | 指标（多指标用 · / <br> 合并）
+    指数列嵌入徽标省一列；指标列将多个指标合并为一行或两行，仍保持单表体积与旧版相近，
+    不会触发分条数膨胀（单表约 9 行 × 3 列，体积与原单表相当）。
+    """
+    if not rows:
+        return _disclosure(kit, "暂无数据")
     cells = []
     for r in rows:
+        # 指数列：指数名 + 核验徽标（徽标用小字号换行，避免列过宽）
+        base_name = escape(r['market'] + ' · ' + r['name'])
+        status = r.get('status', '双源缺失')
+        badge = _badge_for_status(status, kit)
+        # 指数名与徽标上下排列：上为名，下为徽标小字，整体仍在一格内，节省列宽
+        idx_cell = f"{base_name}<br><span style=\"font-size:11px\">{badge}</span>"
+        as_of = escape(r.get('as_of') or r.get('overseas_date') or r.get('mainland_date') or '暂缺')
         usable = r.get('usable', False)
-        line = [escape(r['market'] + ' · ' + r['name']),
-                escape(r.get('as_of') or r.get('overseas_date') or r.get('mainland_date') or '暂缺')]
+        parts = []
         for key, label in columns:
-            value = r.get(key) if usable else None
-            line.append(_num(value, key.startswith('ret_') or key in ('vol_20', 'max_dd_60', 'win_20'))
-                        if value is None or isinstance(value, (int, float)) else escape(str(value)))
-        line.append(escape(r.get('status', '双源缺失')))
-        cells.append(line)
-    return _kit_table(kit, ['指数', '交易日'] + [c[1] for c in columns] + ['核验状态'], cells)
+            raw = r.get(key) if usable else None
+            if raw is None:
+                val = "—"
+            elif isinstance(raw, (int, float)):
+                is_pct = key.startswith('ret_') or key in ('vol_20', 'max_dd_60', 'win_20')
+                if key.startswith('ret_') and hasattr(kit, 'trend'):
+                    try:
+                        val = kit.trend(raw, compact=True)
+                    except Exception:
+                        val = _num(raw, is_pct)
+                else:
+                    val = _num(raw, is_pct)
+            else:
+                val = escape(str(raw))
+            parts.append(f"{escape(label)} {val}")
+        # 合并指标：≤2 项用 · 连接一行，>2 项分两行，每行用 · 连接，避免单格过高
+        if len(parts) <= 2:
+            metrics_html = " · ".join(parts)
+        else:
+            mid = (len(parts) + 1) // 2
+            line1 = " · ".join(parts[:mid])
+            line2 = " · ".join(parts[mid:])
+            metrics_html = f"{line1}<br>{line2}"
+        cells.append([idx_cell, as_of, metrics_html])
+    # 3 列对齐：指数左对齐，交易日居中，指标左对齐；指标列最宽，承载合并信息
+    return _kit_table(kit, ['指数', '交易日', '指标'], cells, aligns=("left", "center", "left"))
 
 
 def relative_rows(rows):
@@ -81,6 +129,28 @@ def relative_rows(rows):
         for rank, r in enumerate(ordered, 1):
             out.append([escape(market), escape(day), str(rank), escape(r['name']),
                         _num(r['ret_20d'], True), _num(r['ret_20d'] - ordered[-1]['ret_20d'])])
+    return out
+
+
+def _render_relative(ranks, kit):
+    """微信窄屏适配：原 6 列宽表拆为按市场/交易日分组的 4 列紧凑表。
+
+    6 列在 340px 下每列约 56px，表头 “相对组内末位差” 会被挤成多行；
+    4 列（排名30px + 指数110px + 收益70px + 超额70px）刚好填满一行，且
+    市场/日期提升为分组小标题，重复字段不再逐行重复。
+    """
+    if not ranks:
+        return ""
+    from collections import defaultdict
+    groups = defaultdict(list)
+    for row in ranks:
+        # row: [market, day, rank, name, ret, diff]
+        groups[(row[0], row[1])].append(row)
+    out = ""
+    for (market, day), items in groups.items():
+        out += _kit_sub(kit, f"{escape(market)} · {escape(day)} 20日收益排名")
+        table_rows = [[r[2], r[3], r[4], r[5]] for r in items]
+        out += _kit_table(kit, ["排名", "指数", "20日收益", "超额"], table_rows, aligns=("center", "left", "right", "right"))
     return out
 
 
@@ -105,7 +175,13 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
         elif key in FACTOR_LIMITS:
             body = _kit_table(kit, ['市场指数范围', '因子状态', '处理'],
                 [[escape(m + '：' + '、'.join(r['name'] for r in rows if r['market'] == m)),
-                  '证据不足', '暂停评分与方向归因'] for m in ('A股', '港股', '美股')])
+                  '证据不足', '暂停评分与方向归因'] for m in ('A股', '港股', '美股')], aligns=("left", "center", "left"))
+            try:
+                body = kit.table(['市场指数范围', '因子状态', '处理'],
+                    [[escape(m + '：' + '、'.join(r['name'] for r in rows if r['market'] == m)),
+                      '证据不足', '暂停评分与方向归因'] for m in ('A股', '港股', '美股')], aligns=("left", "center", "left"))
+            except Exception:
+                pass
             note = FACTOR_LIMITS[key]
         elif key == 'ECON CALENDAR':
             body = kit.calendar_block(calendar, date_str=date_str) if calendar and calendar.get('status') == 'success' else ''
@@ -120,7 +196,7 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
             note = scope
         elif key in ('SECTOR ROTATION', 'INDUSTRY ROTATION', 'STRATEGY ARBITRAGE'):
             ranks = relative_rows(rows)
-            body = _kit_table(kit, ['市场', '交易日', '排名', '指数', '20日收益', '相对组内末位差(百分点)'], ranks) if ranks else _disclosure(kit, '同市场、同截止日、有效20日收益的指数不足两个，暂停比较。')
+            body = _render_relative(ranks, kit) if ranks else _disclosure(kit, '同市场、同截止日、有效20日收益的指数不足两个，暂停比较。')
             note = ('仅市场内部指数相对强弱；不代表行业轮动持仓、市场中性组合或可执行套利。'
                     '指数成分可能重叠，收益差不等于无风险价差；不生成买卖配对。')
         elif key in ('TREND TRACKING', 'UZI TREND', 'STRATEGY CTA', 'WEEKLY FORECAST'):
