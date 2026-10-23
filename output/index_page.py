@@ -15,6 +15,7 @@ def _disclosure(kit, text):
     return _kit_kv(kit, [("分析边界", escape(text))])
 
 # 保留原栏目角色；改变不适用于指数的产品分类名称，避免虚构债券/CTA/套利收益。
+# 2026-10-23「量化分析总览」（QUANT FORECAST）整栏下线，映射同步移除。
 TITLES = {
     'FORECAST': '今日预判 · 三地指数',
     'MARKET REVIEW': '【及时秋刀鱼】三地指数行情复盘',
@@ -27,7 +28,6 @@ TITLES = {
     'MAINLAND HOTLIST': '【沸腾花蛤】三地指数热点因子',
     'MEDIA RISK': '【警戒爆炸豚】三地指数媒体风险',
     'NEWS SENTIMENT': '【亮亮灯光鱿鱼】三地指数新闻情绪',
-    'QUANT FORECAST': '【蜉蝣天地水母】三地指数量化总览',
     'LIQUIDITY FLOW': '资金流动性 · 三地指数',
     'WEEKLY FORECAST': '每日趋势量化推演 · 三地指数',
     'STRATEGY READ': '策略研判 · 三地指数',

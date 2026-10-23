@@ -1144,7 +1144,7 @@ class GuizangOnePageTests(unittest.TestCase):
         # 2026-10-02 起「东方财富快讯」「【无敌帝王蟹】全球头条」「港股名家频道」
         # 三个资讯栏目在页面隐藏（保留后台抓取供 AI 分析与审计）。
         for title in (pipeline.SECTION_TITLE_RETAIL_SENTIMENT, "【回游金枪鱼】今日预判",
-                      "【探照安康鱼】时间节点量化分析", "【蜉蝣天地水母】量化分析总览",
+                      "【探照安康鱼】时间节点量化分析",
                       "每日趋势量化推演", "资金流动性分析", "【及时秋刀鱼】AI 行情复盘",
                       "【深海肥蓝鲸】政策因子", pipeline.SECTION_TITLE_STRATEGY,
                       "【深海大鲨鱼】趋势跟踪",
@@ -1153,6 +1153,9 @@ class GuizangOnePageTests(unittest.TestCase):
             self.assertIn(f"{title}</h2>", html)
         self.assertIn("港股概率走势分析", html)  # 作为栏目内子块显示，不再单列 h2
         self.assertNotIn("港股概率走势分析</h2>", html)
+        # 2026-10-23「量化分析总览」整栏下线
+        self.assertNotIn("量化分析总览", titles)
+        self.assertNotIn("量化分析总览</h2>", html)
         for hidden in ("东方财富快讯", "【无敌帝王蟹】全球头条", "港股名家频道"):
             self.assertNotIn(hidden, titles)
             self.assertNotIn(f"{hidden}</h2>", html)
@@ -3454,7 +3457,6 @@ class SectionRenameTests(unittest.TestCase):
     EXPECTED = {
         "FORECAST": "【回游金枪鱼】今日预判",
         "ECON CALENDAR": "【探照安康鱼】时间节点量化分析",
-        "QUANT FORECAST": "【蜉蝣天地水母】量化分析总览",
     }
 
     def _data(self):
@@ -3468,7 +3470,8 @@ class SectionRenameTests(unittest.TestCase):
                          "【麻辣大龙虾】散户群体情绪量化分析")
         self.assertEqual(pipeline.SECTION_TITLE_FORECAST, self.EXPECTED["FORECAST"])
         self.assertEqual(pipeline.SECTION_TITLE_ECON_CALENDAR, self.EXPECTED["ECON CALENDAR"])
-        self.assertEqual(pipeline.SECTION_TITLE_QUANT_FORECAST, self.EXPECTED["QUANT FORECAST"])
+        # 2026-10-23 栏目下线：标题常量随之移除
+        self.assertFalse(hasattr(pipeline, "SECTION_TITLE_QUANT_FORECAST"))
 
     def test_sections_carry_current_names_and_no_opening_digest(self):
         data = self._data()

@@ -636,12 +636,19 @@ class RenderIntegrationTests(unittest.TestCase):
             "headline": {"available": True, "arrow": "■", "label": "中性", "p_up": 0.55},
             "target_label": "下一交易日",
         }
+        weekly = {"available": True, "entry": {
+            "p_up": 0.53, "target_sessions": 7, "base_date": "2026-09-28",
+            "label": "▲ 看涨 · P(7日涨) 53%"}}
         pairs = pipeline._conclusion_pairs(
-            pipeline.GUIZANG_KIT, None, None, None, None, quant=quant)
+            pipeline.GUIZANG_KIT, None, None, None, None, quant=quant, weekly=weekly)
         self.assertEqual(pairs[0][0], "量化分析")
         panel = pipeline._conclusion_panel(pipeline.GUIZANG_KIT, pairs)
         self.assertIn("量化分析", panel)
-        self.assertNotIn("量化分析", panel)
+        # 2026-10-23 用户要求：今日预判不显示涨跌概率 → 只留方向定调与目标交易日
+        self.assertIn("中性", panel)
+        self.assertIn("▲ 看涨", panel)          # 七日预测只留方向
+        for token in ("55%", "53%", "P(7日涨)"):
+            self.assertNotIn(token, panel)
 
     def test_report_includes_quant_sections_in_order(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -658,20 +665,19 @@ class RenderIntegrationTests(unittest.TestCase):
         parts = pipeline._collect_report_parts(data, pipeline.GUIZANG_KIT,
                                                date_str=res["as_of"].replace("-", ""))
         kickers = [s[0] for s in parts["sections"]]
-        self.assertIn("QUANT FORECAST", kickers)
+        # 2026-10-23「量化分析总览」整栏下线：概率只留在资金流动性与逐日推演两栏
+        self.assertNotIn("QUANT FORECAST", kickers)
         self.assertIn("LIQUIDITY FLOW", kickers)
         self.assertIn("WEEKLY FORECAST", kickers)
         self.assertNotIn("HK PROBABILITY", kickers)
-        self.assertLess(kickers.index("QUANT FORECAST"),
-                        kickers.index("LIQUIDITY FLOW"))
         self.assertLess(kickers.index("LIQUIDITY FLOW"),
                         kickers.index("WEEKLY FORECAST"))
         # 港股概率走势分析已作为子块合入同一个逐日趋势量化推演栏目。
         weekly_section = next(s for s in parts["sections"] if s[0] == "WEEKLY FORECAST")
         self.assertIn("港股概率走势分析", weekly_section[2])
-        # 2026-10-14 重排：量化分析（③可能会怎样）位于行情复盘（①发生了什么）之后
+        # 2026-10-14 重排：量化栏目（③可能会怎样）位于行情复盘（①发生了什么）之后
         self.assertLess(kickers.index("MARKET REVIEW"),
-                        kickers.index("QUANT FORECAST"))
+                        kickers.index("LIQUIDITY FLOW"))
 
     def test_generated_html_has_quant_sections(self):
         with tempfile.TemporaryDirectory() as tmp:
@@ -687,12 +693,37 @@ class RenderIntegrationTests(unittest.TestCase):
         }
         html = pipeline.generate_report(data, "2026年9月28日 · 周一",
                                        res["as_of"].replace("-", ""))
-        for title in ("【蜉蝣天地水母】量化分析总览", "每日趋势量化推演",
-                      "港股概率走势分析", "资金流动性分析"):
+        for title in ("每日趋势量化推演", "港股概率走势分析", "资金流动性分析"):
             self.assertIn(title, html)
+        # 2026-10-23 整栏下线：标题 / 栏目都不再出现在页面
+        self.assertNotIn("量化分析总览", html)
         self.assertEqual(html.count("每日趋势量化推演</h2>"), 1)
         self.assertNotIn("港股概率走势分析</h2>", html)
-        self.assertIn("预测概括", html)
+        # 2026-10-23 起「量化分析总览」下线，「预测概括 / 指数概率」等块随该栏一并消失
+        self.assertNotIn("预测概括", html)
+
+    def test_forecast_section_never_shows_updown_probability(self):
+        """2026-10-23 用户要求：今日预判只给方向，不显示涨跌概率 / 几率条。"""
+        with tempfile.TemporaryDirectory() as tmp:
+            res = run_engine(tmpdir=tmp)
+        data = {
+            "港股量化": pipeline._source_result(
+                "港股量化引擎", "success", is_today=False,
+                content_date=res["as_of"], result=res),
+            "每周走势预测": pipeline._source_result(
+                "每周量化走势预测", "success", is_today=False,
+                content_date=res["as_of"],
+                result={"available": True,
+                        "entry": {"p_up": 0.53, "target_sessions": 7,
+                                  "label": "▲ 看涨 · P(7日涨) 53%"}}),
+        }
+        parts = pipeline._collect_report_parts(
+            data, pipeline.GUIZANG_KIT, date_str=res["as_of"].replace("-", ""))
+        content = next(s[2] for s in parts["sections"] if s[0] == "FORECAST")
+        self.assertIn("量化分析", content)
+        self.assertIn("▲ 看涨", content)          # 七日预测只留方向定调
+        for token in ("ODDS METER", "上涨概率", "P(7日涨)", "几率"):
+            self.assertNotIn(token, content)
 
     def test_report_without_quant_source_does_not_break(self):
         data = {"实时行情": pipeline._source_result("test quote", "unavailable",
