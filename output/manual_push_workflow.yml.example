@@ -41,8 +41,9 @@ jobs:
       - name: 🐙 抓取最新动态数据并推送（手动）
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-          # 一对多群组推送（2026-10-23 起默认）：群组编码放 Secret，缺省则告警并回退一对一。
-          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC }}
+          # 一对多群组推送（2026-10-23 起默认）：群组编码优先取 Secret PUSHPLUS_TOPIC；
+          # Secret 没配时兜底用仓库群组 oai.1（下面这个字面量就是兜底值，换群改这里）。
+          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC || 'oai.1' }}
           # 推送模式：one2many（默认，一对多群组）/ one2one（一对一 直发自己）。
           PUSHPLUS_MODE: ${{ vars.PUSHPLUS_MODE || 'one2many' }}
           # AI 七日港股走势分析概率的大模型 Key（OpenAI 兼容；未配置按 OCTOPUS_HK7_FALLBACK 口径处理）

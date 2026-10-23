@@ -6,8 +6,9 @@
   - 整页拆分（_split_html_for_push）：每条 ≤ 单条上限、外壳与页脚齐全、标签平衡、
     正文一个字不丢、横幅如实标注「承接上条（续）」「本条未完」；
   - PushPlus「1 分钟 N 次请求」排队（_push_rate_wait / _wait_push_rate_limit）；
-  - PushPlus 默认一对多群组（2026-10-23）：群组编码取 PUSHPLUS_TOPIC，缺失时告警并回退
-    一对一；PUSHPLUS_MODE=one2one 可显式改回一对一直发自己；显式 topic 参数优先；
+  - PushPlus 默认一对多群组（2026-10-23）：群组编码取 PUSHPLUS_TOPIC，本地缺失时告警并
+    回退一对一；Actions 工作流 Secret 缺省时兜底群组 oai.1；PUSHPLUS_MODE=one2one 可
+    显式改回一对一直发自己；显式 topic 参数优先；
   - 微信推送标题（build_push_title）：[OCTOPUS] 关键词前缀、(强制) / (状态) 标记位置、
     时间戳永远在末尾、四条推送路径共用一个出口、分条 (i/N) 不挤掉推送时刻。
 """
@@ -432,6 +433,41 @@ class PushDeliveryModeTests(unittest.TestCase):
         with patch.object(pipeline, "PUSHPLUS_TOPIC", "oai.1"):
             payload = self._send(topic="")
         self.assertNotIn("topic", payload)
+
+
+class PushWorkflowTopicDefaultTests(unittest.TestCase):
+    """Actions 工作流里的群组编码兜底值（2026-10-23 用户指定群组 oai.1）。
+
+    群组编码本身仍不写进 Python 代码：Secret `PUSHPLUS_TOPIC` 优先，Secret 没配时由工作流
+    兜底成 `oai.1`；因此「配了 Secret 改群」和「没配 Secret 用仓库默认群」都不用改代码。
+    """
+
+    WORKFLOWS = (".github/workflows/octopus-daily.yml",
+                 ".github/workflows/manual.yml",
+                 "output/manual_push_workflow.yml.example")
+
+    def test_topic_falls_back_to_repo_group(self):
+        repo_root = Path(__file__).parents[1]
+        for relpath in self.WORKFLOWS:
+            with self.subTest(workflow=relpath):
+                text = (repo_root / relpath).read_text(encoding="utf-8")
+                self.assertIn("PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC || 'oai.1' }}", text)
+
+    def test_mode_defaults_to_one_to_many(self):
+        repo_root = Path(__file__).parents[1]
+        for relpath in self.WORKFLOWS:
+            with self.subTest(workflow=relpath):
+                text = (repo_root / relpath).read_text(encoding="utf-8")
+                self.assertIn("PUSHPLUS_MODE: ${{ vars.PUSHPLUS_MODE || 'one2many' }}", text)
+
+    def test_group_code_not_hardcoded_in_python(self):
+        """兜底值只在工作流里；pipeline / push 源码不出现具体群组编码。"""
+        repo_root = Path(__file__).parents[1]
+        for relpath in ("output/pipeline.py", "output/push.py"):
+            with self.subTest(source=relpath):
+                text = (repo_root / relpath).read_text(encoding="utf-8")
+                self.assertNotIn("PUSHPLUS_TOPIC = \"oai.1\"", text)
+                self.assertNotRegex(text, r"PUSHPLUS_TOPIC[^\n]*=\s*os\.environ\.get\([^\n]*oai\.1")
 
 
 class PushRateLimitTests(unittest.TestCase):
