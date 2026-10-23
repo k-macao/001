@@ -6,16 +6,19 @@
   - 整页拆分（_split_html_for_push）：每条 ≤ 单条上限、外壳与页脚齐全、标签平衡、
     正文一个字不丢、横幅如实标注「承接上条（续）」「本条未完」；
   - PushPlus「1 分钟 N 次请求」排队（_push_rate_wait / _wait_push_rate_limit）；
-  - PushPlus 默认一对一（不携带 topic），显式 topic 才发到一对多群组；
+  - PushPlus 默认一对多群组（2026-10-23）：群组编码取 PUSHPLUS_TOPIC，缺失时告警并回退
+    一对一；PUSHPLUS_MODE=one2one 可显式改回一对一直发自己；显式 topic 参数优先；
   - 微信推送标题（build_push_title）：[OCTOPUS] 关键词前缀、(强制) / (状态) 标记位置、
     时间戳永远在末尾、四条推送路径共用一个出口、分条 (i/N) 不挤掉推送时刻。
 """
 import importlib.util
+import io
 import os
 import re
 import sys
 import types
 import unittest
+from contextlib import redirect_stdout
 from datetime import datetime
 from html.parser import HTMLParser
 from pathlib import Path
@@ -347,7 +350,11 @@ class StyledDeliveryTests(unittest.TestCase):
 
 
 class PushDeliveryModeTests(unittest.TestCase):
-    """推送默认一对一（不携带 topic）；显式 topic 才发到一对多群组。"""
+    """推送路由（2026-10-23 按用户要求由一对一改为一对多）。
+
+    默认一对多群组：群组编码从 PUSHPLUS_TOPIC 读取；未配置时打印明确告警并回退一对一；
+    PUSHPLUS_MODE=one2one 可显式改回一对一直发自己；显式 topic 参数优先级最高。
+    """
 
     class _Response:
         status_code = 200
@@ -363,14 +370,58 @@ class PushDeliveryModeTests(unittest.TestCase):
                 "测试日报", "<p>测试</p>", token="test-token", **kwargs))
         return post.call_args.kwargs["json"]
 
-    def test_default_routes_to_one_to_one_without_topic(self):
-        expected_topic = os.environ.get("PUSHPLUS_TOPIC", "")
-        self.assertEqual(pipeline.PUSHPLUS_TOPIC, expected_topic)
-        payload = self._send()
-        if expected_topic:
-            self.assertEqual(payload["topic"], expected_topic)
-        else:
-            self.assertNotIn("topic", payload)
+    def test_default_mode_is_one_to_many(self):
+        """默认即一对多（不再需要手动打开）；缺省常量就是 one2many。"""
+        self.assertEqual(pipeline.PUSH_MODE_ONE2MANY, "one2many")
+        self.assertEqual(pipeline.PUSH_MODE_ONE2ONE, "one2one")
+        self.assertEqual(pipeline.PUSH_MODES, ("one2many", "one2one"))
+        mode, topic = pipeline.resolve_push_route(None, mode="one2many")
+        self.assertIn(mode, pipeline.PUSH_MODES)
+
+    def test_group_code_from_env_routes_to_one_to_many(self):
+        """PUSHPLUS_TOPIC 配好 → 发到一对多群组，payload 带 topic。"""
+        with patch.object(pipeline, "PUSHPLUS_MODE", "one2many"), \
+                patch.object(pipeline, "PUSHPLUS_TOPIC", "grp.2"):
+            mode, topic = pipeline.resolve_push_route(None)
+            payload = self._send()
+        self.assertEqual((mode, topic), ("one2many", "grp.2"))
+        self.assertEqual(payload["topic"], "grp.2")
+
+    def test_missing_group_code_warns_and_falls_back(self):
+        """一对多但没配群组编码 → 明确告警 + 回退一对一（不静默、不写死编码）。"""
+        buf = io.StringIO()
+        with patch.object(pipeline, "PUSHPLUS_MODE", "one2many"), \
+                patch.object(pipeline, "PUSHPLUS_TOPIC", ""), redirect_stdout(buf):
+            mode, topic = pipeline.resolve_push_route(None)
+            payload = self._send()
+            text = buf.getvalue()
+        self.assertEqual((mode, topic), ("one2one", ""))
+        self.assertNotIn("topic", payload)
+        self.assertIn("PUSHPLUS_TOPIC", text)
+        self.assertIn("回退一对一", text)
+
+    def test_one2one_mode_ignores_env_group(self):
+        """显式 PUSHPLUS_MODE=one2one → 一对一；即使环境里有群组编码也不携带。"""
+        with patch.object(pipeline, "PUSHPLUS_MODE", "one2one"), \
+                patch.object(pipeline, "PUSHPLUS_TOPIC", "grp.2"):
+            mode, topic = pipeline.resolve_push_route(None)
+            payload = self._send()
+        self.assertEqual((mode, topic), ("one2one", ""))
+        self.assertNotIn("topic", payload)
+
+    def test_unknown_mode_warns_and_uses_one_to_many(self):
+        """配置写错（未知模式）→ 告警并按默认一对多处理，不悄悄退回一对一。"""
+        buf = io.StringIO()
+        with patch.object(pipeline, "PUSHPLUS_MODE", "one2much"), \
+                patch.object(pipeline, "PUSHPLUS_TOPIC", "grp.2"), redirect_stdout(buf):
+            mode, topic = pipeline.resolve_push_route(None)
+        self.assertEqual((mode, topic), ("one2many", "grp.2"))
+        self.assertIn("PUSHPLUS_MODE", buf.getvalue())
+
+    def test_push_log_reports_route(self):
+        """推送日志写清本次走哪条路由（一对一 / 一对多群组 <编码>）。"""
+        self.assertEqual(pipeline.push_route_text("one2many", "grp.2"), "一对多群组 grp.2")
+        self.assertEqual(pipeline.push_route_text("one2one", ""), "一对一")
 
     def test_explicit_topic_enables_one_to_many_group(self):
         with patch.object(pipeline, "PUSHPLUS_TOPIC", ""):

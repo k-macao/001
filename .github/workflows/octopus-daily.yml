@@ -66,6 +66,10 @@ jobs:
       - name: 🐙 运行章鱼AI流水线
         env:
           PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          # 一对多群组推送（2026-10-23 起默认）：群组编码放 Secret，缺省则告警并回退一对一。
+          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC }}
+          # 推送模式：one2many（默认，一对多群组）/ one2one（一对一 直发自己）。
+          PUSHPLUS_MODE: ${{ vars.PUSHPLUS_MODE || 'one2many' }}
           # 策略研判内的 MACD（无需密钥）：优先库 / 本次日线，缺项才取免费源。
           OCTOPUS_MACD: ${{ vars.OCTOPUS_MACD || '1' }}
           OCTOPUS_MACD_SYMBOLS: ${{ vars.OCTOPUS_MACD_SYMBOLS }}

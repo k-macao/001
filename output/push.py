@@ -20,9 +20,10 @@
   切换 guizang 白底研报: python3 output/push.py --theme guizang
   或环境变量: OCTOPUS_PUSH_THEME=lime|pixel|forum|dossier|guizang
 
-推送方式:
-  默认 PushPlus「一对一」直发自己（无 topic，一对多群组推送已取消）；
-  如需临时改回群组推送，可用 PUSHPLUS_TOPIC 指定群组编码（如 oai.1）。
+推送方式（2026-10-23 起默认一对多）:
+  默认 PushPlus「一对多」群组推送：群组编码从 PUSHPLUS_TOPIC 读取（GitHub Secret /
+  环境变量），发到该群组；未配置群组编码时打印明确告警并回退一对一（只发给自己）。
+  PUSHPLUS_MODE=one2one 可显式改回一对一直发自己（此时不携带 topic，即使配了群组编码）。
 
 超长日报（> 单条 10 万字上限）:
   自动按栏目边界拆成多条消息完整推送（标题带 1/N、2/N…），内容一个字不丢；

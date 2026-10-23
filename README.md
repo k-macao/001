@@ -214,6 +214,7 @@
 | 推送仍失败 | 日报发送失败会尝试发送纯文本告警；推送或告警失败以退出码 1 结束，便于 Actions 标红。 |
 | 微信推送标题 | 固定为 `[OCTOPUS] 章鱼 AI · 上水日报 - MM/DD HH:MM`（北京时间）；强制推送为 `[OCTOPUS] 章鱼 AI · 上水日报(强制) - …`，状态报告为 `…(状态) - …`，超长分条在末尾追加 ` (i/N)`。2026-10-13 起前缀由 `🐙` 改为 `[OCTOPUS]` 关键词（emoji 在部分微信客户端与转发链路会被裁掉，关键词也能直接用作消息过滤规则）；页面刊头与 `<title>` 仍是不带前缀的「章鱼 AI · 上水日报」，「日报未推送提醒」「日报推送失败提醒」两条告警仍带 🐙。四条推送路径统一走 `build_push_title()`。 |
 | 单条内容超限 | 默认上限按 PushPlus 会员 100,000 字符配置；低于上限一页发送，超限则按原 HTML 在栏目 / 完整标签边界拆分，续片重新带栏目头，**不再自动切换成失去 pixel / forum / dossier 等主题的白底纯文字版**。默认最多 12 条、条间 2 秒，并按平台频率限制排队。 |
+| 推送对象（一对多 / 一对一） | 2026-10-23 起默认 **一对多群组推送**：群组编码取 `PUSHPLUS_TOPIC`，发到该 PushPlus 群组里所有订阅者；未配置群组编码时日志明确告警并回退一对一（只发给自己），`PUSHPLUS_MODE=one2one` 可显式改回一对一直发自己。分条推送的每一条都走同一路由。 |
 | 账号额度与分条开关 | PushPlus 文档列出的会员额度为 10 万字、实名用户为 2 万字，可用 `PUSHPLUS_MAX_CONTENT_CHARS` 覆盖默认值；设置 `PUSHPLUS_MULTIPART=0` 会关闭完整分条，改为安全截断并附完整版链接，磁盘归档仍保留完整报告。 |
 
 ## 常用命令与配置
@@ -294,7 +295,8 @@
 | 资讯 | `OCTOPUS_MAINLAND_NEWS_PER_SOURCE`、`OCTOPUS_MAINLAND_NEWS_MAX` | 内地财经媒体每源条数（默认 3）、全栏目条数上限（默认 48） |
 | 资讯 | `OCTOPUS_MAINLAND_HOTLIST=0` | 关闭【沸腾花蛤】情绪热点因子量化分析栏目（原内地财经热点榜；默认开启；采集、标题池与审计口径都不变） |
 | 资讯 | `OCTOPUS_TREND_PLATFORMS=Reddit,StockTwits` | 只启用指定的趋势跟踪社区平台 |
-| 推送 | `PUSHPLUS_TOPIC`（默认空） | 默认一对一推送（不携带 topic，一对多群组推送已取消）；如需改回群组推送可填群组编码（如 `oai.1`） |
+| 推送 | `PUSHPLUS_MODE`（默认 `one2many`） | 推送模式：`one2many` = 一对多群组推送（2026-10-23 起默认）；`one2one` = 一对一 直发自己（历史口径，不携带 topic）。 |
+| 推送 | `PUSHPLUS_TOPIC`（默认空） | 一对多群组编码（如 `oai.1`，在 PushPlus 后台群组里查）；**未配置时打印告警并回退一对一**，绝不静默降级、也不在代码里写死编码。Actions 里放 Secret `PUSHPLUS_TOPIC` |
 | 推送 | `PUSHPLUS_MAX_CONTENT_CHARS=20000` | 修改单条内容上限；默认 100000 |
 | 推送 | `PUSHPLUS_MAX_PARTS=6`、`PUSHPLUS_PART_DELAY=5` | 修改最多推送条数与条间隔；默认 12 条 / 2 秒 |
 | 推送 | `PUSHPLUS_RATE_MAX=5`、`PUSHPLUS_RATE_WINDOW=60` | 频率排队窗口；默认每 60 秒最多 5 次，设 `0` 关闭排队 |
