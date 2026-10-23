@@ -33,6 +33,7 @@ ctx 约定（键全部可选，缺了就降级）：
 from __future__ import annotations
 
 import os
+import re
 import zlib
 
 # OCTOPUS_REN=0 / false / no 关闭「AI帮你提鲜」；其余值（含未设置）默认开启。
@@ -140,6 +141,33 @@ def _coin_tone(p_pct, seed):
     return _pick(pool, seed + "|coin")
 
 
+def _strip_prob(text):
+    """去掉标签自带的概率口径（如「· P(7日涨) 62%」），只留方向定调。
+
+    2026-10-23 用户要求【回游金枪鱼】今日预判不显示涨跌概率；周度 entry["label"]
+    自带宽口径概率，本栏只翻译方向，概率仍在「每日趋势量化推演」正文。
+    """
+    text = str(text or "")
+    text = re.sub(r"\s*[·,，]?\s*P\(\d*日涨\)\s*\d+(?:\.\d+)?%", "", text)
+    text = re.sub(r"\s*\d+(?:\.\d+)?%\s*$", "", text)
+    return text.strip()
+
+
+def _dir_tone(label, seed):
+    """方向定调（偏多 / 中性 / 偏空）→ 一句人话点评；不引用概率数字。"""
+    text = str(label or "")
+    if "偏多" in text or "看多" in text:
+        pool = ["多头稍微占上风，但别脑补成躺赢", "方向偏上，手别伸太快",
+                "气氛偏暖，先看量能跟不跟"]
+    elif "偏空" in text or "看空" in text:
+        pool = ["空头稍微占上风，防守优先", "方向偏下，少动多看",
+                "气氛偏冷，先保住本金"]
+    else:
+        pool = ["方向不明，基本等于五五开", "多空拉锯，先看懂再动手",
+                "没有稳赚的方向，观察为主"]
+    return _pick(pool, seed + "|dir")
+
+
 _STATIC_TIPS = ["多看少动，攒经验值", "管住手，别急着 all in", "先看懂再动手，不亏就是赚",
                 "别浪，机会每天都有", "保持在线，别下牌桌也别重仓压注"]
 
@@ -152,24 +180,26 @@ def _tip(seed):
 # 各栏目生成器：只读 ctx，缺数据返回 ""（渲染层对已存在栏目给诚实后备结论）
 # ------------------------------------------------------------------
 def _ren_forecast(ctx):
-    """【回游金枪鱼】今日预判：把「概率/倾向」一行行翻译成硬币梗。"""
+    """【回游金枪鱼】今日预判：只翻译方向定调与信号，**不显示涨跌概率**。
+
+    2026-10-23 按用户要求：这一栏只给「偏多 / 中性 / 偏空」的方向结论与信号分，
+    不写上涨概率、周涨概率或「涨 xx ： xx 跌」几率——概率模型仍在
+    「每日趋势量化推演 · 港股概率走势分析」里展示，本栏不重复。
+    """
     quant = ctx.get("quant") or {}
     weekly = ctx.get("weekly") or {}
     ai = ctx.get("ai") or {}
     seed = f"{ctx.get('date_str') or ''}|FORECAST"
     bits = []
     head = quant.get("headline") or {}
-    if head.get("available") and head.get("p_up") is not None:
-        p = float(head["p_up"]) * 100
-        p_txt = _pct(head["p_up"])
+    if head.get("available") and head.get("label"):
         tgt = str(quant.get("target_label") or "下一交易日")
-        bits.append(f"模型对{tgt}的上涨概率押 {p_txt}（{_coin_tone(p, seed)}）")
+        bits.append(f"模型对{tgt}的方向定调是「{head.get('label')}」"
+                    f"（{_dir_tone(str(head.get('label')), seed)}）")
     wk = weekly.get("entry") or {}
-    if wk.get("p_up") is not None:
-        wp = float(wk["p_up"]) * 100
-        wp_txt = _pct(wk["p_up"])
-        w_seed = seed + "|w"
-        bits.append(f"未来一周周涨概率 {wp_txt}（{_coin_tone(wp, w_seed)}）")
+    wk_label = _strip_prob(wk.get("label"))
+    if wk_label:
+        bits.append(f"未来一周整段定调「{wk_label}」")
     if ai.get("available"):
         bits.append(f"综合倾向「{ai.get('sentiment_label') or '中性'}」"
                     f"（信号 {int(ai.get('score') or 0):+d}）")
@@ -209,33 +239,6 @@ def _ren_econ_calendar(ctx):
     text += ("翻译：大数据和大会议前后，市场爱坐过山车——这不是让你去猜方向，"
              "而是提醒你别在这些日子前一把押满。")
     return text
-
-
-def _ren_quant_forecast(ctx):
-    """【蜉蝣天地水母】量化分析总览：概率 + 模型自检的诚实翻译。"""
-    quant = ctx.get("quant") or {}
-    if not quant.get("available"):
-        return ""
-    seed = f"{ctx.get('date_str') or ''}|QUANT"
-    head = quant.get("headline") or {}
-    bits = []
-    if head.get("available") and head.get("p_up") is not None:
-        p = float(head["p_up"]) * 100
-        p_txt = _pct(head["p_up"])
-        label = str(head.get("label") or "中性")
-        bits.append(f"模型给下一交易天的定调是「{label} {p_txt}」（{_coin_tone(p, seed)}）")
-    v1 = (quant.get("validation") or {}).get(1) or {}
-    if v1.get("hit_rate") is not None:
-        hit = float(v1["hit_rate"]) * 100
-        base = float(v1.get("base_rate") or 0.5) * 100
-        honest = ("跟抛硬币差不多" if abs(hit - base) < 3 else
-                  ("比瞎猜强一点点" if hit > base else "还没瞎猜准"))
-        bits.append(f"它自己回测了过去 {_int(v1.get('n') or 0)} 天，"
-                    f"方向命中 {hit:.0f}%（{honest}，模型原话：不显著）")
-    if not bits:
-        return ""
-    return ("；".join(bits) + "。翻译：把概率当「降水概率」看——"
-            "说 52% 会下雨，不代表你出门必须带伞，更不代表它天天下对。")
 
 
 def _ren_hk_probability(ctx):
@@ -911,7 +914,6 @@ def _ren_eastmoney_wire(ctx):
 _GENERATORS = {
     "FORECAST": _ren_forecast,
     "ECON CALENDAR": _ren_econ_calendar,
-    "QUANT FORECAST": _ren_quant_forecast,
     "HK PROBABILITY": _ren_hk_probability,
     "LIQUIDITY FLOW": _ren_liquidity,
     "WEEKLY FORECAST": _ren_weekly,
@@ -977,7 +979,6 @@ def _garnish_obj(kicker, ctx):
     table = {
         "FORECAST": quant,
         "ECON CALENDAR": ctx.get("cal"),
-        "QUANT FORECAST": quant,
         "HK PROBABILITY": quant,
         "LIQUIDITY FLOW": quant.get("liquidity"),
         "WEEKLY FORECAST": ctx.get("weekly"),
@@ -1032,7 +1033,7 @@ def _garnish_dir(kicker, ctx, obj):
         e = (obj or {}).get("entry") or {}
         p = e.get("p_up")
         return e.get("label"), (p * 100 if isinstance(p, (int, float)) else None)
-    if kicker in ("FORECAST", "QUANT FORECAST", "HK PROBABILITY"):
+    if kicker in ("FORECAST", "HK PROBABILITY"):
         h = ((ctx or {}).get("quant") or {}).get("headline") or {}
         if h.get("available"):
             p = h.get("p_up")
@@ -1127,6 +1128,10 @@ def section_ren_block(kicker, ctx):
     if isinstance(p_pct, (int, float)):
         p_pct = round(float(p_pct), 1)
     else:
+        p_pct = None
+    # 2026-10-23 按用户要求：【回游金枪鱼】今日预判不展示涨跌概率 → 几率条整条缺席
+    # （label 仍保留，方向色与 ▲▼■ 定调不变；概率模型不在本栏重复出现）。
+    if kicker == "FORECAST":
         p_pct = None
     return {"text": text, "label": label or None, "p_pct": p_pct,
             "metaphor": metaphor or None}

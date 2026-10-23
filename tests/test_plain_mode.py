@@ -149,9 +149,11 @@ class ReportPlainTests(unittest.TestCase):
 
     def test_notes_report_restores_process_text(self):
         text = _strip(self.notes["guizang"])
+        # 「推进式（walk-forward）」只出现在已下线的量化分析总览里（2026-10-23），
+        # 其余过程文字仍由各个在栏章节在 --notes 模式下恢复。
         for marker in ("--full 看全文", "规则合成 · 大白话翻译", "计算口径", "执行规则",
                        "无未来函数口径", "先存档后结算", "筛选口径", "五维权重",
-                       "推进式（walk-forward）", "Brier", "数字与下文各栏同源", "百句股票梗库"):
+                       "Brier", "数字与下文各栏同源", "百句股票梗库"):
             self.assertIn(marker, text, marker)
 
     def test_plain_is_materially_shorter_than_notes(self):
@@ -167,9 +169,11 @@ class ReportPlainTests(unittest.TestCase):
         for theme in ("guizang", "pixel"):
             html = self.plain[theme]
             text = _strip(html)
+            # 「模型自检 / 指数概率」原属量化分析总览（2026-10-23 下线），
+            # 概率与逐日表格仍在每日趋势量化推演里。
             for marker in ("结论", "AI帮你提鲜", "活鲜度", pipeline.SECTION_TITLE_FORECAST,
                            pipeline.SECTION_TITLE_SHORT_CARD, "新手三句话",
-                           "模型自检", "P(7日涨)", "指数概率", "逐日表格",
+                           "P(7日涨)", "逐日表格",
                            "时间点合计", "最密集日", "数据覆盖", "暂缺：",
                            "当天", "非投资建议"):
                 self.assertIn(marker, text, f"{theme}: {marker}")

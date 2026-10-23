@@ -119,9 +119,10 @@
       思维重构成六个可独立测试的层——providers(数据) → features(五因子特征) →
       probability(分桶+保序+逻辑回归校准 / 推进式回测) → liquidity(资金流动性) →
       engine(编排) → render(呈现)，外加「预测留痕 → 次日按真实收盘结算」的反馈闭环
-      （output/quant_history.json）。核心栏目三个：**【蜉蝣天地水母】量化分析总览**（概率 + 95% 区间 +
-      波动分位 + 模型可信度 + 预测复盘）、**每日趋势量化推演**（逐日走势预测 + 恒指/恒科/国企指数 +
-      个股池逐只概率 + 市场宽度 + 五因子拆解）、**资金流动性分析**（南向/北向成交总额
+      （output/quant_history.json）。核心栏目两个（2026-10-23 起；原第三个「【蜉蝣天地水母】
+      量化分析总览」已按用户要求整栏下线，见第 32 条）：**每日趋势量化推演**（逐日走势预测 +
+      恒指/恒科/国企指数 + 个股池逐只概率 + 市场宽度 + 五因子拆解）、
+      **资金流动性分析**（南向/北向成交总额
       与 z 值分位、恒指量能、Amihud 非流动性、CR5 集中度、主力资金流、流动性综合分
       0~100 与对概率的有界修正）。概率全部由「同一套因子在自身历史上滚动重算 →
       分桶 + 保序 + 逻辑回归校准」得到，并经推进式回测检验（每步只用过去数据），
@@ -225,7 +226,8 @@
       与拆分逻辑完全不变）：今日预判→**【回游金枪鱼】今日预判**、
       未来30天影响经济时间点→**【探照安康鱼】时间节点量化分析**、
       量化分析总览→**【蜉蝣天地水母】量化分析总览**。相关标题集中定义为
-      SECTION_TITLE_FORECAST / SECTION_TITLE_ECON_CALENDAR / SECTION_TITLE_QUANT_FORECAST，
+      SECTION_TITLE_FORECAST / SECTION_TITLE_ECON_CALENDAR / SECTION_TITLE_QUANT_FORECAST
+      （其中 SECTION_TITLE_QUANT_FORECAST 已于 2026-10-23 随该栏下线移除，见第 32 条），
       guizang 与 pixel 两个主题共用。「时间节点」栏目的窗口天数不再写在标题里，
       仍在栏目内「窗口摘要 · 时间窗口」如实显示（OCTOPUS_CALENDAR_DAYS 改窗口时同步变化）。
       其余栏目名称不变。
@@ -403,8 +405,9 @@
         tools/patchright-enhanced/（vendor 的上游仓库 + 本仓库的 probe.js 适配器）
         与 .github/patches/octopus-hk-browser.patch（只注入 OCTOPUS_HK_* 三个变量）删除；
       · 港股行情本身不受影响：恒指 / 恒科报价仍在【及时秋刀鱼】AI 行情复盘的
-        「港股双指数」子块，港股概率模型仍在【蜉蝣天地水母】量化分析总览与
-        【嗜血大白鲨】逐日走势量化分析，删除的只是重复的境外个股明细那一栏
+        「港股双指数」子块，港股概率模型仍在【嗜血大白鲨】逐日走势量化分析
+        （2026-10-23 起「量化分析总览」下线后，这里是概率模型的唯一正文出口），
+        删除的只是重复的境外个股明细那一栏
         （重复率见《大纲-栏目重复率核对.md》：与「港股概率走势分析」重复 32%）；
       · 历史归档日报（output/daily_report_*.html）按仓库惯例不改写，仍是当时的真实
         快照；output/latest.html 已按新口径去掉该栏并重排后续栏目序号。
@@ -436,6 +439,22 @@
       OCTOPUS_STRATEGY_QUANT=0 关闭全部 5 栏（不采集、不渲染、不进审计）。
       规则合成的统计口径，非投资建议；逐条口径见《策略量化分析-接入说明.md》，
       回归见 tests/test_strategy_quant.py。
+
+  32. 下线「【蜉蝣天地水母】量化分析总览」+「今日预判」去掉涨跌概率（2026-10-23 按用户要求）：
+      · **取消栏目**：正文顺序表 REPORT_OUTLOOK_SECTIONS 里的 "QUANT FORECAST"、
+        SECTION_TITLE_QUANT_FORECAST 标题常量、_collect_report_parts 里建块的
+        blocks["QUANT FORECAST"]、五套主题的栏目图标映射与
+        octopus_ren 的解读生成器（_ren_quant_forecast / 生成器表 / 取数表 / 概率映射）
+        一并移除——页面、微信分条与像素关卡名都不会再出现这一栏；
+      · **只删栏目，不删模型**：港股量化引擎照常采集（仍计入数据覆盖总源数），
+        港股概率走势分析仍并入「每日趋势量化推演」，资金流动性分析仍单独成栏；
+        octopus_quant/render.render_forecast 作为可复用渲染函数保留（便于日后恢复）；
+      · **今日预判不显示涨跌概率**：_conclusion_pairs 的「量化分析」只给 ▲▼■ 方向定调与
+        目标交易日、「七日预测」只给整段方向与锚定日，不再写上涨概率 / P(7日涨)；
+        octopus_ren._ren_forecast 改为只翻译方向定调与信号分，section_ren_block 对
+        FORECAST 返回 p_pct=None → 栏首「涨跌概率 / 几率 ODDS METER」整条缺席；
+      · 概率数字仍在「每日趋势量化推演」与「资金流动性分析」如实展示，口径 / 留痕 /
+        结算不变；历史归档日报按惯例不改写。
 
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
@@ -6464,7 +6483,6 @@ _SECTION_ICON_META = {
     "FORECAST": ("★", "TL;DR", C_LEMON, C_AI_BG),
     "SUMMARY": ("✓", "RECAP", C_GREEN, C_UP_BG),
     "TREND TRACKING": ("◉", "TREND", C_MAGENTA, "#301226"),
-    "QUANT FORECAST": ("◈", "FORECAST", C_CYAN, "#092836"),
     "HK PROBABILITY": ("◈", "HK-PROB", C_MAGENTA, "#301226"),
     "LIQUIDITY FLOW": ("≈", "FLOW", C_CYAN, "#092836"),
     "WEEKLY FORECAST": ("◆", "WEEK-FX", C_LEMON, C_AI_BG),
@@ -8355,24 +8373,41 @@ def _market_brief(market, labels, kit, with_date=False):
     return line
 
 
+def _forecast_dir_text(label):
+    """今日预判的方向文案：去掉七日预测 label 自带的「P(N日涨) xx%」。
+
+    2026-10-23 用户要求【回游金枪鱼】今日预判不显示涨跌概率；octopus_weekly 的
+    entry["label"]（如「■ 中性（略偏跌）· P(7日涨) 44%」）自带宽口径概率，
+    这里只保留方向定调部分，概率数字仍在「每日趋势量化推演」正文如实展示。
+    """
+    text = str(label or "")
+    text = re.sub(r"\s*[·,，]?\s*P\(\d*日涨\)\s*\d+(?:\.\d+)?%", "", text)
+    text = re.sub(r"\s*\d+(?:\.\d+)?%\s*$", "", text)
+    return text.strip()
+
+
 def _conclusion_pairs(kit, ai_result, market, pan, policy, quant=None, weekly=None):
-    """最终「今日预判」：量化与方向结论 → 核心判断 → 市场数据 → 政策定调。"""
+    """最终「今日预判」：量化与方向结论 → 核心判断 → 市场数据 → 政策定调。
+
+    不显示涨跌概率（2026-10-23 用户要求）：量化只给方向定调、七日预测只给整段方向。
+    """
     pairs = []
-    # 量化分析置顶：概率 + 区间 + 模型可信度，一眼看到「结论与把握有多大」
+    # 量化分析置顶：只给方向定调与目标交易日，**不展示涨跌概率**
+    # （2026-10-23 用户要求：【回游金枪鱼】今日预判不显示涨跌概率）。
     if quant and quant.get("available"):
         head = quant.get("headline") or {}
         if head.get("available"):
             pairs.append(("量化分析",
                           f'<b>{_esc(head.get("arrow", "■"))} '
-                          f'{_esc(head.get("label", "中性"))} '
-                          f'{head.get("p_up", 0) * 100:.0f}%</b>'
+                          f'{_esc(head.get("label", "中性"))}</b>'
                           f' · {_esc(quant.get("target_label") or "下一交易日")}'))
-    # 七日预测：未来 7 个交易日港股累计方向与概率（逐日表格的整段结论口径）
+    # 七日预测：未来 7 个交易日港股整段方向（概率同样不在这里展示）
     if weekly and weekly.get("available"):
         wk_entry = weekly.get("entry") or {}
-        if wk_entry.get("label"):
+        wk_dir = _forecast_dir_text(wk_entry.get("label"))
+        if wk_dir:
             pairs.append(("七日预测",
-                          f'<b>{_esc(str(wk_entry.get("label") or ""))}</b>'
+                          f'<b>{_esc(wk_dir)}</b>'
                           f' · 锚定 {_esc(str(wk_entry.get("base_date") or ""))} 收盘'
                           f' · 未来 {_esc(str(wk_entry.get("target_sessions") or _weekly.PATH_MAX))} 个交易日'))
     if ai_result and ai_result.get("available"):
@@ -8595,7 +8630,8 @@ SECTION_TITLE_FED_TREND = "【火爆大鱿鱼】美联储因子量化分析"
 SECTION_TITLE_GEO_TREND = "【巡回巨鲸】地缘政治因子量化分析"
 # 2026-10-11 新增：独立栏目，方法来自 vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill）。
 SECTION_TITLE_UZI_TREND = "【游资剑鱼】多专家流派趋势分析"
-SECTION_TITLE_QUANT_FORECAST = "【蜉蝣天地水母】量化分析总览"
+# 2026-10-23 按用户要求下线「【蜉蝣天地水母】量化分析总览」整栏（标题常量一并移除）；
+# 港股概率模型仍在「每日趋势量化推演 · 港股概率走势分析」与「资金流动性分析」呈现。
 SECTION_TITLE_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
 SECTION_TITLE_WEEKLY_FORECAST = "每日趋势量化推演"
 SECTION_TITLE_SECTOR_ROTATION = "【滚滚翻车鱼】板块轮动量化策略"
@@ -8647,7 +8683,9 @@ REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
     "MEDIA RISK", "NEWS SENTIMENT",
 )
 REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
-    "QUANT FORECAST", "LIQUIDITY FLOW", "WEEKLY FORECAST",
+    # 2026-10-23 起「QUANT FORECAST」下线（量化分析总览整栏取消），
+    # 资金流动性与每日趋势量化推演两栏保留。
+    "LIQUIDITY FLOW", "WEEKLY FORECAST",
 )
 REPORT_STRATEGY_SECTIONS = (                   # ④' 策略量化（图中 4 大类 6 细分）
     "STRATEGY OVERVIEW", "STRATEGY EQUITY", "STRATEGY BOND", "STRATEGY CTA", "STRATEGY ARBITRAGE",
@@ -9211,7 +9249,7 @@ def _section_notes_html(kicker, notes, kit, *, evidence_only=False, date_str="")
 def _rendered_section_fallback_conclusion(kicker):
     """已有正文但专用翻译器证据不足时的诚实栏首结论；不新增数字或方向。"""
     noun = {
-        "FORECAST": "预判", "ECON CALENDAR": "日程", "QUANT FORECAST": "量化结果",
+        "FORECAST": "预判", "ECON CALENDAR": "日程",
         "HK PROBABILITY": "概率结果", "LIQUIDITY FLOW": "资金结果",
         "WEEKLY FORECAST": "逐日推演", "MARKET REVIEW": "行情复盘",
         "RETAIL SENTIMENT": "社区情绪", "MEDIA RISK": "媒体风险证据",
@@ -10325,11 +10363,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         quant = quant_src.get("result") or {}
     lq_html = ""          # 资金流动性正文（同子栏合并要用它判断 05 栏是否真的在场）
     if quant.get("available"):
-        quant_badge = kit.badge("量化模型", "ai")
-        fc_html = _quant.render.render_forecast(quant, kit)
-        if fc_html:
-            blocks["QUANT FORECAST"] = (
-                "QUANT FORECAST", SECTION_TITLE_QUANT_FORECAST, fc_html, quant_badge, "")
+        # 2026-10-23 按用户要求下线「【蜉蝣天地水母】量化分析总览」整栏：
+        # 只去掉这一栏的正文，概率模型本身不改——港股概率走势分析仍并入
+        # 「每日趋势量化推演」，资金流动性分析仍单独成栏；数据审计口径不变。
         hk_probability_html = _quant.render.render_hk_probability(quant, kit) or ""
         lq_html = _quant.render.render_liquidity(quant, kit)
         if lq_html:
@@ -13974,7 +14010,6 @@ DOSSIER_ICONS = {
     "SUMMARY": ("■", D_BLACK, "▲", D_RED_INK),
     "MARKET REVIEW": ("▲", D_RED_INK, "■", D_BLACK),
     "WEEKLY FORECAST": ("■", D_GREEN_INK, "▲", D_RED_INK),
-    "QUANT FORECAST": ("●", D_RED_INK, "■", D_BLACK),
     "HK PROBABILITY": ("◍", D_GREEN_INK, "●", D_RED_INK),
     "LIQUIDITY FLOW": ("≈", D_GREEN_INK, "●", D_BLACK),
     "SECTOR ROTATION": ("◐", D_GREEN_INK, "▲", D_RED_INK),
@@ -14378,7 +14413,6 @@ FORUM_ICONS = {
     "SHORT CARD": ("⚡", F_ACCENT),
     "MARKET REVIEW": ("📈", F_RED),         # 红色：行情（红涨口径下的上升折线）
     "WEEKLY FORECAST": ("🗓", F_CYAN),
-    "QUANT FORECAST": ("🤖", F_PURPLE),  # 紫色机器人：量化
     "HK PROBABILITY": ("🎲", F_PURPLE),
     "LIQUIDITY FLOW": ("💧", F_CYAN),
     "SECTOR ROTATION": ("🌀", F_ORANGE),

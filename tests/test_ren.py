@@ -21,7 +21,7 @@ ren = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(ren)
 
 ALL_KICKERS = (
-    "STRATEGY READ", "UZI TREND", "QUANT FORECAST", "HK PROBABILITY", "LIQUIDITY FLOW",
+    "STRATEGY READ", "UZI TREND", "HK PROBABILITY", "LIQUIDITY FLOW",
     "WEEKLY FORECAST", "POLICY SHOCK", "FED TREND", "GEO TREND", "ECON CALENDAR",
     "MARKET REVIEW", "RETAIL SENTIMENT", "MEDIA RISK", "TREND TRACKING",
     "SECTOR ROTATION", "INDUSTRY ROTATION", "GLOBAL HEADLINES", "EASTMONEY WIRE",
@@ -178,12 +178,15 @@ class DeterminismTests(unittest.TestCase):
             self.assertEqual(first, second, kicker)
 
     def test_day_seed_changes_wording_pool_only(self):
-        """隔天措辞从池里换花样，但数字口径不变（52% 还是 52%，绝不变造数字）。"""
+        """隔天措辞从池里换花样，但数字口径不变（53% 还是 53%，绝不变造数字）。"""
         ctx_a, ctx_b = rich_ctx(), dict(rich_ctx(), date_str="20260930")
-        expect = {"FORECAST": "52%", "QUANT FORECAST": "52%", "WEEKLY FORECAST": "53%"}
-        for kicker, token in expect.items():
-            self.assertIn(token, ren.section_ren(kicker, ctx_a), kicker)
-            self.assertIn(token, ren.section_ren(kicker, ctx_b), kicker)
+        for ctx in (ctx_a, ctx_b):
+            self.assertIn("53%", ren.section_ren("WEEKLY FORECAST", ctx))
+        # 2026-10-23 用户要求：今日预判不展示涨跌概率 → 两个日期都不出现任何百分比概率
+        for ctx in (ctx_a, ctx_b):
+            text = ren.section_ren("FORECAST", ctx)
+            self.assertIn("方向定调", text)
+            self.assertNotIn("%", text)
 
 
 class NoFabricationTests(unittest.TestCase):
@@ -196,7 +199,7 @@ class NoFabricationTests(unittest.TestCase):
     def test_unavailable_results_return_empty(self):
         """available=False / status!=success 时整行缺席，绝不用旧数据充数。"""
         ctx = rich_ctx()
-        for key in ("policy", "ai", "uzi", "quant", "weekly", "fed", "geo", "senti"):
+        for key in ("policy", "ai", "uzi", "weekly", "fed", "geo", "senti"):
             broken = dict(ctx, **{key: {"available": False}})
             if key == "weekly":
                 # WEEKLY FORECAST now combines weekly output and HK probability analysis;
@@ -204,7 +207,7 @@ class NoFabricationTests(unittest.TestCase):
                 broken["quant"] = {"available": False}
             kicker = {"policy": "POLICY SHOCK", "ai": "STRATEGY READ",
                       "uzi": "UZI TREND",
-                      "quant": "QUANT FORECAST", "weekly": "WEEKLY FORECAST",
+                      "weekly": "WEEKLY FORECAST",
                       "fed": "FED TREND", "geo": "GEO TREND",
                       "senti": "NEWS SENTIMENT"}[key]
             self.assertEqual(ren.section_ren(kicker, broken), "", kicker)
@@ -242,8 +245,8 @@ class NoFabricationTests(unittest.TestCase):
         """解读引用的概率 / 命中率 / 分数必须能在输入里找到（防凭空造数）。"""
         ctx = rich_ctx()
         cases = {
-            "FORECAST": ["52%", "53%"],
-            "QUANT FORECAST": ["52%", "185"],
+            # 2026-10-23 起今日预判只翻译方向与信号，不再出现涨跌概率
+            "FORECAST": ["方向定调", "+7"],
             "HK PROBABILITY": ["63%", "36%", "24"],
             "LIQUIDITY FLOW": ["640", "45/100"],
             "UZI TREND": ["3 只里 2 只", "5 位方法评委按 14 条规则", "评委库 66 位 / 242 条规则",
@@ -267,10 +270,24 @@ class NoFabricationTests(unittest.TestCase):
 
     def test_coin_probability_wording_is_honest(self):
         """概率 45%~55% 区间必须出现「抛硬币 / 五五开」级措辞，不许吹成稳了。"""
+        for p in (46, 50, 52, 54):
+            tone = ren._coin_tone(p, "20260929")
+            self.assertTrue(any(w in tone for w in ("抛硬币", "五五开", "神仙", "氛围")), tone)
+
+    def test_forecast_never_shows_updown_probability(self):
+        """2026-10-23 用户要求：【回游金枪鱼】今日预判不显示涨跌概率。"""
         ctx = rich_ctx()
-        text = ren.section_ren("QUANT FORECAST", ctx)
-        honest_words = ("抛硬币", "五五开", "神仙", "氛围")
-        self.assertTrue(any(w in text for w in honest_words), text)
+        # 周度 label 真实形态自带「· P(7日涨) 53%」：翻译层必须把概率剥掉，只留方向。
+        ctx["weekly"] = {"available": True, "entry": {
+            "p_up": 0.53, "target_sessions": 7,
+            "label": "■ 中性（略偏涨）· P(7日涨) 53%"}}
+        text = ren.section_ren("FORECAST", ctx)
+        self.assertTrue(text)
+        self.assertIn("中性（略偏涨）", text)
+        for word in ("概率", "几率", "P(", "%"):
+            self.assertNotIn(word, text)
+        block = ren.section_ren_block("FORECAST", ctx)
+        self.assertIsNone(block["p_pct"])       # 几率条整条缺席
 
 
 class ContentTests(unittest.TestCase):
@@ -425,16 +442,16 @@ class FreshMeterTests(unittest.TestCase):
     def test_section_ren_block_meta_same_source(self):
         """整块数据：text 与 section_ren 一字不差；label/p_pct 与 ⌁AI研判同源取数。"""
         ctx = rich_ctx()
-        block = ren.section_ren_block("QUANT FORECAST", ctx)
+        block = ren.section_ren_block("WEEKLY FORECAST", ctx)
         self.assertIsNotNone(block)
-        self.assertEqual(block["text"], ren.section_ren("QUANT FORECAST", ctx))
-        self.assertEqual(block["label"], "中性")          # quant.headline.label 同源
-        self.assertAlmostEqual(block["p_pct"], 52.0)      # 0.52 → 52.0，不另算一套
+        self.assertEqual(block["text"], ren.section_ren("WEEKLY FORECAST", ctx))
+        self.assertEqual(block["label"], "中性（略偏涨）")   # weekly.entry.label 同源
+        self.assertAlmostEqual(block["p_pct"], 53.0)        # 0.53 → 53.0，不另算一套
 
     def test_section_ren_block_empty_when_no_data(self):
         """数据缺失 → None（调用方就不加块），绝不硬编。"""
         self.assertIsNone(ren.section_ren_block("NOT A KICKER", rich_ctx()))
-        self.assertIsNone(ren.section_ren_block("QUANT FORECAST", {}))
+        self.assertIsNone(ren.section_ren_block("FORECAST", {}))
         self.assertIsNone(ren.section_ren_block("HK 7D PROB", rich_ctx()))
 
     def test_section_ren_block_meta_optional(self):

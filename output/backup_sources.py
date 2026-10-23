@@ -110,7 +110,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "yahoo_bars": {
         "name": "日线序列 · 港股量化 / 每周预测 / 板块轮动 / MACD",
-        "used_by": ("【蜉蝣天地水母】量化分析总览", "每日趋势量化推演",
+        "used_by": ("每日趋势量化推演",
                     "【滚滚翻车鱼】板块轮动量化策略·港股与恒指日线",
                     "【六眼飞鱼】量化 MACD 策略·MACD日线"),
         "primary": ("Yahoo Finance query1", "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"),

@@ -510,17 +510,18 @@ class CardRenderingTests(unittest.TestCase):
         self.assertNotIn("SHORT CARD", [s[0] for s in sections])
         self.assertNotIn(self.pipeline.SECTION_TITLE_SHORT_CARD, html)
         self.assertNotEqual(sections[0][0], "AI DIGEST")
-        # 全量长版：日程逐日表与校准曲线表回来
+        # 全量长版：日程逐日表与逐日走势表回来（校准曲线随量化分析总览于 2026-10-23 下线）
         self.assertIn("逐日时间点（北京时间）", html)
-        self.assertIn("校准曲线", html)
+        self.assertIn("逐日表格", html)
 
     def test_lite_mode_collapses_long_form_and_discloses(self):
         data = self._data()
         with self.pipeline.notes_mode():          # 精简 + 说明文字（--notes）
             html = self.pipeline.generate_report(
                 data, "2026年8月2日 · 周日", "20260802", theme="guizang")
-        # 方法论长注折叠成一句，但结论与自检数字仍在
-        self.assertIn("模型自检", html)
+        # 方法论长注折叠成一句，但结论与概率数字仍在
+        # （「模型自检」随量化分析总览于 2026-10-23 下线，概率仍在逐日推演里）
+        self.assertIn("P(7日涨)", html)
         self.assertIn("无未来函数口径", html)
         self.assertIn("先存档后结算", html)
         # 日程只列近端，并如实披露折叠条数
@@ -532,7 +533,7 @@ class CardRenderingTests(unittest.TestCase):
         data = self._data()
         html = self.pipeline.generate_report(
             data, "2026年8月2日 · 周日", "20260802", theme="guizang")
-        self.assertIn("模型自检", html)
+        self.assertIn("P(7日涨)", html)
         self.assertIn("今明 + 近端 ★★★ 时间点（北京时间）", html)
         self.assertIn(self.pipeline.SECTION_TITLE_SHORT_CARD, html)
         self.assertIn(short.CAPTION_PLAIN, html)
