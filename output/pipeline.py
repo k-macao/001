@@ -456,6 +456,20 @@
       · 概率数字仍在「每日趋势量化推演」与「资金流动性分析」如实展示，口径 / 留痕 /
         结算不变；历史归档日报按惯例不改写。
 
+  33. 推送模式由「一对一」改为「一对多」（2026-10-23 按用户要求）：
+      · 默认 `PUSHPLUS_MODE=one2many`：带 topic 发到 PushPlus 群组，群组编码从
+        `PUSHPLUS_TOPIC` 读取（环境变量 / GitHub Secret），代码里不写死任何编码；
+      · 未配置群组编码 → 日志打印明确告警「PUSHPLUS_TOPIC 未配置 → 本次回退一对一」，
+        绝不静默降级；`PUSHPLUS_MODE=one2one` 显式改回一对一直发自己（即使配了群组编码
+        也不携带 topic），未知模式值告警后按默认一对多处理；
+      · 路由集中在 `resolve_push_route()` 单一出口：显式 `topic` 参数（非空 = 群组、
+        空串 = 强制一对一）优先于环境配置；`push_to_wechat` / `_push_one_message` /
+        分条推送共用同一份解析，分条不会出现「前几条发群组、后几条发自己」；
+      · Actions 工作流（每日 / 手动 / 示例）透传 `PUSHPLUS_TOPIC`（Secret）与
+        `PUSHPLUS_MODE`（Variable，缺省 one2many）；页面、分条、重试与频率排队逻辑不变；
+      · 回归见 tests/test_push_split.py::PushDeliveryModeTests（默认一对多、群组编码路由、
+        缺失告警回退、one2one 忽略群组、未知模式告警、显式 topic 覆盖）。
+
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
   1 = 应当推送却失败，或用法错误。
@@ -731,10 +745,17 @@ PUSHPLUS_SPLIT_MIN_BODY = int(os.environ.get("PUSHPLUS_SPLIT_MIN_BODY", "1500"))
 # 单份日报最多拆成多少条（防御性上限：正常 25 万字日报约 3 条）
 PUSHPLUS_MAX_PARTS = int(os.environ.get("PUSHPLUS_MAX_PARTS", "12"))
 
-# 默认「一对一」直发自己（不携带 topic 字段）：一对多群组推送已取消。
-# 如需临时改回群组推送，仍可用 PUSHPLUS_TOPIC 指定群组编码（如 oai.1）；
-# 留空（或不设置）即一对一。
-PUSHPLUS_TOPIC = os.environ.get("PUSHPLUS_TOPIC", "")
+# 推送路由（2026-10-23 按用户要求：由「一对一」改为「一对多」，见第 33 条）：
+#   PUSHPLUS_MODE=one2many（默认）—— 带 topic 发到 PushPlus 群组（一对多）；
+#                                    群组编码从 PUSHPLUS_TOPIC 读取，未配置时打印明确
+#                                    告警并回退一对一，绝不静默降级、也不在代码里写死编码。
+#   PUSHPLUS_MODE=one2one          —— 一对一 直发自己（历史口径），即使配了群组编码也不携带。
+# 两个变量都支持「环境变量 / GitHub Secret 或 Variable」，改配置不需要改代码。
+PUSH_MODE_ONE2MANY = "one2many"
+PUSH_MODE_ONE2ONE = "one2one"
+PUSH_MODES = (PUSH_MODE_ONE2MANY, PUSH_MODE_ONE2ONE)
+PUSHPLUS_MODE = os.environ.get("PUSHPLUS_MODE", PUSH_MODE_ONE2MANY).strip().lower() or PUSH_MODE_ONE2MANY
+PUSHPLUS_TOPIC = os.environ.get("PUSHPLUS_TOPIC", "").strip()
 
 # ============================================================
 # 推送主题（2026-08-21 起，一对一 / 一对多推送共用）
@@ -16107,8 +16128,9 @@ def push_to_wechat(title, content_html, token=None, template="html", report_name
                    topic=None):
     """通过 PushPlus 推送消息到微信；返回 True/False，调用方必须据此决定退出码。
 
-    - 默认「一对一」直发自己（不携带 topic 字段）；一对多群组推送已取消。
-      如需临时改回群组推送，可用 PUSHPLUS_TOPIC（或 topic 参数）指定群组编码；
+    - 默认「一对多」群组推送（2026-10-23 按用户要求）：群组编码从 PUSHPLUS_TOPIC 读取，
+      未配置时打印告警并回退一对一；PUSHPLUS_MODE=one2one 可显式改回一对一直发自己。
+      显式 topic 参数（含空串）优先级最高，见 resolve_push_route；
     - 日报 HTML 超过单条上限（默认 10 万字符）时，按栏目装箱合并成尽可能少的几条
       （每条都填到上限，必要时在栏目内断开并标注「承接上条（续）」），
       全部明细按原顺序送达；旧版 HTML 无拆分锚点或 PUSHPLUS_MULTIPART=0 时，
@@ -16121,7 +16143,7 @@ def push_to_wechat(title, content_html, token=None, template="html", report_name
     - 每次失败都在日志里保留 PushPlus 返回的 code/msg，便于在 Actions 日志定位。
     """
     token = token or PUSHPLUS_TOKEN
-    topic = topic if topic is not None else PUSHPLUS_TOPIC
+    push_mode, topic = resolve_push_route(topic)
 
     if not token:
         print("⚠️ 未设置 PUSHPLUS_TOKEN，跳过推送")
@@ -16129,8 +16151,8 @@ def push_to_wechat(title, content_html, token=None, template="html", report_name
         print("   （在 GitHub Actions 中请确认仓库 Settings → Secrets → PUSHPLUS_TOKEN 已配置）")
         return False
 
-    mode = f"一对多群组 {topic}" if topic else "一对一"
-    print(f"📤 正在推送到微信 (PushPlus, template={template}, {mode})...")
+    print(f"📤 正在推送到微信 (PushPlus, template={template}, "
+          f"{push_route_text(push_mode, topic)})...")
     if template == "html":
         if _report_theme(content_html) == "lime":
             with _lime_palette():
@@ -16212,6 +16234,42 @@ def _wait_push_rate_limit():
         time.sleep(wait)
 
 
+def resolve_push_route(topic=None, mode=None, *, warn=True):
+    """解析本次 PushPlus 推送路由 → (mode, topic)。
+
+    mode ∈ {one2many（一对多群组）, one2one（一对一 直发自己）}；topic 为空串表示一对一。
+    优先级：显式 ``topic`` 参数 > ``PUSHPLUS_MODE`` + ``PUSHPLUS_TOPIC`` 环境配置。
+    - ``topic`` 传非空串 → 一对多，用这个群组编码（手动指定最高优先）；
+    - ``topic`` 传空串   → 一对一（显式关闭群组，即便环境里配了群组编码）；
+    - 未传 ``topic``     → 按 PUSHPLUS_MODE：one2one 一律一对一；one2many（默认）读
+      PUSHPLUS_TOPIC，缺失时 **告警并回退一对一**（不静默降级、不写死编码）。
+    未知 PUSHPLUS_MODE 值按默认一对多处理并告警，避免配置写错后悄悄退回一对一。
+    """
+    mode = str(mode if mode is not None else PUSHPLUS_MODE or PUSH_MODE_ONE2MANY).strip().lower()
+    if mode not in PUSH_MODES:
+        if warn:
+            print(f"  ⚠️ 未知 PUSHPLUS_MODE={mode!r}（可选 one2many / one2one），"
+                  f"按默认一对多处理")
+        mode = PUSH_MODE_ONE2MANY
+    if topic is not None:
+        group = str(topic).strip()
+        return (PUSH_MODE_ONE2MANY, group) if group else (PUSH_MODE_ONE2ONE, "")
+    if mode == PUSH_MODE_ONE2ONE:
+        return (PUSH_MODE_ONE2ONE, "")
+    group = (PUSHPLUS_TOPIC or "").strip()
+    if not group:
+        if warn:
+            print("  ⚠️ 一对多群组推送需要群组编码：PUSHPLUS_TOPIC 未配置"
+                  "（GitHub Secret / 环境变量）→ 本次回退一对一，只发给自己")
+        return (PUSH_MODE_ONE2ONE, "")
+    return (PUSH_MODE_ONE2MANY, group)
+
+
+def push_route_text(mode, topic):
+    """路由 → 日志文案（一对一 / 一对多群组 <编码>）。"""
+    return f"一对多群组 {topic}" if mode == PUSH_MODE_ONE2MANY and topic else "一对一"
+
+
 def _push_html_parts(title, parts, token=None, topic=None):
     """按顺序推送拆分后的多条正文；全部成功才返回 True。
 
@@ -16239,9 +16297,13 @@ def _push_html_parts(title, parts, token=None, topic=None):
 
 
 def _push_one_message(title, content_html, token=None, template="html", topic=None):
-    """发送单条 PushPlus 消息（含退避重试）；返回 True/False。"""
+    """发送单条 PushPlus 消息（含退避重试）；返回 True/False。
+
+    topic 的路由规则与 push_to_wechat 同一份 resolve_push_route（默认一对多群组，
+    缺群组编码时回退一对一）；这里不再重复打印告警，避免分条推送刷屏。
+    """
     token = token or PUSHPLUS_TOKEN
-    topic = topic if topic is not None else PUSHPLUS_TOPIC
+    _mode, topic = resolve_push_route(topic, warn=False)
     payload = {
         "token": token,
         "title": title,
