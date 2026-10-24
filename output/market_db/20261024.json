@@ -977,7 +977,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-10-24",
-   "pulled_at": "2026-10-24 16:58:44",
+   "pulled_at": "2026-10-24 21:05:48",
    "scheduled_at": "2026-10-24 17:00:00",
    "trading_day": false,
    "sources": {
@@ -988,7 +988,7 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 554,
+     "elapsed_ms": 507,
      "quote_time": "2026-10-24 05:15:59",
      "symbols": 37
     },
@@ -1032,7 +1032,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10831,
+     "elapsed_ms": 10514,
      "quote_time": null,
      "symbols": 0
     },
@@ -1207,7 +1207,7 @@
      "low": 7612.07,
      "volume": 2749563000.0,
      "amount": null,
-     "quote_time": "2026-10-24 04:38:20",
+     "quote_time": "2026-10-24 04:38:21",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1457,7 +1457,7 @@
      "open": null,
      "high": 388.8,
      "low": 378.0,
-     "volume": 33142473.0,
+     "volume": 33154173.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:07",
      "source": "yahoo",
@@ -1478,7 +1478,7 @@
      "open": null,
      "high": 98.65,
      "low": 95.3,
-     "volume": 91886971.0,
+     "volume": 92242971.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1541,7 +1541,7 @@
      "open": null,
      "high": 71.65,
      "low": 70.5,
-     "volume": 28705711.0,
+     "volume": 28425911.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1562,7 +1562,7 @@
      "open": null,
      "high": 144.1,
      "low": 142.2,
-     "volume": 11995864.0,
+     "volume": 12133464.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:07",
      "source": "yahoo",
@@ -1583,7 +1583,7 @@
      "open": null,
      "high": 9.9,
      "low": 9.625,
-     "volume": 412306503.0,
+     "volume": 412293503.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1604,7 +1604,7 @@
      "open": null,
      "high": 77.95,
      "low": 77.1,
-     "volume": 22820136.0,
+     "volume": 22834136.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:07",
      "source": "yahoo",
@@ -1667,7 +1667,7 @@
      "open": null,
      "high": 72.0,
      "low": 67.25,
-     "volume": 51639425.0,
+     "volume": 51813925.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1688,7 +1688,7 @@
      "open": null,
      "high": 28.0,
      "low": 26.74,
-     "volume": 49548561.0,
+     "volume": 49369761.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1751,7 +1751,7 @@
      "open": null,
      "high": 49.4,
      "low": 48.34,
-     "volume": 41072762.0,
+     "volume": 40962762.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1770,9 +1770,9 @@
      "prev_close": 73.0,
      "change_pct": 3.1507,
      "open": null,
-     "high": 76.1,
+     "high": 76.15,
      "low": 73.2,
-     "volume": 12934844.0,
+     "volume": 12955244.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1814,7 +1814,7 @@
      "open": null,
      "high": 46.58,
      "low": 43.02,
-     "volume": 53061502.0,
+     "volume": 53044502.0,
      "amount": null,
      "quote_time": "2026-10-23 16:08:08",
      "source": "yahoo",
@@ -1887,7 +1887,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -1898,9 +1898,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±1 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±246 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -1933,11 +1933,13 @@
       "detail": "本时段存在当天行情"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±246 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "fca7285d7ff0cfd711fa7b38fb1b710de7d3b45faa45ff9cd67e02bb4e74915f"
+    "hash": "c3a5b6610b4a4b66bdcd49d083b3a2da403bbbefb3daa99c27e64caf3b29ed28"
    }
   }
  },
@@ -1958,11 +1960,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-10-24 21:05:48",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-10-24 16:58:44",
+ "updated_at": "2026-10-24 21:05:48",
  "ai": {
   "row_count": 74,
   "symbols": 37,
@@ -2003,6 +2013,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "5ab49a59ff7c313dbf5946e1fc3e30aa01b18081e786ffa71dc0d3e0b69359e6"
+  "hash": "449c2bc1e28f39a3dc819111bc0cc75e1cc8647e1e33c61e88a1f32125bdac98"
  }
 }
