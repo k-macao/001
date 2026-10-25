@@ -2,233 +2,6 @@
  "version": 1,
  "items": [
   {
-   "title": "板块异动 | 固态电池概念大涨 丰元股份、雄韬股份等涨停",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-08 11:11",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "午评：创业板指冲高回落跌超2% 固态电池概念逆市走强- 中国金融信息网",
-   "source": "中国金融信息网",
-   "section": "全球头条",
-   "ts": "2026-10-08 11:46",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "华泰证券A股策略：节后或迎来修复窗口",
-   "source": "证券时报网",
-   "section": "全球头条",
-   "ts": "2026-10-08 07:59",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "港股午评：恒指、恒科齐跌；半导体大跌，医药、汽车、有色下挫；石油石化、房地产上涨；MINIMAX跌近10%，联想、快手、百度集体飘绿",
-   "source": "21财经",
-   "section": "全球头条",
-   "ts": "2026-10-08 12:15",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "国际油价7日下跌",
-   "source": "椰网",
-   "section": "全球头条",
-   "ts": "2026-10-08 08:49",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "派拉蒙收购华纳兄弟 好莱坞“剧本”改写",
-   "source": "旅日侨网",
-   "section": "全球头条",
-   "ts": "2026-10-08 12:18",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "美债担忧再起！道指跌超300点，芯片股光通信承压走弱，原油尾盘跳水",
-   "source": "第一财经",
-   "section": "全球头条",
-   "ts": "2026-10-08 12:16",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "美联储会议纪要：全体19名决策者支持9月加息，“大多数”预计年内还加1次，但暗示10月不急",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-10-08 09:52",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "【野村、大和证券CEO警示：AI或终结股市上涨行情】日本两大券商预计本国股市涨势将延续至2027年，但AI投资热潮遇冷是首要潜在风险",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 14:56",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "纯碱连续主力合约日内跌2%，现报986.00元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 14:55",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "交易员称，ARGENX因终止针对干燥综合征自身免疫性疾病的后期研究，股价预计下跌10%。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 14:55",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "纽约梅隆银行：扩大欧洲数字资产托管平台业务布局。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 14:53",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "英国外交大臣米利班德8日说，英方已明确表示不接受以色列政府有权关闭英国驻耶路撒冷领事馆。 米利班德说，英国方面在与以色列政府进行讨论后，英国驻耶路撒冷领事馆建筑不会关闭，自8日起将作为英国驻耶路撒冷使团驻地，继续提供重要服务。（新华社）",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 14:53",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "存储巨头三星电子Q3利润暴增近800%！四季度存储价格有望延续强势丨盘中雷达",
-   "source": "21财经",
-   "section": "全球头条",
-   "ts": "2026-10-08 14:56",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "10月8日港股收盘：恒指跌1.43% 恒生科技指数跌2.89%",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-10-08 16:13",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "国际原油期货价格涨超5%",
-   "source": "新华网",
-   "section": "全球头条",
-   "ts": "2026-10-08 19:13",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "外资券商研报引发CPO板块大跌？机构：系假设推演，对行业中长期发展前景保持积极判断",
-   "source": "央广网",
-   "section": "全球头条",
-   "ts": "2026-10-08 18:28",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "法国政治风暴刮出“错杀”机会：大型基金逆势抄底意大利国债与欧洲公司债",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-10-08 15:51",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "韩股跌破关键均线！与费城半导体罕见背离，回购支撑也在退潮",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-10-08 19:43",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "中国人民银行关于人民币汇率的政策立场：中国没有必要，也无意通过汇率贬值获取贸易竞争优势",
-   "source": "财联社",
-   "section": "全球头条",
-   "ts": "2026-10-08 17:59",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "江淮汽车方面人士回应懂车帝测试尊界V800刹车踏板支架断裂 称在关注中",
-   "source": "华商网",
-   "section": "全球头条",
-   "ts": "2026-10-08 17:02",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "乙二醇连续主力合约日内跌2%，现报5301.00元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 22:20",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "美国副总统万斯：美国暂停微软的PERM项目。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 22:20",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "【国家邮政局召开局长办公会议】会议强调，要深入贯彻落实习近平法治思想，坚持科学立法、民主立法、依法立法，聚焦“十五五”交通强国邮政篇建设，不断提高邮政立法工作质效",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 22:19",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "葡萄牙政府预计，在2026年实现预算平衡后，明年将实现规模占国内生产总值（GDP）0.1%的财政盈余。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 22:19",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "【欧莱雅陷“滑石粉致癌风险”诉讼，中国区回应】10月8日消息，欧莱雅美国子公司已聘请威嘉国际律师事务所和杜塞拉合伙公司，处理关于其含滑石粉产品致病的个人诉讼",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-10-08 22:19",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "【郭Sir財經 收市匯報】2026-10-08 本月大市已回復先高而後低︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-08 17:44",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "【郭Sir財經 直播】2026-10-08 大市反覆 整固於24000點 等待變化︱早市直播︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-10-08 11:55",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "越分散越安全？錯！破解兩大投資迷思｜AI 答非所問，告別無效 Prompt！【AI操盤手 新手教學】#AI溝通",
-   "source": "施凌部署",
-   "section": "港股名家频道",
-   "ts": "2026-10-08 20:30",
-   "date": "2026-10-08",
-   "url": "https://www.youtube.com/watch?v=kofRAIQROPI"
-  },
-  {
-   "title": "共和國成立 77 周年 09V-A 核潛艇成獻禮！許楨：解放軍補齊最後短板丨許楨丨09VA丨核潛艇丨攻擊核潛艇丨國之重器丨解放軍短板丨X字舵丨單殼體丨自然循環反應堆丨艦艏聲納丨楨觀天下",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-10-08 19:30",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "中央推買樓送現金補貼，內房重現金九銀十小陽春？施永青嘆唔係咁易：貨尾俾多5年都消化唔晒｜股壇C見（Part 2/2）｜20261008",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-10-08 17:00",
-   "date": "2026-10-08"
-  },
-  {
-   "title": "å½å¡é¢å ³äºãå½å®¶æ®ç¾é¢é²è¡å¨è®¡åï¼2026â2030å¹´ï¼ãçæ¹å¤",
-   "source": "中国政府网",
-   "section": "国家政策",
-   "ts": "",
-   "date": "2026-10-08",
-   "url": "https://www.gov.cn/zhengce/content/202610/content_7082737.htm",
-   "official": true
-  },
-  {
    "title": "创业板失守3000点，电池产业链逆势拉升，算力硬件集体下挫，江淮汽车跌停，恒指、恒科指齐涨超1%，小米暴涨7%",
    "source": "华尔街见闻",
    "section": "全球头条",
@@ -22462,11 +22235,315 @@
    "ts": "2026-10-25 10:22",
    "date": "2026-10-25",
    "url": "https://finance.ifeng.com/c/8xVMCWaPFTn"
+  },
+  {
+   "title": "平安证券：三季报验证盈利韧性，聚焦长期产业机会",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-10-25 22:13",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFBQUVUzS2FnMUEtNHBlNll6ZTRiSkl0WHZUX2Q0MTZyZEFWYjN6aWFUR01WbEhhSTJwTnlZT3hkZVJoamVpbzRGWnpSM045aVlYc214TmtDX001UmhiQUZQOUl1dEFJQQ?oc=5"
+  },
+  {
+   "title": "直连中国制造 从现场到工厂广交会“新面孔”收获满满",
+   "source": "中国网",
+   "section": "全球头条",
+   "ts": "2026-10-25 21:20",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTFBnU0cydm1FYWFYTUpVZ0lTaEVkZGx4SVlVRXo3aDIxMmdoY3ljbXdFc1psdjU4bS1IeUFKMm5PeHJZbWhzc3A1OTFHdGF6VUpxZ0g3OVdCLXZtQzZKS1VMRkRaX25zZlItcXlxbUZUYw?oc=5"
+  },
+  {
+   "title": "德明利：2026 年第三季度归母净利润27.29 亿元，同比增长2902.75%",
+   "source": "IT之家",
+   "section": "全球头条",
+   "ts": "2026-10-25 19:30",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE1sdjRPQkphQ2o2V0NqbWQzZ1R2NzdDUWZsVE8zQlVWeUMwWGJ1dHNWODVhRWhMaWh2dldkejdkRldHOVUtS2NrSXhhRkM?oc=5"
+  },
+  {
+   "title": "国际具身智能技能大赛观察：中美路线分化，仿真与真实数据走向互补",
+   "source": "虎嗅网",
+   "section": "全球头条",
+   "ts": "2026-10-25 21:54",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTFBKcHZfblRtbC1zRnZCR2dSNlQtNlBCOWJjZ0x6ZUZEb281Y0wyZ0dxaWJ4MTNEMTJjQkdvbEFreWRwQXFiQTJOV2xxYW13bXppeDlqdA?oc=5"
+  },
+  {
+   "title": "现货黄金跌破每盎司4000美元本周国际金价累计下跌超3%_公司新闻",
+   "source": "证券之星",
+   "section": "全球头条",
+   "ts": "2026-10-25 21:38",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTFB3RkJNcUZ6VUdwOEJqSGNTVUE0QnJFeTU1V280czM3b2g1VWdTUXJUTV94RlBPRFdiUU16NEVmLUhWdW1QbkZJc2FIeE1ZTnpfc1p5NDFTbVRwUWhJM0ZNVU8tU0k?oc=5"
+  },
+  {
+   "title": "科瑞思：拟购买宏钢光电100%股份 26日起复牌",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-10-25 19:58",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9zeU1xS1JTTVYtaTFsT0YxLWtWWTZzVkZDUXQ0OEJrRXMwZG90bTY1VWZoaU50QlNaTzVNemJTdEJKS3BhQ3FKOHlLRnZkN0tDUU1vem9mb3h1ekFOYlRLY2JkRHJRQQ?oc=5"
+  },
+  {
+   "title": "华鑫股份控股股东筹划股份转让，公司股票26日起停牌",
+   "source": "金融界",
+   "section": "全球头条",
+   "ts": "2026-10-25 18:41",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTFB0VFRVQldrdEVaNm1jOVdTcy1XV2R6QnNsZzRXdDBhY0VJaGYyV28wLWNmUngteTFIdmRsUnJyd2w0MVp6NGdfVkRHWUg5MVdrRGRRYVd1YUdLb2hTbHNqVnBiS2hsX3huMmc2WU9oMUxhYzRi?oc=5"
+  },
+  {
+   "title": "布伦特原油暗盘跌破111美元，日内跌超1.1%。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-26 00:52",
+   "date": "2026-10-26",
+   "url": "https://finance.sina.cn/7x24/2026-10-26/detail-iniwnkhi9600608.d.html"
+  },
+  {
+   "title": "特朗普：福克斯新闻给予的支持力度远远不够。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-26 00:51",
+   "date": "2026-10-26",
+   "url": "https://finance.sina.cn/7x24/2026-10-26/detail-iniwnkhi9600302.d.html"
+  },
+  {
+   "title": "特朗普：福克斯新闻花太多时间邀请（共和党的）对手上节目。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-26 00:51",
+   "date": "2026-10-26",
+   "url": "https://finance.sina.cn/7x24/2026-10-26/detail-iniwnkhh2822975.d.html"
+  },
+  {
+   "title": "【美军中央司令部司令走访霍尔木兹海峡，美助力海湾伙伴原油出口超15亿桶】10月25日，美国中央司令部司令到访霍尔木兹海峡",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-26 00:44",
+   "date": "2026-10-26",
+   "url": "https://finance.sina.cn/7x24/2026-10-26/detail-iniwnkhh2820933.d.html"
+  },
+  {
+   "title": "市场资讯：美国中央司令部司令到访霍尔木兹海峡。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-26 00:43",
+   "date": "2026-10-26",
+   "url": "https://finance.sina.cn/7x24/2026-10-26/detail-iniwnkhh2820692.d.html"
+  },
+  {
+   "title": "金融業擴充 中環甲廈租金跑贏大市",
+   "source": "香港经济日报 HKET·财经",
+   "section": "港股新闻源头",
+   "ts": "2026-10-25 11:00",
+   "date": "2026-10-25",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ade34fbf99d41e49bbb1168e2baf90c&url=https%3a%2f%2fpaper.hket.com%2farticle%2f4214091%2f%25E9%2587%2591%25E8%259E%258D%25E6%25A5%25AD%25E6%2593%25B4%25E5%2585%2585%2520%25E4%25B8%25AD%25E7%2592%25B0%25E7%2594%25B2%25E5%25BB%2588%25E7%25A7%259F%25E9%2587%2591%25E8%25B7%2591%25E8%25B4%258F%25E5%25A4%25A7%25E5%25B8%2582&c=12067388275462957004&mkt=en-us"
+  },
+  {
+   "title": "Globevisa to Convene Hong Kong Summit on Asia's Evolving Global Mobility and Cross-Border Planning",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-26 00:00",
+   "date": "2026-10-26",
+   "url": "https://www.scmp.com/presented/business/topics/globevisa-global-citizen-conference/article/3371893/globevisa-convene-hong-kong-summit-asias-evolving-global-mobility-and-cross-border-planning"
+  },
+  {
+   "title": "中签不等于赚钱，港股IPO热潮“降温” - 新浪财经",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-25 19:02",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMidkFVX3lxTFBUWU9XZnM2MzR5VGNHM0ZnTjJfeHVnVGRSdkJMcmxfOGF0RFV5Vlg3RnlYbnZZb1E1ZlV3bWdOVFFyZGFwMTMyTDh5SVJ1ZHRrWUxnTXh5MzM0eXFHbzR0WXE2NW9fQkZ0Q3EteUdoaUpqVmVpRmc?oc=5"
+  },
+  {
+   "title": "私募借道新发ETF布局：港股与科创主题受青睐 - 搜狐网",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-25 19:21",
+   "date": "2026-10-25",
+   "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNcmFvTW1VR1RNOXI0aWdEeG1TQ3RGLWZMYTZsRktqaEdBZlZFY1pTYWI3aEFUSmVPbUNsZ0xlVzJvQ2w1WU1mbzh5OFVqdGZ0TFE1ejBITENhQnFadnQyTGs2T29BeUZVLWlhVmlZbVZwd2Naa0d1SzQwLWpBaWhGamd6NHdVZnQxWkJDbg?oc=5"
+  },
+  {
+   "title": "直面AI时代新命题 上海国家会计学院联合ASU持续探索管理人才培养路径",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 12:51",
+   "date": "2026-10-25",
+   "url": "https://www.cs.com.cn/ssgs/cj2020/2026/10/25/detail_2026102510047001.html"
+  },
+  {
+   "title": "恒逸石化前三季度归母净利润同比增长3390.7%",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 08:46",
+   "date": "2026-10-25",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ade34fe31644f27b72a705392f8efae&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fgongsi%2f2026-10-25%2fA1792814419263.html&c=16241450565515338072&mkt=en-us"
+  },
+  {
+   "title": "中交发展：2026年第三季度归属于上市公司股东的净利润同比增长102.31%",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 08:36",
+   "date": "2026-10-25",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ade34fe31644f27b72a705392f8efae&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fggkx%2f2026-10-25%2fA1792814419259.html&c=15104907014876325813&mkt=en-us"
+  },
+  {
+   "title": "从分析到发问，基金公司“AI研究员”上岗",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 08:31",
+   "date": "2026-10-25",
+   "url": "https://www.chnfund.com/article/ARbfd0e4a2-36a1-ce78-1fc2-3a248574ce85"
+  },
+  {
+   "title": "高盛下调韩国股指目标价",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 11:00",
+   "date": "2026-10-25",
+   "url": "https://www.chnfund.com/article/AR7844cdc1-c2bf-fa60-8593-3a2485fd4432"
+  },
+  {
+   "title": "渝开发公布2026年三季报：营收大增归母净利亏损",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-24 15:54",
+   "date": "2026-10-24",
+   "url": "https://www.caiwennews.com/article/1666563.shtml"
+  },
+  {
+   "title": "“易中天”领衔深市龙头释放业绩稳健向好信号",
+   "source": "经济参考网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 01:00",
+   "date": "2026-10-25",
+   "url": "https://www.jjckb.cn/20261025/6c18bf01b94a451da32d88def7a4f7d2/c.html"
+  },
+  {
+   "title": "国内首部 AI 院线长片《三星堆：未来往事》，票房过百万",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 23:36",
+   "date": "2026-10-25",
+   "url": "https://www.ithome.com/1/017/719.htm"
+  },
+  {
+   "title": "古尔曼：苹果正测试配备 OLED 屏幕的 iMac 和 MacBook Air",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 23:05",
+   "date": "2026-10-25",
+   "url": "https://www.ithome.com/1/017/717.htm"
+  },
+  {
+   "title": "国产武侠游戏《影之刃零》10 月 27 日 10:00 开启预下载，游戏本体约 145G",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 22:53",
+   "date": "2026-10-25",
+   "url": "https://www.ithome.com/1/017/716.htm"
+  },
+  {
+   "title": "爱马仕CFO直言“销售非常困难” 消费逻辑生变，2026食饮消费大会 ...",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 07:06",
+   "date": "2026-10-25",
+   "url": "https://m.nbd.com.cn/articles/2026-10-25/4616822.html"
+  },
+  {
+   "title": "停牌近两周，301314，重大资产重组方案公布！明天复牌",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 09:48",
+   "date": "2026-10-25",
+   "url": "https://m.nbd.com.cn/articles/2026-10-25/4616920.html"
+  },
+  {
+   "title": "天齐锂业：第三季度归母净利润13.6亿元，同比增长1323.97%",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 16:41",
+   "date": "2026-10-25",
+   "url": "https://m.nbd.com.cn/articles/2026-10-25/4616361.html"
+  },
+  {
+   "title": "全市橙色预警！江门晴燥套餐生效中！冷空气要等到……",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 09:31",
+   "date": "2026-10-25",
+   "url": "https://m.21jingji.com/article/20261025/herald/fd144cfc8ccb7eaf00633d13043fab0f.html"
+  },
+  {
+   "title": "海新能科第三季度归母净利润1.54亿元 生物能源单季毛利增至3亿元",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 10:49",
+   "date": "2026-10-25",
+   "url": "https://wap.stockstar.com/detail/IG2026102500011182"
+  },
+  {
+   "title": "AI早期项目是否仍值得下注？智能体工程化落地阶段 将涌现更多投资 ...",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 10:02",
+   "date": "2026-10-25",
+   "url": "https://wap.stockstar.com/detail/IG2026102500011148"
+  },
+  {
+   "title": "华友钴业前三季度营收同比增长37% 研发费用增长72%已超去年全年",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 01:00",
+   "date": "2026-10-25",
+   "url": "https://wap.stockstar.com/detail/IG2026102500011141"
+  },
+  {
+   "title": "搭台引才 产创共生 粤港澳大湾区人才高质量发展大会东莞开幕",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 17:56",
+   "date": "2026-10-25",
+   "url": "https://www.eeo.com.cn/2026/1025/1075696.shtml"
+  },
+  {
+   "title": "一条短信引连环扣费，起底鼎立保险经纪“藏起来”的“套路”",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 17:56",
+   "date": "2026-10-25",
+   "url": "https://www.eeo.com.cn/2026/1025/1075700.shtml"
+  },
+  {
+   "title": "洲际酒店三季度大中华区RevPAR同比降3.3%成唯一负增长区域",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 11:07",
+   "date": "2026-10-25",
+   "url": "https://www.eeo.com.cn/2026/1026/1075705.shtml"
+  },
+  {
+   "title": "集体拉升，超级赛道传来利好",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 13:27",
+   "date": "2026-10-25",
+   "url": "https://finance.ifeng.com/c/8xVZQDmxqGR"
+  },
+  {
+   "title": "捷达电动化“第一枪”： M6冲击8—10万元纯电家轿市场",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-25 09:59",
+   "date": "2026-10-25",
+   "url": "https://finance.ifeng.com/c/8xWIen4c4lN"
   }
  ],
- "updated_cst": "2026-10-25 20:19:25",
+ "updated_cst": "2026-10-26 00:58:23",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-25 20:19:09",
+  "ran_at": "2026-10-26 00:58:06",
   "cutoff": "2026-10-25",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
