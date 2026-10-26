@@ -358,10 +358,10 @@
     },
     "20261026": {
      "pos": 0,
-     "neu": 0,
+     "neu": 2,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 2,
+     "score": 0.0
     }
    }
   },
@@ -980,11 +980,11 @@
      "score": null
     },
     "20261026": {
-     "pos": 0,
+     "pos": 3,
      "neu": 0,
-     "neg": 0,
-     "total": 0,
-     "score": null
+     "neg": 2,
+     "total": 5,
+     "score": 0.2
     }
    }
   },
@@ -1247,10 +1247,10 @@
     },
     "20261026": {
      "pos": 0,
-     "neu": 0,
+     "neu": 2,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 2,
+     "score": 0.0
     }
    }
   },
@@ -1505,11 +1505,11 @@
      "score": 0.4
     },
     "20261026": {
-     "pos": 0,
-     "neu": 0,
+     "pos": 1,
+     "neu": 2,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 3,
+     "score": 0.3333
     }
    }
   },
@@ -2289,11 +2289,11 @@
      "score": null
     },
     "20261026": {
-     "pos": 0,
+     "pos": 1,
      "neu": 0,
-     "neg": 0,
-     "total": 0,
-     "score": null
+     "neg": 1,
+     "total": 2,
+     "score": 0.0
     }
    }
   },
@@ -2563,10 +2563,10 @@
     },
     "20261026": {
      "pos": 0,
-     "neu": 0,
+     "neu": 1,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 1,
+     "score": 0.0
     }
    }
   },
@@ -2829,10 +2829,10 @@
     },
     "20261026": {
      "pos": 0,
-     "neu": 0,
+     "neu": 3,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 3,
+     "score": 0.0
     }
    }
   },
@@ -3029,6 +3029,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261026": {
+     "pos": 3,
+     "neu": 0,
+     "neg": 2,
+     "total": 5,
+     "score": 0.2
     }
    }
   },
@@ -3871,6 +3878,13 @@
      "score": null
     },
     "20261015": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    },
+    "20261026": {
      "pos": 0,
      "neu": 0,
      "neg": 0,
@@ -4774,7 +4788,21 @@
      "score": null
     }
    }
+  },
+  "港股:00100": {
+   "market": "港股",
+   "code": "00100",
+   "name": "MINIMAX-W",
+   "days": {
+    "20261026": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
   }
  },
- "updated_cst": "2026-10-26 00:58:23"
+ "updated_cst": "2026-10-26 13:44:30"
 }
