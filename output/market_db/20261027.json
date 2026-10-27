@@ -977,7 +977,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-10-27",
-   "pulled_at": "2026-10-27 17:56:08",
+   "pulled_at": "2026-10-27 23:07:10",
    "scheduled_at": "2026-10-27 17:00:00",
    "trading_day": true,
    "sources": {
@@ -988,8 +988,8 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 1239,
-     "quote_time": "2026-10-27 16:29:46",
+     "elapsed_ms": 1041,
+     "quote_time": "2026-10-27 23:07:10",
      "symbols": 37
     },
     "eastmoney": {
@@ -1032,7 +1032,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10722,
+     "elapsed_ms": 10543,
      "quote_time": null,
      "symbols": 0
     },
@@ -1178,15 +1178,15 @@
     "^DJI": {
      "name": "道琼斯",
      "market": "US",
-     "price": 52361.58,
-     "prev_close": 52215.2,
-     "change_pct": 0.2803,
+     "price": 52346.99,
+     "prev_close": 52361.58,
+     "change_pct": -0.0279,
      "open": null,
-     "high": 52620.19,
-     "low": 52263.25,
-     "volume": 387915369.0,
+     "high": 52477.91,
+     "low": 52231.84,
+     "volume": 108624190.0,
      "amount": null,
-     "quote_time": "2026-10-27 04:43:41",
+     "quote_time": "2026-10-27 23:07:10",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1199,15 +1199,15 @@
     "^GSPC": {
      "name": "标普500",
      "market": "US",
-     "price": 7676.77,
-     "prev_close": 7623.68,
-     "change_pct": 0.6964,
+     "price": 7714.66,
+     "prev_close": 7676.77,
+     "change_pct": 0.4936,
      "open": null,
-     "high": 7702.13,
-     "low": 7639.7,
-     "volume": 2759066000.0,
+     "high": 7718.65,
+     "low": 7677.16,
+     "volume": 699902496.0,
      "amount": null,
-     "quote_time": "2026-10-27 04:43:43",
+     "quote_time": "2026-10-27 23:07:09",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1220,15 +1220,15 @@
     "^IXIC": {
      "name": "纳斯达克",
      "market": "US",
-     "price": 26169.38,
-     "prev_close": 25955.342,
-     "change_pct": 0.8246,
+     "price": 26423.11,
+     "prev_close": 26169.38,
+     "change_pct": 0.9696,
      "open": null,
-     "high": 26306.824,
-     "low": 25986.559,
-     "volume": 6508626000.0,
+     "high": 26430.9,
+     "low": 26219.312,
+     "volume": 2610347000.0,
      "amount": null,
-     "quote_time": "2026-10-27 05:15:59",
+     "quote_time": "2026-10-27 23:07:09",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1241,15 +1241,15 @@
     "MSFT": {
      "name": "微软",
      "market": "US",
-     "price": 532.6,
-     "prev_close": 524.51,
-     "change_pct": 1.5424,
+     "price": 533.41,
+     "prev_close": 532.6,
+     "change_pct": 0.1521,
      "open": null,
-     "high": 533.25,
-     "low": 521.69,
-     "volume": 18204186.0,
+     "high": 533.98,
+     "low": 528.331,
+     "volume": 4095883.0,
      "amount": null,
-     "quote_time": "2026-10-27 04:00:01",
+     "quote_time": "2026-10-27 23:07:10",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1262,15 +1262,15 @@
     "META": {
      "name": "Meta",
      "market": "US",
-     "price": 630.56,
-     "prev_close": 642.62,
-     "change_pct": -1.8767,
+     "price": 626.73,
+     "prev_close": 630.56,
+     "change_pct": -0.6074,
      "open": null,
-     "high": 647.69,
-     "low": 627.82,
-     "volume": 30797210.0,
+     "high": 628.46,
+     "low": 621.36,
+     "volume": 17981203.0,
      "amount": null,
-     "quote_time": "2026-10-27 04:00:01",
+     "quote_time": "2026-10-27 23:07:10",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1520,7 +1520,7 @@
      "open": null,
      "high": 27.04,
      "low": 25.48,
-     "volume": 138340888.0,
+     "volume": 138527288.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1541,7 +1541,7 @@
      "open": null,
      "high": 72.65,
      "low": 70.7,
-     "volume": 21549311.0,
+     "volume": 21547711.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1581,7 +1581,7 @@
      "prev_close": 9.92,
      "change_pct": 0.8065,
      "open": null,
-     "high": 10.04,
+     "high": 10.03,
      "low": 9.83,
      "volume": 264849822.0,
      "amount": null,
@@ -1604,7 +1604,7 @@
      "open": null,
      "high": 78.65,
      "low": 77.2,
-     "volume": 17802210.0,
+     "volume": 17833210.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1625,7 +1625,7 @@
      "open": null,
      "high": 373.2,
      "low": 367.0,
-     "volume": 2717190.0,
+     "volume": 2690990.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1645,8 +1645,8 @@
      "change_pct": -1.2631,
      "open": null,
      "high": 47.44,
-     "low": 45.02,
-     "volume": 47931696.0,
+     "low": 45.0,
+     "volume": 47895696.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1688,7 +1688,7 @@
      "open": null,
      "high": 27.96,
      "low": 27.04,
-     "volume": 26626098.0,
+     "volume": 26655098.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1709,7 +1709,7 @@
      "open": null,
      "high": 100.1,
      "low": 98.3,
-     "volume": 5659678.0,
+     "volume": 5651728.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1751,7 +1751,7 @@
      "open": null,
      "high": 49.02,
      "low": 48.48,
-     "volume": 29807303.0,
+     "volume": 29806803.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1772,7 +1772,7 @@
      "open": null,
      "high": 74.2,
      "low": 71.5,
-     "volume": 11183112.0,
+     "volume": 11165512.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1793,7 +1793,7 @@
      "open": null,
      "high": 186.7,
      "low": 176.7,
-     "volume": 7117061.0,
+     "volume": 7115561.0,
      "amount": null,
      "quote_time": "2026-10-27 16:08:19",
      "source": "yahoo",
@@ -1853,11 +1853,11 @@
      "000001.SS": 3648.301,
      "399001.SZ": 11245.731,
      "399006.SZ": 2548.1487,
-     "^DJI": 52361.58,
-     "^GSPC": 7676.77,
-     "^IXIC": 26169.38,
-     "MSFT": 532.6,
-     "META": 630.56,
+     "^DJI": 52346.99,
+     "^GSPC": 7714.66,
+     "^IXIC": 26423.11,
+     "MSFT": 533.41,
+     "META": 626.73,
      "600519.SS": 1355.9,
      "300750.SZ": 233.0,
      "300308.SZ": 577.0,
@@ -1887,7 +1887,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -1898,9 +1898,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±56 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±367 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -1933,11 +1933,13 @@
       "detail": "本时段存在当天行情"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±367 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "3edba942b16c9bc782a9d62f634561502ccff8b1315c794dc3f201dd1b1b801b"
+    "hash": "e64e2782203bef62f338e9283fdf26c6df72c62187e640e973f50dcdaf8f80b0"
    }
   }
  },
@@ -1958,11 +1960,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-10-27 23:07:10",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-10-27 17:56:08",
+ "updated_at": "2026-10-27 23:07:10",
  "ai": {
   "row_count": 74,
   "symbols": 37,
@@ -2003,6 +2013,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "b29407dc1f1b3de1fca8843292bcde3e4a57485896433b32b96ee39b94a1bcbb"
+  "hash": "bfab8514fea0f7455df5eac5f74650ec64bedca6b22c106e4bfa0dec84cc4095"
  }
 }
