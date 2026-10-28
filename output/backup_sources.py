@@ -12,8 +12,8 @@
       适配器（adapter）解析成与主源相同的内部结构；
 - 只在主源失败或返回无效内容时才依次尝试备用源；启用了哪一路在日志与「数据覆盖」里写明；
 - ``used_by`` 写的是**日报栏目标题**，栏目改名时同步（2026-09-29 第二批改名：全球头条→
-  【无敌帝王蟹】全球头条、趋势跟踪→【深海大鲨鱼】趋势跟踪、政策因子→【深海肥蓝鲸】政策因子、
-  每周量化走势预测→【嗜血大白鲨】逐日走势量化分析）；**数据源键名与新鲜度阈值键不改**
+  【事实】全球头条、趋势跟踪→【舆情】资讯跟踪、政策因子→【事实】政策因子、
+  每周量化走势预测→【推演】七日走势）；**数据源键名与新鲜度阈值键不改**
   （freshness_checker.FRESHNESS_THRESHOLDS 仍按 全球头条 / 每周量化走势预测 等源名匹配）；
 - 绝不伪造数据：全部候选都失败就如实「暂缺」。
 
@@ -96,9 +96,9 @@ def _google_search_rss(query: str, hl: str, gl: str, ceid: str) -> str:
 DATA_LINES: Dict[str, Dict[str, Any]] = {
     "yahoo_chart": {
         "name": "实时行情 · Yahoo 日线快照",
-        # 2026-09-30 起「行情速览」与「全球大盘全景复盘」合并为【及时秋刀鱼】AI 行情复盘；
+        # 2026-09-30 起「行情速览」与「全球大盘全景复盘」合并为【事实】行情复盘；
         # 原全景首块「全球指数概览」复用的就是本数据线的同一份 Yahoo 快照，已随合并删除。
-        "used_by": ("【及时秋刀鱼】AI 行情复盘·报价", "【回游金枪鱼】今日预判"),
+        "used_by": ("【事实】行情复盘·报价", "【结论】今日预判"),
         "primary": ("Yahoo Finance query1", "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"),
         "backups": (
             ("Yahoo Finance query2（同格式镜像）",
@@ -110,9 +110,9 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "yahoo_bars": {
         "name": "日线序列 · 港股量化 / 每周预测 / 板块轮动 / MACD",
-        "used_by": ("每日趋势量化推演",
-                    "【滚滚翻车鱼】板块轮动量化策略·港股与恒指日线",
-                    "【六眼飞鱼】量化 MACD 策略·MACD日线"),
+        "used_by": ("【推演】七日走势",
+                    "【策略】板块轮动·港股与恒指日线",
+                    "【策略】MACD 趋势·MACD日线"),
         "primary": ("Yahoo Finance query1", "https://query1.finance.yahoo.com/v8/finance/chart/{symbol}"),
         "backups": (
             ("Yahoo Finance query2（同格式镜像）",
@@ -124,9 +124,9 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "em_ulist": {
         "name": "东方财富 指数 / 个股快照（ulist.np）",
-        "used_by": ("【及时秋刀鱼】AI 行情复盘·A股全景",
-                    "【及时秋刀鱼】AI 行情复盘·港股核对", "资金流动性分析",
-                    "【滚滚翻车鱼】板块轮动量化策略·港股快照"),
+        "used_by": ("【事实】行情复盘·A股全景",
+                    "【事实】行情复盘·港股核对", "【推演】资金流动性",
+                    "【策略】板块轮动·港股快照"),
         "primary": ("东方财富 push2", _em(EM_PUSH2_HOSTS[0], "/api/qt/ulist.np/get")),
         "backups": (
             ("东方财富 82.push2（同格式镜像）", _em(EM_PUSH2_HOSTS[1], "/api/qt/ulist.np/get"), True),
@@ -136,7 +136,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "sina_index": {
         "name": "A股宽基指数快照 · 独立第三源",
-        "used_by": ("【及时秋刀鱼】AI 行情复盘·A股指数",),
+        "used_by": ("【事实】行情复盘·A股指数",),
         "primary": ("东方财富 push2 ulist.np", _em(EM_PUSH2_HOSTS[0], "/api/qt/ulist.np/get")),
         "backups": (
             ("东方财富 82.push2（同格式镜像）", _em(EM_PUSH2_HOSTS[1], "/api/qt/ulist.np/get"), True),
@@ -146,9 +146,9 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "em_clist": {
         "name": "东方财富 榜单列表（clist）",
-        "used_by": ("热门榜单", "【及时秋刀鱼】AI 行情复盘·板块热力",
+        "used_by": ("热门榜单", "【事实】行情复盘·板块热力",
                     "资金流动性·港股成交榜",
-                    "【滚滚翻车鱼】板块轮动量化策略·A股概念库"),
+                    "【策略】板块轮动·A股概念库"),
         "primary": ("东方财富 push2", _em(EM_PUSH2_HOSTS[0], "/api/qt/clist/get")),
         "backups": (
             ("东方财富 82.push2（同格式镜像）", _em(EM_PUSH2_HOSTS[1], "/api/qt/clist/get"), True),
@@ -158,9 +158,9 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "em_kline": {
         "name": "东方财富 日K（push2his）",
-        "used_by": ("【及时秋刀鱼】AI 行情复盘·上日成交额",
-                    "【巡游旗鱼】申万一级行业轮动·板块指数日K备用", "日线序列备用",
-                    "【滚滚翻车鱼】板块轮动量化策略·港股与恒指日线备用"),
+        "used_by": ("【事实】行情复盘·上日成交额",
+                    "【策略】行业轮动（申万）·板块指数日K备用", "日线序列备用",
+                    "【策略】板块轮动·港股与恒指日线备用"),
         "primary": ("东方财富 push2his", _em(EM_PUSH2HIS_HOSTS[0], "/api/qt/stock/kline/get")),
         "backups": (
             ("东方财富 91.push2his（同格式镜像）", _em(EM_PUSH2HIS_HOSTS[1], "/api/qt/stock/kline/get"), True),
@@ -170,7 +170,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "sw_industry_index": {
         "name": "申万一级行业指数日线（31 个 · 东财板块指数 / 申万官方）",
-        "used_by": ("【巡游旗鱼】申万一级行业轮动",),
+        "used_by": ("【策略】行业轮动（申万）",),
         "primary": ("东方财富 push2his 板块指数日K（secid=90.BKxxxx）",
                     _em(EM_PUSH2HIS_HOSTS[0], "/api/qt/stock/kline/get")),
         "backups": (
@@ -187,8 +187,8 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "em_datacenter": {
         "name": "东方财富 数据中心报表（沪深港通成交 / 财经日历）",
-        "used_by": ("【及时秋刀鱼】AI 行情复盘·南北向", "资金流动性分析",
-                    "【探照安康鱼】时间节点量化分析"),
+        "used_by": ("【事实】行情复盘·南北向", "【推演】资金流动性",
+                    "【事实】时间节点"),
         "primary": ("东方财富 datacenter-web", EM_DATACENTER_URLS[0]),
         "backups": (
             ("东方财富 datacenter（同格式镜像）", EM_DATACENTER_URLS[1], True),
@@ -198,7 +198,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "em_news": {
         "name": "东方财富 快讯",
-        "used_by": ("东方财富快讯", "【亮亮灯光鱿鱼】新闻情绪因子量化分析"),
+        "used_by": ("东方财富快讯", "【舆情】新闻情绪"),
         "primary": ("东方财富 np-weblist", "https://np-weblist.eastmoney.com/comm/web/getNewsByColumns"),
         "backups": (
             ("东方财富 np-listapi（同格式镜像）",
@@ -209,7 +209,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "google_news": {
         "name": "全球头条 · Google News 财经",
-        "used_by": ("【无敌帝王蟹】全球头条", "【亮亮灯光鱿鱼】新闻情绪因子量化分析"),
+        "used_by": ("【事实】全球头条", "【舆情】新闻情绪"),
         "primary": ("Google News 中文（中国大陆版）",
                     "https://news.google.com/rss/headlines/section/topic/BUSINESS?hl=zh-CN&gl=CN&ceid=CN:zh-Hans"),
         "backups": (
@@ -221,7 +221,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "google_news_search": {
         "name": "专题新闻搜索 · 美联储 / 地缘政治",
-        "used_by": ("【火爆大鱿鱼】美联储因子量化分析", "【巡回巨鲸】地缘政治因子量化分析"),
+        "used_by": ("【事实】美联储因子", "【事实】地缘政治因子"),
         "primary": ("Google News 搜索（中文·大陆版）", "https://news.google.com/rss/search?q={query}&hl=zh-CN&gl=CN&ceid=CN:zh-Hans"),
         "backups": (
             ("Google News 搜索（中文·香港版）",
@@ -233,7 +233,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "gov_policy": {
         "name": "国家政策 · 中国政府网",
-        "used_by": ("【深海肥蓝鲸】政策因子",),
+        "used_by": ("【事实】政策因子",),
         "primary": ("政府网 最新政策", "https://www.gov.cn/zhengce/zuixin/"),
         "backups": (
             ("政府网 政策首页（同格式页面）", "https://www.gov.cn/zhengce/", True),
@@ -253,7 +253,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "reddit": {
         "name": "趋势跟踪 · Reddit 板块热帖",
-        "used_by": ("【深海大鲨鱼】趋势跟踪",),
+        "used_by": ("【舆情】资讯跟踪",),
         "primary": ("Reddit 公开 Atom", "https://www.reddit.com/r/{community}/hot/.rss?limit={limit}"),
         "backups": (
             ("old.reddit 公开 Atom（同格式）", "https://old.reddit.com/r/{community}/hot/.rss?limit={limit}", True),
@@ -263,7 +263,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "stocktwits": {
         "name": "趋势跟踪 · StockTwits 趋势榜",
-        "used_by": ("【深海大鲨鱼】趋势跟踪",),
+        "used_by": ("【舆情】资讯跟踪",),
         "primary": ("StockTwits trending/symbols", "https://api.stocktwits.com/api/2/trending/symbols.json"),
         "backups": (
             ("StockTwits trending/symbols/equities（同格式）",
@@ -275,7 +275,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "tradingview": {
         "name": "趋势跟踪 · TradingView Ideas",
-        "used_by": ("【深海大鲨鱼】趋势跟踪",),
+        "used_by": ("【舆情】资讯跟踪",),
         "primary": ("TradingView Ideas RSS", "https://www.tradingview.com/feed/"),
         "backups": (
             ("TradingView Ideas RSS（stream=all）", "https://www.tradingview.com/feed/?stream=all", True),
@@ -285,7 +285,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "bogleheads": {
         "name": "趋势跟踪 · Bogleheads 论坛",
-        "used_by": ("【深海大鲨鱼】趋势跟踪",),
+        "used_by": ("【舆情】资讯跟踪",),
         "primary": ("Bogleheads 论坛 RSS", "https://www.bogleheads.org/forum/feed"),
         "backups": (
             ("Bogleheads app.php/feed（phpBB 同格式）", "https://www.bogleheads.org/forum/app.php/feed", True),
@@ -295,9 +295,9 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "mainland_news_rss": {
         "name": "内地财经媒体 · 18 家（官方订阅 / 站内检索 RSS）",
-        "used_by": ("【沸腾花蛤】情绪热点因子量化分析",
-                    "【亮亮灯光鱿鱼】新闻情绪因子量化分析",
-                    "【深海肥蓝鲸】政策因子",
+        "used_by": ("【舆情】媒体热点",
+                    "【舆情】新闻情绪",
+                    "【事实】政策因子",
                     "策略研判 / 逐栏 AI 研判（标题池）"),
         "primary": ("各媒体官方 RSS / Atom（若有）", "{feed}"),
         "backups": (
@@ -317,7 +317,7 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
     },
     "hk_news_rss": {
         "name": "港股新闻源头 · 36 家媒体 RSS",
-        "used_by": ("【深海大鲨鱼】趋势跟踪·新闻源头",),
+        "used_by": ("【舆情】资讯跟踪·新闻源头",),
         "primary": ("各媒体官方 RSS / Atom", "{feed}"),
         "backups": (
             ("Bing News 站内检索 RSS（同格式 RSS，链接直达原文）",

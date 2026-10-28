@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""【慢游小丑鱼】低频小因子量化策略（2026-10-28 新增）
+"""【策略】低频五因子选股（2026-10-28 新增）
 
 用户口径（五个低频小因子，港股落地）：
 
@@ -37,7 +37,7 @@ from datetime import datetime, timedelta, timezone
 
 CST = timezone(timedelta(hours=8))
 
-SECTION_TITLE = "【慢游小丑鱼】低频小因子量化策略"
+SECTION_TITLE = "【策略】低频五因子选股"
 KICKER = "LOWFREQ FACTORS"
 SOURCE_NAME = "低频小因子量化策略"
 SOURCE_LABEL = "东方财富港股快照 + 日线（Yahoo 备用）· 五因子横截面排序"

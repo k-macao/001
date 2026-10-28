@@ -30,7 +30,7 @@ ALL_KICKERS = (
 
 
 def uzi_result():
-    """一份【游资剑鱼】多专家流派趋势分析的 run_trend() 结果（数字均为测试造的）。
+    """一份【策略】多流派研判的 run_trend() 结果（数字均为测试造的）。
 
     键与 output/octopus_quant/uzi_trend.py 的真实返回一一对应：coverage / panel /
     rules_enabled / rules_total / tones / items（含 tone_key + tone + score_avg）/
@@ -275,7 +275,7 @@ class NoFabricationTests(unittest.TestCase):
             self.assertTrue(any(w in tone for w in ("抛硬币", "五五开", "神仙", "氛围")), tone)
 
     def test_forecast_never_shows_updown_probability(self):
-        """2026-10-23 用户要求：【回游金枪鱼】今日预判不显示涨跌概率。"""
+        """2026-10-23 用户要求：【结论】今日预判不显示涨跌概率。"""
         ctx = rich_ctx()
         # 周度 label 真实形态自带「· P(7日涨) 53%」：翻译层必须把概率剥掉，只留方向。
         ctx["weekly"] = {"available": True, "entry": {
@@ -326,7 +326,7 @@ class ContentTests(unittest.TestCase):
 
 
 class UziTrendRenTests(unittest.TestCase):
-    """【游资剑鱼】多专家流派趋势分析的「AI帮你提鲜」（2026-10-13 接入）。
+    """【策略】多流派研判的「AI帮你提鲜」（2026-10-13 接入）。
 
     防自欺口径与该栏正文一致：解读只引用 run_trend() 结果里已有的数字与 items 自带的
     tone 文案；本栏没有概率口径 → 几率条整条缺席（绝不硬凑一个涨跌概率）。
@@ -582,7 +582,7 @@ class PipelineIntegrationTests(unittest.TestCase):
             self.assertIn("大白话", html, theme)
 
     def test_uzi_column_carries_its_own_ren_block(self):
-        """【游资剑鱼】的解读走 ctx["uzi"]（该栏正文渲染另由 tests/test_uzi_trend.py 覆盖，
+        """【策略】的解读走 ctx["uzi"]（该栏正文渲染另由 tests/test_uzi_trend.py 覆盖，
         这里把正文渲染打桩，只验解读块确实挂进了这一栏）。"""
         p = self.pipeline
         data = self._data()

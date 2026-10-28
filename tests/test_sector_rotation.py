@@ -347,7 +347,7 @@ class PipelineAndFreshnessTests(unittest.TestCase):
         for theme, kit in (("guizang", pipeline.GUIZANG_KIT), ("pixel", pipeline.PIXEL_KIT)):
             with pipeline.notes_mode():          # 权重表 / 映射限制 / 方法参考属于说明文字
                 html = pipeline.generate_report(data, "2026年10月1日 · 周四", "20261001", theme=theme)
-            self.assertIn("【滚滚翻车鱼】板块轮动量化策略", html, theme)
+            self.assertIn("【策略】板块轮动", html, theme)
             self.assertIn("技术面 35% · 资金面 35% · 基本面 10% · 行业板块 10% · 事件驱动 10%", html)
             self.assertIn("仓库内白名单关键词", html)
             self.assertIn("非标准 JdK RRG", html)
@@ -359,7 +359,7 @@ class PipelineAndFreshnessTests(unittest.TestCase):
             self.assertLess(kicks.index("SECTOR ROTATION"), kicks.index("SUMMARY"))
             # 入门版（默认）：评分 / 篮子 / 行情日期在，权重表与方法论整段不出，只留一句提示
             plain_html = pipeline.generate_report(data, "2026年10月1日 · 周四", "20261001", theme=theme)
-            self.assertIn("【滚滚翻车鱼】板块轮动量化策略", plain_html, theme)
+            self.assertIn("【策略】板块轮动", plain_html, theme)
             self.assertIn("概念覆盖", plain_html, theme)
             self.assertIn("行情日期", plain_html, theme)
             self.assertIn("港股观察篮子", plain_html, theme)
@@ -369,11 +369,11 @@ class PipelineAndFreshnessTests(unittest.TestCase):
 
     def test_source_registry_and_off_switch(self):
         from backup_sources import DATA_LINES
-        self.assertIn("【滚滚翻车鱼】板块轮动量化策略·A股概念库",
+        self.assertIn("【策略】板块轮动·A股概念库",
                       DATA_LINES["em_clist"]["used_by"])
-        self.assertIn("【滚滚翻车鱼】板块轮动量化策略·港股快照",
+        self.assertIn("【策略】板块轮动·港股快照",
                       DATA_LINES["em_ulist"]["used_by"])
-        self.assertIn("【滚滚翻车鱼】板块轮动量化策略·港股与恒指日线",
+        self.assertIn("【策略】板块轮动·港股与恒指日线",
                       DATA_LINES["yahoo_bars"]["used_by"])
         with patch.object(pipeline, "SECTOR_ROTATION_ENABLED", False):
             source = pipeline.fetch_sector_rotation({})

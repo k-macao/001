@@ -324,7 +324,7 @@ def run_macd(fetch_json=None, *, existing=None, db_root=None, specs=None, now=No
             "total": len(items),
         } for key in derived.KEYS},
     }
-    # include_bars=True：把本次真正选中的日线一并交出（【游资剑鱼】UZI 趋势分析栏目复用，
+    # include_bars=True：把本次真正选中的日线一并交出（【策略】UZI 趋势分析栏目复用，
     # 避免为同一批标的再取一次数）。调用方负责在入库 / 渲染前弹出，不要把整段日线写进 JSON。
     if include_bars:
         result["bars_by_code"] = {code: list(record[0]) for code, record in selected.items()}

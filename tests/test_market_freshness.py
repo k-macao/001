@@ -7,7 +7,7 @@
 
 三道防线各自可测：
   ① 数据层：providers.session_bar_from_meta 用 meta 最新报价补出缺失的已收盘日线
-     （量化引擎 / 周度预测 /【及时秋刀鱼】AI 行情复盘共用）；
+     （量化引擎 / 周度预测 /【事实】行情复盘共用）；
   ② 核对层：pipeline._reconcile_market_snapshot 用东方财富行情时间做独立基准回补；
   ③ 呈现层：每个品种记录 as_of，按市场标注「截至 MM-DD」，滞后品种标明并不计入均值。
 """
@@ -378,7 +378,7 @@ class ForecastDatesRenderingTests(unittest.TestCase):
         for theme in ("guizang", "pixel"):
             html = pipeline.generate_report(data, "2026年9月29日 · 周二", "20260929", theme=theme)
             text = _strip(html)
-            i = text.find("【回游金枪鱼】今日预判")
+            i = text.find("【结论】今日预判")
             self.assertGreater(i, -1)
             self.assertIn("截至 09-28", text[i:i + 1500])
             self.assertIn("恒指 ▲ +0.54%", text[i:i + 1500])

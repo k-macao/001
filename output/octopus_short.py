@@ -8,7 +8,7 @@
 100 句股票梗句）读取并按当次盘面随时配对的【新手三句话】。
 
 2026-10-16（用户要求「新手三句话，放在卦象后」）：三句话的**配对仍在本模块**，
-渲染位置改到卷首「诗与远方的海」卦象之后（pipeline 用 `build_card(..., tips_in_card=False)`
+渲染位置改到卷首「【卷首】诗与卦象」卦象之后（pipeline 用 `build_card(..., tips_in_card=False)`
 把预算也一并交出去）；卦象关闭（OCTOPUS_BAGUA=0）或起卦失败时回落到卡尾原处，
 同一份日报里三句话**只出现一处**。
 
@@ -727,7 +727,7 @@ def _line_money(ctx):
         flow = ""
         if _liquidity is not None:
             try:
-                # 只取标签的第一段（放量 / 缩量 / 中性）：分位那句在「资金流动性分析」
+                # 只取标签的第一段（放量 / 缩量 / 中性）：分位那句在「【推演】资金流动性」
                 # 栏目里原样保留，卡上不重复占字数。
                 flow = str(_liquidity.flow_label(south) or "").split(" · ")[0]
             except Exception:

@@ -545,7 +545,7 @@ class QuantEngine:
         if primary["probs"].get(1, {}).get("method") == "base":
             notes.append("⚠️ 校准样本不足 40，指数概率退回历史基准频率，请勿当作强信号。")
         if not liq.get("available"):
-            notes.append("⚠️ 沪深港通 / 港股成交数据本次未取到，资金流动性分析整体缺席。")
+            notes.append("⚠️ 沪深港通 / 港股成交数据本次未取到，【推演】资金流动性整体缺席。")
         else:
             notes.append(liq["policy_note"])
         notes.extend(liq.get("notes") or [])

@@ -20,7 +20,7 @@ https://github.com/lianginx/chinese-poetry-api-skill），在每次日报生成�
    口径预构建的跨朝代经典诗词库），当运行环境离线、外网受限或单测运行时，
    自动在本地语料库中按完全一致的过滤条件随机抽取一首诗词；
 3. 五套主题卷首渲染：支持 ``lime`` / ``guizang`` / ``dossier`` / ``forum`` /
-   ``pixel`` 五套日报主题的诗卡渲染；与 ☯ 今日卦象同属刊头后的「诗与远方的海」栏目。
+   ``pixel`` 五套日报主题的诗卡渲染；与 ☯ 今日卦象同属刊头后的「【卷首】诗与卦象」栏目。
 """
 
 from __future__ import annotations
@@ -623,7 +623,7 @@ def _esc(val: Any) -> str:
 
 def render_opening_poem_html(poem: Optional[Dict[str, Any]], theme: str = "lime") -> str:
     """按五套主题（``lime`` / ``guizang`` / ``dossier`` / ``forum`` / ``pixel``）
-    渲染「诗与远方的海」栏目内的「今日一首诗」子块。
+    渲染「【卷首】诗与卦象」栏目内的「今日一首诗」子块。
 
     设计约束：
     - 不另起 ``<h2>`` 或 ``SECTION_BODY_MARK``，诗卡与卦象共属一个卷首栏目；

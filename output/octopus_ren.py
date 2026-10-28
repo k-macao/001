@@ -26,7 +26,7 @@ ctx 约定（键全部可选，缺了就降级）：
             与 _collect_report_parts 里渲染正文用的同一批对象
   retail_sentiment / media_risk / sector_rotation / industry_rotation / macd
             散户情绪、媒体风险、板块轮动、行业轮动与 MACD 栏目的同源结构化结果
-  uzi       _uzi_result(data) 的结果（【游资剑鱼】多专家流派趋势分析，与正文同一份）
+  uzi       _uzi_result(data) 的结果（【策略】多流派研判，与正文同一份）
   trend     _trend_section_stats(data) 的结果（趋势跟踪共享统计）
   coverage  {today, total, missing: [...]}（总结栏数据覆盖同源）
 """
@@ -144,8 +144,8 @@ def _coin_tone(p_pct, seed):
 def _strip_prob(text):
     """去掉标签自带的概率口径（如「· P(7日涨) 62%」），只留方向定调。
 
-    2026-10-23 用户要求【回游金枪鱼】今日预判不显示涨跌概率；周度 entry["label"]
-    自带宽口径概率，本栏只翻译方向，概率仍在「每日趋势量化推演」正文。
+    2026-10-23 用户要求【结论】今日预判不显示涨跌概率；周度 entry["label"]
+    自带宽口径概率，本栏只翻译方向，概率仍在「【推演】七日走势」正文。
     """
     text = str(text or "")
     text = re.sub(r"\s*[·,，]?\s*P\(\d*日涨\)\s*\d+(?:\.\d+)?%", "", text)
@@ -180,11 +180,11 @@ def _tip(seed):
 # 各栏目生成器：只读 ctx，缺数据返回 ""（渲染层对已存在栏目给诚实后备结论）
 # ------------------------------------------------------------------
 def _ren_forecast(ctx):
-    """【回游金枪鱼】今日预判：只翻译方向定调与信号，**不显示涨跌概率**。
+    """【结论】今日预判：只翻译方向定调与信号，**不显示涨跌概率**。
 
     2026-10-23 按用户要求：这一栏只给「偏多 / 中性 / 偏空」的方向结论与信号分，
     不写上涨概率、周涨概率或「涨 xx ： xx 跌」几率——概率模型仍在
-    「每日趋势量化推演 · 港股概率走势分析」里展示，本栏不重复。
+    「【推演】七日走势 · 港股概率走势分析」里展示，本栏不重复。
     """
     quant = ctx.get("quant") or {}
     weekly = ctx.get("weekly") or {}
@@ -211,7 +211,7 @@ def _ren_forecast(ctx):
 
 
 def _ren_econ_calendar(ctx):
-    """【探照安康鱼】时间节点量化分析：把日程表讲成「开盲盒预告」。"""
+    """【事实】时间节点：把日程表讲成「开盲盒预告」。"""
     cal = ctx.get("cal") or {}
     if cal.get("status") != "success":
         return ""
@@ -277,7 +277,7 @@ def _ren_hk_probability(ctx):
 
 
 def _ren_liquidity(ctx):
-    """资金流动性分析：把「南向缩量」讲成「池子水少」。"""
+    """【推演】资金流动性：把「南向缩量」讲成「池子水少」。"""
     quant = ctx.get("quant") or {}
     liq = quant.get("liquidity") or {}
     if not (quant.get("available") and liq.get("available")):
@@ -310,7 +310,7 @@ def _ren_liquidity(ctx):
 
 
 def _ren_weekly(ctx):
-    """每日趋势量化推演：翻译逐日表格、七日结论与并入的港股概率分析。"""
+    """【推演】七日走势：翻译逐日表格、七日结论与并入的港股概率分析。"""
     weekly = ctx.get("weekly") or {}
     entry = weekly.get("entry") or {}
     weekly_available = bool(weekly.get("available") and entry.get("p_up") is not None)
@@ -343,7 +343,7 @@ def _ren_weekly(ctx):
 
 
 def _ren_market_review(ctx):
-    """【及时秋刀鱼】AI 行情复盘：把涨跌家数 / 成交额讲成「情绪到位、资金没到位」。"""
+    """【事实】行情复盘：把涨跌家数 / 成交额讲成「情绪到位、资金没到位」。"""
     pan = ctx.get("pan") or {}
     market = ctx.get("market") or {}
     notes = ctx.get("notes") or {}
@@ -407,7 +407,7 @@ def _ren_policy(ctx):
 
 
 def _ren_fed(ctx):
-    """【火爆大鱿鱼】美联储因子量化分析：把鹰鸽讲成「紧箍咒」。"""
+    """【事实】美联储因子：把鹰鸽讲成「紧箍咒」。"""
     fed = ctx.get("fed") or {}
     if not fed.get("available"):
         return ""
@@ -425,7 +425,7 @@ def _ren_fed(ctx):
 
 
 def _ren_geo(ctx):
-    """【巡回巨鲸】地缘政治因子量化分析：把冲突/缓和讲成「国际大瓜」。"""
+    """【事实】地缘政治因子：把冲突/缓和讲成「国际大瓜」。"""
     geo = ctx.get("geo") or {}
     if not geo.get("available"):
         return ""
@@ -443,7 +443,7 @@ def _ren_geo(ctx):
 
 
 def _ren_retail_sentiment(ctx):
-    """【麻辣大龙虾】散户情绪：只翻译社区样本，不把网友观点当事实。"""
+    """【舆情】散户情绪：只翻译社区样本，不把网友观点当事实。"""
     result = ctx.get("retail_sentiment") or {}
     if not result.get("available"):
         return ""
@@ -465,7 +465,7 @@ def _ren_retail_sentiment(ctx):
 
 
 def _ren_media_risk(ctx):
-    """【警戒爆炸豚】媒体风险：区分具体风险事件与单纯异常关注。"""
+    """【舆情】媒体风险：区分具体风险事件与单纯异常关注。"""
     result = ctx.get("media_risk") or {}
     if not result.get("available"):
         return ""
@@ -491,7 +491,7 @@ def _ren_media_risk(ctx):
 
 
 def _ren_sector_rotation(ctx):
-    """【滚滚翻车鱼】板块轮动：把最高分与覆盖门槛先讲清楚。"""
+    """【策略】板块轮动：把最高分与覆盖门槛先讲清楚。"""
     result = ctx.get("sector_rotation") or {}
     if not result:
         return ""
@@ -516,7 +516,7 @@ def _ren_sector_rotation(ctx):
 
 
 def _ren_industry_rotation(ctx):
-    """【巡游旗鱼】行业轮动：先报行业宽度、榜首与月度观察组合。"""
+    """【策略】行业轮动：先报行业宽度、榜首与月度观察组合。"""
     result = ctx.get("industry_rotation") or {}
     if not result.get("available"):
         return ""
@@ -540,7 +540,7 @@ def _ren_industry_rotation(ctx):
 
 
 def _ren_lowfreq_factors(ctx):
-    """🐟【慢游小丑鱼】低频小因子：先报镜子体温，再报推荐名单的数量与分布。
+    """🐟【策略】低频小因子：先报镜子体温，再报推荐名单的数量与分布。
 
     数字全部来自正文同一份结果（ctx["lowfreq"]）；不额外计算、不补造。
     反转/动量在本栏的定位是「市场体温计」，所以结论先讲冷热，再讲名单。
@@ -614,7 +614,7 @@ def _ren_strategy(ctx):
 
 
 def _ren_uzi_trend(ctx):
-    """【游资剑鱼】多专家流派趋势分析：把「一套公开规则逐条打分」讲成面试现场。
+    """【策略】多流派研判：把「一套公开规则逐条打分」讲成面试现场。
 
     只引用 uzi_trend.run_trend() 结果里已有的数字——过门禁的标的数 / 评委数 / 规则数 /
     票型 / 均分 / 定调分布 / 被门禁撤下的评委 / 缺席标的，一个都不新造；定调用语直接取
@@ -743,7 +743,7 @@ def _ren_trend(ctx):
 
 
 def _ren_mainland_hotlist(ctx):
-    """【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
+    """【舆情】媒体热点（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
     把 18 家内地媒体的主题热度、情绪面与预警风险点讲成人话。
 
     数字全部来自 build_mainland_hotlist() 的同一份结果（不另算一套）：
@@ -1174,7 +1174,7 @@ def section_ren_block(kicker, ctx):
         p_pct = round(float(p_pct), 1)
     else:
         p_pct = None
-    # 2026-10-23 按用户要求：【回游金枪鱼】今日预判不展示涨跌概率 → 几率条整条缺席
+    # 2026-10-23 按用户要求：【结论】今日预判不展示涨跌概率 → 几率条整条缺席
     # （label 仍保留，方向色与 ▲▼■ 定调不变；概率模型不在本栏重复出现）。
     if kicker == "FORECAST":
         p_pct = None

@@ -170,7 +170,7 @@ class ReportPlainTests(unittest.TestCase):
             html = self.plain[theme]
             text = _strip(html)
             # 「模型自检 / 指数概率」原属量化分析总览（2026-10-23 下线），
-            # 概率与逐日表格仍在每日趋势量化推演里。
+            # 概率与逐日表格仍在【推演】七日走势里。
             for marker in ("结论", "AI帮你提鲜", "活鲜度", pipeline.SECTION_TITLE_FORECAST,
                            pipeline.SECTION_TITLE_SHORT_CARD, "新手三句话",
                            "P(7日涨)", "逐日表格",

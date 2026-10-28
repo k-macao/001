@@ -9,7 +9,7 @@
     【新手三句话】读取 `output/stock_memes.json` 百句股票梗句库，按当次盘面与种子随时配对使用。
 
 2026-10-16（用户要求「新手三句话，放在卦象后」）：三句话的配对逻辑不动，渲染位置
-改到卷首「诗与远方的海」卦象之后——见 `BeginnerTipsPlacementTests` 一条条守住位置、
+改到卷首「【卷首】诗与卦象」卦象之后——见 `BeginnerTipsPlacementTests` 一条条守住位置、
 回落（卦象关闭时回卡尾）与「同一份日报只出现一处」。
 """
 import datetime as dt
@@ -467,11 +467,11 @@ class CardRenderingTests(unittest.TestCase):
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
                             titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
-                            titles.index("总结"))
+                            titles.index(self.pipeline.SECTION_TITLE_SUMMARY))
             # 2026-10-13：今日预判置顶，总结仍在速查卡之前
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_FORECAST),
                             titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
-            self.assertLess(titles.index("总结"), titles.index(self.pipeline.SECTION_TITLE_SHORT_CARD))
+            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_SUMMARY), titles.index(self.pipeline.SECTION_TITLE_SHORT_CARD))
         for theme in ("guizang", "pixel"):
             html = self.pipeline.generate_report(data, "2026年8月2日 · 周日", "20260802",
                                                 theme=theme)

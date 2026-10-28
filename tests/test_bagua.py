@@ -73,7 +73,7 @@ class TestBagua(unittest.TestCase):
                 self.assertEqual(parts["sections"][0][0], "FORECAST")
                 self.assertNotIn("今日八卦运程与利忌", parts["sections"][0][2])
                 opening = pipeline._poetry_sea_section(parts, pipeline.LIME_KIT)
-                for token in ("诗与远方的海", "今日八卦运程与利忌", "山火贲", "山天大畜",
+                for token in ("【卷首】诗与卦象", "今日八卦运程与利忌", "山火贲", "山天大畜",
                               'aria-label="算卦"', "☯", "娱乐参考"):
                     self.assertIn(token, opening)
                 self.assertEqual(opening.count(pipeline.SECTION_BODY_MARK), 1)
@@ -107,7 +107,7 @@ class TestBagua(unittest.TestCase):
         self.assertNotIn("今日八卦运程与利忌", "".join(s[2] for s in parts["sections"]))
         self.assertIn("山火贲", parts["bagua_html"])
         opening = pipeline._poetry_sea_section(parts, pipeline.LIME_KIT)
-        self.assertIn("诗与远方的海", opening)
+        self.assertIn("【卷首】诗与卦象", opening)
         self.assertIn("今日八卦运程与利忌", opening)
 
     def test_render_uses_only_grayscale_colors(self):
@@ -137,7 +137,7 @@ class TestBagua(unittest.TestCase):
         }}
         with patch.object(bagua, "ENABLED", False):
             html = pipeline.generate_report(data, "2026年10月14日", "20261014", theme="lime")
-        self.assertIn("诗与远方的海", html)
+        self.assertIn("【卷首】诗与卦象", html)
         self.assertIn("《江雪》", html)
         self.assertNotIn("今日八卦运程与利忌", html)
         self.assertNotIn('aria-label="算卦"', html)
@@ -147,7 +147,7 @@ class TestBagua(unittest.TestCase):
         data = self._data_with_conclusion(pipeline)
         with patch.object(bagua, "render_bagua_html", side_effect=ValueError("bad bagua")):
             html = pipeline.generate_report(data, "2026年10月14日", "20261014", theme="lime")
-        self.assertIn("诗与远方的海", html)
+        self.assertIn("【卷首】诗与卦象", html)
         self.assertIn("今日一首诗", html)
         self.assertNotIn("今日八卦运程与利忌", html)
         self.assertIn(pipeline.SECTION_TITLE_FORECAST, html)

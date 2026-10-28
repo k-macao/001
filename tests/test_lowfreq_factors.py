@@ -435,7 +435,7 @@ class LowFreqPipelineTests(unittest.TestCase):
                         pipeline.REPORT_SECTION_ORDER.index("SUMMARY"))
 
     def test_title_and_source_name(self):
-        self.assertEqual(pipeline.SECTION_TITLE_LOWFREQ, "【慢游小丑鱼】低频小因子量化策略")
+        self.assertEqual(pipeline.SECTION_TITLE_LOWFREQ, "【策略】低频五因子选股")
         self.assertEqual(pipeline.LOWFREQ_SOURCE_NAME, "低频小因子量化策略")
 
     def test_theme_metadata_present(self):

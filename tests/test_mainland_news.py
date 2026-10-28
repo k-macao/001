@@ -581,7 +581,7 @@ class CandidateFallbackTests(unittest.TestCase):
 
 
 # ======================================================================
-# ⑥ 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增栏目「内地财经热点榜」，2026-10-19 更名）
+# ⑥ 【舆情】媒体热点（2026-10-13 新增栏目「内地财经热点榜」，2026-10-19 更名）
 # ======================================================================
 def _hotlist_data(entries=(), missing=("北京商报（北京商报网）",), ok_n=2):
     """构造一份「内地财经媒体源头」结果：entries = (标题, 媒体, 链接, 北京时间)。"""
@@ -733,7 +733,6 @@ class HotlistRenderTests(unittest.TestCase):
                 html = pipeline.generate_report(data, "2026年10月13日 · 周二", "20261013",
                                                 theme=theme)
                 self.assertIn(pipeline.SECTION_TITLE_MAINLAND_HOTLIST, html)
-                self.assertIn("情绪热点因子量化分析", html)
                 self.assertNotIn("内地财经热点榜", html, "2026-10-19 更名后旧栏目名不再出现")
                 self.assertIn("A股盘面", html)
                 self.assertIn("情绪总览", html)

@@ -3,8 +3,8 @@
 2026-10-12 用户要求：「给大纲，核对内容重复率，重复就合并同子栏」。
 `tools/report_outline.py` 核对出的正文栏重复（结论三栏是设计内的复述，不计）：
 
-  · 【及时秋刀鱼】AI 行情复盘 · 南北向资金（前一收盘）  ⇄  【资金流动性分析】南向 / 北向；
-  · 【六眼飞鱼】量化 MACD 策略 · 板块趋势跟踪强度榜    ⇄  AI 行情复盘 · 板块热力
+  · 【事实】行情复盘 · 南北向资金（前一收盘）  ⇄  【【推演】资金流动性】南向 / 北向；
+  · 【策略】MACD 趋势 · 板块趋势跟踪强度榜    ⇄  AI 行情复盘 · 板块热力
     （涨跌 / 主力净流入是同一批 A股全景数据）。
 
 合并口径（SUB_MERGE_ENABLED，OCTOPUS_SUB_MERGE=0 关闭）：
@@ -66,7 +66,7 @@ class SubMergeRenderTests(unittest.TestCase):
         return pipeline.generate_report(data if data is not None else self.data,
                                         "2026年10月12日 · 周一", "20261012")
 
-    # ---- ① 南北向资金：资金流动性分析在场 → 行情复盘只留指针 ----
+    # ---- ① 南北向资金：【推演】资金流动性在场 → 行情复盘只留指针 ----
     def test_flow_merge_keeps_numbers_once_and_points_to_liquidity(self):
         html = self.render()
         text = _text(html)
@@ -87,7 +87,7 @@ class SubMergeRenderTests(unittest.TestCase):
         text = _text(self.render(data))
         self.assertIn("1,350.25", text)          # 行情复盘照常出数字
         self.assertNotIn(f"见 {pipeline.SUB_MERGE_OWNER_LIQUIDITY}", text)
-        self.assertNotIn("资金流动性分析", text)   # 没有保留栏，就没有指向它的指针
+        self.assertNotIn("【推演】资金流动性", text)   # 没有保留栏，就没有指向它的指针
 
     def test_flow_merge_can_be_switched_off(self):
         with patch.object(pipeline, "SUB_MERGE_ENABLED", False):
@@ -154,7 +154,7 @@ class SubMergeRenderTests(unittest.TestCase):
     # ---- ③ 结论三栏不受合并影响（它们的职责就是复述结论） ----
     def test_conclusion_sections_still_restate_numbers(self):
         text = _text(self.render())
-        card = _section(self.render(), "【闪电飞鱼】短线速查卡")
+        card = _section(self.render(), "【行动】短线速查卡")
         self.assertIn("板块强弱", card)
         self.assertIn("+3.50%", card)            # 速查卡照旧复述
 
