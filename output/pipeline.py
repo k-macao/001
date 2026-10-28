@@ -560,6 +560,10 @@ try:
     import strategy_quant as _strategy_quant  # noqa: E402  # 📊 策略大类量化（图中 4 大类 6 细分，可离线兜底）
 except Exception:  # pragma: no cover
     _strategy_quant = None
+try:
+    import lowfreq_factors as _lowfreq  # noqa: E402  # 🐟 低频小因子（小市值 / 反转 / 动量 / 换手 / EP）
+except Exception:  # pragma: no cover
+    _lowfreq = None
 
 QUANT_HISTORY_FILENAME = "quant_history.json"
 # 📜 诗泉（palemoky/chinese-poetry-api）开篇随机一首诗开关：OCTOPUS_SHIQUAN=0 可关闭。
@@ -577,6 +581,12 @@ SECTOR_ROTATION_SOURCE_NAME = "板块轮动量化策略"
 INDUSTRY_ROTATION_ENABLED = str(os.environ.get("OCTOPUS_INDUSTRY_ROTATION", "1")).strip().lower() not in ("0", "false", "no")
 INDUSTRY_ROTATION_SOURCE_NAME = "申万一级行业轮动策略"
 INDUSTRY_ROTATION_SOURCE_LABEL = "东方财富 · 申万一级行业指数日线（31 个）"
+# 🐟 【慢游小丑鱼】低频小因子量化策略（2026-10-28 新增）：港股五因子横截面排序 + 推荐 20 只。
+# 独立数据线（东财港股快照 + 日线，Yahoo 备用），OCTOPUS_LOWFREQ=0 可整栏关闭；
+# 取不到快照 / 日线时整栏缺席，绝不用历史或合成数字顶替（OCTOPUS_LOWFREQ_DEMO=1 仅供版面演示）。
+LOWFREQ_ENABLED = str(os.environ.get("OCTOPUS_LOWFREQ", "1")).strip().lower() not in ("0", "false", "no")
+LOWFREQ_SOURCE_NAME = "低频小因子量化策略"
+LOWFREQ_SOURCE_LABEL = "东方财富港股快照 + 日线（Yahoo 备用）· 五因子横截面排序"
 # 策略研判内的 MACD 子策略：独立于港股概率引擎，优先市场库 / 本次日线，缺项补免费源。
 MACD_ENABLED = str(os.environ.get("OCTOPUS_MACD", "1")).strip().lower() not in ("0", "false", "no")
 MACD_SOURCE_NAME = "MACD量化策略"
@@ -5244,6 +5254,48 @@ def fetch_strategy_quant(date_str=None):
 
 
 # ============================================================
+# 🐟 低频小因子量化策略（2026-10-28 新增）
+# ------------------------------------------------------------
+# 用户口径的五个低频因子（小市值 / 短期反转 / 动量 12-1 / 换手率 / 价值 EP），
+# 在港股落地成「横截面分位 + 综合分 → 推荐 20 只」；计算与呈现都在
+# output/lowfreq_factors.py（纯函数可离线单测），这里只做取数与装栏。
+# 口径要点（用户明确要求）：
+#   · 小市值 f = -ln(总市值)，但先剥壳价值：市值 ≤ 壳价值下限的按「纯壳」剔除；
+#   · 反转 = 近 21 个交易日 log 收益和，用法是「镜子」（市场体温），不是买入理由；
+#   · 动量 = 12-1：过去 250 个交易日剔除最近 21 个交易日；
+#   · 换手率 = 近 3 个月「成交股数 / 流通股本」均值，方向为低换手优先；
+#   · EP = 净利润 / 总市值 = 1/PE，只在市值达标且不亏损的票里做同行业内部比较。
+# 取不到快照 / 日线 → 整栏缺席（在「数据覆盖」点名），绝不补造行情。
+def fetch_lowfreq_factors(date_str=None):
+    """低频小因子主入口：成功返回统一来源结果，失败返回 unavailable（栏目自然缺席）。"""
+    if not LOWFREQ_ENABLED:
+        return None
+    if _lowfreq is None:
+        return _source_result(LOWFREQ_SOURCE_NAME, "unavailable", result=None,
+                              error="lowfreq_factors 模块未加载")
+    try:
+        print("\n🐟 正在计算低频小因子（港股 5 因子 · 推荐 20 只）...")
+        ds = date_str or datetime.now(CST).strftime("%Y%m%d")
+        res = _lowfreq.run_lowfreq_factors(
+            safe_request, date_str=ds, allow_synthetic_flag=_lowfreq.allow_synthetic())
+        if not res.get("available"):
+            print(f"  ⚠️ 低频小因子暂不可用：{res.get('reason')}")
+            return _source_result(LOWFREQ_SOURCE_NAME, "unavailable", result=res,
+                                  error=str(res.get("reason") or "数据不足"))
+        uni = res.get("universe") or {}
+        print(f"  ✅ 低频小因子：快照 {uni.get('scanned', 0)} 只 → 可排序 {uni.get('ranked', 0)} 只"
+              f" · 推荐 {len(res.get('top') or [])} 只 · {res.get('as_of')} 收盘"
+              + ("（合成演示序列）" if res.get("synthetic") else ""))
+        # 内部衍生：读已收盘日线与当日快照，不计入「当天源」检验（snapshot）。
+        return _source_result(LOWFREQ_SOURCE_NAME, "success", result=res,
+                              content_date=res.get("as_of"), is_today=False, snapshot=True)
+    except Exception as exc:
+        print(f"  ⚠️ 低频小因子异常：{type(exc).__name__}: {exc}")
+        return _source_result(LOWFREQ_SOURCE_NAME, "unavailable", result=None,
+                              error=f"低频小因子异常（{type(exc).__name__}）")
+
+
+# ============================================================
 # 每周量化走势预测：未来 7 个交易日逐日表格（恒指升跌方向 / 概率 / 理由 / 分析 / AI 操作建议）
 # ------------------------------------------------------------
 # 方法来自 GitHub 无未来函数（look-ahead）量化工程实践调研：
@@ -6184,6 +6236,13 @@ def collect_all_data():
             data[STRATEGY_QUANT_SOURCE] = sq
             time.sleep(0.2)
 
+    # 🐟 低频小因子（港股五因子 → 推荐 20 只）：独立数据线，取不到就整栏缺席。
+    if LOWFREQ_ENABLED:
+        lf = fetch_lowfreq_factors(date_str=datetime.now(CST).strftime("%Y%m%d"))
+        if lf is not None:
+            data[LOWFREQ_SOURCE_NAME] = lf
+            time.sleep(0.2)
+
     # === 新增：全栏目新鲜度检查 ===
     print("\n🕐 正在检查全栏目数据新鲜度...")
     try:
@@ -6515,6 +6574,8 @@ _SECTION_ICON_META = {
     "SECTOR ROTATION": ("↻", "ROTATE", C_CYAN, "#092836"),
     # 申万一级行业轮动（2026-10-04 移植）：与港股板块轮动的 ↻/ROTATE 区分开
     "INDUSTRY ROTATION": ("◑", "INDUST", C_LEMON, C_FLAT_BG),
+    # 低频小因子（2026-10-28）：慢速 = 沙漏，小因子 = 下标 5；配色沿用青系
+    "LOWFREQ FACTORS": ("⧗", "LOW-FQ", C_CYAN, "#092836"),
     # 情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」更名）：
     # 18 家内地财经媒体的主题热度 + 情绪/风险因子榜，✦ = 热度
     "MAINLAND HOTLIST": ("✦", "SENT-HOT", C_AMBER, C_FLAT_BG),
@@ -8663,6 +8724,9 @@ SECTION_TITLE_WEEKLY_FORECAST = "每日趋势量化推演"
 SECTION_TITLE_SECTOR_ROTATION = "【滚滚翻车鱼】板块轮动量化策略"
 # 2026-10-04 新增：原「每日量化策略（行业轮动）」的申万一级 31 行业版本（PR #84 的移植版）
 SECTION_TITLE_INDUSTRY_ROTATION = "【巡游旗鱼】申万一级行业轮动"
+# 2026-10-28 新增：低频小因子量化策略（小市值 / 短期反转 / 动量 12-1 / 换手率 / 价值 EP）。
+# 「慢游」= 低换手 + 长持有期，「小丑鱼」= 小市值因子；两者都是本栏的方法论意象。
+SECTION_TITLE_LOWFREQ = "【慢游小丑鱼】低频小因子量化策略"
 SECTION_TITLE_POLICY = "【深海肥蓝鲸】政策因子"
 SECTION_TITLE_TREND = "【深海大鲨鱼】趋势跟踪"
 SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
@@ -8718,6 +8782,9 @@ REPORT_STRATEGY_SECTIONS = (                   # ④' 策略量化（图中 4 �
 )
 REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
     "STRATEGY READ", "UZI TREND", "SECTOR ROTATION", "INDUSTRY ROTATION",
+    # 2026-10-28 新增：低频小因子（港股五因子横截面 → 推荐 20 只）；
+    # 排在「板块 / 行业轮动」之后：先看板块与行业往哪走，再落到低频个股清单。
+    "LOWFREQ FACTORS",
     *REPORT_STRATEGY_SECTIONS,
 )
 # 2026-10-02 起 GLOBAL HEADLINES（【无敌帝王蟹】全球头条）与 HK GURU CHANNELS
@@ -10333,6 +10400,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 策略大类量化（图中 4 大类 6 细分）：内部衍生自基准指数日线；取不到时在「数据覆盖」点名。
     if isinstance(data.get(STRATEGY_QUANT_SOURCE), dict):
         source_items.append((STRATEGY_QUANT_SOURCE, data[STRATEGY_QUANT_SOURCE]))
+    # 🐟 低频小因子（2026-10-28）：独立数据线（港股快照 + 日线），存在即按需进审计。
+    if isinstance(data.get(LOWFREQ_SOURCE_NAME), dict):
+        source_items.append((LOWFREQ_SOURCE_NAME, data[LOWFREQ_SOURCE_NAME]))
     # 前瞻日程（「时间节点」栏目）：关掉采集时不进审计，总源数保持不变。
     # 它是「今日抓取的日程快照」而非当天发布的内容，因此不计入当天源（当天检验不受影响）。
     if isinstance(data.get("财经日历"), dict):
@@ -10450,6 +10520,24 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             blocks["INDUSTRY ROTATION"] = (
                 "INDUSTRY ROTATION", SECTION_TITLE_INDUSTRY_ROTATION, industry_html,
                 kit.source_badge(industry_src), _short_source(industry_src))
+
+    # 🐟 【慢游小丑鱼】低频小因子量化策略（2026-10-28 新增）：
+    #     港股五因子横截面（小市值 / 短期反转 / 动量 12-1 / 换手率 / 价值 EP）→ 推荐 20 只。
+    #     取不到快照或日线时整栏缺席；渲染异常只影响本栏，绝不拖垮整份日报。
+    lf_src = data.get(LOWFREQ_SOURCE_NAME) or {}
+    try:
+        lf_res = lf_src.get("result") if isinstance(lf_src, dict) else None
+        if _lowfreq is not None and isinstance(lf_res, dict) and lf_res.get("available"):
+            lf_html = _lowfreq.render(lf_res, kit, plain=PLAIN())
+            if lf_html:
+                blocks["LOWFREQ FACTORS"] = (
+                    "LOWFREQ FACTORS", SECTION_TITLE_LOWFREQ, lf_html,
+                    kit.source_badge(lf_src),
+                    "" if PLAIN() else
+                    "港股五因子横截面：小市值（先剥壳价值）/ 短期反转（当镜子）/ 12-1 动量 / "
+                    "低换手 / 同行业 EP → 推荐 20 只（规则合成，非投资建议）")
+    except Exception as _lf_exc:  # 单栏失败不拖垮整份日报
+        print(f"  ⚠️ 低频小因子渲染异常：{_lf_exc}")
 
     # 📊 策略大类量化（图中 4 大类 6 细分，2026-10-21 新增）：总览 + 4 大类。
     #     内部衍生、可离线兜底；只读基准指数日线，不计入当天检验 / 总源审计。
@@ -10711,6 +10799,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "media_risk": media_risk_result,
             "sector_rotation": (rotation_src.get("result") or {}) if isinstance(rotation_src, dict) else {},
             "industry_rotation": (industry_src.get("result") or {}) if isinstance(industry_src, dict) else {},
+            # 🐟 低频小因子：与正文 blocks["LOWFREQ FACTORS"] 用的是同一份结果
+            "lowfreq": (lf_src.get("result") or {}) if isinstance(lf_src, dict) else {},
             "macd": ai_result.get("macd") if isinstance(ai_result, dict) else {},
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
@@ -14040,6 +14130,7 @@ DOSSIER_ICONS = {
     "LIQUIDITY FLOW": ("≈", D_GREEN_INK, "●", D_BLACK),
     "SECTOR ROTATION": ("◐", D_GREEN_INK, "▲", D_RED_INK),
     "INDUSTRY ROTATION": ("◆", D_RED_INK, "■", D_BLACK),
+    "LOWFREQ FACTORS": ("⧗", D_GREEN_INK, "5", D_RED_INK),
     "ECON CALENDAR": ("▦", D_GREEN_INK, "●", D_RED_INK),
     "POLICY SHOCK": ("§", D_RED_INK, "■", D_BLACK),
     "DATA AUDIT": ("✓", D_GREEN_INK, "■", D_RED_INK),
@@ -14443,6 +14534,7 @@ FORUM_ICONS = {
     "LIQUIDITY FLOW": ("💧", F_CYAN),
     "SECTOR ROTATION": ("🌀", F_ORANGE),
     "INDUSTRY ROTATION": ("🧭", F_ORANGE),
+    "LOWFREQ FACTORS": ("⏳", F_CYAN),   # 低频 = 慢；五个小因子 = 细水长流
     "ECON CALENDAR": ("📅", F_CYAN),
     "POLICY SHOCK": ("📄", F_ORANGE),       # 橙色文档：政策
     "DATA AUDIT": ("✅", F_GREEN),          # 绿色勾号：核对通过（与涨跌无关）

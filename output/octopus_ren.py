@@ -539,6 +539,43 @@ def _ren_industry_rotation(ctx):
     return text
 
 
+def _ren_lowfreq_factors(ctx):
+    """🐟【慢游小丑鱼】低频小因子：先报镜子体温，再报推荐名单的数量与分布。
+
+    数字全部来自正文同一份结果（ctx["lowfreq"]）；不额外计算、不补造。
+    反转/动量在本栏的定位是「市场体温计」，所以结论先讲冷热，再讲名单。
+    """
+    result = ctx.get("lowfreq") or {}
+    if not result.get("available"):
+        return ""
+    top = [row for row in (result.get("top") or []) if isinstance(row, dict)]
+    mirrors = result.get("mirrors") or {}
+    universe = result.get("universe") or {}
+    rev_med = mirrors.get("reversal_median")
+    up_share = mirrors.get("reversal_up_share")
+    text = ""
+    if isinstance(rev_med, (int, float)):
+        mood = "近一月整体偏暖" if rev_med > 0 else "近一月整体偏冷"
+        text = f"先当镜子照一眼：港股样本近 21 日 log 收益中位数 {float(rev_med):+.1f}%，{mood}"
+        if isinstance(up_share, (int, float)):
+            text += f"（{float(up_share):.0f}% 的股票近一月上涨）"
+        text += "。"
+    if top:
+        text += (f"按小市值、短期反转、12-1 动量、低换手与同行业 EP 五因子加权，"
+                 f"{int(universe.get('ranked') or 0)} 只可排序标的里选出 {len(top)} 只。")
+        pf = result.get("portfolio") or {}
+        ind = (pf.get("top_industry") or [None, 0])[0]
+        if ind:
+            text += f"组合最大行业是{ind}。"
+    else:
+        text += "本次没有标的凑齐足够因子分位，所以不硬排名单。"
+    if result.get("synthetic"):
+        text += "本次为合成演示序列，只演示版面，不可据此交易。"
+    text += "低频小因子赚的是「相对便宜 + 相对冷清」的慢钱，不是短线信号；名单与缺项见正文。"
+    return text
+
+
+
 def _ren_macd_only(macd):
     """跨市场策略缺席时，用同栏已有 MACD 结果给出不越界的后备结论。"""
     if not (isinstance(macd, dict) and macd.get("available")):
@@ -928,6 +965,8 @@ _GENERATORS = {
     "TREND TRACKING": _ren_trend,
     "SECTOR ROTATION": _ren_sector_rotation,
     "INDUSTRY ROTATION": _ren_industry_rotation,
+    # 低频小因子（2026-10-28）：镜子 → 名单 → 组合分布
+    "LOWFREQ FACTORS": _ren_lowfreq_factors,
     "GLOBAL HEADLINES": _ren_global_headlines,
     "EASTMONEY WIRE": _ren_eastmoney_wire,
     "HK GURU CHANNELS": _ren_guru,
@@ -993,6 +1032,7 @@ def _garnish_obj(kicker, ctx):
         "TREND TRACKING": ctx.get("trend"),
         "SECTOR ROTATION": ctx.get("sector_rotation"),
         "INDUSTRY ROTATION": ctx.get("industry_rotation"),
+        "LOWFREQ FACTORS": ctx.get("lowfreq"),
         "GLOBAL HEADLINES": ctx.get("google"),
         "EASTMONEY WIRE": ctx.get("em"),
         "HK GURU CHANNELS": ctx.get("yt"),
