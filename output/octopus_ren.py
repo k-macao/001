@@ -560,6 +560,7 @@ def _ren_lowfreq_factors(ctx):
         if isinstance(up_share, (int, float)):
             text += f"（{float(up_share):.0f}% 的股票近一月上涨）"
         text += "。"
+    coverage = universe.get("bars_coverage")
     if top:
         text += (f"按小市值、短期反转、12-1 动量、低换手与同行业 EP 五因子加权，"
                  f"{int(universe.get('ranked') or 0)} 只可排序标的里选出 {len(top)} 只。")
@@ -567,6 +568,10 @@ def _ren_lowfreq_factors(ctx):
         ind = (pf.get("top_industry") or [None, 0])[0]
         if ind:
             text += f"组合最大行业是{ind}。"
+    elif result.get("publish") is False:
+        text += ("但这次名单不发：日线只覆盖合格池的 "
+                 + (f"{float(coverage):.0f}%" if isinstance(coverage, (int, float)) else "一部分")
+                 + "，残缺样本上挑出来的「小市值」多半只是「抓得到日线的大票」，凑够 20 只反而是误导。")
     else:
         text += "本次没有标的凑齐足够因子分位，所以不硬排名单。"
     if result.get("synthetic"):

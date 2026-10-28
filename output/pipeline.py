@@ -5283,9 +5283,16 @@ def fetch_lowfreq_factors(date_str=None):
             return _source_result(LOWFREQ_SOURCE_NAME, "unavailable", result=res,
                                   error=str(res.get("reason") or "数据不足"))
         uni = res.get("universe") or {}
-        print(f"  ✅ 低频小因子：快照 {uni.get('scanned', 0)} 只 → 可排序 {uni.get('ranked', 0)} 只"
-              f" · 推荐 {len(res.get('top') or [])} 只 · {res.get('as_of')} 收盘"
+        snap = res.get("snapshot") or {}
+        print(f"  ✅ 低频小因子：快照 {uni.get('scanned', 0)} 只 → 合格池 {uni.get('eligible', 0)} 只"
+              f" → 有日线 {uni.get('with_bars', 0)} 只（{(uni.get('bars_coverage') or 0):.0f}%）"
+              f" → 可排序 {uni.get('ranked', 0)} 只 · {res.get('as_of')} 收盘"
+              + (f" · 日线缺 {snap['bars_missing']} 只" if snap.get("bars_missing") else "")
               + ("（合成演示序列）" if res.get("synthetic") else ""))
+        if res.get("publish"):
+            print(f"     推荐 {len(res.get('top') or [])} 只（{res.get('publish_reason')}）")
+        else:
+            print(f"     ⚠️ 名单暂缓：{res.get('publish_reason')}（样本不足，不出版口径错位的名单）")
         # 内部衍生：读已收盘日线与当日快照，不计入「当天源」检验（snapshot）。
         return _source_result(LOWFREQ_SOURCE_NAME, "success", result=res,
                               content_date=res.get("as_of"), is_today=False, snapshot=True)
