@@ -24430,16 +24430,563 @@
    "ts": "2026-10-27 08:35",
    "date": "2026-10-27",
    "url": "https://finance.ifeng.com/c/8xZVjtUsl47"
+  },
+  {
+   "title": "A股午前急涨：创指半日收涨3%，人形机器人板块走强",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-10-28 12:42",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE5hdTNEMlA1Q2V4SVFQYURqU2lEc3NOOFBsSDZLOUFsWXZldGMtZmNMMnN1MXFPWER2SkVxNk5LR09CcHpRQlpfX3ltRkstcTRJUThHOHNicHR2MXAxVUZIOHRsdGk0dw?oc=5"
+  },
+  {
+   "title": "恒生科技指数高开0.78% MINIMAX-W、智谱涨超3%",
+   "source": "东方财富网",
+   "section": "全球头条",
+   "ts": "2026-10-28 09:45",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE1Cd2VCaTNGSFRYbXA2YWhFb2tON2Z3bDd3dzFLZnJzSTFrMDhnb09DV1BycWFnMy1qaG9zbE41ZS1zbUpWYngzVkFiZUpyNnFnVzdGd0NGbFJ2NVo4VjJ2VjFKZjJkQQ?oc=5"
+  },
+  {
+   "title": "广交会遇上APEC 广货凭什么走俏亚太",
+   "source": "中国新闻网",
+   "section": "全球头条",
+   "ts": "2026-10-28 10:42",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE9zR1VHdjl0OGRLUlVENVF4b200NjVtdGhSUGN5QVk1OTZac3ZRMTBMNllBeUR5U2dFWlJSMG1CS1NvZGZXNjBZRHVyanB3NjZELXBlZmtfMDlmZHM3YmF6RDlBcGFHU2FNMWc?oc=5"
+  },
+  {
+   "title": "韩国股市大涨 触发卖出限制措施 买方临时停牌激活",
+   "source": "中华网",
+   "section": "全球头条",
+   "ts": "2026-10-28 09:44",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1sRzkxWTdLanRVbm42SjZwWDJ2Vmcxd0xydjVuOEtRZDd1NS1aUmo1dEFkVVY4bzgtMTBRTjI4MHNzb09YM0NIWDhMZUI1MEl2dHYxczhzblRNdGdmYzVZVTRockdwMXF6OWNrN1V3Wmo?oc=5"
+  },
+  {
+   "title": "10月28日央行开展1510亿元7天期逆回购操作",
+   "source": "中国新闻网",
+   "section": "全球头条",
+   "ts": "2026-10-28 09:37",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1aTmk4S003SDIyNEtGSWY3UmZmSjJuMDdmSkkzcVlRcHZIcGU5TXVkZ0pjOVh4eHJOSWlwMXRaZTlSNGFPWl9UY1RYVlVCRloyejlXa2FkcGdhdFZEYVEweTdnUVlndExf?oc=5"
+  },
+  {
+   "title": "Anthropic招股书“刺激了贪婪”！CoreWeave领衔AI交易反弹",
+   "source": "华尔街见闻",
+   "section": "全球头条",
+   "ts": "2026-10-28 07:58",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE5lcEhJc3lfRzR0YS15Rmx4UVJNT28wTTB1SlZkMjJfZk42azJubjE2V3RpeTY3c1ZvNTlhbU1sRWVaVWM3Q1I0SUJQd1oxeUQ5ZWFz?oc=5"
+  },
+  {
+   "title": "SK海力士财报会实录：未来三年存储产能几近售罄 预计供需紧张延续至2030年",
+   "source": "财联社",
+   "section": "全球头条",
+   "ts": "2026-10-28 09:10",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE9lVzZ4a2xENWZZLUJsNUs0SXRQQTFHcEZUZ1l0Qi14MUZKaHVXTVYzWGUtc3JCRW83ZDZFRENPU0dUbkpBWGFKYg?oc=5"
+  },
+  {
+   "title": "哈萨克斯坦：需保障核电站100年的铀供应需求。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-28 14:32",
+   "date": "2026-10-28",
+   "url": "https://finance.sina.com.cn/7x24/"
+  },
+  {
+   "title": "【印度石油公司预计：印度汽油需求增速将于2035年见顶】印度最大炼油企业表示，随着电动两轮车以及燃气四轮车使用量上升开始抑制消费，印度汽油需求增速或将在2035年触顶",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-28 14:31",
+   "date": "2026-10-28",
+   "url": "https://finance.sina.cn/7x24/2026-10-28/detail-iniwuefw6644318.d.html"
+  },
+  {
+   "title": "【日韩股市集体收涨】日经225指数收涨1.08%，报63954.19点。韩国综指收涨6.63%，报6012.44点。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-28 14:30",
+   "date": "2026-10-28",
+   "url": "https://finance.sina.cn/7x24/2026-10-28/detail-iniwuefy3419756.d.html"
+  },
+  {
+   "title": "日立公司上半年净利润为4166.2亿日元，去年同期为4728.6亿日元。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-28 14:30",
+   "date": "2026-10-28",
+   "url": "https://finance.sina.cn/7x24/2026-10-28/detail-iniwuefw6643699.d.html"
+  },
+  {
+   "title": "野村控股第二季度净利润1,037.3亿日元，上年同期920.8亿日元。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-10-28 14:30",
+   "date": "2026-10-28",
+   "url": "https://finance.sina.cn/7x24/2026-10-28/detail-iniwuefw6643594.d.html"
+  },
+  {
+   "title": "【港股市況】恒指升約70點 滙豐、阿里巴巴反彈2% 渣打績後抽升8% ...",
+   "source": "香港经济日报 HKET·财经",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 02:10",
+   "date": "2026-10-28",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ae1974360854f7c927061bb44c4ce62&url=https%3a%2f%2finews.hket.com%2farticle%2f4215595%2f%25E3%2580%2590%25E6%25B8%25AF%25E8%2582%25A1%25E5%25B8%2582%25E6%25B3%2581%25E3%2580%2591%25E6%2581%2592%25E6%258C%2587%25E5%258D%2587%25E7%25B4%258470%25E9%25BB%259E%25E3%2580%2580%25E6%25BB%2599%25E8%25B1%2590%25E3%2580%2581%25E9%2598%25BF%25E9%2587%258C%25E5%25B7%25B4%25E5%25B7%25B4%25E5%258F%258D%25E5%25BD%25882-%25E3%2580%2580%25E6%25B8%25A3%25E6%2589%2593%25E7%25B8%25BE%25E5%25BE%258C%25E6%258A%25BD%25E5%258D%25878-%25EF%25BC%2588%25E4%25B8%258D%25E6%2596%25B7%25E6%259B%25B4%25E6%2596%25B0%25EF%25BC%2589&c=12850385644144559370&mkt=en-us"
+  },
+  {
+   "title": "Why Hong Kong developer CK Asset sold a mall at an ‘exceptionally cheap’ price",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 13:00",
+   "date": "2026-10-28",
+   "url": "https://www.scmp.com/business/article/3372389/why-hong-kong-developer-ck-asset-sold-mall-exceptionally-cheap-price"
+  },
+  {
+   "title": "Circuit board firm Dongshan Precision falls 0.12% after Hong Kong debut",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 10:07",
+   "date": "2026-10-28",
+   "url": "https://www.scmp.com/business/companies/article/3372364/chinese-circuit-board-firm-dongshan-precision-plunges-hong-kong-debut"
+  },
+  {
+   "title": "How Hong Kong went from a yuan gateway to a complete currency ecosystem",
+   "source": "南华早报 SCMP·Business",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 06:00",
+   "date": "2026-10-28",
+   "url": "https://www.scmp.com/business/banking-finance/article/3372292/how-hong-kong-went-yuan-gateway-complete-currency-ecosystem"
+  },
+  {
+   "title": "HKEX Expands Integrated Fund Platform with Launch of Platform and Nominee Services",
+   "source": "港交所·新闻稿",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 12:00",
+   "date": "2026-10-28",
+   "url": "https://www.hkex.com.hk/News/News-Release/2026/261028news?sc_lang=en"
+  },
+  {
+   "title": "Hong Kong lawmakers’ monthly pay tops HK$110K after unannounced 1.6% salary rise",
+   "source": "香港自由新闻 HKFP",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://hongkongfp.com/2026/10/28/hong-kong-lawmakers-monthly-pay-tops-hk110k-after-unannounced-1-6-salary-rise/"
+  },
+  {
+   "title": "科创板IPO的这一轮集中终止，不仅在A股，港股也激增",
+   "source": "财联社·电报",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 07:33",
+   "date": "2026-10-28",
+   "url": "https://www.cls.cn/detail/2517671"
+  },
+  {
+   "title": "港元拆息个别发展 一个月息由跌转升报2.71%",
+   "source": "智通财经·推荐",
+   "section": "港股新闻源头",
+   "ts": "2026-10-27 22:23",
+   "date": "2026-10-27",
+   "url": "https://www.zhitongcaijing.com/content/detail/1513983.html"
+  },
+  {
+   "title": "中原：香港首9个月楼价指数已累升7.08% 料第四季楼价可升2%至3%",
+   "source": "智通财经·推荐",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 01:12",
+   "date": "2026-10-28",
+   "url": "https://www.zhitongcaijing.com/content/detail/1514039.html"
+  },
+  {
+   "title": "莱坊：料香港2026年楼价同比升8-10%",
+   "source": "智通财经·推荐",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 01:09",
+   "date": "2026-10-28",
+   "url": "https://www.zhitongcaijing.com/content/detail/1514037.html"
+  },
+  {
+   "title": "恒生科技指数上涨1.8%，光通信板块涨幅居前｜港股午评 - 21财经",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 12:18",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMijwFBVV95cUxPY3Exc0Z4LW93OENuMnJIcGVkc3lRUzlXMDJ3WW1nTUZTS1VyQ1NZelJuQnJ0MHRpWDBEZm9iZ0QtNW1oYkZLNW9oLW05YzlyTGdpNzRGT1ZMaG9DcDU5aWdkU1J5MWxMUEJHb041TkNGNUVoVnNJdzlnX0U3UXVfSlVVOHY4QXhIS1RvRGx3QQ?oc=5"
+  },
+  {
+   "title": "港股午评：恒指涨0.43% 科指涨1.8% 科网股普涨 存储概念股走强 - 新浪财经",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 12:01",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMi7AFBVV95cUxQUTE3NWpBUktyT1lkMVZkTEhZbUZqS0pYa3RLaDRtMDY3Tk9lNlBSdFhzX3RTMUtxZENndmVoQlFTZy1UQnJmcm1WN2hfNjNvNEpNekFLWU81VDJWVktNWFU4WGQ0ajM4UWZjSEd5REt6WTdEN2ZFYU9scjYybXVjWGt1QjE4eUV0WXN0eE5yUGhacG1uNGZ4MTVIVVg5ZTRIdnRTdEZ4OF9yc2ZUQm56NzVydVFTNFcyTW5LcW1SVHJxS0xpeW5pSnoyb2dvcWZiSWNsOXFCS29OZ3FqSDFRa3lmbURKbFlINzJ5YQ?oc=5"
+  },
+  {
+   "title": "港股存储概念盘初上扬 南方两倍做多三星电子涨超18% - 观点网",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 11:27",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE1McDVkVTlSS1ZweWhFNTZ4MUJURGh3UlJVTnNxT3R0ZEptclhvUGdBUVBMU296ZHR3aWswRWhLT0xiUmxZcmNBOWdIQW5XRHhxXzJ4UEJrUVFwYWFOWThoa0Nn?oc=5"
+  },
+  {
+   "title": "港股存储概念集体飙涨，南方两倍做多三星电子涨超18%，南方东英SK ...",
+   "source": "中国基金报",
+   "section": "港股新闻源头",
+   "ts": "2026-10-27 23:23",
+   "date": "2026-10-27",
+   "url": "https://www.chnfund.com/article/AR6f454ef1-33b1-0768-5d7d-3a24927196c3"
+  },
+  {
+   "title": "80亿港元极智嘉，押注物流机器人",
+   "source": "21世纪经济报道",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 07:00",
+   "date": "2026-10-28",
+   "url": "https://m.21jingji.com/article/20261028/herald/cf89be5a11d388e5225f1eb6da54098d.html"
+  },
+  {
+   "title": "汇丰控股三季度税前利润增32%，港股跌超5%",
+   "source": "21世纪经济报道",
+   "section": "港股新闻源头",
+   "ts": "2026-10-27 16:31",
+   "date": "2026-10-27",
+   "url": "https://m.21jingji.com/article/20261027/herald/d8034ebb5a74bfd0ffb2d9fa7b9fb21e.html"
+  },
+  {
+   "title": "港股午评：MINIMAX大涨超7%，阿里、联想、百度集体上涨",
+   "source": "凤凰网财经",
+   "section": "港股新闻源头",
+   "ts": "2026-10-27 23:11",
+   "date": "2026-10-27",
+   "url": "https://finance.ifeng.com/c/8xaVEOMEzJa"
+  },
+  {
+   "title": "泡泡玛特股价下跌6%，Labubu热潮降温致第三季度销售额大幅下滑",
+   "source": "Investing.com·市场新闻",
+   "section": "港股新闻源头",
+   "ts": "2026-10-27 23:33",
+   "date": "2026-10-27",
+   "url": "https://cn.investing.com/news/stock-market-news/article-3631665"
+  },
+  {
+   "title": "Hong Kong Stocks Hold Steady - TradingView",
+   "source": "Google 新闻·英文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-28 10:12",
+   "date": "2026-10-28",
+   "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQaW5yX0lneUk1WDZOa0thczVTdGRROVJOb0VTaXBVQTQzTUZtRm16SmFqNHVTOHJWMVNtWmtpUURtMVk4bllzQkNiVUZFX3lqSGtTWnRIM2RzMmpOQjlZNnl1R0NDcGRJelR4cWdJQmxNalltdWVBeHdMNGpHNWR4NVZBbGpvZw?oc=5"
+  },
+  {
+   "title": "HSBC plans to absorb Hang Seng investment unit – report - Yahoo Finance",
+   "source": "Google 新闻·英文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-10-27 19:32",
+   "date": "2026-10-27",
+   "url": "https://news.google.com/rss/articles/CBMifkFVX3lxTE5FTk9KeHgwaHUwbkI5SEFOaDdTZUZSMVdwbzBDY0QtcXVEUlFTVmphUGFBd2pRX2tfS21HV2ZidEY0R2M0U1I2ZmdXLVZKcTFHQjQ3Y19zc0JZcDY3V1hMRXdUNDRWZ1NRMzdMdklUdTdYS2tjeXZxWURuZEl0QQ?oc=5"
+  },
+  {
+   "title": "第140届广交会第二期圆满收官",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 23:06",
+   "date": "2026-10-27",
+   "url": "https://www.cs.com.cn/xwzx/01/2026/10/28/detail_2026102810047847.html"
+  },
+  {
+   "title": "“蛟龙”号实现迭代升级 顺利完成7000米级海试",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 20:01",
+   "date": "2026-10-27",
+   "url": "https://www.cs.com.cn/xwzx/01/2026/10/28/detail_2026102810047793.html"
+  },
+  {
+   "title": "2026国际（武汉）智能建造产业博览会开幕",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 18:40",
+   "date": "2026-10-27",
+   "url": "https://www.cs.com.cn/xwzx/01/2026/10/28/detail_2026102810047755.html"
+  },
+  {
+   "title": "航运主业发力兑现收益 海航科技第三季度扣非净利润同比增长368.68%",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:01",
+   "date": "2026-10-28",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ae1974d471c45c3ad074f133265f02f&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fgongsi%2f2026-10-28%2fA1793161532489.html&c=885856140671048846&mkt=en-us"
+  },
+  {
+   "title": "人身险9月保费收入同比增长9.7%",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 03:38",
+   "date": "2026-10-28",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ae1974d471c45c3ad074f133265f02f&url=http%3a%2f%2fwww.zqrb.cn%2fjrjg%2finsurance%2f2026-10-28%2fA1793091483077.html&c=10275539752808330&mkt=en-us"
+  },
+  {
+   "title": "月内32只FOF启动募集发行 数量创历史单月新高",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 03:38",
+   "date": "2026-10-28",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6ae1974d471c45c3ad074f133265f02f&url=http%3a%2f%2fwww.zqrb.cn%2ffund%2fjijindongtai%2f2026-10-28%2fA1793091483073.html&c=10584500253961243774&mkt=en-us"
+  },
+  {
+   "title": "A股三大指数大幅走强，创业板指拉升涨至3%；人形机器人板块爆发 ...",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 23:23",
+   "date": "2026-10-27",
+   "url": "https://www.chnfund.com/article/AR1e2c9ab1-c984-1c7c-4f70-3a2492cb1616"
+  },
+  {
+   "title": "A股三大指数集体高开，科技股集体走强，PCB板块飙涨",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 21:08",
+   "date": "2026-10-27",
+   "url": "https://www.chnfund.com/article/ARf692888c-bfc5-261b-2113-3a2492557cfb"
+  },
+  {
+   "title": "丹诺医药-B盘中跌超6%，新药试验首例入组并拟回购股份",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:24",
+   "date": "2026-10-28",
+   "url": "https://www.caiwennews.com/article/1672407.shtml"
+  },
+  {
+   "title": "LG电子数据中心冷却订单超3万亿韩元，拿下英伟达 DSX Ready 认证",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:28",
+   "date": "2026-10-28",
+   "url": "https://www.caiwennews.com/article/1672413.shtml"
+  },
+  {
+   "title": "神冠控股盘中涨超11%，续签四项持续关连交易协议",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:31",
+   "date": "2026-10-28",
+   "url": "https://www.caiwennews.com/article/1672414.shtml"
+  },
+  {
+   "title": "多重因素交织 中药板块前三季度整体业绩承压",
+   "source": "经济参考网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://www.jjckb.cn/20261028/d3571de8add24a78a6bb8c5364262018/c.html"
+  },
+  {
+   "title": "高原追梦人｜种草的人：鲍奎和他的七万亩“绿色账本”",
+   "source": "经济参考网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://www.jjckb.cn/20261028/6a143b97169941c1b199529c42937970/c.html"
+  },
+  {
+   "title": "影驰澄清：品牌运营正常，所有生产设施均未关闭",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 14:31",
+   "date": "2026-10-28",
+   "url": "https://www.ithome.com/1/018/904.htm"
+  },
+  {
+   "title": "每秒走 0.4 个体长，步行型生物机器人速度纪录被刷新",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 14:30",
+   "date": "2026-10-28",
+   "url": "https://www.ithome.com/1/018/903.htm"
+  },
+  {
+   "title": "中国品牌纯电单一车型累计销量冠军：五菱宏光 MINIEV 累计销量破 200 万辆",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 14:28",
+   "date": "2026-10-28",
+   "url": "https://www.ithome.com/1/018/902.htm"
+  },
+  {
+   "title": "新三板创新层公司交设股份大宗交易折价28.91%，成交金额22.75万元",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:09",
+   "date": "2026-10-28",
+   "url": "https://m.nbd.com.cn/articles/2026-10-28/4622591.html"
+  },
+  {
+   "title": "双11前，菜鸟物流科技连续在国内交付两个服装攀爬机器人仓",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 18:17",
+   "date": "2026-10-27",
+   "url": "https://m.nbd.com.cn/articles/2026-10-27/4620685.html"
+  },
+  {
+   "title": "新三板基础层公司金华机械大宗交易溢价49.5%，成交金额45万元",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:11",
+   "date": "2026-10-28",
+   "url": "https://m.nbd.com.cn/articles/2026-10-28/4622601.html"
+  },
+  {
+   "title": "酒瓶减重、纸箱再生，酒企包材管理成效如何？｜酒业ESG全扫描",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://m.21jingji.com/article/20261028/herald/b18008f8edcef7e4a92af4b8566612f6.html"
+  },
+  {
+   "title": "国家级专精专新“小巨人”企业+1，深圳龙岗国企园区再添生力军",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://m.21jingji.com/article/20261028/herald/86841d5ee15e1e2cd4f83c25c1fbc3a4.html"
+  },
+  {
+   "title": "长鑫科技已被纳入上证综合指数，当前为指数第一大权重股",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://wap.stockstar.com/detail/IG2026102800027413"
+  },
+  {
+   "title": "科技赛道剧烈波动！资金逆向布局：两类主动权益基金三季度获大额 ...",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 00:54",
+   "date": "2026-10-28",
+   "url": "https://wap.stockstar.com/detail/IG2026102800027449"
+  },
+  {
+   "title": "前三季度珠海工业增速居珠三角首位，集成电路增长136.7%",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 00:58",
+   "date": "2026-10-28",
+   "url": "https://wap.stockstar.com/detail/IG2026102800027286"
+  },
+  {
+   "title": "懂企业、能干活、助决策：灵基如何把AI变成组织提效的生产力",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 22:36",
+   "date": "2026-10-27",
+   "url": "https://news.hexun.com/2026-10-28/225184710.html"
+  },
+  {
+   "title": "14万列新里程碑，钢铁驼队畅通亚欧开放大道",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 21:36",
+   "date": "2026-10-27",
+   "url": "https://news.hexun.com/2026-10-28/225185531.html"
+  },
+  {
+   "title": "腾讯《FCONLINE》《FC足球世界》下架姆巴佩相关球员素材",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 22:32",
+   "date": "2026-10-27",
+   "url": "https://news.hexun.com/2026-10-28/225185513.html"
+  },
+  {
+   "title": "公募“顶流”三季度调仓路径曝光：杨宗昌大换仓，刘彦春减持医药 ...",
+   "source": "时代财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 19:11",
+   "date": "2026-10-27",
+   "url": "https://www.tfcaijing.com/article/page/43707133472b4d5a576a5756666657324b6f77626b413d3d"
+  },
+  {
+   "title": "大额存单“重出江湖”，储户该不该跟着抢",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:00",
+   "date": "2026-10-28",
+   "url": "https://www.eeo.com.cn/2026/1028/1077076.shtml"
+  },
+  {
+   "title": "A100ETF易方达份额规模双增近三年，近一年跌11.88%现中风险区",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:16",
+   "date": "2026-10-28",
+   "url": "https://www.eeo.com.cn/2026/1028/1077442.shtml"
+  },
+  {
+   "title": "10月27日中闽能源主力资金净流出 近5日震荡弱于大盘",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:13",
+   "date": "2026-10-28",
+   "url": "https://www.eeo.com.cn/2026/1028/1077438.shtml"
+  },
+  {
+   "title": "北魏平城：再现拓跋王都中的北魏群像",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 00:43",
+   "date": "2026-10-28",
+   "url": "https://finance.ifeng.com/c/8xaeUR2u02v"
+  },
+  {
+   "title": "大分化，最新31省GDP，又变了",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-27 22:53",
+   "date": "2026-10-27",
+   "url": "https://finance.ifeng.com/c/8xaUIAaFSD6"
+  },
+  {
+   "title": "A股，重大利好",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-10-28 01:19",
+   "date": "2026-10-28",
+   "url": "https://finance.ifeng.com/c/8xaesw290yt"
   }
  ],
- "updated_cst": "2026-10-28 02:32:38",
+ "updated_cst": "2026-10-28 14:35:11",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-28 02:32:29",
+  "ran_at": "2026-10-28 14:34:08",
   "cutoff": "2026-10-27",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
-  "fqt": null,
-  "reason": "行业日K接口未返回数据（东财前复权/不复权两种口径均无有效日线，申万官方源亦无数据）"
+  "fqt": "0",
+  "kline_series": 31,
+  "sources": {
+   "eastmoney": 25,
+   "eastmoney_mirror": 6
+  },
+  "missing": [],
+  "em_mirror": [
+   "BK0433",
+   "BK0436",
+   "BK0438",
+   "BK1201",
+   "BK1212",
+   "BK1217"
+  ],
+  "asof": "2026-10-27",
+  "asof_hits": 31,
+  "scored": 31,
+  "required": 19,
+  "state": "reused",
+  "holdings": 5
  },
  "industry_rotation": {
   "month": "2026-10",
