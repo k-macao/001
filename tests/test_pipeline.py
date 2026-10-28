@@ -4718,11 +4718,43 @@ class SectionCategoryRenameTests(unittest.TestCase):
         """五个主题都必须走分组渲染入口，否则分类条会整组消失。"""
         source = (pathlib.Path(__file__).resolve().parent.parent / "output" / "pipeline.py"
                   ).read_text(encoding="utf-8")
+        # 只数真实调用点（文档 / 注释里提到函数名不算）：五主题各一处
+        self.assertEqual(source.count("def render_section_sequence("), 1)
+        self.assertEqual(source.count("for banner, section in render_section_sequence("), 5)
         # 4 个主题从 sections[1:] 起渲染（卷首单独出条）+ pixel 从 sections 起渲染
         self.assertEqual(source.count("render_section_sequence(sections[1:]"), 4)
         self.assertEqual(source.count("render_section_sequence(sections, PIXEL_KIT"), 1)
-        self.assertEqual(source.count("render_section_sequence("), 6)   # + 函数定义本身
         self.assertIn("_first_section_banner", source)
+
+class ReportFullWidthTests(unittest.TestCase):
+    """2026-10-28 按用户要求「最大化宽度」：推送页不再居中限宽 980px。
+
+    五个主题的外层容器与推送精简版共用 REPORT_WIDTH_STYLE，铺满容器；
+    版面宽度回退到 980px 会让宽屏阅读时两侧大面积留白，这里守住不许回退。
+    """
+
+    def _data(self):
+        return EconCalendarTests()._data()
+
+    def test_width_constant_is_full_width(self):
+        self.assertEqual(pipeline.REPORT_WIDTH_STYLE,
+                         "max-width:100%;width:100%;margin:0;")
+
+    def test_all_five_themes_render_full_width(self):
+        data = self._data()
+        for theme in ("lime", "guizang", "dossier", "forum", "pixel"):
+            with self.subTest(theme=theme):
+                html = pipeline.generate_report(data, "2026年9月28日 · 周一", "20260928",
+                                                theme=theme)
+                self.assertIn(pipeline.REPORT_WIDTH_STYLE, html)
+                self.assertNotIn("max-width:980px", html, "版面宽度不得回退到居中限宽")
+                self.assertNotIn("980px", html)
+
+    def test_compact_push_html_is_full_width(self):
+        html = pipeline.generate_report(self._data(), "2026年9月28日 · 周一", "20260928")
+        compact = pipeline._compact_html_for_push(html)
+        self.assertIn(pipeline.REPORT_WIDTH_STYLE, compact)
+        self.assertNotIn("980px", compact)
 
 
 if __name__ == "__main__":

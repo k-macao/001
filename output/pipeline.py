@@ -455,6 +455,14 @@
       · 概率数字仍在「【推演】七日走势」与「【推演】资金流动性」如实展示，口径 / 留痕 /
         结算不变；历史归档日报按惯例不改写。
 
+  36. 推送页版面最大化宽度（2026-10-28 按用户要求「最大化宽度」）：
+      · 五个主题的外层容器与推送精简版（_compact_html_for_push）原先都居中限宽 980px，
+        宽屏 / 平板上两侧大片留白；现统一改为 REPORT_WIDTH_STYLE =
+        "max-width:100%;width:100%;margin:0;"，铺满容器，手机端仍是 100% 视口宽；
+      · 内层表格本来就是 width="100%!important"，不需要跟着改；固定像素宽只留在
+        图标 / 序号那种小格子（width="22"/"32"/"52"），拉伸时不影响排版；
+      · 回归见 tests/test_pipeline.py::ReportFullWidthTests（五主题 + 精简版均不得出现 980px）。
+
   35. 栏目按内容分类重命名 + 正文分类分组条（2026-10-28 按用户要求，Q1=A / Q2=插 / Q3=低频五因子选股）：
       · **标题规则**：全部栏目统一成「【分类】内容名」，生物名退出主标题（只保留在各主题
         的图标位 / 徽标位）；策略大类用层级写法【策略·权益】/【策略·债券】/【策略·商品】/
@@ -6410,6 +6418,10 @@ GZ_PRIMARY = GZ_KLEIN
 GZ_PRIMARY_HOVER = GZ_KLEIN_DEEP
 GZ_PRIMARY_LIGHT = GZ_KLEIN_WASH
 REPORT_TITLE = "章鱼 AI · 上水日报"
+# 版面宽度（2026-10-28 按用户要求「最大化宽度」）：推送页不再居中限宽 980px，
+# 改为铺满容器——手机本来就是 100% 视口宽，宽屏（微信读书 / 平板 / 桌面浏览器）
+# 不再两侧留白。五个主题的外层容器与推送精简版共用这一条，避免各主题各写一份。
+REPORT_WIDTH_STYLE = "max-width:100%;width:100%;margin:0;"
 # 说明（副标题）：刊头标题下方一行，页面 <meta name="description"> 与控制台同用
 REPORT_TAGLINE = "每日上水，新鲜活泼"
 # 微信推送标题前缀（2026-10-13 改版，见模块说明 28）：「[OCTOPUS] + 刊头同名」，
@@ -14505,7 +14517,7 @@ def _dossier_html_frame(masthead, first_section, content_html, footer_text,
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{D_PAPER}" style="margin:0;padding:0;background:{D_PAPER};color:{D_INK};font-family:{D_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:980px;margin:0 auto;padding:16px 8px 0;background:{D_PAPER};color:{D_INK};font-family:{D_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="{REPORT_WIDTH_STYLE}padding:16px 8px 0;background:{D_PAPER};color:{D_INK};font-family:{D_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -14888,7 +14900,7 @@ def _forum_html_frame(masthead, first_section, content_html, footer_text,
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{F_BG}" style="margin:0;padding:0;background:{F_BG};color:{F_INK};font-family:{F_FONT};font-size:{GZ_FS_BODY}px;line-height:1.7;color-scheme:dark;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:980px;margin:0 auto;padding:14px 8px 0;background:{F_BG};color:{F_INK};font-family:{F_FONT};font-size:{GZ_FS_BODY}px;line-height:1.7;color-scheme:dark;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="{REPORT_WIDTH_STYLE}padding:14px 8px 0;background:{F_BG};color:{F_INK};font-family:{F_FONT};font-size:{GZ_FS_BODY}px;line-height:1.7;color-scheme:dark;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -15139,7 +15151,7 @@ def _lime_html_frame(masthead, first_section, content_html, footer_text,
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{L_BG}" style="margin:0;padding:0;background:{L_BG};color:{L_INK};font-family:{L_FONT};font-size:{GZ_FS_BODY}px;line-height:1.68;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:980px;margin:0 auto;padding:16px 8px 0;background:{L_BG};color:{L_INK};font-family:{L_FONT};font-size:{GZ_FS_BODY}px;line-height:1.68;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="{REPORT_WIDTH_STYLE}padding:16px 8px 0;background:{L_BG};color:{L_INK};font-family:{L_FONT};font-size:{GZ_FS_BODY}px;line-height:1.68;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -15510,7 +15522,7 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
 <title>{REPORT_TITLE}</title>
 </head>
 <body bgcolor="{GZ_PAPER}" style="margin:0;padding:0;background:{GZ_PAPER};color:{GZ_INK};font-family:{GZ_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
-<div style="max-width:980px;margin:0 auto;padding:16px 8px 0;background:{GZ_PAPER};color:{GZ_INK};font-family:{GZ_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
+<div style="{REPORT_WIDTH_STYLE}padding:16px 8px 0;background:{GZ_PAPER};color:{GZ_INK};font-family:{GZ_FONT};font-size:{GZ_FS_BODY}px;line-height:1.75;color-scheme:light;-webkit-text-size-adjust:100%;word-break:break-word;overflow-wrap:break-word;">
 
 {masthead}
 
@@ -15575,7 +15587,7 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
 </head>
 <body style="margin:0;padding:0;background:{C_BG};font-family:{FONT};color:{C_INK};font-size:13px;line-height:1.7;-webkit-text-size-adjust:100%;">
 
-<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;max-width:980px;margin:0 auto;background:{C_BG};">
+<table width="100%" cellpadding="0" cellspacing="0" style="border-collapse:collapse;{REPORT_WIDTH_STYLE}background:{C_BG};">
 <tr><td style="padding:8px 6px;">
 
 <!-- 外框：像素终端窗口 -->
@@ -15896,7 +15908,7 @@ def _compact_html_for_push(html):
         '<title>章鱼 AI · 上水日报（精简版）</title></head>'
         '<body bgcolor="#FFFFFF" style="margin:0;padding:8px 6px;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
         'font-size:15px;line-height:1.7;color:#111;background:#FFFFFF;color-scheme:light;">'
-        '<div style="max-width:980px;margin:0 auto;font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
+        '<div style="' + REPORT_WIDTH_STYLE + 'font-family:-apple-system,BlinkMacSystemFont,Arial,sans-serif;'
         'font-size:15px;line-height:1.7;color:#111;background:#FFFFFF;color-scheme:light;">'
         '<table width="100%" cellpadding="6" cellspacing="0" bgcolor="#FFFFFF" '
         'style="width:100%!important;border-collapse:collapse;background:#FFFFFF;color:#111;">'
