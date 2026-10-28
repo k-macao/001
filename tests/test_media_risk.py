@@ -26,7 +26,7 @@ class MediaRiskRuleTests(unittest.TestCase):
     def test_user_facing_section_name_is_warning_blowfish(self):
         self.assertEqual(
             pipeline.SECTION_TITLE_MEDIA_RISK,
-            "【警戒爆炸豚】媒体舆情风险点量化分析",
+            "【舆情】媒体风险",
         )
 
     def test_specific_event_taxonomy_and_generic_risk_not_overmatched(self):

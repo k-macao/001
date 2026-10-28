@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""【游资剑鱼】多专家流派趋势分析 —— 独立栏目的算法层（2026-10-11 新增）。
+"""【策略】多流派研判 —— 独立栏目的算法层（2026-10-11 新增）。
 
 方法来自 vendored 的 UZI-Skill 规则引擎（`tools/UZI-Skill`，MIT，上游提交见
 `tools/UZI-Skill/UPSTREAM.json`）：66 位评委 × 242 条量化规则 + `evaluate()` 加权打分 +
@@ -712,7 +712,7 @@ def render_trend(result, kit, *, limit=0, plain=False):
     engine = result.get("engine") or {}
     panel = result.get("panel") or {}
 
-    out = [kit.sub("多专家流派趋势分析 · 已收盘日线")]
+    out = [kit.sub("多流派研判 · 已收盘日线")]
     out.append(kit.kv([(
         "面板 / 定调",
         esc(f"{panel.get('investors', 0)} 位评委 × {result.get('rules_enabled', 0)} 条价格类规则 · "

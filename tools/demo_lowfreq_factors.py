@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """低频小因子栏目的离线版面预览（渲染证据）。
 
-用途：沙箱 / CI **没有外网**时，也能看到【慢游小丑鱼】低频小因子量化策略在 5 套主题
+用途：沙箱 / CI **没有外网**时，也能看到【策略】低频五因子选股在 5 套主题
 （lime / pixel / forum / dossier / guizang）下长什么样，以及口径、因子镜子、推荐名单、
 组合画像、剔除与风险披露是否都在。
 
@@ -67,7 +67,7 @@ def main():
     html = (
         '<!DOCTYPE html><html lang="zh-CN"><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
-        '<title>【慢游小丑鱼】低频小因子量化策略 · 版面预览</title></head>'
+        '<title>【策略】低频五因子选股 · 版面预览</title></head>'
         '<body style="margin:0;padding:16px;background:#FFFFFF;font-family:-apple-system,'
         'BlinkMacSystemFont,\'Segoe UI\',Roboto,\'Helvetica Neue\',Arial,\'PingFang SC\','
         '\'Hiragino Sans GB\',\'Microsoft YaHei\',sans-serif;">'

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""离线渲染证据生成器：把【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）放进一份日报里逐主题抽出可见位置。
+"""离线渲染证据生成器：把【舆情】媒体热点（原内地财经热点榜）放进一份日报里逐主题抽出可见位置。
 
 夹具来源：**2026-10-13 沙箱内逐源实测**抓到的真实标题 / 真实原文链接 / 真实时间戳
 （Bing News site: 检索 RSS，与 mainland_news_rss 数据线模板逐字一致；IT之家走实测可用的
@@ -234,7 +234,7 @@ def main():
     hotlist = pl.build_mainland_hotlist(data[pl.MAINLAND_NEWS_SOURCE_NAME],
                                         news_corpus=corpus, date_str=DATE_STR)
     lines = [
-        "# 样例：【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）在日报里的可见位置",
+        "# 样例：【舆情】媒体热点（原内地财经热点榜）在日报里的可见位置",
         "",
         f"> 📌 本页由 `tools/demo_mainland_hotlist.py` 生成。夹具是 **2026-10-13 沙箱内逐源实测**"
         f"抓到的真实标题 / 真实原文链接 / 真实时间戳（Bing News `site:` 检索 RSS；IT之家走官方订阅），"

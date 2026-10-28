@@ -36,7 +36,7 @@ from lib.investor_criteria import INVESTOR_RULES; print(sum(len(v) for v in INVE
 
 ## 谁在用它
 
-`output/octopus_quant/uzi_trend.py`（【游资剑鱼】UZI 趋势分析栏目的算法层）：
+`output/octopus_quant/uzi_trend.py`（【策略】多流派研判栏目的算法层）：
 
 ```
 本次已收盘日线（复用 MACD 栏目同一批，零新增联网）

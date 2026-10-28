@@ -568,7 +568,7 @@ class PipelineWiringTests(unittest.TestCase):
                                                       pipeline.GUIZANG_KIT), "")
 
     def test_report_contains_section_and_coverage_line(self):
-        """2026-09-30 合并：hk7 由独立栏目并入【嗜血大白鲨】逐日走势量化分析的栏内子块。"""
+        """2026-09-30 合并：hk7 由独立栏目并入【推演】七日走势的栏内子块。"""
         bars = synthetic_bars()
         with tempfile.TemporaryDirectory() as tmp, \
                 patch.object(pipeline, "REPORT_DIR", tmp), \
@@ -608,7 +608,7 @@ class PipelineWiringTests(unittest.TestCase):
         self.assertTrue(hasattr(pipeline, "fetch_sector_rotation"))
         self.assertTrue(hasattr(pipeline, "_render_sector_rotation"))
         self.assertEqual(pipeline.SECTION_TITLE_SECTOR_ROTATION,
-                         "【滚滚翻车鱼】板块轮动量化策略")
+                         "【策略】板块轮动")
         self.assertIn("SECTOR ROTATION", pipeline.REPORT_SECTION_ORDER)
         self.assertIn("SECTOR ROTATION", pipeline._SECTION_ICON_META)
         self.assertLess(pipeline.REPORT_SECTION_ORDER.index("WEEKLY FORECAST"),

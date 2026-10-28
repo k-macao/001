@@ -526,7 +526,7 @@ def render_hk_probability(res, kit):
 
 
 # ------------------------------------------------------------------
-# ③ 资金流动性分析
+# ③ 【推演】资金流动性
 # ------------------------------------------------------------------
 def render_liquidity(res, kit):
     """南向 / 北向 + 量能 + 深度 + 综合评分。"""
@@ -534,7 +534,7 @@ def render_liquidity(res, kit):
     liq = res.get("liquidity") or {}
     out = []
     if not liq.get("available"):
-        out.append(kit.note("本次未取到沪深港通 / 港股成交数据，资金流动性分析整体缺席。"))
+        out.append(kit.note("本次未取到沪深港通 / 港股成交数据，【推演】资金流动性整体缺席。"))
         return "".join(out)
 
     if liq.get("summary"):

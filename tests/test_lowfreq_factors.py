@@ -58,7 +58,9 @@ def snapshot_row(code, name, mcap, pe, price=10.0, industry="", float_ratio=0.6)
 def base_cfg(**over):
     cfg = lf.params()
     cfg.update({"universe": 320, "top_n": 20, "shell_floor": 3e8, "min_amount": 1e7,
-                "ep_min_cap": 2e9, "min_peers": 5, "weights": dict(lf.DEFAULT_WEIGHTS)})
+                "ep_min_cap": 2e9, "min_peers": 5, "weights": dict(lf.DEFAULT_WEIGHTS),
+                # 算法单测用小门槛；出版门槛本身另有专项测试（test_publish_gate_*）
+                "min_publish_ranked": 1, "min_publish_share": 0.0})
     cfg.update(over)
     return cfg
 
@@ -220,9 +222,15 @@ class LowFreqScoringTests(unittest.TestCase):
         self.assertLessEqual(mirrors["reversal_up_share"], 100)
 
     def test_unavailable_without_any_bars(self):
+        """一只日线都没有：栏目整栏缺席，但快照层的合格池仍如实报出（不谎称 0）。"""
         res = lf.score_universe(self.rows, {}, base_cfg())
         self.assertFalse(res["available"])
-        self.assertEqual(res["universe"]["eligible"], 0)
+        self.assertIn("日线全缺", res["reason"])
+        self.assertEqual(res["universe"]["with_bars"], 0)
+        # 12 只快照里 1 只是纯壳 → 合格池 11 只
+        self.assertEqual(res["universe"]["eligible"], 11)
+        self.assertEqual(res["top"], [])
+        self.assertFalse(res["publish"])
 
 
 # ------------------------------------------------------------------
@@ -265,12 +273,119 @@ class LowFreqRunnerTests(unittest.TestCase):
 
         with patch.object(lf, "fetch_hk_snapshot", fake_snapshot), \
                 patch.object(lf, "fetch_hk_bars", lambda *a, **k: bars), \
-                patch.dict("os.environ", {"OCTOPUS_LOWFREQ_DEMO": "0"}):
+                patch.dict("os.environ", {"OCTOPUS_LOWFREQ_DEMO": "0",
+                                          "OCTOPUS_LOWFREQ_MIN_RANKED": "1",
+                                          "OCTOPUS_LOWFREQ_MIN_COVERAGE": "0"}):
             res = lf.run_lowfreq_factors(lambda *a, **k: {}, date_str="20261028")
         self.assertTrue(res["available"])
         self.assertFalse(res["synthetic"])
+        self.assertTrue(res["publish"])
         self.assertEqual(len(res["top"]), min(20, res["universe"]["ranked"]))
-        self.assertIn("snapshot", res)
+        self.assertEqual(res["snapshot"]["bars_requested"], res["snapshot"]["bars_fetched"])
+
+
+# ------------------------------------------------------------------
+# 2026-10-28 生产事故回归：日线抓取残缺 → 横截面偏向大市值
+# ------------------------------------------------------------------
+def ladder_fixture(n=320, with_bars=37):
+    """复现事故现场：320 只按市值降序的池子，只有前 ``with_bars`` 只（最大的）抓到日线。"""
+    rows = []
+    for i in range(n):
+        mcap = max(2.6e11 * (0.55 ** (i / 20)), 4e8)
+        rows.append({"code": f"{i:05d}", "name": f"样本{i:03d}", "price": 20.0, "chg_pct": 0.0,
+                     "amount": 2e8, "turnover_today": 0.4, "pe": 8.0 + (i % 20),
+                     "mcap": mcap, "float_cap": mcap * 0.6, "pb": 1.1, "industry": ""})
+    bars = {rows[i]["code"]: make_bars(n=300, step=0.0002 * i) for i in range(with_bars)}
+    return rows, bars
+
+
+class BarCoverageIncidentTests(unittest.TestCase):
+    """事故根因与修复：分位口径 + 抓取顺序 + 出版门槛 + 流动性兜底。"""
+
+    def setUp(self):
+        self.rows, self.bars = ladder_fixture()
+        cfg = lf.params()
+        cfg.update({"universe": 320, "top_n": 20, "shell_floor": 3e8, "min_amount": 1e7,
+                    "ep_min_cap": 2e9, "min_peers": 5, "weights": dict(lf.DEFAULT_WEIGHTS)})
+        self.cfg = cfg                       # 用默认出版门槛（不做放宽）
+        self.res = lf.score_universe(self.rows, self.bars, self.cfg)
+
+    def test_size_percentile_uses_full_pool_not_bar_subset(self):
+        """最大的票（2600 亿）不能因为「在抓到日线的子集里最小」而被当成小市值。"""
+        biggest = min(self.res["stocks"], key=lambda s: s["mcap"])
+        self.assertGreater(biggest["mcap"], 5e10)            # 抓到日线的都是大票
+        self.assertLess(biggest["scores"]["size"], 15.0)     # 全池口径：仍是「大市值 → 分位很低」
+        self.assertNotIn("市值小", biggest["reason"])
+
+    def test_ep_percentile_also_uses_full_pool(self):
+        ep_factor = next(f for f in self.res["factors"] if f["key"] == "ep")
+        self.assertEqual(ep_factor["universe_n"], self.res["universe"]["eligible"])
+        size_factor = next(f for f in self.res["factors"] if f["key"] == "size")
+        self.assertEqual(size_factor["universe_n"], self.res["universe"]["eligible"])
+
+    def test_publish_gate_blocks_list_on_thin_coverage(self):
+        uni = self.res["universe"]
+        self.assertTrue(self.res["available"])               # 有快照、有部分日线：栏目还在
+        self.assertLess(uni["bars_coverage"], 60)
+        self.assertFalse(self.res["publish"])                # 但名单不发
+        self.assertEqual(self.res["top"], [])
+        self.assertIn("门槛", self.res["publish_reason"])
+        self.assertTrue(any("日线只覆盖" in w for w in self.res["warnings"]))
+
+    def test_publish_gate_passes_with_full_coverage(self):
+        rows, bars = ladder_fixture(with_bars=320)
+        res = lf.score_universe(rows, bars, self.cfg)
+        self.assertTrue(res["publish"])
+        self.assertEqual(len(res["top"]), 20)
+        self.assertGreaterEqual(res["universe"]["bars_coverage"], 99)
+
+    def test_render_discloses_coverage_and_withheld_list(self):
+        html = lf.render(self.res, pipeline.LIME_KIT, plain=False)
+        self.assertIn("样本覆盖", html)
+        self.assertIn("名单暂缓", html)
+        self.assertNotIn("港股推荐 20 只", html)
+        # 入门版也必须看到覆盖披露
+        plain = lf.render(self.res, pipeline.LIME_KIT, plain=True)
+        self.assertIn("样本覆盖", plain)
+
+    def test_fetch_order_is_not_market_cap_order(self):
+        """抓取顺序必须与市值无关：否则限流会整段掐掉小票。"""
+        codes_desc = [f"{i:05d}" for i in range(40)]        # 已按市值降序传入
+        order = lf._fetch_order(codes_desc)
+        self.assertEqual(sorted(order), sorted(codes_desc))  # 不丢不重
+        self.assertNotEqual(order, codes_desc)               # 打散
+        self.assertEqual(order, lf._fetch_order(list(reversed(codes_desc))))  # 确定性
+
+    def test_bars_retry_levels_escalate(self):
+        calls = []
+
+        def fake_batch(fetch_json, specs, rng="1y", workers=6, timeout=12):
+            calls.append((rng, workers, timeout))
+            # 第一轮只给前一半，重试再补齐
+            take = len(specs) if len(calls) > 1 else max(1, len(specs) // 2)
+            return {sym: make_bars(n=30) for _l, sym in specs[:take]}
+
+        import octopus_quant.providers as providers
+        original = providers.fetch_series_batch
+        providers.fetch_series_batch = fake_batch
+        try:
+            out = lf.fetch_hk_bars(lambda *a, **k: {}, [f"{i:05d}" for i in range(10)])
+        finally:
+            providers.fetch_series_batch = original
+        self.assertEqual(len(out), 10)                        # 重试补齐
+        self.assertGreaterEqual(len(calls), 2)
+        self.assertLessEqual(calls[1][1], calls[0][1])        # 降并发
+        self.assertGreaterEqual(calls[1][2], calls[0][2])     # 加超时
+
+    def test_liquidity_falls_back_to_snapshot_amount_without_volume(self):
+        rows = [snapshot_row("000901", "测试无量", 5e10, 10.0)]
+        bars = {"000901": [{"date": f"2026-01-{i + 1:02d}", "close": 10.0, "volume": None}
+                           for i in range(30)]}
+        cfg = base_cfg(min_amount=1e7)
+        res = lf.score_universe(rows, bars, cfg)
+        self.assertEqual(res["universe"]["with_bars"], 1)
+        self.assertEqual(res["universe"]["liquidity_basis"]["今日成交额"], 1)
+        self.assertTrue(any("快照当日成交额" in w for w in res["warnings"]))
 
 
 # ------------------------------------------------------------------
@@ -320,7 +435,7 @@ class LowFreqPipelineTests(unittest.TestCase):
                         pipeline.REPORT_SECTION_ORDER.index("SUMMARY"))
 
     def test_title_and_source_name(self):
-        self.assertEqual(pipeline.SECTION_TITLE_LOWFREQ, "【慢游小丑鱼】低频小因子量化策略")
+        self.assertEqual(pipeline.SECTION_TITLE_LOWFREQ, "【策略】低频五因子选股")
         self.assertEqual(pipeline.LOWFREQ_SOURCE_NAME, "低频小因子量化策略")
 
     def test_theme_metadata_present(self):

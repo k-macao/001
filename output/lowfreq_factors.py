@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""【慢游小丑鱼】低频小因子量化策略（2026-10-28 新增）
+"""【策略】低频五因子选股（2026-10-28 新增）
 
 用户口径（五个低频小因子，港股落地）：
 
@@ -29,13 +29,15 @@
 """
 from __future__ import annotations
 
+import hashlib
 import math
 import os
+import time
 from datetime import datetime, timedelta, timezone
 
 CST = timezone(timedelta(hours=8))
 
-SECTION_TITLE = "【慢游小丑鱼】低频小因子量化策略"
+SECTION_TITLE = "【策略】低频五因子选股"
 KICKER = "LOWFREQ FACTORS"
 SOURCE_NAME = "低频小因子量化策略"
 SOURCE_LABEL = "东方财富港股快照 + 日线（Yahoo 备用）· 五因子横截面排序"
@@ -49,12 +51,23 @@ DEFAULT_SHELL_FLOOR = 3e8       # 壳价值下限（港元）：低于它的市�
 DEFAULT_MIN_AMOUNT = 1e7        # 21 日日均成交额下限（港元），流动性门槛
 DEFAULT_EP_MIN_CAP = 2e9        # EP 只在市值 ≥ 20 亿港元的票里比较（剔除市值最小的）
 DEFAULT_MIN_INDUSTRY_PEERS = 5  # 同行业可比公司数；不足则退回全市场分位并标注
-DEFAULT_WORKERS = 8
+DEFAULT_WORKERS = 6
 MIN_BARS = 22                   # 反转最少需要的日线根数
 MOMENTUM_LOOKBACK = 250
 MOMENTUM_SKIP = 21
 REVERSAL_WINDOW = 21
 TURNOVER_WINDOW = 63            # 约 3 个月交易日
+# 日线请求的重试阶梯：(并发, 超时秒, 区间)。第一轮并发抓，失败的在更低并发下重试，
+# 最后一轮退到 1 年日线（够算反转与换手；动量会因样本不足留空，不硬凑）。
+BARS_RETRY_LEVELS = ((6, 12, "2y"), (2, 20, "2y"), (1, 20, "1y"))
+BARS_BATCH_SIZE = 40            # 单批请求数：再大就容易触发镜像限流
+BARS_BATCH_PAUSE = 0.8          # 批间停顿（秒）
+# 名单发布门槛：可排序只数太少，或日线覆盖不到合格池的 60%，就**不出名单**。
+# 原因很实在——日线抓取失败集中在某一端时，横截面会系统性偏向另一端（例如只剩大票，
+# 于是把 1500 亿的大票标成「市值小」）。宁可缺席，也不出版一张口径错位的名单。
+MIN_PUBLISH_RANKED = 30
+MIN_PUBLISH_SHARE = 0.60
+
 MIN_FACTORS = 3                 # 综合分至少要有 3 个因子可比
 MIN_WEIGHT_SHARE = 0.60         # 且可用因子权重合计不低于 60%
 
@@ -177,6 +190,9 @@ def params():
         "ep_min_cap": max(0.0, _env_float("OCTOPUS_LOWFREQ_EP_MIN_CAP", DEFAULT_EP_MIN_CAP)),
         "min_peers": max(2, _env_int("OCTOPUS_LOWFREQ_MIN_PEERS", DEFAULT_MIN_INDUSTRY_PEERS)),
         "workers": max(1, _env_int("OCTOPUS_LOWFREQ_WORKERS", DEFAULT_WORKERS)),
+        "min_publish_ranked": max(1, _env_int("OCTOPUS_LOWFREQ_MIN_RANKED", MIN_PUBLISH_RANKED)),
+        "min_publish_share": min(1.0, max(0.0, _env_float("OCTOPUS_LOWFREQ_MIN_COVERAGE",
+                                                          MIN_PUBLISH_SHARE))),
         "weights": weights,
     }
 
@@ -279,22 +295,50 @@ def fetch_hk_snapshot(fetch_json, *, max_pages=6, page_size=100, timeout=12):
     }
 
 
-def fetch_hk_bars(fetch_json, codes, *, workers=8, timeout=12):
-    """并发取 2 年港股日线：``{5位代码: [bars]}``；失败的键不出现（不造假）。"""
+def _fetch_order(codes):
+    """抓取顺序：按代码散列，**与市值无关**。
+
+    2026-10-28 实测：按总市值降序抓 320 只日线，被限流掐掉的是排在后面的小票，
+    结果只剩前 37 只大票，横截面整体偏向大市值（把 1500 亿的票标成「市值小」）。
+    散列顺序让失败均匀落在各个市值段，即使覆盖不全也不系统性偏向某一端。
+    """
+    return sorted(set(codes), key=lambda c: hashlib.md5(str(c).encode()).hexdigest())
+
+
+def fetch_hk_bars(fetch_json, codes, *, workers=DEFAULT_WORKERS, timeout=12, levels=None):
+    """并发取港股日线（默认 2 年）：``{5位代码: [bars]}``；失败的键不出现（不造假）。
+
+    失败会按 ``BARS_RETRY_LEVELS`` 逐级重试（降并发、加超时、最后缩到 1 年区间），
+    每级之间留一点间隔，专治 Yahoo / 东财对密集请求的限流。
+    """
     prov = _providers_module()
     if not fetch_json or prov is None or not codes:
         return {}
-    specs = [(code, f"{code}.HK") for code in codes]
-    try:
-        raw = prov.fetch_series_batch(fetch_json, specs, rng="2y", workers=workers,
-                                      timeout=timeout)
-    except Exception:
-        return {}
+    pending = _fetch_order(codes)
     out = {}
-    for symbol, bars in (raw or {}).items():
-        code = _normalize_code(symbol)
-        if code and bars:
-            out[code] = bars
+    for idx, (level_workers, level_timeout, rng) in enumerate(levels or BARS_RETRY_LEVELS):
+        if not pending:
+            break
+        if idx:
+            time.sleep(1.5 * idx)          # 让限流窗口过去一点，别把重试也撞死在墙上
+        concurrency = max(1, workers if idx == 0 else min(workers, level_workers))
+        # 分批抓 + 批间短停：一次甩出几百个请求最容易吃到 429（2026-10-28 生产实测
+        # 320 只里只回来 37 只）。分批后单批突发量小，限流触发概率明显下降。
+        for start in range(0, len(pending), BARS_BATCH_SIZE):
+            chunk = pending[start:start + BARS_BATCH_SIZE]
+            specs = [(code, f"{code}.HK") for code in chunk]
+            try:
+                raw = prov.fetch_series_batch(fetch_json, specs, rng=rng,
+                                              workers=concurrency, timeout=level_timeout)
+            except Exception:
+                raw = {}
+            for symbol, bars in (raw or {}).items():
+                code = _normalize_code(symbol)
+                if code and bars and code not in out:
+                    out[code] = bars
+            if start + BARS_BATCH_SIZE < len(pending):
+                time.sleep(BARS_BATCH_PAUSE)
+        pending = [c for c in pending if c not in out]
     return out
 
 
@@ -442,20 +486,15 @@ def _reason_text(scores, keys_order=FACTOR_ORDER, threshold=80.0, limit=2):
     return "、".join(_REASON_PHRASES[k] for k in hits[:limit])
 
 
-def score_universe(rows, bars_map, cfg, *, synthetic=False):
-    """把快照 + 日线算成「五因子横截面 + 综合分」。
+def _snapshot_pool(rows, cfg):
+    """快照层：只用「价格 + 总市值 + PE」就能定性的一切（不依赖日线）。
 
-    ``rows``：快照行（见 fetch_hk_snapshot）；``bars_map``：{代码: bars}。
-    返回结果字典（available / universe / factors / mirrors / stocks / top / portfolio / diag）。
+    返回值 ``(pool, excluded)``：``pool`` 是所有通过报价 / 壳价值闸门的股票，
+    **包含没有日线的**——小市值与 EP 的分位必须在这整池上算，否则横截面会被
+    日线抓取成功率带偏（2026-10-28 生产实测踩过这个坑）。
     """
     shell_floor = float(cfg["shell_floor"])
-    min_amount = float(cfg["min_amount"])
-    ep_min_cap = float(cfg["ep_min_cap"])
-    weights = cfg["weights"]
-
-    excluded = {"no_quote": 0, "shell": 0, "illiquid": 0, "no_bars": 0, "short_bars": 0}
-    stocks = []
-    industry_of = {}
+    pool, excluded = [], {"no_quote": 0, "shell": 0, "illiquid": 0, "no_bars": 0, "short_bars": 0}
     for row in rows or []:
         code = row.get("code")
         if not code:
@@ -465,6 +504,65 @@ def score_universe(rows, bars_map, cfg, *, synthetic=False):
         if not mcap or mcap <= 0 or not price or price <= 0:
             excluded["no_quote"] += 1
             continue
+        # ① 壳价值闸门：市值 ≤ 壳价值下限 → 视为纯壳（上市资格价），不进小市值排序
+        if mcap <= shell_floor:
+            excluded["shell"] += 1
+            continue
+        pe = _num(row.get("pe"))
+        loss = bool(pe is not None and pe <= 0)
+        ep = (1.0 / pe) if (pe is not None and pe > 0) else None
+        ep_eligible = bool(ep is not None and mcap >= float(cfg["ep_min_cap"]) and not loss)
+        pool.append({
+            "code": code,
+            "name": str(row.get("name") or code),
+            "industry": classify_industry(row.get("name"), row.get("industry")),
+            "price": price,
+            "chg_pct": _num(row.get("chg_pct")),
+            "mcap": mcap,
+            "float_cap": _num(row.get("float_cap")),
+            "snapshot_amount": _num(row.get("amount")),
+            "pe": pe,
+            "pb": _num(row.get("pb")),
+            "loss": loss,
+            "ep": ep if ep_eligible else None,
+            "ep_display": ep,
+            "ep_eligible": ep_eligible,
+            "shell_ratio": min(1.0, shell_floor / mcap) if mcap > 0 else None,
+            "net_value": mcap - shell_floor,
+            "size_raw": -math.log(max(mcap - shell_floor, 1.0)),
+        })
+    return pool, excluded
+
+
+def score_universe(rows, bars_map, cfg, *, synthetic=False):
+    """把快照 + 日线算成「五因子横截面 + 综合分 + 是否够格出版名单」。
+
+    ``rows``：快照行（见 fetch_hk_snapshot）；``bars_map``：{代码: bars}。
+
+    分两层（2026-10-28 修正）：
+      ① **快照层**：小市值、EP 只用快照就能算，分位在整个合格池（含无日线的票）上算；
+      ② **日线层**：反转 / 动量 / 换手必须有日线，分位只在「有日线的子集」上算，
+         并把覆盖率和偏差方向如实披露。
+    这样即使日线只抓到一半，小市值排序仍然是**全市场口径**的相对便宜，而不是
+    「一堆大票里最小的那只」。
+    """
+    shell_floor = float(cfg["shell_floor"])
+    min_amount = float(cfg["min_amount"])
+    weights = cfg["weights"]
+
+    pool, excluded = _snapshot_pool(rows, cfg)
+
+    # ---- ① 快照层分位（全池）----
+    size_scores = percentile_scores({s["code"]: s["size_raw"] for s in pool},
+                                    higher_is_better=True)
+    industry_of = {s["code"]: s["industry"] for s in pool}
+    ep_values = {s["code"]: s["ep"] for s in pool if s["ep"] is not None}
+    ep_scores, ep_meta = industry_ep_scores(ep_values, industry_of, min_peers=cfg["min_peers"])
+
+    # ---- ② 日线层：反转 / 动量 / 换手 ----
+    stocks, bar_basis = [], {"bars_21d": 0, "snapshot_1d": 0}
+    for s in pool:
+        code = s["code"]
         bars = (bars_map or {}).get(code) or []
         if not bars:
             excluded["no_bars"] += 1
@@ -472,74 +570,80 @@ def score_universe(rows, bars_map, cfg, *, synthetic=False):
         if len(bars) < MIN_BARS + 1:
             excluded["short_bars"] += 1
             continue
-        # ① 壳价值闸门：市值 ≤ 壳价值下限 → 视为纯壳（上市资格价），不进小市值排序
-        if mcap <= shell_floor:
-            excluded["shell"] += 1
-            continue
         avg_amount = mean_amount(bars)
-        # ② 流动性门槛：21 日日均成交额不足 → 进出都难，不进推荐池
+        basis = "bars_21d"
+        if avg_amount is None:                     # 日线有收盘但没量：退回快照当日成交额
+            avg_amount = s.get("snapshot_amount")
+            basis = "snapshot_1d"
+        # ③ 流动性门槛：日均成交额不足 → 进出都难，不进推荐池
         if min_amount > 0 and (avg_amount is None or avg_amount < min_amount):
             excluded["illiquid"] += 1
             continue
-
-        industry = classify_industry(row.get("name"), row.get("industry"))
-        industry_of[code] = industry
-        pe = _num(row.get("pe"))
-        loss = bool(pe is not None and pe <= 0)
-        ep = (1.0 / pe) if (pe is not None and pe > 0) else None
-        # ③ EP 的「剔除市值最小的」：只在市值 ≥ ep_min_cap 的票里比较
-        ep_eligible = bool(ep is not None and mcap >= ep_min_cap and not loss)
-        stocks.append({
-            "code": code,
-            "name": str(row.get("name") or code),
-            "industry": industry,
-            "price": price,
-            "chg_pct": _num(row.get("chg_pct")),
-            "mcap": mcap,
-            "float_cap": _num(row.get("float_cap")),
-            "pe": pe,
-            "pb": _num(row.get("pb")),
-            "loss": loss,
-            "ep": ep if ep_eligible else None,
-            "ep_display": ep,
-            "ep_eligible": ep_eligible,
+        bar_basis[basis] = bar_basis.get(basis, 0) + 1
+        stock = dict(s)
+        stock.update({
             "avg_amount": avg_amount,
+            "liquidity_basis": "21 日均额" if basis == "bars_21d" else "今日成交额",
             "bars": len(bars),
-            "shell_ratio": min(1.0, shell_floor / mcap) if mcap > 0 else None,
-            "net_value": mcap - shell_floor,
-            "size_raw": -math.log(max(mcap - shell_floor, 1.0)),
             "reversal": (lambda v: v * 100 if v is not None else None)(
                 log_return_sum(bars, REVERSAL_WINDOW)),
             "momentum": (lambda v: v * 100 if v is not None else None)(momentum_12_1(bars)),
-            "turnover": mean_turnover(bars, _num(row.get("float_cap")), price),
+            "turnover": mean_turnover(bars, s.get("float_cap"), s.get("price")),
             "synthetic": bool(synthetic),
         })
+        stocks.append(stock)
+
+    eligible = len(pool)
+    base = {
+        "params": {
+            "universe": cfg["universe"], "top_n": cfg["top_n"], "shell_floor": shell_floor,
+            "min_publish_ranked": cfg.get("min_publish_ranked"), "min_publish_share": cfg.get("min_publish_share"),
+            "min_amount": min_amount, "ep_min_cap": cfg["ep_min_cap"],
+            "min_peers": cfg["min_peers"], "weights": weights,
+        },
+        "universe": {
+            "scanned": len(rows or []),
+            "eligible": eligible,
+            "with_bars": len(stocks),
+            "ranked": 0,
+            "bars_coverage": (len(stocks) / eligible * 100.0) if eligible else 0.0,
+            "excluded": excluded,
+            "liquidity_basis": {"21 日均额": bar_basis.get("bars_21d", 0),
+                                "今日成交额": bar_basis.get("snapshot_1d", 0)},
+        },
+        "ep_basis": ep_meta,
+        "synthetic": bool(synthetic),
+    }
 
     if not stocks:
-        return {
+        base.update({
             "available": False,
-            "reason": "港股快照或日线未取得（不做任何推断，也不补造行情）",
-            "excluded": excluded,
-            "universe": {"scanned": len(rows or []), "eligible": 0},
-            "synthetic": bool(synthetic),
-        }
+            "reason": ("港股快照未取得" if not pool
+                       else f"日线全缺（合格池 {eligible} 只，一只都没抓到日线）"),
+            "mirrors": {},
+            "factors": [],
+            "stocks": [],
+            "top": [],
+            "portfolio": {},
+            "publish": False,
+            "publish_reason": "无可排序标的",
+            "warnings": [],
+        })
+        return base
 
-    # ---- 横截面打分（方向统一成「越大越好」）----
-    size_scores = percentile_scores({s["code"]: s["size_raw"] for s in stocks},
-                                    higher_is_better=True)
+    # ---- 日线层分位 ----
     reversal_scores = percentile_scores({s["code"]: s["reversal"] for s in stocks},
                                         higher_is_better=False)
     momentum_scores = percentile_scores({s["code"]: s["momentum"] for s in stocks},
                                         higher_is_better=True)
     turnover_scores = percentile_scores({s["code"]: s["turnover"] for s in stocks},
-                                        higher_is_better=False)
-    ep_values = {s["code"]: s["ep"] for s in stocks if s["ep"] is not None}
-    ep_scores, ep_meta = industry_ep_scores(ep_values, industry_of, min_peers=cfg["min_peers"])
+                                       higher_is_better=False)
     lookups = {"size": size_scores, "reversal": reversal_scores, "momentum": momentum_scores,
                "turnover": turnover_scores, "ep": ep_scores}
 
     for s in stocks:
         s["scores"] = {k: lookups[k].get(s["code"]) for k in FACTOR_ORDER}
+        # 小市值 / EP 来自全池分位；若该票不在池内（理论上不会）才缺
         have = {k: v for k, v in s["scores"].items() if v is not None}
         weight_sum = sum(weights.get(k, 0.0) for k in have)
         s["factor_count"] = len(have)
@@ -547,96 +651,117 @@ def score_universe(rows, bars_map, cfg, *, synthetic=False):
             s["composite"] = sum(have[k] * weights.get(k, 0.0) for k in have) / weight_sum
         else:
             s["composite"] = None
-        s["missing_factors"] = [FACTOR_META[k]["name"] for k in FACTOR_ORDER if s["scores"][k] is None]
+        s["missing_factors"] = [FACTOR_META[k]["name"] for k in FACTOR_ORDER
+                                if s["scores"][k] is None]
 
     ranked = sorted([s for s in stocks if s["composite"] is not None],
                     key=lambda s: s["composite"], reverse=True)
     for i, s in enumerate(ranked, 1):
         s["rank"] = i
         s["reason"] = _reason_text(s["scores"])
-    top = ranked[:cfg["top_n"]]
+
+    # ---- 出版门槛：样本太薄就不出名单（宁可缺席，不出版口径错位的名单）----
+    publish, publish_reason = _publish_gate(len(ranked), eligible, cfg)
 
     # ---- 因子镜子：本栏对反转/动量的用法是「看市场体温」，不是选股指令 ----
-    def _median(key):
-        vals = sorted(s[key] for s in stocks if s[key] is not None)
+    def _median(key, source):
+        vals = sorted(x[key] for x in source if x.get(key) is not None)
         if not vals:
             return None
         mid = len(vals) // 2
         return vals[mid] if len(vals) % 2 else (vals[mid - 1] + vals[mid]) / 2.0
 
     reversal_vals = [s["reversal"] for s in stocks if s["reversal"] is not None]
+    momentum_n = sum(1 for s in stocks if s["momentum"] is not None)
     mirrors = {
-        "reversal_median": _median("reversal"),
+        "sample": len(stocks),
+        "reversal_median": _median("reversal", stocks),
         "reversal_up_share": (sum(1 for v in reversal_vals if v > 0) / len(reversal_vals) * 100.0
                               if reversal_vals else None),
         "reversal_worst": min(reversal_vals) if reversal_vals else None,
         "reversal_best": max(reversal_vals) if reversal_vals else None,
-        "momentum_median": _median("momentum"),
+        "momentum_median": _median("momentum", stocks),
         "momentum_positive_share": (
-            sum(1 for s in stocks if (s["momentum"] or 0) > 0) /
-            max(1, sum(1 for s in stocks if s["momentum"] is not None)) * 100.0
-            if any(s["momentum"] is not None for s in stocks) else None),
-        "turnover_median": _median("turnover"),
-        "ep_median": _median("ep"),
-        "mcap_median": _median("mcap"),
+            sum(1 for s in stocks if (s["momentum"] or 0) > 0) / momentum_n * 100.0
+            if momentum_n else None),
+        "turnover_median": _median("turnover", stocks),
+        "ep_median": _median("ep", pool),
+        "mcap_median": _median("mcap", pool),
     }
 
     # ---- 因子覆盖与分位分布（按有值的样本算）----
     factors = []
     for key in FACTOR_ORDER:
-        vals = [s["scores"][key] for s in stocks if s["scores"][key] is not None]
+        sample = pool if key in ("size", "ep") else stocks
+        vals = [x["scores"].get(key) if isinstance(x.get("scores"), dict)
+                else lookups[key].get(x["code"]) for x in sample]
+        vals = [v for v in vals if v is not None]
         raw_key = {"size": "size_raw"}.get(key, key)
-        raw_vals = sorted(s[raw_key] for s in stocks
-                          if isinstance(s.get(raw_key), (int, float)))
+        raw_vals = sorted(x[raw_key] for x in sample
+                          if isinstance(x.get(raw_key), (int, float)))
         factors.append({
             "key": key,
             "name": FACTOR_META[key]["name"],
             "formula": FACTOR_META[key]["formula"],
             "direction": FACTOR_META[key]["direction"],
             "weight": weights.get(key, 0.0),
+            "universe_n": len(sample),
             "scored": len(vals),
-            "coverage": len(vals) / len(stocks) * 100.0 if stocks else None,
+            "coverage": len(vals) / len(sample) * 100.0 if sample else None,
             "raw_median": (raw_vals[len(raw_vals) // 2] if raw_vals else None),
         })
 
-    portfolio = _portfolio_profile(top)
-    return {
+    top = ranked[:cfg["top_n"]] if publish else []
+    base.update({
         "available": True,
         "as_of": _as_of_from_bars(bars_map),
-        "params": {
-            "universe": cfg["universe"], "top_n": cfg["top_n"], "shell_floor": shell_floor,
-            "min_amount": min_amount, "ep_min_cap": ep_min_cap, "min_peers": cfg["min_peers"],
-            "weights": weights,
-        },
-        "universe": {
-            "scanned": len(rows or []),
-            "eligible": len(stocks),
-            "ranked": len(ranked),
-            "excluded": excluded,
-        },
         "factors": factors,
         "mirrors": mirrors,
-        "ep_basis": ep_meta,
         "stocks": ranked,
         "top": top,
-        "portfolio": portfolio,
-        "synthetic": bool(synthetic),
-        "warnings": _warnings(stocks, ranked, cfg),
-    }
+        "portfolio": _portfolio_profile(top),
+        "publish": publish,
+        "publish_reason": publish_reason,
+        "warnings": _warnings(pool, stocks, ranked, cfg, publish),
+    })
+    base["universe"]["ranked"] = len(ranked)
+    return base
 
 
-def _warnings(stocks, ranked, cfg):
+def _publish_gate(ranked_n, eligible_n, cfg):
+    """名单出版门槛：可排序只数 ≥ max(min_publish_ranked, 合格池 × min_publish_share)。"""
+    floor_n = int(cfg.get("min_publish_ranked", MIN_PUBLISH_RANKED))
+    share = float(cfg.get("min_publish_share", MIN_PUBLISH_SHARE))
+    need = max(floor_n, int(round(eligible_n * share)))
+    if eligible_n == 0:
+        return False, "合格池为空"
+    if ranked_n < need:
+        return False, (f"可排序 {ranked_n} 只 < 门槛 {need} 只"
+                       f"（合格池 {eligible_n} 只 × {share:.0%}，且不少于 {floor_n} 只）")
+    return True, f"可排序 {ranked_n} 只 ≥ 门槛 {need} 只"
+
+
+def _warnings(pool, stocks, ranked, cfg, publish):
     out = []
+    eligible = len(pool)
     if not ranked:
         out.append("没有一只股票拿到 3 个以上因子分位，综合分整体缺席（不硬排）")
-    if stocks and len(ranked) < max(5, len(stocks) * 0.3):
+    coverage = (len(stocks) / eligible * 100.0) if eligible else 0.0
+    if eligible and coverage < MIN_PUBLISH_SHARE * 100.0:
+        out.append(f"日线只覆盖 {len(stocks)}/{eligible} 只（{coverage:.0f}%）：反转 / 动量 / 换手的分位"
+                   f"只在这部分股票里算，小市值与 EP 仍是全池口径；名单按出版门槛"
+                   f"{'照常给出' if publish else '暂缓'}。")
+    elif stocks and len(ranked) < max(5, len(stocks) * 0.3):
         out.append(f"仅 {len(ranked)}/{len(stocks)} 只有完整分位，样本偏薄")
-    loss_n = sum(1 for s in stocks if s["loss"])
+    loss_n = sum(1 for s in pool if s["loss"])
     if loss_n:
         out.append(f"{loss_n} 只亏损股（PE ≤ 0）不进 EP 比较，只在正文单独点名")
-    micro = sum(1 for s in stocks if s["mcap"] < cfg["ep_min_cap"])
+    micro = sum(1 for s in pool if s["mcap"] < cfg["ep_min_cap"])
     if micro:
         out.append(f"{micro} 只市值低于 {cfg['ep_min_cap'] / 1e8:.0f} 亿港元，只参与小市值/反转/动量/换手，不参与 EP")
+    snapshot_basis = sum(1 for s in stocks if s.get("liquidity_basis") == "今日成交额")
+    if snapshot_basis:
+        out.append(f"{snapshot_basis} 只日线缺成交量，流动性门槛改用快照当日成交额判断")
     return out
 
 
@@ -749,8 +874,9 @@ def run_lowfreq_factors(fetch_json=None, date_str="", allow_synthetic_flag=False
                 "reason": "港股快照未取得" + (f"（{snapshot['errors'][0]}）" if snapshot.get("errors") else ""),
                 "snapshot": snapshot}
 
-    # 按总市值降序取前 N 只建立计算池：控制日线请求量，同时天然避开微市值噪音；
-    # 壳价值闸门与流动性门槛在计算层按「只数」如实剔除并披露。
+    # 按总市值降序取前 N 只建立计算池：控制日线请求量（港股前列已覆盖绝大多数成交与估值
+    # 有意义的中大型标的）。注意：**排序只决定「进不进池」，不决定抓取顺序**——
+    # 日线抓取按代码散列进行（见 _fetch_order），避免限流掐掉某一市值段。
     rows = sorted(rows, key=lambda r: r.get("mcap") or 0, reverse=True)[:cfg["universe"]]
     codes = [r["code"] for r in rows if (r.get("mcap") or 0) > cfg["shell_floor"]]
     bars_map = fetch_hk_bars(fetch_json, codes, workers=cfg["workers"])
@@ -762,8 +888,13 @@ def run_lowfreq_factors(fetch_json=None, date_str="", allow_synthetic_flag=False
         "reported_total": snapshot.get("reported_total"),
         "errors": snapshot.get("errors") or [],
         "universe_cap": cfg["universe"],
+        "bars_requested": len(codes),
         "bars_fetched": len(bars_map),
+        "bars_missing": max(0, len(codes) - len(bars_map)),
     }
+    if res.get("available") and not res.get("publish"):
+        # 数据抓到了但样本不够出版：把原因写进结果，页面与日志共用同一句话。
+        res.setdefault("warnings", []).append(f"名单暂缓：{res.get('publish_reason')}")
     if not res.get("available") and (allow_synthetic_flag or allow_synthetic()):
         srows, sbars = synthetic_inputs(date_str=date_str)
         res = score_universe(srows, sbars, cfg, synthetic=True)
@@ -886,17 +1017,34 @@ def render(res, kit, plain=False, top_n=None):
     # ---- ① 口径 ----
     excluded = (res.get("universe") or {}).get("excluded") or {}
     universe = res.get("universe") or {}
+    coverage = universe.get("bars_coverage") or 0.0
+    publish = bool(res.get("publish"))
+    # 数据覆盖是实质披露：入门版也照出一行，不能把「只抓到一半日线」藏起来。
+    out.append(_kv(kit, [(
+        "样本覆盖",
+        f"快照 {universe.get('scanned', 0)} 只 → 合格池 {universe.get('eligible', 0)} 只"
+        f"（剥壳后）→ 有日线 {universe.get('with_bars', 0)} 只（{coverage:.0f}%）"
+        f"→ 可排序 {universe.get('ranked', 0)} 只"
+        + ("" if publish else f" · 名单暂缓：{_esc(res.get('publish_reason') or '')}"))]))
+    if not publish:
+        out.append(_note(kit, "⚠ 本次样本不足，**不出推荐名单**：日线抓取不全时横截面会偏向抓得到的那一端"
+                              "（例如只剩大票，于是把千亿市值标成「市值小」）。宁可缺席，也不出版口径错位的名单。"))
     if not plain:
         out.append(_sub(kit, "本次口径"))
         out.append(_kv(kit, [
             ("数据时点", f"{_esc(res.get('as_of') or '—')} 收盘 · 港股 {universe.get('scanned', 0)} 只快照"),
-            ("计算池", f"按总市值取前 {cfg.get('universe')} 只 → 通过门槛 {universe.get('eligible', 0)} 只 → 可排序 {universe.get('ranked', 0)} 只"),
+            ("计算池", f"按总市值取前 {cfg.get('universe')} 只 → 合格池 {universe.get('eligible', 0)} 只"
+                     f"（小市值 / EP 在全池上打分）→ 有日线 {universe.get('with_bars', 0)} 只"
+                     f"（反转 / 动量 / 换手只用这部分）"),
             ("壳价值下限", f"{cfg.get('shell_floor', 0) / 1e8:,.1f} 亿港元 · 市值不高于它的按「纯壳」剔除，不参与小市值排序"),
             ("流动性门槛", f"21 日日均成交额 ≥ {cfg.get('min_amount', 0) / 1e8:,.2f} 亿港元"),
             ("EP 比较池", f"市值 ≥ {cfg.get('ep_min_cap', 0) / 1e8:,.0f} 亿港元且不亏损 · 同行业内部排序（同行业不足 {cfg.get('min_peers')} 只退回全市场分位）"),
             ("因子权重", " / ".join(
                 f"{FACTOR_META[k]['name']} {weights.get(k, 0) * 100:.0f}%" for k in FACTOR_ORDER)),
             ("综合分规则", f"各因子横截面分位（0–100，方向已统一）加权；至少 {MIN_FACTORS} 个因子且可用权重 ≥ {MIN_WEIGHT_SHARE * 100:.0f}% 才给分，否则如实留空"),
+            ("出版门槛", f"可排序 ≥ max({cfg.get('min_publish_ranked')} 只, 合格池 × "
+                      f"{(cfg.get('min_publish_share') or 0) * 100:.0f}%)；不够就不出名单，"
+                      f"不拿残缺样本凑数"),
         ]))
 
     # ---- ② 因子镜子：反转与动量的正确用法 ----
@@ -919,7 +1067,12 @@ def render(res, kit, plain=False, top_n=None):
                       aligns=("left", "left", "right", "left", "left")))
 
     # ---- ③ 港股推荐 20 只 ----
-    heading = f"港股推荐 {len(top)} 只（五因子综合分降序）" if top else "港股推荐：本次无可排序标的"
+    if top:
+        heading = f"港股推荐 {len(top)} 只（五因子综合分降序）"
+    elif not publish:
+        heading = "港股推荐：本次样本不足，名单暂缓"
+    else:
+        heading = "港股推荐：本次无可排序标的"
     out.append(_sub(kit, heading))
     if top:
         rows = []
@@ -944,6 +1097,9 @@ def render(res, kit, plain=False, top_n=None):
         out.append(_note(kit, "分位分已统一为「越大越好」：反转一列显示的是原始涨跌幅（越绿越靠前，"
                               "说明近一月跌得多），换手一列显示的是原始换手率（越低越靠前）。"
                               "综合分是相对排序值，不是上涨概率。"))
+    elif not publish:
+        out.append(_note(kit, f"出版门槛未达：{res.get('publish_reason') or '样本不足'}。"
+                             "名单不凑数——残缺样本上选出来的「小市值」，多半只是「抓得到日线的大票」。"))
     else:
         out.append(_note(kit, "本次没有标的凑齐 3 个以上因子分位，不硬排、不凑数量。"))
 

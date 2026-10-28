@@ -19,7 +19,7 @@
      供政策因子 / 策略研判 / 新闻情绪 / 逐栏 AI 研判与审计使用。
   4. 「全球头条」改用 Google News 数据源（替换原 Yahoo Finance News）：直接抓
      Google News 中文版，标题本身即中文，无需翻译。2026-10-02 起该栏目
-     （【无敌帝王蟹】全球头条）同样在页面隐藏（见第 24 条），数据用途不变。
+     （【事实】全球头条）同样在页面隐藏（见第 24 条），数据用途不变。
   5. 新增「东方财富快讯」数据源：东方财富免费公开接口的最新 5 条财经新闻。
      2026-10-02 起页面隐藏「东方财富快讯」栏目（正文不再单独展示），
      原始快讯数据仅作为政策因子、策略研判、新闻情绪与数据审计的信号源。
@@ -28,7 +28,7 @@
      原始榜单数据仅作为策略研判与数据审计的信号源；
      页面只保留策略研判结果。
   6.1 新增 A股大盘全景数据（数据源：东方财富 push2/push2his 免费接口；2026-09-30 起
-      与「实时行情」合并渲染进栏目【及时秋刀鱼】AI 行情复盘，见第 20 条）：
+      与「实时行情」合并渲染进栏目【事实】行情复盘，见第 20 条）：
       ① 指数表现（A股）——上证 / 深证 / 创业板 / 科创50 / 北证50 / 沪深300 / 上证50 / 中证500
       最新价、涨跌幅与成交额（合并后与 Yahoo 报价并成栏目里的「A股指数」一张表）；
       ② 涨跌家数——沪深京市场宽度（上涨/下跌/平盘家数、涨跌比与情绪定调）；
@@ -41,18 +41,18 @@
       （原「全球指数概览」子块——美股道琼斯 / 标普500 / 纳斯达克与港股恒生指数 / 恒生科技
       最新价与涨跌幅，复用同一次抓取的 Yahoo 报价——已于 2026-09-30 随两栏合并删除：
       它与报价块「全球与美股」「港股双指数」逐项数字完全相同，属于纯重复。）
-  6.2 逐栏目 AI 研判（2026-09-27 新增）：每个有数据的内容栏目（【及时秋刀鱼】AI 行情复盘 /
+  6.2 逐栏目 AI 研判（2026-09-27 新增）：每个有数据的内容栏目（【事实】行情复盘 /
       政策因子 / 趋势跟踪 / 新闻情绪）正文末尾追加一行概率化多空判断
       （全球头条 / 东方财富快讯 / 港股名家频道三栏已于 2026-10-02 在页面隐藏，
       其研判照旧计算，但因栏目不再渲染而不会成行）：
       「⌁ AI 研判 ▲偏多 / ▼偏空 / ■中性 · 多头 x% / 空头 y% — 栏内证据 → 预测：结论」。
       概率 = 50 + 45*(多−空)/(多+空)，夹在 5%–95%（持平 50%，绝不绝对化）；≥60% 偏多 /
       ≤40% 偏空 / 其间中性；多头 + 空头恒 100%。证据仅取自该栏目已抓取数据；结论类栏目
-      （【回游金枪鱼】今日预判 / 策略研判 / 总结）与前瞻日程类栏目（【探照安康鱼】时间节点量化分析：
+      （【结论】今日预判 / 策略研判 / 总结）与前瞻日程类栏目（【事实】时间节点：
       日程不含方向信息，只给「最密集日 + 事件密度提示」）不附加，栏目无数据自然缺席。
       规则合成，非投资建议。
   6.3 新增「未来30天影响经济时间点」栏目（2026-09-28，位于专业分析之后的首个数据栏目；
-      2026-09-29 起更名为「【探照安康鱼】时间节点量化分析」）：
+      2026-09-29 起更名为「【事实】时间节点」）：
       数据源为东方财富财经日历（数据中心公开报表 RPT_CPH_FECALENDAR，无需密钥，
       START_DATE 即北京时间）。服务端只支持按日期过滤，故一次拉全窗口 + 翻页，
       再在本地按写死的口径筛选：保留 数据（中美欧日英港等市场的宏观读数）/
@@ -96,13 +96,13 @@
      港股名家频道观点）做确定性量化合成，输出板块趋势跟踪策略（量化信号 +
      趋势分 + 置信度、板块趋势强度榜、技术速读、风险控制、量化配置）。无需大模型 API、
      可复现、不伪造内容，明确标注「非投资建议」；数据源不足时该区块自动缺席。
-     2026-09-09 起页内去重：指数动能只保留聚合（明细数值见【及时秋刀鱼】AI 行情复盘），
+     2026-09-09 起页内去重：指数动能只保留聚合（明细数值见【事实】行情复盘），
      风险提示对正文已展示的标题仅引用定位（栏目 + 序号 + 命中关键词 + 锚点），
      多因子矩阵不再复述雅虎逐只报价。
      2026-10-02 起加入 MACD(12,26,9) 日线子策略：市场库 → 本次已有日线 →
      Yahoo / 东财免费源，仅已收盘、足够新鲜的序列；展示交叉、零轴、动能与规则动作，
      不改变原市场信号分、不把技术信号转换成未经校准的概率。
-  10. 「新闻情绪」栏目（2026-10-10 起更名「【亮亮灯光鱿鱼】新闻情绪因子量化分析」，
+  10. 「新闻情绪」栏目（2026-10-10 起更名「【舆情】新闻情绪」，
       见第 25 条）：按「最近交易日 A股 / 港股 / 美股 成交量前五」
       逐股输出 AI 新闻情绪分与总结评论（含原因）。标题窗口为近
       SENTI_WINDOW_HOURS=72 小时（含历史存档），对窗口内标题逐条词表评分（S，
@@ -119,10 +119,9 @@
       思维重构成六个可独立测试的层——providers(数据) → features(五因子特征) →
       probability(分桶+保序+逻辑回归校准 / 推进式回测) → liquidity(资金流动性) →
       engine(编排) → render(呈现)，外加「预测留痕 → 次日按真实收盘结算」的反馈闭环
-      （output/quant_history.json）。核心栏目两个（2026-10-23 起；原第三个「【蜉蝣天地水母】
-      量化分析总览」已按用户要求整栏下线，见第 32 条）：**每日趋势量化推演**（逐日走势预测 +
+      （output/quant_history.json）。核心栏目两个（2026-10-23 起；原第三个「量化分析总览」已按用户要求整栏下线，见第 32 条）：**【推演】七日走势**（逐日走势预测 +
       恒指/恒科/国企指数 + 个股池逐只概率 + 市场宽度 + 五因子拆解）、
-      **资金流动性分析**（南向/北向成交总额
+      **【推演】资金流动性**（南向/北向成交总额
       与 z 值分位、恒指量能、Amihud 非流动性、CR5 集中度、主力资金流、流动性综合分
       0~100 与对概率的有界修正）。概率全部由「同一套因子在自身历史上滚动重算 →
       分桶 + 保序 + 逻辑回归校准」得到，并经推进式回测检验（每步只用过去数据），
@@ -137,7 +136,7 @@
       趋势预判信号与风险预算。官方条例、规划、办法等没有方向性触发词时按中性「政策发布」纳入；
       触发词被否定修饰时跳过；窗口内零政策/宏观新闻时栏目缺席。规则合成、非投资建议。
   13. 「A股资讯」（新浪财经滚动新闻）栏目已移除（2026-09-28 按用户要求）：不再抓取、
-      不再渲染、不再进入审计与新闻语料；A股内容由【及时秋刀鱼】AI 行情复盘
+      不再渲染、不再进入审计与新闻语料；A股内容由【事实】行情复盘
       （指数/宽度/成交额/南北向/板块）与「东方财富快讯」承担，避免来源重复与同质化。
   14. 「趋势跟踪」升级（2026-09-28）：栏目为两段结构——「全网 36 个新闻源头 · 港股信息挖掘 + 分析」
       与「多平台信息员」社区样本。36 个源头按 香港 7 / 内地 23 / 国际 6 配置（RTHK、HKET、
@@ -160,13 +159,13 @@
       调条数；规则合成，非投资建议。
   15. 栏目更名（2026-09-28 按用户要求，功能不变）：今日预判→今日预判、A股大盘全景→
       全球大盘全景复盘（同时新增「全球指数概览」子块；该栏已于 2026-09-30 并入
-      【及时秋刀鱼】AI 行情复盘，见第 20 条）、AI 盘研判→策略研判、每日量化策略
+      【事实】行情复盘，见第 20 条）、AI 盘研判→策略研判、每日量化策略
       趋势跟踪线索→趋势跟踪、新闻情绪→新闻情绪、总结→总结；行情速览 / 政策因子 /
       全球头条 / 东方财富快讯 / 港股名家频道 名称不变（其中 政策因子 / 全球头条 已于
       2026-09-29 再次改名，见第 21 条；行情速览见第 20 条）。像素主题英文关卡名同步更名
       （CONCLUSION→FORECAST、A-SHARE PANORAMA→GLOBAL PANORAMA、AI READ→STRATEGY READ、
       TREND CLUES→TREND TRACKING、WRAP-UP→SUMMARY），图标砖短标签同步为 STRAT / GLOBAL / SENTI。
-  16. 新增「【火爆大鱿鱼】美联储因子量化分析」与「【巡回巨鲸】地缘政治因子量化分析」两栏目（2026-09-28
+  16. 新增「【事实】美联储因子」与「【事实】地缘政治因子」两栏目（2026-09-28
       按用户要求）：阅读位置在政策因子之后、策略研判之前。各有**专门抓取**——Google News
       RSS 搜索查询（美联储：`美联储 OR FOMC OR 鲍威尔`；地缘政治：`地缘政治 OR 制裁 OR
       冲突 OR 关税`），抓取失败整栏缺席并在总结「数据覆盖」点名，绝不以旧闻兜底。
@@ -196,10 +195,10 @@
   18. 「AI 七日港股走势分析概率」子块（output/hk_seven_day.py，2026-09-29 起，取代原
       「每日量化策略（行业轮动）」栏目：该栏目从上线到 09-28 的 58 份日报出现率 0/58，
       东财行业板块两步取数在真实环境未跑通；2026-09-30 起由独立栏目并入第 17 节
-      【嗜血大白鲨】逐日走势量化分析与港股概率走势分析合并为「每日趋势量化推演」，逐日表格 / 港股概率 / AI七日任一路可用即出栏目，数据源键名 /
+      【推演】七日走势与港股概率走势分析合并为「【推演】七日走势」，逐日表格 / 港股概率 / AI七日任一路可用即出栏目，数据源键名 /
       审计标签 / 留痕文件各自保留）：恒生指数 / 恒生科技 / 国企指数三只标的、未来 7 个
       交易日（按交易日计数、假期顺延）的收盘上涨概率 + 依据 / 风险 / 三道防线，与港股概率走势分析共用
-      **每日趋势量化推演**栏目头。量化基准
+      **【推演】七日走势**栏目头。量化基准
       复用 octopus_weekly 的因果引擎（视界 7：扩张基准率 + 20 日特征最近邻、s+7≤t 已结算
       锚点、截断不变性自检、5%~95% 夹逼）；研判引擎按优先级三选一——
       ① 大模型（OpenAI 兼容 /chat/completions：OCTOPUS_LLM_API_KEY /
@@ -223,9 +222,9 @@
       OCTOPUS_HK7=0 / --no-hk7 关闭；--hk7-only 研究模式。非投资建议。
 
   19. 栏目更名（2026-09-29 按用户要求，只改标题文字，内容 / 顺序 / 抓取 / 推送门禁
-      与拆分逻辑完全不变）：今日预判→**【回游金枪鱼】今日预判**、
-      未来30天影响经济时间点→**【探照安康鱼】时间节点量化分析**、
-      量化分析总览→**【蜉蝣天地水母】量化分析总览**。相关标题集中定义为
+      与拆分逻辑完全不变）：今日预判→**【结论】今日预判**、
+      未来30天影响经济时间点→**【事实】时间节点**、
+      量化分析总览→**量化分析总览**。相关标题集中定义为
       SECTION_TITLE_FORECAST / SECTION_TITLE_ECON_CALENDAR / SECTION_TITLE_QUANT_FORECAST
       （其中 SECTION_TITLE_QUANT_FORECAST 已于 2026-10-23 随该栏下线移除，见第 32 条），
       guizang 与 pixel 两个主题共用。「时间节点」栏目的窗口天数不再写在标题里，
@@ -233,7 +232,7 @@
       其余栏目名称不变。
 
   20. 栏目合并（2026-09-30 按用户要求：「行情速览」与「全球大盘全景复盘」内容重复）：
-      两栏合并为一栏 **【及时秋刀鱼】AI 行情复盘**（kicker MARKET REVIEW，标题常量
+      两栏合并为一栏 **【事实】行情复盘**（kicker MARKET REVIEW，标题常量
       SECTION_TITLE_MARKET_REVIEW，两主题共用），占原「行情速览」的阅读位置
       （每周量化走势预测之后、政策因子之前），原 GLOBAL PANORAMA 位置取消。
       **去重（重复的数字只出一份）**：
@@ -261,10 +260,10 @@
 
   21. 第二批栏目更名（2026-09-29 按用户要求，只改标题文字，栏目内容 / 顺序 / 抓取 /
       推送门禁与拆分逻辑完全不变）：
-        全球头条          → **【无敌帝王蟹】全球头条**
-        趋势跟踪          → **【深海大鲨鱼】趋势跟踪**
-        政策因子          → **【深海肥蓝鲸】政策因子**
-        每周量化走势预测   → **【嗜血大白鲨】逐日走势量化分析**（按用户给的新名，标题不再带「每周」，
+        全球头条          → **【事实】全球头条**
+        趋势跟踪          → **【舆情】资讯跟踪**
+        政策因子          → **【事实】政策因子**
+        每周量化走势预测   → **【推演】七日走势**（按用户给的新名，标题不再带「每周」，
                           周度口径仍在栏目内如实披露：「未来 5 个交易日」「锚定 X 收盘」）
       四个标题集中定义为 SECTION_TITLE_GLOBAL_HEADLINES / SECTION_TITLE_TREND /
       SECTION_TITLE_POLICY / SECTION_TITLE_WEEKLY_FORECAST，与第 19 条的现行栏目常量并列，
@@ -303,10 +302,10 @@
            Node + patchright + Chrome 才启用；只读公开页面，不登录、不绕付费墙。
       栏目口径：逐行标供数来源（YH/ST/HKEX/+BR）与行情日；snapshot=True（行情快照），
       因此不会单独把日报推过当天检验闸门；OCTOPUS_HK_OVERSEAS=0 可关闭整路采集。
-      本条与既有栏目的分工：【及时秋刀鱼】AI 行情复盘给全市场报价快照（含港股双指数），
-      【每日趋势量化推演】给逐日走势与港股概率模型，本栏给**境外口径的港股个股与市场层明细**。
+      本条与既有栏目的分工：【事实】行情复盘给全市场报价快照（含港股双指数），
+      【【推演】七日走势】给逐日走势与港股概率模型，本栏给**境外口径的港股个股与市场层明细**。
 
-  24. 隐藏「【无敌帝王蟹】全球头条」与「港股名家频道」两个栏目（2026-10-02 按用户要求，
+  24. 隐藏「【事实】全球头条」与「港股名家频道」两个栏目（2026-10-02 按用户要求，
       与同日隐藏「东方财富快讯」同一口径）：
       · 页面侧：两个 kicker（GLOBAL HEADLINES / HK GURU CHANNELS）退出正文顺序表
         REPORT_DATA_SECTIONS，_collect_report_parts 不再建区块，因此正文、像素主题
@@ -318,7 +317,7 @@
       · 风险提示：命中这两批标题时 shown=False（同东财快讯），保留完整标题展示，
         不再生成指向已隐藏栏目的锚点跳转（h-gh-* / h-hk-* 不再写入页面）；
       · 历史归档日报不改写。
-  25. 「新闻情绪」栏目更名为「【亮亮灯光鱿鱼】新闻情绪因子量化分析」（2026-10-10
+  25. 「新闻情绪」栏目更名为「【舆情】新闻情绪」（2026-10-10
       按用户要求，标题常量 SECTION_TITLE_NEWS_SENTIMENT 与其余鱼名栏目同口径）：
       只改显示标题与 backup_sources 的 used_by 标注；数据源键名、审计标签、
       kicker（NEWS SENTIMENT）与 DNS/MOM/ANV 计算口径一律不变；历史归档日报不改写。
@@ -334,14 +333,14 @@
           绝不让指针指向一个没渲染出来的栏目（见 _panorama_heat_selection 与 lq_html）；
         · 结论三栏（总结 / 今日预判 / 短线速查卡）不参与合并：它们本来就负责复述结论。
       本版合并两处跨栏 + 三处栏内：
-        ① 【及时秋刀鱼】AI 行情复盘 · 南北向资金（前一收盘）→ 只在【资金流动性分析】
+        ① 【事实】行情复盘 · 南北向资金（前一收盘）→ 只在【【推演】资金流动性】
            展开（环比 / z 值 / 分位 / 冲击成本 / 综合分，口径更专业）；
-        ② 【六眼飞鱼】量化 MACD 策略 · 量化强度榜的涨跌 / 主力净流入 → 只在 AI 行情复盘
+        ② 【策略】MACD 趋势 · 量化强度榜的涨跌 / 主力净流入 → 只在 AI 行情复盘
            「板块热力」展开（行情口径，附领涨股）；强度榜只留趋势分 / 趋势 / 信号。
-        ③ 【亮亮灯光鱿鱼】新闻情绪：一条快讯常同时点名多只个股，同一篇标题只展开一次，
+        ③ 【舆情】新闻情绪：一条快讯常同时点名多只个股，同一篇标题只展开一次，
            后面几处留「↳ 同一篇：见 XX」，并在「市场情绪关键词」如实写「同题合并 N 条」；
            全量版「原因」行引用同篇标题时改写为「见下方证据」，不把长标题连贴两次。
-        ④ 【滚滚翻车鱼】板块轮动：多个概念共用同一只港股观察篮子时，名单只展开一次，
+        ④ 【策略】板块轮动：多个概念共用同一只港股观察篮子时，名单只展开一次，
            后面几行留「↳ 同一篮子：见 XX（N 只）」。
         ⑤ 🦐 活鲜词库点缀：同一份日报里同一句比喻只出现一次（撞句按确定性顺序换变体，
            登记表在 pipeline 逐栏生成时递进，词库函数本身无状态、同输入同输出）。
@@ -380,7 +379,7 @@
         （回归测试 tests/test_push_split.py::PushTitleTests 按源码数调用点，漏改会红）；
       · 「日报未推送提醒」「日报推送失败提醒」两条纯文本告警的标题保持原样
         （仍带 🐙）：它们是提醒而非日报本体，不与 [OCTOPUS] 关键词混在一起。
-  29. 【游资剑鱼】多专家流派趋势分析接入「🦑 AI帮你提鲜」（2026-10-13）：该栏目此前是
+  29. 【策略】多流派研判接入「🦑 AI帮你提鲜」（2026-10-13）：该栏目此前是
       正文表格里唯一没有大白话解读的分析栏（octopus_ren._GENERATORS 缺 "UZI TREND" 条目）。
       · 解读生成器 octopus_ren._ren_uzi_trend 只引用 run_trend() 结果里已有的数字
         （算出结果的标的数 / 评委数 / 规则数 / 票型 / 均分 / 定调分布 / 被门禁撤下的评委 /
@@ -404,8 +403,8 @@
       · 配套资产一并清理：只服务于该栏目的 stealth 浏览器工具
         tools/patchright-enhanced/（vendor 的上游仓库 + 本仓库的 probe.js 适配器）
         与 .github/patches/octopus-hk-browser.patch（只注入 OCTOPUS_HK_* 三个变量）删除；
-      · 港股行情本身不受影响：恒指 / 恒科报价仍在【及时秋刀鱼】AI 行情复盘的
-        「港股双指数」子块，港股概率模型仍在【嗜血大白鲨】逐日走势量化分析
+      · 港股行情本身不受影响：恒指 / 恒科报价仍在【事实】行情复盘的
+        「港股双指数」子块，港股概率模型仍在【推演】七日走势
         （2026-10-23 起「量化分析总览」下线后，这里是概率模型的唯一正文出口），
         删除的只是重复的境外个股明细那一栏
         （重复率见《大纲-栏目重复率核对.md》：与「港股概率走势分析」重复 32%）；
@@ -415,7 +414,7 @@
   31. 新增「策略量化分析」5 个栏目（2026-10-21 按用户提供的「策略大类 → 细分策略」图）：
       图中 **权益多头{主观多头 / 量化多头}、纯债策略{纯债基金}、CTA策略{主观CTA /
       量化CTA}、套利策略{综合指数}** 共 4 大类 6 细分，落地为 1 个总览 + 4 个大类栏目：
-        · 【策略总览】量化策略全景（kicker STRATEGY OVERVIEW）：分类映射表 → 大类横向
+        · 【策略】全景对照（kicker STRATEGY OVERVIEW）：分类映射表 → 大类横向
           对比（细分均值）→ 细分全景排名（按信号分）→ 市场状态 / 最强-最弱 / 离散度；
         · 【权益多头】【纯债策略】【CTA策略】【套利策略·综合指数】（STRATEGY EQUITY /
           BOND / CTA / ARBITRAGE）：大类小结 → 细分量化明细 → 成对细分对比或单细分
@@ -440,21 +439,37 @@
       规则合成的统计口径，非投资建议；逐条口径见《策略量化分析-接入说明.md》，
       回归见 tests/test_strategy_quant.py。
 
-  32. 下线「【蜉蝣天地水母】量化分析总览」+「今日预判」去掉涨跌概率（2026-10-23 按用户要求）：
+  32. 下线「量化分析总览」+「今日预判」去掉涨跌概率（2026-10-23 按用户要求）：
       · **取消栏目**：正文顺序表 REPORT_OUTLOOK_SECTIONS 里的 "QUANT FORECAST"、
         SECTION_TITLE_QUANT_FORECAST 标题常量、_collect_report_parts 里建块的
         blocks["QUANT FORECAST"]、五套主题的栏目图标映射与
         octopus_ren 的解读生成器（_ren_quant_forecast / 生成器表 / 取数表 / 概率映射）
         一并移除——页面、微信分条与像素关卡名都不会再出现这一栏；
       · **只删栏目，不删模型**：港股量化引擎照常采集（仍计入数据覆盖总源数），
-        港股概率走势分析仍并入「每日趋势量化推演」，资金流动性分析仍单独成栏；
+        港股概率走势分析仍并入「【推演】七日走势」，【推演】资金流动性仍单独成栏；
         octopus_quant/render.render_forecast 作为可复用渲染函数保留（便于日后恢复）；
       · **今日预判不显示涨跌概率**：_conclusion_pairs 的「量化分析」只给 ▲▼■ 方向定调与
         目标交易日、「七日预测」只给整段方向与锚定日，不再写上涨概率 / P(7日涨)；
         octopus_ren._ren_forecast 改为只翻译方向定调与信号分，section_ren_block 对
         FORECAST 返回 p_pct=None → 栏首「涨跌概率 / 几率 ODDS METER」整条缺席；
-      · 概率数字仍在「每日趋势量化推演」与「资金流动性分析」如实展示，口径 / 留痕 /
+      · 概率数字仍在「【推演】七日走势」与「【推演】资金流动性」如实展示，口径 / 留痕 /
         结算不变；历史归档日报按惯例不改写。
+
+  35. 栏目按内容分类重命名 + 正文分类分组条（2026-10-28 按用户要求，Q1=A / Q2=插 / Q3=低频五因子选股）：
+      · **标题规则**：全部栏目统一成「【分类】内容名」，生物名退出主标题（只保留在各主题
+        的图标位 / 徽标位）；策略大类用层级写法【策略·权益】/【策略·债券】/【策略·商品】/
+        【策略·套利】。26 条对照表见 README「栏目命名」一节，回归见
+        tests/test_pipeline.py::SectionCategoryRenameTests；
+      · **只改显示标题**：kicker 键（FORECAST / LOWFREQ FACTORS …）、数据源键名、新鲜度
+        阈值键、审计标签、环境变量、REPORT_SECTION_ORDER 与推送门禁一律不动（少一栏 /
+        多一栏的判定依据还是 kicker）；
+      · **正文插分类分组条**：SECTION_CATEGORIES（卷首 / 结论 / 事实 / 舆情 / 推演 / 策略 /
+        收尾 / 行动）+ SECTION_CATEGORY_OF（kicker → 分类）+ render_section_sequence()，
+        只在分类变化时插一条，同一分类的连续栏目不重复插（data-octopus-category="1" 只供
+        回归与下游解析，页面不可见）；未登记 kicker 安静跳过，不硬造分组；
+      · **五主题各自配色**（全部按 WCAG AA ≥4.5:1 取色）：lime 荧光绿实心圆角条、guizang
+        克莱因蓝实心白字、dossier 深墨底荧光绿字、forum 深灰底青字、pixel 黑底柠檬绿等宽字；
+      · 历史归档日报（output/daily_report_*.html）按惯例不改写，仍是当时的真实版面。
 
   34. 一对多群组编码落位 `oai.1`（2026-10-23）：群组编码仍走 `PUSHPLUS_TOPIC`，代码里不写死；
       Actions 三个工作流（每日 / 手动 / 示例）把 Secret 缺省值兜底成 `${{ secrets.PUSHPLUS_TOPIC || 'oai.1' }}`
@@ -539,7 +554,7 @@ import octopus_quant as _quant  # noqa: E402
 from octopus_quant import sector_rotation as _sector_rotation  # noqa: E402
 # A股申万一级行业轮动（2026-10-04 移植回上线）：独立于港股「板块轮动」，可整体关闭。
 from octopus_quant import industry_rotation as _industry_rotation  # noqa: E402
-# 【游资剑鱼】多专家流派趋势分析（2026-10-11 新增）：方法来自 vendored 的 UZI-Skill 规则引擎
+# 【策略】多流派研判（2026-10-11 新增）：方法来自 vendored 的 UZI-Skill 规则引擎
 # （tools/UZI-Skill，MIT，66 位评委 × 242 条规则），日线复用 MACD 栏目同一批，零新增联网。
 from octopus_quant import uzi_trend as _uzi_trend  # noqa: E402
 import octopus_weekly as _weekly  # noqa: E402
@@ -555,7 +570,7 @@ import backup_sources as _backup  # noqa: E402
 import dedup as _dedup  # noqa: E402
 import shiquan_poem as _shiquan  # noqa: E402  # 📜 诗泉（palemoky/chinese-poetry-api）卷首随机一首古诗词
 import finance_analysis as _finance  # noqa: E402  # 🧩 本地 jieba 财经标题分析（情绪热点因子量化分析增强：词汇 + 情绪 + 风险词表）
-import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（「诗与远方的海」卷首栏）
+import octopus_bagua as _bagua  # noqa: E402  # ☯ 今日八卦运程与利忌（「【卷首】诗与卦象」卷首栏）
 try:
     import strategy_quant as _strategy_quant  # noqa: E402  # 📊 策略大类量化（图中 4 大类 6 细分，可离线兜底）
 except Exception:  # pragma: no cover
@@ -581,7 +596,7 @@ SECTOR_ROTATION_SOURCE_NAME = "板块轮动量化策略"
 INDUSTRY_ROTATION_ENABLED = str(os.environ.get("OCTOPUS_INDUSTRY_ROTATION", "1")).strip().lower() not in ("0", "false", "no")
 INDUSTRY_ROTATION_SOURCE_NAME = "申万一级行业轮动策略"
 INDUSTRY_ROTATION_SOURCE_LABEL = "东方财富 · 申万一级行业指数日线（31 个）"
-# 🐟 【慢游小丑鱼】低频小因子量化策略（2026-10-28 新增）：港股五因子横截面排序 + 推荐 20 只。
+# 🐟 【策略】低频五因子选股（2026-10-28 新增）：港股五因子横截面排序 + 推荐 20 只。
 # 独立数据线（东财港股快照 + 日线，Yahoo 备用），OCTOPUS_LOWFREQ=0 可整栏关闭；
 # 取不到快照 / 日线时整栏缺席，绝不用历史或合成数字顶替（OCTOPUS_LOWFREQ_DEMO=1 仅供版面演示）。
 LOWFREQ_ENABLED = str(os.environ.get("OCTOPUS_LOWFREQ", "1")).strip().lower() not in ("0", "false", "no")
@@ -590,7 +605,7 @@ LOWFREQ_SOURCE_LABEL = "东方财富港股快照 + 日线（Yahoo 备用）· �
 # 策略研判内的 MACD 子策略：独立于港股概率引擎，优先市场库 / 本次日线，缺项补免费源。
 MACD_ENABLED = str(os.environ.get("OCTOPUS_MACD", "1")).strip().lower() not in ("0", "false", "no")
 MACD_SOURCE_NAME = "MACD量化策略"
-# 【游资剑鱼】多专家流派趋势分析（独立栏目）：Weinstein 四阶段 + 均线排列 + 上游评委规则打分。
+# 【策略】多流派研判（独立栏目）：Weinstein 四阶段 + 均线排列 + 上游评委规则打分。
 # OCTOPUS_UZI_TREND=0 或 --no-uzi-trend 关闭；规则引擎（tools/UZI-Skill）缺席时栏目自然缺席。
 UZI_TREND_ENABLED = str(os.environ.get("OCTOPUS_UZI_TREND", "1")).strip().lower() not in ("0", "false", "no")
 UZI_TREND_SOURCE_NAME = "UZI多流派趋势分析"
@@ -611,7 +626,7 @@ REN_ENABLED = _ren.ENABLED
 # ------------------------------------------------------------
 # 🎯 精简模式（2026-09-30 按用户要求：「内容再精炼，适合短线操作，入门观看」）
 # 两件事，一个开关：
-#   ① 日报末尾加「【闪电飞鱼】短线速查卡」——≤600 字收束今日动作要点
+#   ① 日报末尾加「【行动】短线速查卡」——≤600 字收束今日动作要点
 #      （明日剧本 / 七日风 / 今明必看时点 / 板块强弱 / 水位 / 风声 / 数据底），
 #      末尾【新手三句话】从库文件（output/stock_memes.json，100 句股票梗句）读取并按盘面随时配对使用；
 #   ② 全篇瘦身——**栏目一个不少、口径一句不隐**，只把重复展开的长文压成结论行：
@@ -862,10 +877,10 @@ def _env_int(name, default, lo, hi):
 # 口径：同一批数据（同一个子栏）一份日报里只展开一次。后出现的栏目**保留子栏标题**，
 # 只留一行指针「↳ 同子栏合并：… 见 XX 栏目」——数字不静默消失，读者仍知道去哪儿核对。
 # 本版合并两处实测重复（核对脚本：tools/report_outline.py，可复现）：
-#   ① 南北向资金（前一收盘）：【资金流动性分析】栏目更专业（环比 / z 值 / 分位 / 冲击成本 /
-#      综合分），【及时秋刀鱼】AI 行情复盘 不再重复同一批成交总额（631.61 / 2,480.23 亿）；
+#   ① 南北向资金（前一收盘）：【【推演】资金流动性】栏目更专业（环比 / z 值 / 分位 / 冲击成本 /
+#      综合分），【事实】行情复盘 不再重复同一批成交总额（631.61 / 2,480.23 亿）；
 #   ② 板块涨跌 + 主力净流入：AI 行情复盘的「板块热力」是行情口径（附领涨股），
-#      【六眼飞鱼】量化 MACD 策略 的量化强度榜对已列出的板块只留趋势分 / 趋势 / 信号。
+#      【策略】MACD 趋势 的量化强度榜对已列出的板块只留趋势分 / 趋势 / 信号。
 # 结论三栏（总结 / 今日预判 / 短线速查卡）**不参与合并**：它们的职责就是复述结论。
 # 同源但口径不同的重复（社区样本计数、港股个股行情 vs 概率池、栏内概括行）不合并，
 # 逐条理由写在《大纲-栏目重复率核对.md》，可用 --full 与 OCTOPUS_SUB_MERGE=0 对照。
@@ -876,8 +891,8 @@ SUB_MERGE_ENABLED = _env_flag("OCTOPUS_SUB_MERGE", True)
 SUB_MERGE_POINTER = "↳ 同子栏合并"
 # 指针指到栏目名（不带栏目序号）：栏目序号按当日实际出场栏数动态编号，
 # 写死序号会在缺栏的某天指向别的栏目 —— 用栏目名既稳又够reader定位。
-SUB_MERGE_OWNER_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
-SUB_MERGE_OWNER_LIQUIDITY = "资金流动性分析"
+SUB_MERGE_OWNER_MARKET_REVIEW = "【事实】行情复盘"
+SUB_MERGE_OWNER_LIQUIDITY = "【推演】资金流动性"
 SUB_MERGE_NOTE_FLOW = "南向 / 北向成交总额（成交总额口径）"
 SUB_MERGE_NOTE_BOARD = "板块涨跌 / 主力净流入"
 
@@ -2026,7 +2041,7 @@ def fetch_google_news():
 
 # 数据源 1.x：AI趋势分析专题查询（Google News RSS 搜索）
 # ============================================================
-# 「【火爆大鱿鱼】美联储因子量化分析」「【巡回巨鲸】地缘政治因子量化分析」各自的专门抓取：
+# 「【事实】美联储因子」「【事实】地缘政治因子」各自的专门抓取：
 # 用 Google News RSS 搜索接口按主题查询，与「全球头条」（BUSINESS 头条流）互补。
 # 词条口径写死、可复现；接口不可用时整栏缺席，绝不以旧闻或推算内容兜底。
 GOOGLE_NEWS_SEARCH_RSS = ("https://news.google.com/rss/search?q={query}"
@@ -2098,13 +2113,13 @@ def _fetch_news_search(query, source_name, limit=8):
 
 
 def fetch_fed_trend():
-    """「【火爆大鱿鱼】美联储因子量化分析」专门抓取：Google News RSS 主题查询。"""
+    """「【事实】美联储因子」专门抓取：Google News RSS 主题查询。"""
     print("📡 正在抓取美联储趋势专题（Google News 查询）...")
     return _fetch_news_search(FED_TREND_QUERY, FED_TREND_SOURCE)
 
 
 def fetch_geo_trend():
-    """「【巡回巨鲸】地缘政治因子量化分析」专门抓取：Google News RSS 主题查询。"""
+    """「【事实】地缘政治因子」专门抓取：Google News RSS 主题查询。"""
     print("📡 正在抓取地缘政治趋势专题（Google News 查询）...")
     return _fetch_news_search(GEO_TREND_QUERY, GEO_TREND_SOURCE)
 
@@ -2455,7 +2470,7 @@ def fetch_hot_stocks():
 # ============================================================
 # 数据源 5：A股大盘全景（东方财富）
 # （指数表现 + 涨跌家数 + 成交额 + 北向资金 + 板块热力）
-# 2026-09-30 起与 Yahoo 实时行情一起并入栏目【及时秋刀鱼】AI 行情复盘；
+# 2026-09-30 起与 Yahoo 实时行情一起并入栏目【事实】行情复盘；
 # 抓取逻辑、审计口径与数据源名称「A股大盘全景」均不变。
 # ------------------------------------------------------------
 # 使用东方财富 push2 / push2his 免费公开接口（与「热门榜单」同源）：
@@ -2764,7 +2779,7 @@ def _panorama_breadth_mood(ratio):
 def fetch_market_panorama():
     """抓取 A股大盘全景：指数表现 / 涨跌家数 / 成交额 / 北向资金 / 板块热力。
 
-    供栏目【及时秋刀鱼】AI 行情复盘使用（2026-09-30 起与实时行情合并展示）。
+    供栏目【事实】行情复盘使用（2026-09-30 起与实时行情合并展示）。
     """
     print("📡 正在抓取 A股大盘全景（指数/涨跌家数/成交额/北向/板块）...")
     errors = []
@@ -4194,7 +4209,7 @@ def fetch_mainland_news_sources():
     newest = max((r["newest"] for r in records if r.get("newest")), default=None)
     missing = [r["name"] for r in records if r.get("status") != "ok"]
     # 时效体检（2026-10-13 新增）：逐源记「窗口内条数 / 最新条目北京时间 / 滞后小时数 /
-    # 当天还是滞后」，供【沸腾花蛤】情绪热点因子量化分析的体检行与总结的数据覆盖共用。
+    # 当天还是滞后」，供【舆情】媒体热点的体检行与总结的数据覆盖共用。
     health = [{"name": r.get("name", "?"), "status": r.get("status", "fail"),
                "items": len([it for it in (r.get("items") or []) if isinstance(it, dict)]),
                "newest_cst": r.get("newest_cst"), "lag_hours": r.get("lag_hours"),
@@ -4239,7 +4254,7 @@ def fetch_mainland_news_sources():
 
 
 # ============================================================
-# 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增；2026-10-19 更名，原「内地财经热点榜」）
+# 【舆情】媒体热点（2026-10-13 新增；2026-10-19 更名，原「内地财经热点榜」）
 #   内地 18 家财经媒体的窗口内标题 → 按主题词表聚类成热点榜，并附每家的时效体检；
 #   2026-10-19 起叠加本地「AI 分析」三件套（全部规则合成、只读标题）：
 #     ⚖ 情绪总览（情绪词典折叠成偏多/中性/偏空 + 净情绪分）
@@ -4250,7 +4265,7 @@ def fetch_mainland_news_sources():
 #   更名口径与 2026-10-10「新闻情绪 → 新闻情绪因子量化分析」一致：
 #   kicker（MAINLAND HOTLIST）、数据源键名、审计标签与环境变量 OCTOPUS_MAINLAND_HOTLIST 均不变。
 # ============================================================
-SECTION_TITLE_MAINLAND_HOTLIST = "【沸腾花蛤】情绪热点因子量化分析"
+SECTION_TITLE_MAINLAND_HOTLIST = "【舆情】媒体热点"
 MAINLAND_HOTLIST_ENABLED = _env_flag("OCTOPUS_MAINLAND_HOTLIST", True)
 MAINLAND_HOTLIST_THEME_MAX = 8          # 全量版最多列几个主题（按条数降序）
 MAINLAND_HOTLIST_THEME_MAX_PLAIN = 5    # 入门版
@@ -4858,7 +4873,7 @@ def fetch_macd_strategy(data=None):
 
 
 # ============================================================
-# 【游资剑鱼】多专家流派趋势分析（独立栏目，2026-10-11 新增）
+# 【策略】多流派研判（独立栏目，2026-10-11 新增）
 # ------------------------------------------------------------
 # 方法：vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill，MIT）——Weinstein 四阶段 /
 #       均线多头排列等指标按上游同式本地重算，打分直接调上游 evaluate()，不重写规则。
@@ -4903,7 +4918,7 @@ def fetch_uzi_trend(data=None, bars_by_code=None):
 
 
 # ============================================================
-# 【滚滚翻车鱼】板块轮动量化策略
+# 【策略】板块轮动
 # ============================================================
 def _sector_rotation_is_today(content_date, today=None):
     """近期交易日收盘可作为当前策略输入；日期缺失、未来或滞后超过 4 天均不算当天。"""
@@ -5121,9 +5136,9 @@ def fetch_sector_rotation(data=None):
 
 
 # ============================================================
-# 【巡游旗鱼】申万一级行业轮动（2026-10-04 移植 #84）
+# 【策略】行业轮动（申万）（2026-10-04 移植 #84）
 # ------------------------------------------------------------
-# 与港股【滚滚翻车鱼】板块轮动（A股概念 → 港股观察篮子）的分工：
+# 与港股【策略】板块轮动（A股概念 → 港股观察篮子）的分工：
 #   · 本条是 **A股自身** 的行业轮动——申万一级 31 个行业，周度胜率/赔率评分 + 月度纯多头组合；
 #   · 股票池是固定表 octopus_quant.industry_rotation.SW_L1_SECTORS（801xxx ↔ 东财 BKxxxx），
 #     主流程零 clist 调用（该大页列表在境外出口被 502 拒绝，且东财已改为三级混排）；
@@ -5283,9 +5298,16 @@ def fetch_lowfreq_factors(date_str=None):
             return _source_result(LOWFREQ_SOURCE_NAME, "unavailable", result=res,
                                   error=str(res.get("reason") or "数据不足"))
         uni = res.get("universe") or {}
-        print(f"  ✅ 低频小因子：快照 {uni.get('scanned', 0)} 只 → 可排序 {uni.get('ranked', 0)} 只"
-              f" · 推荐 {len(res.get('top') or [])} 只 · {res.get('as_of')} 收盘"
+        snap = res.get("snapshot") or {}
+        print(f"  ✅ 低频小因子：快照 {uni.get('scanned', 0)} 只 → 合格池 {uni.get('eligible', 0)} 只"
+              f" → 有日线 {uni.get('with_bars', 0)} 只（{(uni.get('bars_coverage') or 0):.0f}%）"
+              f" → 可排序 {uni.get('ranked', 0)} 只 · {res.get('as_of')} 收盘"
+              + (f" · 日线缺 {snap['bars_missing']} 只" if snap.get("bars_missing") else "")
               + ("（合成演示序列）" if res.get("synthetic") else ""))
+        if res.get("publish"):
+            print(f"     推荐 {len(res.get('top') or [])} 只（{res.get('publish_reason')}）")
+        else:
+            print(f"     ⚠️ 名单暂缓：{res.get('publish_reason')}（样本不足，不出版口径错位的名单）")
         # 内部衍生：读已收盘日线与当日快照，不计入「当天源」检验（snapshot）。
         return _source_result(LOWFREQ_SOURCE_NAME, "success", result=res,
                               content_date=res.get("as_of"), is_today=False, snapshot=True)
@@ -5498,12 +5520,12 @@ def _calendar_events_for_weekly(cal_result):
 
 
 def fetch_weekly_forecast(cal_result=None):
-    """运行【嗜血大白鲨】逐日走势量化分析（恒指日线 · 未来 7 个交易日逐日表格 · 无未来函数）。
+    """运行【推演】七日走势（恒指日线 · 未来 7 个交易日逐日表格 · 无未来函数）。
 
     cal_result: 可选，本次抓到的「时间节点」财经日历结果；用来给逐日表格标注事件日
     （★★★ 日程 → 「事件日波动可能放大」提醒），不参与任何概率计算。失败时如实降级。
     """
-    print("📡 正在计算【嗜血大白鲨】逐日走势量化分析（恒生指数 · 未来 7 个交易日逐日 · 无未来函数）...")
+    print("📡 正在计算【推演】七日走势（恒生指数 · 未来 7 个交易日逐日 · 无未来函数）...")
     if not WEEKLY_ENABLED:
         print("  ⏭ 量化走势预测已关闭（OCTOPUS_WEEKLY=0 / --no-weekly）")
         return _source_result("每周量化走势预测", "unavailable", result=None,
@@ -7172,7 +7194,7 @@ def _market_row_label(market, label, block_date=None):
 
 
 # ------------------------------------------------------------
-# 【及时秋刀鱼】AI 行情复盘（2026-09-30 按用户要求合并原「行情速览」+「全球大盘全景复盘」）
+# 【事实】行情复盘（2026-09-30 按用户要求合并原「行情速览」+「全球大盘全景复盘」）
 #   两栏重复的数字只保留一份：
 #     · 原全景「全球指数概览（Yahoo 报价）」= 道指 / 标普 / 纳指 / 恒指 / 恒科，
 #       与报价栏「全球与美股」「港股双指数」逐项完全相同（同一次 Yahoo 抓取的同一份
@@ -7408,7 +7430,7 @@ def gz_panorama_block(pan, with_indices=True, merge_flow=""):
 
 
 def gz_market_review(market, pan, merge_flow=""):
-    """guizang 版【及时秋刀鱼】AI 行情复盘：逐项报价 + A股全景，重复数字只出一份。
+    """guizang 版【事实】行情复盘：逐项报价 + A股全景，重复数字只出一份。
 
     合并前「全球指数概览」与「A股四指数 / 指数表现」在两栏各出一遍；合并后全球与港股
     指数只在报价块出现一次，A股八大宽基（含成交额）只在 A股指数表出现一次。
@@ -8036,7 +8058,7 @@ def _panorama_block(pan, with_indices=True, merge_flow=""):
 
 
 def _pixel_market_review(market, pan, merge_flow=""):
-    """pixel 版【及时秋刀鱼】AI 行情复盘：逐项报价 + A股全景，重复数字只出一份。
+    """pixel 版【事实】行情复盘：逐项报价 + A股全景，重复数字只出一份。
 
     merge_flow 非空时，南北向资金走「同子栏合并」口径（见 SUB_MERGE_ENABLED）。
     """
@@ -8161,7 +8183,7 @@ def _short_source(item):
 
 
 def _market_review_meta(kit, market, pan):
-    """【及时秋刀鱼】AI 行情复盘的徽标与副标题：两路数据分别标状态。
+    """【事实】行情复盘的徽标与副标题：两路数据分别标状态。
 
     合并栏目由「实时行情（Yahoo / 东财回补）」与「A股大盘全景（东财）」两路数据合成，
     成功的各路出自己的状态徽标（并标明「报价 / A股全景」是哪一路）与来源名（「 ＋ 」
@@ -8189,7 +8211,7 @@ def _market_review_meta(kit, market, pan):
 
 
 def _weekly_merged_meta(kit, weekly_src, hk7_src, quant_src=None):
-    """每日趋势量化推演栏的徽标与副标题：逐日表格、AI 七日走势、港股概率各自标状态。
+    """【推演】七日走势栏的徽标与副标题：逐日表格、AI 七日走势、港股概率各自标状态。
 
     逐日表格（因果量化引擎）、恒指 / 恒科 / 国企三指数七日概率（大模型研判，失败降级量化基准）
     与港股指数及个股概率分析共用一个栏目头。一路可用即出栏目；来源徽标与来源名分别标注，
@@ -8463,9 +8485,9 @@ def _market_brief(market, labels, kit, with_date=False):
 def _forecast_dir_text(label):
     """今日预判的方向文案：去掉七日预测 label 自带的「P(N日涨) xx%」。
 
-    2026-10-23 用户要求【回游金枪鱼】今日预判不显示涨跌概率；octopus_weekly 的
+    2026-10-23 用户要求【结论】今日预判不显示涨跌概率；octopus_weekly 的
     entry["label"]（如「■ 中性（略偏跌）· P(7日涨) 44%」）自带宽口径概率，
-    这里只保留方向定调部分，概率数字仍在「每日趋势量化推演」正文如实展示。
+    这里只保留方向定调部分，概率数字仍在「【推演】七日走势」正文如实展示。
     """
     text = str(label or "")
     text = re.sub(r"\s*[·,，]?\s*P\(\d*日涨\)\s*\d+(?:\.\d+)?%", "", text)
@@ -8480,7 +8502,7 @@ def _conclusion_pairs(kit, ai_result, market, pan, policy, quant=None, weekly=No
     """
     pairs = []
     # 量化分析置顶：只给方向定调与目标交易日，**不展示涨跌概率**
-    # （2026-10-23 用户要求：【回游金枪鱼】今日预判不显示涨跌概率）。
+    # （2026-10-23 用户要求：【结论】今日预判不显示涨跌概率）。
     if quant and quant.get("available"):
         head = quant.get("headline") or {}
         if head.get("available"):
@@ -8704,48 +8726,151 @@ SECTION_TITLE_RETAIL_SENTIMENT = _senti_strategy.SECTION_TITLE
 # 末尾「短线速查卡」——≤600 字归纳今日动作要点，末尾附【新手三句话】（从百句股票梗句库读取配对）。
 # 纯规则合成（output/octopus_short.py），数字全部取自下文各栏同一批实参；
 # OCTOPUS_LITE=0 / --full 关闭，日报回到全量长版。
-SECTION_TITLE_SHORT_CARD = "【闪电飞鱼】短线速查卡"
-SECTION_TITLE_STRATEGY = "【六眼飞鱼】量化 MACD 策略"
+SECTION_TITLE_SHORT_CARD = "【行动】短线速查卡"
+SECTION_TITLE_LIQUIDITY = "【推演】资金流动性"
+SECTION_TITLE_SUMMARY = "【收尾】今日总结"
+SECTION_TITLE_STRATEGY = "【策略】MACD 趋势"
 SECTION_TITLE_STRATEGY_READ = SECTION_TITLE_STRATEGY
-SECTION_TITLE_FORECAST = "【回游金枪鱼】今日预判"
+SECTION_TITLE_FORECAST = "【结论】今日预判"
 # 刊头后独立的卷首栏；不占行情栏目 00..N 编号，也不参与数据新鲜度审计。
-SECTION_TITLE_POETRY_SEA = "诗与远方的海"
-SECTION_TITLE_ECON_CALENDAR = "【探照安康鱼】时间节点量化分析"
-# 2026-10-10 更名：原「【火爆大鱿鱼】美联储因子量化分析」「【巡回巨鲸】地缘政治因子量化分析」；数据源键名
+SECTION_TITLE_POETRY_SEA = "【卷首】诗与卦象"
+SECTION_TITLE_ECON_CALENDAR = "【事实】时间节点"
+# 2026-10-10 更名：原「【事实】美联储因子」「【事实】地缘政治因子」；数据源键名
 # （美联储趋势 / 地缘政治趋势）、像素关卡名 FED TREND / GEO TREND 不变。
-SECTION_TITLE_FED_TREND = "【火爆大鱿鱼】美联储因子量化分析"
-SECTION_TITLE_GEO_TREND = "【巡回巨鲸】地缘政治因子量化分析"
+SECTION_TITLE_FED_TREND = "【事实】美联储因子"
+SECTION_TITLE_GEO_TREND = "【事实】地缘政治因子"
 # 2026-10-11 新增：独立栏目，方法来自 vendored 的 UZI-Skill 规则引擎（tools/UZI-Skill）。
-SECTION_TITLE_UZI_TREND = "【游资剑鱼】多专家流派趋势分析"
-# 2026-10-23 按用户要求下线「【蜉蝣天地水母】量化分析总览」整栏（标题常量一并移除）；
-# 港股概率模型仍在「每日趋势量化推演 · 港股概率走势分析」与「资金流动性分析」呈现。
-SECTION_TITLE_MARKET_REVIEW = "【及时秋刀鱼】AI 行情复盘"
-SECTION_TITLE_WEEKLY_FORECAST = "每日趋势量化推演"
-SECTION_TITLE_SECTOR_ROTATION = "【滚滚翻车鱼】板块轮动量化策略"
+SECTION_TITLE_UZI_TREND = "【策略】多流派研判"
+# 2026-10-23 按用户要求下线「量化分析总览」整栏（标题常量一并移除）；
+# 港股概率模型仍在「【推演】七日走势 · 港股概率走势分析」与「【推演】资金流动性」呈现。
+SECTION_TITLE_MARKET_REVIEW = "【事实】行情复盘"
+SECTION_TITLE_WEEKLY_FORECAST = "【推演】七日走势"
+SECTION_TITLE_SECTOR_ROTATION = "【策略】板块轮动"
 # 2026-10-04 新增：原「每日量化策略（行业轮动）」的申万一级 31 行业版本（PR #84 的移植版）
-SECTION_TITLE_INDUSTRY_ROTATION = "【巡游旗鱼】申万一级行业轮动"
+SECTION_TITLE_INDUSTRY_ROTATION = "【策略】行业轮动（申万）"
 # 2026-10-28 新增：低频小因子量化策略（小市值 / 短期反转 / 动量 12-1 / 换手率 / 价值 EP）。
-# 「慢游」= 低换手 + 长持有期，「小丑鱼」= 小市值因子；两者都是本栏的方法论意象。
-SECTION_TITLE_LOWFREQ = "【慢游小丑鱼】低频小因子量化策略"
-SECTION_TITLE_POLICY = "【深海肥蓝鲸】政策因子"
-SECTION_TITLE_TREND = "【深海大鲨鱼】趋势跟踪"
-SECTION_TITLE_GLOBAL_HEADLINES = "【无敌帝王蟹】全球头条"
+# 方法论意象仍留在栏内（低换手 + 长持有期、小市值因子），标题只写「【策略】低频五因子选股」。
+SECTION_TITLE_LOWFREQ = "【策略】低频五因子选股"
+SECTION_TITLE_POLICY = "【事实】政策因子"
+SECTION_TITLE_TREND = "【舆情】资讯跟踪"
+SECTION_TITLE_GLOBAL_HEADLINES = "【事实】全球头条"
 # 2026-10-10 更名：原「新闻情绪」；数据源键名、审计标签与 kicker（NEWS SENTIMENT）不变。
-SECTION_TITLE_NEWS_SENTIMENT = "【亮亮灯光鱿鱼】新闻情绪因子量化分析"
+SECTION_TITLE_NEWS_SENTIMENT = "【舆情】新闻情绪"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
-SECTION_TITLE_MEDIA_RISK = "【警戒爆炸豚】媒体舆情风险点量化分析"
+SECTION_TITLE_MEDIA_RISK = "【舆情】媒体风险"
 # 2026-10-21 新增：策略量化分析（图中 4 大类 6 细分，见 /strategy_quant.py）。
 # 1 个总览 + 4 个大类栏目，均基于基准指数日线量化计算，内部衍生、可离线兜底。
-SECTION_TITLE_STRATEGY_OVERVIEW = "【策略总览】量化策略全景"
-SECTION_TITLE_STRATEGY_EQUITY = "【权益多头】量化分析"
-SECTION_TITLE_STRATEGY_BOND = "【纯债策略】量化分析"
-SECTION_TITLE_STRATEGY_CTA = "【CTA策略】量化分析"
-SECTION_TITLE_STRATEGY_ARBITRAGE = "【套利策略·综合指数】量化分析"
+SECTION_TITLE_STRATEGY_OVERVIEW = "【策略】全景对照"
+SECTION_TITLE_STRATEGY_EQUITY = "【策略·权益】主观 vs 量化"
+SECTION_TITLE_STRATEGY_BOND = "【策略·债券】纯债稳定器"
+SECTION_TITLE_STRATEGY_CTA = "【策略·商品】CTA 趋势"
+SECTION_TITLE_STRATEGY_ARBITRAGE = "【策略·套利】综合指数"
 STRATEGY_QUANT_SOURCE = "策略量化"
 STRATEGY_QUANT_ENABLED = os.environ.get("OCTOPUS_STRATEGY_QUANT", "1").strip().lower() not in ("0", "false", "no")
 # 合成演示序列开关：**默认关闭**（取不到日线就如实标暂缺，绝不编造数字）；
 # 只有离线演示 / 测试显式设置 OCTOPUS_STRATEGY_DEMO=1 才用确定性合成序列兜底。
 STRATEGY_QUANT_DEMO = os.environ.get("OCTOPUS_STRATEGY_DEMO", "0").strip().lower() in ("1", "true", "yes")
+
+# ------------------------------------------------------------
+# 分类分组条（2026-10-28 用户要求「栏目名字按内容分类重命名」）：
+#   每个栏目标题统一成「【分类】内容名」，正文里在每组第一栏之前插一条分组条，
+#   让阅读动线一眼可见：结论 → 事实 → 舆情 → 推演 → 策略 → 收尾 → 行动。
+# 分组只影响「标题文字 + 分组条」，kicker 键、数据源键名、审计标签、门禁都不变。
+# ------------------------------------------------------------
+SECTION_CATEGORIES = (
+    ("卷首", "开卷", "诗与卦象，仅供参考娱乐，不参与行情判断"),
+    ("结论", "先看结论", "全篇方向定调与关键数字"),
+    ("事实", "发生了什么", "行情、日程、政策与外部因子"),
+    ("舆情", "传播得怎么样", "社区、资讯、热点、风险与情绪"),
+    ("推演", "可能会怎样", "资金流动性、未来 7 个交易日与概率"),
+    ("策略", "我们该怎么办 · 策略库", "趋势、轮动、选股与策略大类"),
+    ("收尾", "总结", "风险关注与数据覆盖"),
+    ("行动", "行动清单", "T+1 剧本、仓位与止损要点"),
+)
+SECTION_CATEGORY_OF = {
+    "POETRY & SEA": "卷首",
+    "FORECAST": "结论",
+    "MARKET REVIEW": "事实", "ECON CALENDAR": "事实", "POLICY SHOCK": "事实",
+    "QUANT POLICY": "事实", "FED TREND": "事实", "GEO TREND": "事实",
+    "GLOBAL HEADLINES": "事实",
+    "RETAIL SENTIMENT": "舆情", "TREND TRACKING": "舆情", "MAINLAND HOTLIST": "舆情",
+    "MEDIA RISK": "舆情", "NEWS SENTIMENT": "舆情",
+    "LIQUIDITY FLOW": "推演", "WEEKLY FORECAST": "推演", "HK PROBABILITY": "推演",
+    "STRATEGY READ": "策略", "UZI TREND": "策略", "SECTOR ROTATION": "策略",
+    "INDUSTRY ROTATION": "策略", "LOWFREQ FACTORS": "策略",
+    "STRATEGY OVERVIEW": "策略", "STRATEGY EQUITY": "策略", "STRATEGY BOND": "策略",
+    "STRATEGY CTA": "策略", "STRATEGY ARBITRAGE": "策略",
+    "SUMMARY": "收尾",
+    "SHORT CARD": "行动",
+}
+CATEGORY_BANNER_MARK = 'data-octopus-category="1"'
+
+
+def section_category(kicker):
+    """kicker → 分类名（未登记的栏目不分组建条，安静跳过）。"""
+    return SECTION_CATEGORY_OF.get(str(kicker or "").strip())
+
+
+def _category_meta(category):
+    for name, label, desc in SECTION_CATEGORIES:
+        if name == category:
+            return label, desc
+    return category or "", ""
+
+
+def _category_banner_html(kit, category):
+    """分组条：一条窄横条，写「分类 + 这一组看什么」。五种主题各自配色。"""
+    if not category:
+        return ""
+    label, desc = _category_meta(category)
+    theme = str(getattr(kit, "theme", "") or "")
+    # 白字主题（guizang）用 opacity 分层，避免为了「次要色」再引进一个非克莱因蓝的色值
+    # 白字 / 亮字主题靠 opacity 分层：不引入灰字，避免被「灰字强制」改成深灰
+    _DIM_OPACITY = "opacity:.78;" if theme in ("guizang", "dossier") else ""
+    if theme == "pixel":                 # DOS 复古：黑底荧光绿等宽字
+        bg, ink, dim = "#000000", C_LEMON, "#7BE3C8"
+        border, radius, mono = C_LEMON, "0", f"font-family:{FONT_MONO};"
+    elif theme == "forum":               # 暗色社区：深灰底 + 青字
+        bg, ink, dim = "#1C1C1F", F_CYAN, "#9AA0A6"
+        border, radius, mono = "#2E3137", "10px", ""
+    elif theme == "guizang":             # 克莱因蓝实心条（白字用 #fff 简写：克莱因蓝系外不新增色）
+        bg, ink, dim = GZ_KLEIN, "#fff", "#fff"
+        border, radius, mono = GZ_KLEIN, "6px", ""
+    elif theme == "dossier":             # 档案风：深墨底 + 荧光绿分类名（深绿落字版在墨底上不够亮）
+        bg, ink, dim = "#111111", D_GREEN, D_GREEN
+        border, radius, mono = D_GREEN, "2px", ""
+    else:                                # lime：荧光绿实心条
+        bg, ink, dim = L_LIME, L_INK_STRONG, "#333333"
+        border, radius, mono = L_LIME, "999px", ""
+    return (
+        f'<table {CATEGORY_BANNER_MARK} width="100%" cellpadding="0" cellspacing="0" bgcolor="{bg}" '
+        f'style="width:100%!important;border-collapse:collapse;margin:18px 0 6px;'
+        f'background:{bg};{mono}">'
+        f'<tr><td valign="middle" style="padding:7px 12px;border:1px solid {border};'
+        f'border-radius:{radius};background:{bg};color:{ink};">'
+        f'<span style="font-size:12px;font-weight:900;letter-spacing:0.08em;color:{ink};">'
+        f'{_esc(category)}</span>'
+        f'<span style="font-size:11px;padding-left:8px;color:{ink};">{_esc(label)}</span>'
+        f'<span style="font-size:10px;padding-left:8px;color:{dim};{_DIM_OPACITY}">{_esc(desc)}</span>'
+        f'</td></tr></table>')
+
+
+def _first_section_banner(sections, kit):
+    """第一栏前的分组条（其它栏由 render_section_sequence 按「分组变化」自动插）。"""
+    if not sections:
+        return ""
+    return _category_banner_html(kit, section_category(sections[0][0]))
+
+
+def render_section_sequence(sections, kit, start_index=1):
+    """按顺序产出 (分组条, 栏目 HTML)；只在分类变化时插条，同一组不重复。"""
+    previous = None
+    for index, (kicker, title, content, badge, caption) in enumerate(sections, start_index):
+        category = section_category(kicker)
+        banner = _category_banner_html(kit, category) if (category and category != previous) else ""
+        previous = category or previous
+        yield banner, kit.section(f"{index:02d}", kicker, title, content, badge, caption)
+
 
 # 每个实际渲染的数据栏目都先输出栏首结论。data 属性只供回归测试/下游解析定位，
 # 页面不可见；不要用标题文字做结构判断（主题与栏名会变）。
@@ -8766,7 +8891,7 @@ REPORT_FACT_SECTIONS = (                       # ① 发生了什么
 )
 REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
     "RETAIL SENTIMENT", "TREND TRACKING",
-    # 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增，2026-10-19 更名）紧跟趋势跟踪，
+    # 【舆情】媒体热点（2026-10-13 新增，2026-10-19 更名）紧跟趋势跟踪，
     # 「内地口径」与「港股口径」相邻。
     "MAINLAND HOTLIST",
     # 具体风险事实优先于模糊情绪：先看结构化事件预警，再看标题情绪分。
@@ -8774,7 +8899,7 @@ REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
 )
 REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
     # 2026-10-23 起「QUANT FORECAST」下线（量化分析总览整栏取消），
-    # 资金流动性与每日趋势量化推演两栏保留。
+    # 资金流动性与【推演】七日走势两栏保留。
     "LIQUIDITY FLOW", "WEEKLY FORECAST",
 )
 REPORT_STRATEGY_SECTIONS = (                   # ④' 策略量化（图中 4 大类 6 细分）
@@ -8787,7 +8912,7 @@ REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
     "LOWFREQ FACTORS",
     *REPORT_STRATEGY_SECTIONS,
 )
-# 2026-10-02 起 GLOBAL HEADLINES（【无敌帝王蟹】全球头条）与 HK GURU CHANNELS
+# 2026-10-02 起 GLOBAL HEADLINES（【事实】全球头条）与 HK GURU CHANNELS
 # （港股名家频道）按用户要求从页面隐藏，与此前隐藏的 EASTMONEY WIRE（东方财富快讯）
 # 同口径：kicker 不再进入正文顺序表，即使某处误建区块也不会渲染；
 # 抓取、审计、政策因子 / 策略研判 / 新闻情绪 / 逐栏 AI 研判的输入一律不变。
@@ -8941,7 +9066,7 @@ def _trend_topic_verdict(pos, neg, positive_label, negative_label, middle_label)
 
 
 def build_fed_trend_analysis(data, exclude_titles=()):
-    """「【火爆大鱿鱼】美联储因子量化分析」：鹰鸽词表定调 + 命中证据 + 财经日程相关时间点。
+    """「【事实】美联储因子」：鹰鸽词表定调 + 命中证据 + 财经日程相关时间点。
 
     available=False 时不渲染整栏（抓取失败 / 无标题）。确定性规则，非投资建议。
     """
@@ -8982,7 +9107,7 @@ def build_fed_trend_analysis(data, exclude_titles=()):
 
 
 def build_geo_trend_analysis(data, exclude_titles=()):
-    """「【巡回巨鲸】地缘政治因子量化分析」：升温/缓和词表定调 + 命中证据逐条引用。
+    """「【事实】地缘政治因子」：升温/缓和词表定调 + 命中证据逐条引用。
 
     available=False 时不渲染整栏。确定性规则，非投资建议。
     """
@@ -9067,7 +9192,7 @@ def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo
     """
     notes = {}
 
-    # ① 报价面（实时行情；渲染在【及时秋刀鱼】AI 行情复盘）：涨跌家数 + 最强/最弱 → 方向定调
+    # ① 报价面（实时行情；渲染在【事实】行情复盘）：涨跌家数 + 最强/最弱 → 方向定调
     market = data.get("实时行情") or {}
     if market.get("status") == "success":
         rows = []
@@ -9291,7 +9416,7 @@ def build_section_ai_notes(data, *, policy=None, senti=None, fed_trend=None, geo
     return notes
 
 
-# 合并栏目【及时秋刀鱼】AI 行情复盘保留原两栏各自的研判口径：
+# 合并栏目【事实】行情复盘保留原两栏各自的研判口径：
 #   报价面   = 原「行情速览」证据（逐项涨跌方向 + 最强/最弱）；
 #   A股全景面 = 原「全球大盘全景复盘」证据（涨跌家数 / 成交额 / 板块热力投票）。
 # 两套口径的证据与算法不同，各出一行研判，不合成一个没有依据的概率；
@@ -9364,7 +9489,7 @@ def _ai_judge_row(note, kit, aspect="", seed="", evidence_only=False):
     已有「AI帮你提鲜」结论的页面：标题仍保留为「⌁ AI 研判（…）」供读者识别口径，
     但只写「数据依据」和箭头前的同源数字，不再重复方向、概率条或预测句。
 
-    aspect：合并栏目（【及时秋刀鱼】AI 行情复盘）里标明这一行是哪一路证据
+    aspect：合并栏目（【事实】行情复盘）里标明这一行是哪一路证据
     （报价面 / A股全景面），两套口径各自独立，不混算成一个数。
     seed：🦐 活鲜点缀的确定性种子（含日期 + 栏目），同一天同一栏永远同一句比喻；
     点缀只加在完整研判文字上，note["text"] 本体不动，不影响原始研判数据。
@@ -9606,7 +9731,7 @@ def _weekly_daily_cards(daily, kit):
 
 
 def _weekly_forecast_block(res, kit):
-    """【嗜血大白鲨】逐日走势量化分析栏目内容（两主题共用；res 见 fetch_weekly_forecast 的 result）。
+    """【推演】七日走势栏目内容（两主题共用；res 见 fetch_weekly_forecast 的 result）。
 
     2026-09-29 起升级为**未来 7 个交易日逐日表格**：① 逐日表格（预测数字，一行一天）
     → ② 逐日理由 / 分析 / AI 操作建议（长文本卡）→ ③ 七日整段结论（P(7日涨) + 因子 +
@@ -9925,7 +10050,7 @@ def _beginner_tips_block(tips, kit):
 
 
 def _short_card_section(card_ctx, kit, today_n, total, tips=None, tips_in_card=True):
-    """🎯【闪电飞鱼】短线速查卡（2026-09-30 新增；正文结论之后的行动要点收尾）。
+    """🎯【行动】短线速查卡（2026-09-30 新增；正文结论之后的行动要点收尾）。
 
     用户要求「内容再精炼，适合短线操作，入门观看」：把全天数据里**最能直接动手**的
     几件事压成 ≤600 字一张卡——今天什么风、明天怎么做（概率 / 区间 / 仓位 / 止损 / 止盈）、
@@ -9933,7 +10058,7 @@ def _short_card_section(card_ctx, kit, today_n, total, tips=None, tips_in_card=T
 
     【新手三句话】（读取 `output/stock_memes.json` 百句股票梗句库，按看方向 / 放止损 /
     别动手随时配对使用）2026-10-16 起默认**不再排在卡尾**：用户要求「放在卦象后」，
-    三句话改由卷首「诗与远方的海」卦象之后渲染（见 `_beginner_tips_block`）；
+    三句话改由卷首「【卷首】诗与卦象」卦象之后渲染（见 `_beginner_tips_block`）；
     `tips_in_card=True`（卦象关闭 / 起卦失败时的回落路径）才继续排在卡尾。
     `tips` 由调用方按同一份 card_ctx 预先配对后传入，保证两处是同一组三句话。
 
@@ -10276,7 +10401,7 @@ def _industry_rotation_block(res, kit):
 
 
 def _uzi_result(data):
-    """【游资剑鱼】多专家流派趋势分析的结果字典（正文渲染与「🦑 AI帮你提鲜」共用同一份）。
+    """【策略】多流派研判的结果字典（正文渲染与「🦑 AI帮你提鲜」共用同一份）。
 
     与 _trend_section_stats 同一口径：解读层引用的数字必须来自渲染正文用的同一批实参，
     不允许两处各算一套。数据源缺席 / status 非 success / result 不是字典 → 返回 {}，
@@ -10290,7 +10415,7 @@ def _uzi_result(data):
 
 
 def _render_uzi_trend(source, kit):
-    """两套主题共用：【游资剑鱼】多专家流派趋势分析。
+    """两套主题共用：【策略】多流派研判。
 
     内容来自 octopus_quant.uzi_trend.run_trend() 的结果字典：面板概览 → 逐标的
     （阶段 / 均线 / RSI·KDJ·WR / 区间收益·位置·波动 / 评委面板 / 趋势定调）→
@@ -10305,7 +10430,7 @@ def _render_uzi_trend(source, kit):
 
 
 def _render_industry_rotation(source, kit):
-    """两套主题共用：【巡游旗鱼】申万一级行业轮动。
+    """两套主题共用：【策略】行业轮动（申万）。
 
     内容来自 octopus_quant.industry_rotation.run() 的结果字典（res["result"]）：
     口径行 → 行业宽度 → 全行业评分表 → 月度持仓与执行日以来表现 → 规则行。
@@ -10459,17 +10584,17 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         quant = quant_src.get("result") or {}
     lq_html = ""          # 资金流动性正文（同子栏合并要用它判断 05 栏是否真的在场）
     if quant.get("available"):
-        # 2026-10-23 按用户要求下线「【蜉蝣天地水母】量化分析总览」整栏：
+        # 2026-10-23 按用户要求下线「量化分析总览」整栏：
         # 只去掉这一栏的正文，概率模型本身不改——港股概率走势分析仍并入
-        # 「每日趋势量化推演」，资金流动性分析仍单独成栏；数据审计口径不变。
+        # 「【推演】七日走势」，【推演】资金流动性仍单独成栏；数据审计口径不变。
         hk_probability_html = _quant.render.render_hk_probability(quant, kit) or ""
         lq_html = _quant.render.render_liquidity(quant, kit)
         if lq_html:
             blocks["LIQUIDITY FLOW"] = (
-                "LIQUIDITY FLOW", "资金流动性分析", lq_html,
+                "LIQUIDITY FLOW", SECTION_TITLE_LIQUIDITY, lq_html,
                 kit.source_badge(quant_src), _short_source(quant_src))
 
-    # ---- 【嗜血大白鲨】逐日走势量化分析（2026-09-29 起：未来 7 个交易日逐日表格）----
+    # ---- 【推演】七日走势（2026-09-29 起：未来 7 个交易日逐日表格）----
     #      2026-09-30 合并原「AI 七日港股走势分析概率」为栏内子块：两路数据任一可用即出栏目，
     #      数据源键名 / 审计标签 / 留痕文件各自保留（与「行情速览 + 全景复盘」合并同一先例）。
     weekly_res = {}
@@ -10500,7 +10625,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "WEEKLY FORECAST", SECTION_TITLE_WEEKLY_FORECAST, merged_html,
             wk_badge, wk_caption)
 
-    # ⑦ 【滚滚翻车鱼】A股概念库 → 港股观察篮子：权重分与三策略投票分别呈现。
+    # ⑦ 【策略】A股概念库 → 港股观察篮子：权重分与三策略投票分别呈现。
     rotation_src = data.get(SECTOR_ROTATION_SOURCE_NAME) or {}
     if rotation_src.get("status") == "success":
         rotation_html = _render_sector_rotation(rotation_src, kit)
@@ -10509,7 +10634,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "SECTOR ROTATION", SECTION_TITLE_SECTOR_ROTATION, rotation_html,
                 kit.source_badge(rotation_src), _short_source(rotation_src))
 
-    # ⑦b 【巡游旗鱼】申万一级行业轮动（2026-10-04 移植 #84 上线）：
+    # ⑦b 【策略】行业轮动（申万）（2026-10-04 移植 #84 上线）：
     #     股票池 = 申万一级 31 个行业固定表（不再依赖被 502 的 clist 大页列表）；
     #     口径行 → 行业宽度 → 全行业评分表（含 20/60 日与 vs MA20 背景因子）→ 月度持仓与
     #     自执行日以来表现（对照全行业等权）→ 规则行。数据不足则整栏缺席，不补造行情。
@@ -10521,7 +10646,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "INDUSTRY ROTATION", SECTION_TITLE_INDUSTRY_ROTATION, industry_html,
                 kit.source_badge(industry_src), _short_source(industry_src))
 
-    # 🐟 【慢游小丑鱼】低频小因子量化策略（2026-10-28 新增）：
+    # 🐟 【策略】低频五因子选股（2026-10-28 新增）：
     #     港股五因子横截面（小市值 / 短期反转 / 动量 12-1 / 换手率 / 价值 EP）→ 推荐 20 只。
     #     取不到快照或日线时整栏缺席；渲染异常只影响本栏，绝不拖垮整份日报。
     lf_src = data.get(LOWFREQ_SOURCE_NAME) or {}
@@ -10580,7 +10705,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 kit.source_badge(cal), _short_source(cal),
             )
 
-    # ① 【及时秋刀鱼】AI 行情复盘（2026-09-30 合并原「行情速览」+「全球大盘全景复盘」）
+    # ① 【事实】行情复盘（2026-09-30 合并原「行情速览」+「全球大盘全景复盘」）
     #    逐项报价（Yahoo / 东财回补）+ A股全景（东财）；重复数字只出一份，缺失品种不出行。
     #    两路数据任意一路成功即渲染，徽标与副标题分别标出各自状态。
     #    2026-10-12 起「同子栏合并」：05 资金流动性栏目在场时，南北向成交总额只在
@@ -10647,7 +10772,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         # 兼容旧 kicker 的锚点引用（如风险提示中的 AI READ 引用）
         blocks["AI READ"] = blocks["STRATEGY READ"]
 
-    # ④b 【游资剑鱼】多专家流派趋势分析（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
+    # ④b 【策略】多流派研判（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
     #     评委规则打分。日线复用 MACD 栏目同一批；规则引擎缺席或日线不足 → 整栏缺席。
     uzi_src = data.get(UZI_TREND_SOURCE_NAME) or {}
     uzi_res = _uzi_result(data)      # 正文与「🦑 AI帮你提鲜」共用同一份结果（不另算一套）
@@ -10676,7 +10801,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             blocks["TREND TRACKING"] = (
                 "TREND TRACKING", SECTION_TITLE_TREND, digest, "", "")
 
-    # ⑤b 【沸腾花蛤】情绪热点因子量化分析（2026-10-13 新增，2026-10-19 由「内地财经热点榜」
+    # ⑤b 【舆情】媒体热点（2026-10-13 新增，2026-10-19 由「内地财经热点榜」
     #     更名）：18 家内地财经媒体窗口内标题按主题词表聚类（规则合成、确定性），并附每家的
     #     时效体检（条数 / 最新时间 / 滞后小时数 / 暂缺点名）；2026-10-19 起叠加本地 AI 分析
     #     三件套——⚖ 情绪总览、🔥 热点聚合、⚠ 预警风险点（全部标题级词典启发式，非校准概率）。
@@ -10705,7 +10830,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                     "MAINLAND HOTLIST", SECTION_TITLE_MAINLAND_HOTLIST, hot_html,
                     kit.badge("情绪因子", "ai"), caption)
 
-    # ⑥ 资讯：三个资讯栏目（东方财富快讯 / 【无敌帝王蟹】全球头条 / 港股名家频道）
+    # ⑥ 资讯：三个资讯栏目（东方财富快讯 / 【事实】全球头条 / 港股名家频道）
     #    自 2026-10-02 起全部在页面隐藏（用户要求），不再单独渲染为栏目；
     #    原始抓取数据照旧保留，仅作为 媒体风险 / 政策因子 / 策略研判 / 新闻情绪 /
     #    逐栏 AI 研判 / AI帮你提鲜 / 数据审计 的信号源（与「东方财富快讯」隐藏时的口径完全一致）。
@@ -10757,14 +10882,14 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 最终结论 / 前置盘点：核心判断放大显示，关键市场数字保留在同一栏核对。
     conclusion = _conclusion_pairs(kit, ai_result, market, pan, policy,
                                    quant=quant, weekly=weekly_res)
-    # ☯ 今日卦象已移到卷首「诗与远方的海」，不属于市场预判：此栏只保留真实数据结论。
+    # ☯ 今日卦象已移到卷首「【卷首】诗与卦象」，不属于市场预判：此栏只保留真实数据结论。
     if conclusion:
         blocks["FORECAST"] = ("FORECAST", SECTION_TITLE_FORECAST,
                                _conclusion_panel(kit, conclusion), "", "")
     summary = _summary_pairs(ai_result, pan, policy, source_items, today_n, total,
                              quant=quant, media_risk=media_risk_result,
                              backup_events=(data.get("_backup_info") or {}).get("events"))
-    blocks["SUMMARY"] = ("SUMMARY", "总结", kit.kv(summary), "", "")
+    blocks["SUMMARY"] = ("SUMMARY", SECTION_TITLE_SUMMARY, kit.kv(summary), "", "")
 
     # 栏目顺序固定为：今日预判 → ①发生了什么 → ②传播得怎么样 → ③可能会怎样 → ④我们该怎么办 → 总结；
     # 没有采集到社区样本时情绪因子缺席。
@@ -10788,7 +10913,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     if REN_ENABLED:
         ren_ctx = {
             # 以下对象与对应正文严格同源；任何生成器都只能读取这些结构化结果。
-            # 【沸腾花蛤】情绪热点因子量化分析：与正文 blocks["MAINLAND HOTLIST"] 同一份结果
+            # 【舆情】媒体热点：与正文 blocks["MAINLAND HOTLIST"] 同一份结果
             "hotlist": hotlist_res,
             "date_str": date_str or _today_str(),
             "notes": judge_notes,
@@ -10804,7 +10929,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "macd": ai_result.get("macd") if isinstance(ai_result, dict) else {},
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
-            # 【游资剑鱼】：与正文 blocks["UZI TREND"] 用的同一份 run_trend() 结果
+            # 【策略】：与正文 blocks["UZI TREND"] 用的同一份 run_trend() 结果
             "uzi": uzi_res,
             "coverage": {
                 "today": today_n, "total": total,
@@ -10891,7 +11016,11 @@ def _poetry_sea_section(parts, kit):
     bagua_html = (parts or {}).get("bagua_html") or ""
     tips_html = (parts or {}).get("beginner_tips_html") or ""
     content = poem_html + bagua_html + tips_html
-    return kit.section("序", "POETRY & SEA", SECTION_TITLE_POETRY_SEA, content) if content else ""
+    if not content:
+        return ""
+    # 卷首也走同一套分类条：分类 = 「卷首」，与正文的结论 / 事实 / 舆情… 保持一致
+    banner = _category_banner_html(kit, section_category("POETRY & SEA"))
+    return banner + kit.section("序", "POETRY & SEA", SECTION_TITLE_POETRY_SEA, content)
 
 
 # ============================================================
@@ -11257,7 +11386,7 @@ def build_daily_quant_strategy(data):
             quant_signal = f"防御为主·规避 {bottom['name']}（{bottom['trend']}）"
 
     # —— 4. 技术速读（指数动能聚合；2026-09-09 起不再逐条复述行情数值）——
-    # 行情明细数字的唯一展示位置是【及时秋刀鱼】AI 行情复盘；此处只保留聚合（涨跌家数、
+    # 行情明细数字的唯一展示位置是【事实】行情复盘；此处只保留聚合（涨跌家数、
     # 平均涨跌、最强/最弱点名）与 AI 解读，避免同一数字在页内出现三次
     # （旧版：行情报价 + 指数动能明细表 + 多因子矩阵雅虎明细行）。
     # tech_rows 保留（兼容既有调用），渲染侧改用 tech_stats。
@@ -11474,7 +11603,7 @@ def _ai_analysis_block(res, merge_boards=(), board_owner=""):
                         f'font-family:{FONT_MONO};">■ NO SECTOR SIGNAL</div>')
         sectors_html = _pixel_panel("SECTOR TREND // 板块趋势跟踪", sectors_body, C_CYAN, "✚")
 
-    # 指数动能聚合：明细数值只在【及时秋刀鱼】AI 行情复盘展示，此处仅保留聚合与解读（2026-09-09 去重）。
+    # 指数动能聚合：明细数值只在【事实】行情复盘展示，此处仅保留聚合与解读（2026-09-09 去重）。
     tech_stats = res.get("tech_stats") or {}
     if tech_stats.get("count"):
         _band_color = {"强势": C_GREEN, "偏强": C_GREEN, "震荡": C_AMBER,
@@ -14337,10 +14466,12 @@ def generate_report_dossier(data, date_display, date_str, sentiment_history=None
         sections = parts["sections"]
         # 栏目头也要在换色期间拼（斑马底等读的是当前全局色）
         content_html = "".join(
-            PART_BREAK_MARK + DOSSIER_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
-            for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
+            PART_BREAK_MARK + banner + section
+            for banner, section in render_section_sequence(sections[1:], DOSSIER_KIT, 1))
         opening = _poetry_sea_section(parts, DOSSIER_KIT)
-        first_section = (opening + PART_BREAK_MARK if opening else "") + DOSSIER_KIT.section("00", *sections[0])
+        first_section = ((opening + PART_BREAK_MARK if opening else "")
+                         + _first_section_banner(sections, DOSSIER_KIT)
+                         + DOSSIER_KIT.section("00", *sections[0]))
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -14717,10 +14848,12 @@ def generate_report_forum(data, date_display, date_str, sentiment_history=None,
                                       news_corpus=news_corpus)
         sections = parts["sections"]
         content_html = "".join(
-            PART_BREAK_MARK + FORUM_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
-            for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
+            PART_BREAK_MARK + banner + section
+            for banner, section in render_section_sequence(sections[1:], FORUM_KIT, 1))
         opening = _poetry_sea_section(parts, FORUM_KIT)
-        first_section = (opening + PART_BREAK_MARK if opening else "") + FORUM_KIT.section("00", *sections[0])
+        first_section = ((opening + PART_BREAK_MARK if opening else "")
+                         + _first_section_banner(sections, FORUM_KIT)
+                         + FORUM_KIT.section("00", *sections[0]))
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -15033,10 +15166,12 @@ def generate_report_lime(data, date_display, date_str, sentiment_history=None,
                                       news_corpus=news_corpus)
         sections = parts["sections"]
         content_html = "".join(
-            PART_BREAK_MARK + LIME_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
-            for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
+            PART_BREAK_MARK + banner + section
+            for banner, section in render_section_sequence(sections[1:], LIME_KIT, 1))
         opening = _poetry_sea_section(parts, LIME_KIT)
-        first_section = (opening + PART_BREAK_MARK if opening else "") + LIME_KIT.section("00", *sections[0])
+        first_section = ((opening + PART_BREAK_MARK if opening else "")
+                         + _first_section_banner(sections, LIME_KIT)
+                         + LIME_KIT.section("00", *sections[0]))
         total = parts["total"]
         today_n = parts["today_n"]
         generated_at = _now()
@@ -15333,10 +15468,12 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
     total = parts["total"]
     today_n = parts["today_n"]
     opening = _poetry_sea_section(parts, GUIZANG_KIT)
-    first_section = (opening + PART_BREAK_MARK if opening else "") + GUIZANG_KIT.section("00", *sections[0])
+    first_section = ((opening + PART_BREAK_MARK if opening else "")
+                     + _first_section_banner(sections, GUIZANG_KIT)
+                     + GUIZANG_KIT.section("00", *sections[0]))
     content_html = "".join(
-        PART_BREAK_MARK + GUIZANG_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
-        for i, (kicker, title, content, badge, caption) in enumerate(sections[1:], 1))
+        PART_BREAK_MARK + banner + section
+        for banner, section in render_section_sequence(sections[1:], GUIZANG_KIT, 1))
     generated_at = _now()
     # 页脚：入门版只留一句免责 + 一句数据来源；排版 / 色板 / 涨跌符号的说明只在 --notes / --full 出。
     footer_text = (
@@ -15417,8 +15554,8 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
     # 每个栏目前都插入分条标记（含第一栏），供超长日报按完整栏目分条推送
     opening = _poetry_sea_section(parts, PIXEL_KIT)
     content_html = (PART_BREAK_MARK + opening if opening else "") + "".join(
-        PART_BREAK_MARK + PIXEL_KIT.section(f"{i:02d}", kicker, title, content, badge, caption)
-        for i, (kicker, title, content, badge, caption) in enumerate(sections, 0))
+        PART_BREAK_MARK + banner + section
+        for banner, section in render_section_sequence(sections, PIXEL_KIT, 0))
 
     # 7. 拼接完整 HTML（头部嵌入元信息，供 --push-only 二次当天检验）
     generated_at = _now()
@@ -16808,7 +16945,7 @@ def quant_only_report(*, enable_stocks=True):
 
 
 def weekly_only_report():
-    """只跑【嗜血大白鲨】逐日走势量化分析并打印结果（研究 / 排障用，不生成日报、不推送）。"""
+    """只跑【推演】七日走势并打印结果（研究 / 排障用，不生成日报、不推送）。"""
     print("🐙 " + "=" * 48)
     print("   章鱼 AI · 量化走势预测（未来 7 个交易日 · 研究模式）")
     print("🐙 " + "=" * 48)
@@ -17080,13 +17217,13 @@ def main():
     parser.add_argument("--no-ren", action="store_true",
                        help="关闭逐栏目「🦑 AI帮你提鲜」大白话翻译块（默认开启）")
     parser.add_argument("--full", action="store_true",
-                       help="关闭精简模式：不出「【闪电飞鱼】短线速查卡」，各栏长文 / 表格 / "
+                       help="关闭精简模式：不出「【行动】短线速查卡」，各栏长文 / 表格 / "
                             "方法论注释回到全量长版（等价 OCTOPUS_LITE=0）")
     parser.add_argument("--notes", action="store_true",
                        help="精简版面里保留说明文字 / 过程文字（计算口径、数据来源、折叠披露等；"
                             "默认入门版不渲染，等价 OCTOPUS_NOTES=1）")
     parser.add_argument("--no-uzi-trend", action="store_true",
-                        help="关闭【游资剑鱼】多专家流派趋势分析栏目（等价 OCTOPUS_UZI_TREND=0）")
+                        help="关闭【策略】多流派研判栏目（等价 OCTOPUS_UZI_TREND=0）")
     parser.add_argument("--no-hk7", action="store_true",
                        help="跳过 AI 七日港股走势分析概率（只出常规栏目，运行更快）")
     parser.add_argument("--hk7-only", action="store_true",

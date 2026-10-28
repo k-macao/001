@@ -11,7 +11,7 @@ import math
 import re
 
 SECTION_KICKER = "RETAIL SENTIMENT"
-SECTION_TITLE = "【麻辣大龙虾】散户群体情绪量化分析"
+SECTION_TITLE = "【舆情】社区情绪"
 SECTION_CAPTION = "Reddit · StockTwits · 非投资建议"
 
 # Reddit 仅提供公开标题；方向计数使用固定词表，单条帖子最多计入一个方向。

@@ -1,4 +1,4 @@
-"""【沸腾花蛤】情绪热点因子量化分析（原内地财经热点榜）标题分析回归（本地 jieba，无网络请求）。"""
+"""【舆情】媒体热点（原内地财经热点榜）标题分析回归（本地 jieba，无网络请求）。"""
 import sys
 import unittest
 from pathlib import Path

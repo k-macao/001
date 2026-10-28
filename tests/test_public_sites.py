@@ -396,21 +396,21 @@ class SentimentFactorTests(unittest.TestCase):
             for kit in (pipeline.GUIZANG_KIT, pipeline.PIXEL_KIT):
                 titles = [s[1] for s in pipeline._collect_report_parts(data, kit)["sections"]]
                 # 正文顺序：今日预判（2026-10-13 置顶）→ 专业分析 → 行情与资讯数据 → 总结
-                # 2026-09-30 起「行情速览」+「全球大盘全景复盘」合并为「【及时秋刀鱼】AI 行情复盘」
+                # 2026-09-30 起「行情速览」+「全球大盘全景复盘」合并为「【事实】行情复盘」
                 review = pipeline.SECTION_TITLE_MARKET_REVIEW
-                self.assertEqual(titles[0], "【回游金枪鱼】今日预判")
+                self.assertEqual(titles[0], "【结论】今日预判")
                 self.assertLess(titles.index(review),
                                 titles.index(pipeline.SECTION_TITLE_TREND))
-                self.assertLess(titles.index("【回游金枪鱼】今日预判"),
+                self.assertLess(titles.index("【结论】今日预判"),
                                 titles.index(review))
                 self.assertNotIn("行情速览", titles)            # 旧栏目名不得回潮
                 self.assertNotIn("全球大盘全景复盘", titles)
                 self.assertNotIn("每日量化策略趋势跟踪线索", titles)  # 旧栏目名不得回潮
-                self.assertLess(titles.index(pipeline.SECTION_TITLE_FORECAST), titles.index("总结"))
+                self.assertLess(titles.index(pipeline.SECTION_TITLE_FORECAST), titles.index(pipeline.SECTION_TITLE_SUMMARY))
                 if pipeline.SECTION_TITLE_SHORT_CARD in titles:
                     self.assertEqual(titles[-1], pipeline.SECTION_TITLE_SHORT_CARD)
                 else:
-                    self.assertEqual(titles[-1], "总结")  # 今日预判已置顶，总结收尾
+                    self.assertEqual(titles[-1], pipeline.SECTION_TITLE_SUMMARY)  # 今日预判已置顶，总结收尾
 
     def test_section_absent_and_failures_named_when_reddit_down(self):
         failed = {"Reddit": pipeline._public_site_result("Reddit", [], error="HTTP 403")}
@@ -632,7 +632,7 @@ class RetailSentimentFactorTests(unittest.TestCase):
             with self.subTest(theme=theme):
                 section = pipeline._senti_strategy.build_section(kit, data)
                 self.assertEqual(section[0], "RETAIL SENTIMENT")
-                self.assertEqual(section[1], "【麻辣大龙虾】散户群体情绪量化分析")
+                self.assertEqual(section[1], "【舆情】社区情绪")
                 parts = pipeline._collect_report_parts(data, kit, date_str="20260927")
                 self.assertEqual(parts["sections"][0][0], "RETAIL SENTIMENT")
                 report = pipeline.generate_report(

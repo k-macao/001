@@ -693,11 +693,11 @@ class RenderIntegrationTests(unittest.TestCase):
         }
         html = pipeline.generate_report(data, "2026年9月28日 · 周一",
                                        res["as_of"].replace("-", ""))
-        for title in ("每日趋势量化推演", "港股概率走势分析", "资金流动性分析"):
+        for title in ("【推演】七日走势", "港股概率走势分析", "【推演】资金流动性"):
             self.assertIn(title, html)
         # 2026-10-23 整栏下线：标题 / 栏目都不再出现在页面
         self.assertNotIn("量化分析总览", html)
-        self.assertEqual(html.count("每日趋势量化推演</h2>"), 1)
+        self.assertEqual(html.count("【推演】七日走势</h2>"), 1)
         self.assertNotIn("港股概率走势分析</h2>", html)
         # 2026-10-23 起「量化分析总览」下线，「预测概括 / 指数概率」等块随该栏一并消失
         self.assertNotIn("预测概括", html)

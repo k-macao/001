@@ -1,4 +1,4 @@
-"""【游资剑鱼】多专家流派趋势分析的离线回归（全部不联网）。
+"""【策略】多流派研判的离线回归（全部不联网）。
 
 覆盖：
   · vendored 规则引擎装载（66 位评委 / 242 条规则）与缺席降级；
@@ -244,7 +244,7 @@ class RenderTest(unittest.TestCase):
         for kit in (pipeline.LIME_KIT, pipeline.PIXEL_KIT, pipeline.GUIZANG_KIT,
                     pipeline.FORUM_KIT, pipeline.DOSSIER_KIT):
             html = uzi.render_trend(result, kit)
-            self.assertIn("多专家流派趋势分析", html)
+            self.assertIn("多流派研判", html)
             self.assertIn("恒生指数", html)
             self.assertIn("Stage 2 上升", html)
 
@@ -326,7 +326,7 @@ class PipelineIntegrationTest(unittest.TestCase):
         self.assertNotIn("_bars_by_code", source)
 
     def test_section_title_is_in_analysis_order(self):
-        self.assertEqual(pipeline.SECTION_TITLE_UZI_TREND, "【游资剑鱼】多专家流派趋势分析")
+        self.assertEqual(pipeline.SECTION_TITLE_UZI_TREND, "【策略】多流派研判")
         self.assertIn("UZI TREND", pipeline.REPORT_ANALYSIS_SECTIONS)
         order = pipeline.REPORT_ANALYSIS_SECTIONS
         self.assertLess(order.index("STRATEGY READ"), order.index("UZI TREND"))
@@ -338,7 +338,7 @@ class PipelineIntegrationTest(unittest.TestCase):
         source = pipeline.fetch_uzi_trend({}, self.bars)
         for kit in (pipeline.LIME_KIT, pipeline.PIXEL_KIT, pipeline.GUIZANG_KIT,
                     pipeline.FORUM_KIT, pipeline.DOSSIER_KIT):
-            self.assertIn("多专家流派趋势分析", pipeline._render_uzi_trend(source, kit))
+            self.assertIn("多流派研判", pipeline._render_uzi_trend(source, kit))
         self.assertEqual(pipeline._render_uzi_trend({"status": "unavailable"}, pipeline.LIME_KIT), "")
         self.assertEqual(pipeline._render_uzi_trend({"status": "success", "result": {}},
                                                     pipeline.LIME_KIT), "")
@@ -377,12 +377,12 @@ class ReportIntegrationTest(unittest.TestCase):
         for theme in ("lime", "guizang", "pixel", "forum", "dossier"):
             html = self._html(data, theme)
             self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html, theme)
-            self.assertIn("多专家流派趋势分析 · 已收盘日线", html, theme)
+            self.assertIn("多流派研判 · 已收盘日线", html, theme)
             self.assertIn("Stage 2 上升", html, theme)
             self.assertLess(html.find(pipeline.SECTION_TITLE_STRATEGY),
                             html.find(pipeline.SECTION_TITLE_UZI_TREND), theme)
             self.assertLess(html.find(pipeline.SECTION_TITLE_UZI_TREND),
-                            html.find("总结"), theme)      # 专业分析栏目一律在结论之前
+                            html.find(pipeline.SECTION_TITLE_SUMMARY), theme)      # 专业分析栏目一律在结论之前
 
     def test_plain_report_keeps_conclusion_and_drops_rule_detail(self):
         data = self._data()
@@ -397,7 +397,7 @@ class ReportIntegrationTest(unittest.TestCase):
     def test_absent_section_is_named_in_coverage_audit(self):
         html = self._html(self._data("unavailable"), "lime")
         self.assertNotIn(pipeline.SECTION_TITLE_UZI_TREND, html)
-        self.assertNotIn("多专家流派趋势分析 · 已收盘日线", html)
+        self.assertNotIn("多流派研判 · 已收盘日线", html)
         self.assertIn(pipeline.UZI_TREND_SOURCE_NAME, html)   # 数据覆盖里点名缺席
         parts = pipeline._collect_report_parts(self._data("unavailable"), pipeline.LIME_KIT,
                                                date_str="20261002")
@@ -441,7 +441,7 @@ class ReportIntegrationTest(unittest.TestCase):
         with patch.object(pipeline, "REN_ENABLED", False):
             html = self._html(data, "guizang")
         self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html)
-        self.assertIn("多专家流派趋势分析 · 已收盘日线", html)
+        self.assertIn("多流派研判 · 已收盘日线", html)
         self.assertNotIn("趋势评审团：", html)
 
 

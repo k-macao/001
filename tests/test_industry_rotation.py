@@ -5,7 +5,7 @@
 
 2026-09-29 起股票池改为 31 个申万一级行业固定表（octopus_quant.industry_rotation.SW_L1_SECTORS），
 2026-10-04 起从被删除的 output/sector_rotation.py 移植回 output/octopus_quant/industry_rotation.py，
-栏目名【巡游旗鱼】申万一级行业轮动，存档键 industry_rotation*（与港股板块轮动互不覆盖）：
+栏目名【策略】行业轮动（申万），存档键 industry_rotation*（与港股板块轮动互不覆盖）：
 主流程不再调用 clist 列表接口；本文件同时覆盖：固定表 → 日线名称复核 → 覆盖门槛 →
 申万官方源逐行业兜底 → 月度持仓 T+1 执行跟踪 → 拼版。
 """
@@ -385,14 +385,14 @@ class CoverageAndFallbackTests(unittest.TestCase):
 
     def test_registry_line_for_rotation(self):
         line = backup_sources.DATA_LINES["sw_industry_index"]
-        self.assertIn("【巡游旗鱼】申万一级行业轮动", line["used_by"])
+        self.assertIn("【策略】行业轮动（申万）", line["used_by"])
         urls = [u for _l, u, _s in backup_sources.candidates("sw_industry_index", sw_code="801780")]
         self.assertEqual(urls[0], ir.KLINE_URLS[0])
         self.assertEqual(urls[1], ir.KLINE_URLS[1])
         self.assertTrue(urls[2].startswith(ir.SW_TREND_URL))
         self.assertIn("swindexcode=801780", urls[2])
         self.assertNotIn("每日量化策略·行业列表", backup_sources.DATA_LINES["em_clist"]["used_by"])
-        self.assertIn("【巡游旗鱼】申万一级行业轮动·板块指数日K备用",
+        self.assertIn("【策略】行业轮动（申万）·板块指数日K备用",
                       backup_sources.DATA_LINES["em_kline"]["used_by"])
 
 
@@ -519,7 +519,7 @@ class PushRenderTests(unittest.TestCase):
     def test_section_rendered_when_available(self):
         html = pipeline.generate_report({pipeline.INDUSTRY_ROTATION_SOURCE_NAME: self._source("2026-09-25")},
                                         "2026年9月25日", "20260925")
-        self.assertIn("【巡游旗鱼】申万一级行业轮动", html)
+        self.assertIn("【策略】行业轮动（申万）", html)
         self.assertIn("目标权重", html)
         self.assertIn("80%", html)
         self.assertIn("2026-09-25", html)
@@ -628,7 +628,10 @@ class SectionWiringTests(unittest.TestCase):
                             pipeline._SECTION_ICON_META["SECTOR ROTATION"])
         self.assertNotEqual(pipeline.DOSSIER_ICONS["INDUSTRY ROTATION"],
                             pipeline.DOSSIER_ICONS["SECTOR ROTATION"])
-        self.assertIn("申万一级", pipeline.SECTION_TITLE_INDUSTRY_ROTATION)
+        # 2026-10-28 栏目改名：标题统一成「【分类】内容名」，「申万」作括注保留
+        self.assertIn("行业轮动", pipeline.SECTION_TITLE_INDUSTRY_ROTATION)
+        self.assertIn("申万", pipeline.SECTION_TITLE_INDUSTRY_ROTATION)
+        self.assertNotIn("【策略】行业轮动", pipeline.SECTION_TITLE_SECTOR_ROTATION)
         self.assertNotEqual(pipeline.INDUSTRY_ROTATION_SOURCE_NAME,
                             pipeline.SECTOR_ROTATION_SOURCE_NAME)
 
@@ -654,7 +657,7 @@ class SectionWiringTests(unittest.TestCase):
             {pipeline.INDUSTRY_ROTATION_SOURCE_NAME: PushRenderTests._source("2026-09-25")},
             "2026年9月25日", "20260925")
         self.assertIn(pipeline.SECTION_TITLE_INDUSTRY_ROTATION, html)
-        self.assertNotIn("【滚滚翻车鱼】", html.split(pipeline.SECTION_TITLE_INDUSTRY_ROTATION)[0].split("数据覆盖")[-1])
+        self.assertNotIn("【策略】", html.split(pipeline.SECTION_TITLE_INDUSTRY_ROTATION)[0].split("数据覆盖")[-1])
 
 
 def _FrozenDatetime(fixed):
