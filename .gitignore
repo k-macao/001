@@ -1,6 +1,8 @@
 __pycache__/
 # 排版预览页（含演示数据）仅供人工查看，不进入版本库
+# 文件名既可能写成 `xxx_预览.html`，也可能写成 `xxx-预览.html`，两种都拦
 output/*_预览*.html
+output/*预览*.html
 .venv/
 # AI 数据集导出（大文件，走 Actions Artifact；库文件 output/market_db/YYYYMMDD.json 正常入库）
 output/market_db/ai/
