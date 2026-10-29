@@ -977,7 +977,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-10-29",
-   "pulled_at": "2026-10-29 18:59:38",
+   "pulled_at": "2026-10-29 23:51:07",
    "scheduled_at": "2026-10-29 17:00:00",
    "trading_day": true,
    "sources": {
@@ -988,8 +988,8 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 538,
-     "quote_time": "2026-10-29 16:29:31",
+     "elapsed_ms": 1012,
+     "quote_time": "2026-10-29 23:51:07",
      "symbols": 37
     },
     "eastmoney": {
@@ -1032,7 +1032,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10516,
+     "elapsed_ms": 10611,
      "quote_time": null,
      "symbols": 0
     },
@@ -1178,15 +1178,15 @@
     "^DJI": {
      "name": "道琼斯",
      "market": "US",
-     "price": 52475.1,
-     "prev_close": 52377.6,
-     "change_pct": 0.1861,
+     "price": 52273.18,
+     "prev_close": 52475.1,
+     "change_pct": -0.3848,
      "open": null,
-     "high": 52634.32,
-     "low": 52335.43,
-     "volume": 405081041.0,
+     "high": 52405.88,
+     "low": 52086.13,
+     "volume": 227099295.0,
      "amount": null,
-     "quote_time": "2026-10-29 05:18:52",
+     "quote_time": "2026-10-29 23:51:07",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1199,15 +1199,15 @@
     "^GSPC": {
      "name": "标普500",
      "market": "US",
-     "price": 7743.98,
-     "prev_close": 7722.6,
-     "change_pct": 0.2768,
+     "price": 7718.16,
+     "prev_close": 7743.98,
+     "change_pct": -0.3334,
      "open": null,
-     "high": 7758.43,
-     "low": 7718.37,
-     "volume": 3085116000.0,
+     "high": 7732.21,
+     "low": 7695.75,
+     "volume": 1160690000.0,
      "amount": null,
-     "quote_time": "2026-10-29 05:18:42",
+     "quote_time": "2026-10-29 23:51:06",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1220,15 +1220,15 @@
     "^IXIC": {
      "name": "纳斯达克",
      "market": "US",
-     "price": 26549.852,
-     "prev_close": 26477.81,
-     "change_pct": 0.2721,
+     "price": 26226.148,
+     "prev_close": 26549.852,
+     "change_pct": -1.2192,
      "open": null,
-     "high": 26587.338,
-     "low": 26414.922,
-     "volume": 7142936000.0,
+     "high": 26286.46,
+     "low": 26053.162,
+     "volume": 2750400000.0,
      "amount": null,
-     "quote_time": "2026-10-29 05:15:59",
+     "quote_time": "2026-10-29 23:51:07",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1241,15 +1241,15 @@
     "MSFT": {
      "name": "微软",
      "market": "US",
-     "price": 531.01,
-     "prev_close": 531.33,
-     "change_pct": -0.0602,
+     "price": 522.675,
+     "prev_close": 531.01,
+     "change_pct": -1.5697,
      "open": null,
-     "high": 534.572,
-     "low": 526.135,
-     "volume": 25128542.0,
+     "high": 540.97,
+     "low": 519.56,
+     "volume": 20098291.0,
      "amount": null,
-     "quote_time": "2026-10-29 04:00:01",
+     "quote_time": "2026-10-29 23:51:06",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1262,15 +1262,15 @@
     "META": {
      "name": "Meta",
      "market": "US",
-     "price": 612.49,
-     "prev_close": 620.19,
-     "change_pct": -1.2416,
+     "price": 628.48,
+     "prev_close": 612.49,
+     "change_pct": 2.6107,
      "open": null,
-     "high": 624.42,
-     "low": 609.0,
-     "volume": 34485035.0,
+     "high": 630.25,
+     "low": 616.8,
+     "volume": 11902474.0,
      "amount": null,
-     "quote_time": "2026-10-29 04:00:01",
+     "quote_time": "2026-10-29 23:51:07",
      "source": "yahoo",
      "source_label": "Yahoo Finance chart（主源）",
      "source_role": "主源",
@@ -1853,11 +1853,11 @@
      "000001.SS": 3651.434,
      "399001.SZ": 11138.198,
      "399006.SZ": 2517.588,
-     "^DJI": 52475.1,
-     "^GSPC": 7743.98,
-     "^IXIC": 26549.852,
-     "MSFT": 531.01,
-     "META": 612.49,
+     "^DJI": 52273.18,
+     "^GSPC": 7718.16,
+     "^IXIC": 26226.148,
+     "MSFT": 522.675,
+     "META": 628.48,
      "600519.SS": 1354.0,
      "300750.SZ": 229.07,
      "300308.SZ": 582.05,
@@ -1887,7 +1887,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -1898,9 +1898,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±120 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±411 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -1933,11 +1933,13 @@
       "detail": "本时段存在当天行情"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±411 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "6898fcb39d47f78938241bc4e4a0d5282107b9216aa08cdaec3b5d7b0f8a8e83"
+    "hash": "5b7d25906df77c819a3462b289e16917bcbec875261bd16f8f357388df5e29ab"
    }
   }
  },
@@ -1958,11 +1960,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-10-29 23:51:07",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-10-29 18:59:38",
+ "updated_at": "2026-10-29 23:51:07",
  "ai": {
   "row_count": 74,
   "symbols": 37,
@@ -2003,6 +2013,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "28dbb2c37593a026e0e88969bd5e1c886881cfc0dea8d3e5d6f115fd0a0b712d"
+  "hash": "daedc14a065937db60dd8eca4675e53f3f5896e1f1153bb0d535b74f4d3e9b91"
  }
 }
