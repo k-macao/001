@@ -26608,31 +26608,42 @@
  ],
  "updated_cst": "2026-10-30 14:54:15",
  "industry_rotation_diag": {
-  "ran_at": "2026-10-30 14:46:03",
-  "cutoff": "2026-10-29",
+  "ran_at": "2026-10-30 21:48:04",
+  "cutoff": "2026-10-30",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
   "fqt": "1",
-  "kline_series": 24,
+  "kline_series": 19,
   "sources": {
-   "eastmoney": 23,
-   "eastmoney_mirror": 1
+   "eastmoney": 12,
+   "eastmoney_mirror": 7
   },
   "missing": [
    "BK0437",
+   "BK0438",
    "BK0464",
-   "BK0728",
+   "BK1202",
    "BK1203",
+   "BK1206",
+   "BK1209",
    "BK1211",
-   "BK1215",
-   "BK1283"
+   "BK1212",
+   "BK1213",
+   "BK1216",
+   "BK1217"
   ],
   "em_mirror": [
-   "BK1212"
+   "BK0427",
+   "BK0436",
+   "BK0478",
+   "BK0486",
+   "BK1200",
+   "BK1205",
+   "BK1214"
   ],
-  "asof": "2026-10-29",
-  "asof_hits": 24,
-  "scored": 24,
+  "asof": "2026-10-30",
+  "asof_hits": 19,
+  "scored": 19,
   "required": 19,
   "state": "reused",
   "holdings": 5
