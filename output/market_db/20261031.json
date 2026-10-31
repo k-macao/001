@@ -977,7 +977,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-10-31",
-   "pulled_at": "2026-10-31 18:29:55",
+   "pulled_at": "2026-10-31 23:00:45",
    "scheduled_at": "2026-10-31 17:00:00",
    "trading_day": false,
    "sources": {
@@ -988,7 +988,7 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 1215,
+     "elapsed_ms": 562,
      "quote_time": "2026-10-31 05:15:59",
      "symbols": 37
     },
@@ -1032,7 +1032,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10767,
+     "elapsed_ms": 10694,
      "quote_time": null,
      "symbols": 0
     },
@@ -1179,8 +1179,8 @@
      "name": "道琼斯",
      "market": "US",
      "price": 51770.31,
-     "prev_close": 52342.6,
-     "change_pct": -1.0934,
+     "prev_close": 52342.56,
+     "change_pct": -1.0933,
      "open": null,
      "high": 52383.9,
      "low": 51563.76,
@@ -1499,7 +1499,7 @@
      "open": null,
      "high": 73.3,
      "low": 68.85,
-     "volume": 36190642.0,
+     "volume": 36203842.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1520,7 +1520,7 @@
      "open": null,
      "high": 27.28,
      "low": 26.02,
-     "volume": 207860564.0,
+     "volume": 207524364.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1541,7 +1541,7 @@
      "open": null,
      "high": 75.45,
      "low": 72.2,
-     "volume": 38113431.0,
+     "volume": 37640631.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1562,7 +1562,7 @@
      "open": null,
      "high": 136.6,
      "low": 135.1,
-     "volume": 10700902.0,
+     "volume": 10734902.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1625,7 +1625,7 @@
      "open": null,
      "high": 368.4,
      "low": 363.6,
-     "volume": 2416928.0,
+     "volume": 2432928.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1646,7 +1646,7 @@
      "open": null,
      "high": 44.28,
      "low": 42.26,
-     "volume": 122458515.0,
+     "volume": 122510515.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1667,7 +1667,7 @@
      "open": null,
      "high": 68.75,
      "low": 67.0,
-     "volume": 36602423.0,
+     "volume": 36599723.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1730,7 +1730,7 @@
      "open": null,
      "high": 24.8,
      "low": 23.94,
-     "volume": 83249123.0,
+     "volume": 83199123.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1751,7 +1751,7 @@
      "open": null,
      "high": 50.15,
      "low": 49.06,
-     "volume": 39820271.0,
+     "volume": 39819271.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:06",
      "source": "yahoo",
@@ -1793,7 +1793,7 @@
      "open": null,
      "high": 178.6,
      "low": 172.5,
-     "volume": 7378214.0,
+     "volume": 7380814.0,
      "amount": null,
      "quote_time": "2026-10-30 16:08:07",
      "source": "yahoo",
@@ -1887,7 +1887,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -1898,9 +1898,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±90 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±361 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -1933,11 +1933,13 @@
       "detail": "本时段存在当天行情"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±361 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "5182e839a6250ba9af40ea10fbe416f895e3b7d3b2edb881db1ab0478ea7c8f5"
+    "hash": "b758d7d250f547dd7106d119d40272a87c6ca3702ade3d877809ae5fdb5bc879"
    }
   }
  },
@@ -1958,11 +1960,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-10-31 23:00:45",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-10-31 18:29:55",
+ "updated_at": "2026-10-31 23:00:45",
  "ai": {
   "row_count": 74,
   "symbols": 37,
@@ -2003,6 +2013,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "6afc61af73be5e8abfcd11f4141118211c5b853799f648642d3f937d9d010de0"
+  "hash": "5b56b20f544f421e45cc045e1fa7a054e3621c855c305eb07fd6a21ee7fd2f9b"
  }
 }
