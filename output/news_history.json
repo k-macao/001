@@ -27248,12 +27248,32 @@
  ],
  "updated_cst": "2026-10-30 23:59:07",
  "industry_rotation_diag": {
-  "ran_at": "2026-11-01 15:05:35",
-  "cutoff": "2026-10-31",
+  "ran_at": "2026-11-01 23:43:59",
+  "cutoff": "2026-11-01",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
-  "fqt": null,
-  "reason": "行业日K接口未返回数据（东财前复权/不复权两种口径均无有效日线，申万官方源亦无数据）"
+  "fqt": "1",
+  "kline_series": 31,
+  "sources": {
+   "eastmoney": 24,
+   "eastmoney_mirror": 7
+  },
+  "missing": [],
+  "em_mirror": [
+   "BK0728",
+   "BK1035",
+   "BK1202",
+   "BK1205",
+   "BK1211",
+   "BK1214",
+   "BK1283"
+  ],
+  "asof": "2026-10-30",
+  "asof_hits": 31,
+  "scored": 31,
+  "required": 19,
+  "state": "reused",
+  "holdings": 5
  },
  "industry_rotation": {
   "month": "2026-10",
