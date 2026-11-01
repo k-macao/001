@@ -977,7 +977,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-11-01",
-   "pulled_at": "2026-11-01 19:24:18",
+   "pulled_at": "2026-11-01 23:44:18",
    "scheduled_at": "2026-11-01 17:00:00",
    "trading_day": false,
    "sources": {
@@ -988,7 +988,7 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 1254,
+     "elapsed_ms": 1262,
      "quote_time": "2026-10-31 05:15:59",
      "symbols": 37
     },
@@ -1032,7 +1032,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10696,
+     "elapsed_ms": 10510,
      "quote_time": null,
      "symbols": 0
     },
@@ -1887,7 +1887,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -1898,9 +1898,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±144 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±404 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -1933,11 +1933,13 @@
       "detail": "非交易日（休市）：沿用最近收盘，不计缺陷"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±404 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "bad82f8311a8291cbe69b29eeb6774507b05b6e611b13786d2042dde62922bcc"
+    "hash": "b5ddeef1a123b5e54d1278fd9c40c6296346efbd09c16157b9518ab20df7a6b4"
    }
   }
  },
@@ -1958,11 +1960,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-11-01 23:44:18",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-11-01 19:24:18",
+ "updated_at": "2026-11-01 23:44:18",
  "ai": {
   "row_count": 74,
   "symbols": 37,
@@ -2003,6 +2013,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "83a2097dc33d943e1dc4a81a53dab39a840314407ddabda9ec36f5d39446a056"
+  "hash": "af332644ce317fa304a44a51723647e5697870795236a7d05e9f5194ca60ad94"
  }
 }
