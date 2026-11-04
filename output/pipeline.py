@@ -13625,6 +13625,48 @@ def _policy_summary(policy_n, total_n, dim_counts, broad_score, broad_label,
     return "".join(parts)
 
 
+def _headline_age_days(item_date, today_dt):
+    """标题距报告日的自然日数；日期缺失或无法解析时为 None（未知，不当作旧闻）。"""
+    try:
+        d = datetime.strptime(str(item_date)[:10], "%Y-%m-%d").replace(tzinfo=CST)
+    except (TypeError, ValueError):
+        return None
+    return max(0, (today_dt.date() - d.date()).days)
+
+
+def _ordered_policy_heads(heads):
+    """按「新→旧 + 同日净影响」排序；同日稳定按原顺序（sorted 是稳定排序）。"""
+    return sorted(heads or [], key=_policy_head_order)
+
+
+def _policy_freshness_note(res):
+    """当天没检出政策类新闻时给一句显式说明，避免读者误以为列在「今天」。
+
+    窗口是近 POLICY_WINDOW_DAYS 日，末列若还停在几天前，必须说明窗口内最新
+    一条是哪天，而不是让整栏看起来「全是旧日期」又不解释。
+    """
+    heads = res.get("headlines") or []
+    if not heads:
+        return ""
+    newest = heads[0]
+    age = newest.get("age_days")
+    if not age:
+        return ""
+    return (f'窗口（近 {res.get("window_days") or POLICY_WINDOW_DAYS} 日）内最新一条为 '
+            f'{str(newest.get("date") or "")[5:]}（距今 {age} 日），当天暂未检出政策类新闻')
+
+
+def _policy_head_order(head):
+    """政策新闻逐条展示排序：新→旧，同日按净影响强弱。
+
+    存档是按抓取顺序累积的，窗口内最早那天（15 天前的旧闻）反而排在最前面；
+    不排序直接取前 POLICY_DISPLAY_HEADLINES 条，就会出现「重点政策新闻整屏
+    都是 10-21」——榜单被窗口第一天的旧闻占满，当天的政策反而看不到。
+    """
+    age = head.get("age_days")
+    return (age if age is not None else 99, -abs(int(head.get("net") or 0)))
+
+
 def build_policy_factor(data, date_str=None, news_corpus=None):
     """构建政策因子（抓取后、推送前单独构建；渲染在专业分析栏目组）。
 
@@ -13648,6 +13690,10 @@ def build_policy_factor(data, date_str=None, news_corpus=None):
             if date_str else anchor_date
     except (TypeError, ValueError):
         today_iso = anchor_date
+    # 「旧闻」口径定位到报告日（不是跑数时刻）：_factor_anchor_dt 在收盘后会把锚点
+    # 推到次一自然日，若用 anchor_date 判 old，当天新闻也会被标成前一天。
+    # 存档里的历史条目按日期倒序处理时同样以 today_iso 为基准。
+    today_dt = datetime.strptime(today_iso, "%Y-%m-%d").replace(tzinfo=CST)
     industry_scores = {}
     broad_score = 0
     broad_count = 0
@@ -13705,6 +13751,7 @@ def build_policy_factor(data, date_str=None, news_corpus=None):
             "net": head_net,
             "date": item_date,
             "old": item_date not in ("", today_iso),
+            "age_days": _headline_age_days(item_date, today_dt),
         })
     industries = [{
         "name": name, "score": v["score"], "count": v["count"],
@@ -13772,6 +13819,7 @@ def build_policy_factor(data, date_str=None, news_corpus=None):
         quant_risk = "趋势预判风险预算：大盘PSI偏冷，政策边际收紧，趋势策略宜控制仓位，等待转暖信号。"
     else:
         quant_risk = "趋势预判风险预算：未检出显著政策利空，趋势预判可正常执行，注意维度覆盖与新闻量背离。"
+    policy_heads = _ordered_policy_heads(policy_heads)
     return {
         "available": bool(policy_heads),
         "policy_n": len(policy_heads),
@@ -13879,6 +13927,10 @@ def _pixel_policy_block(res):
                           f'PSI <b style="color:{C_RED};">{s["score"]}</b>'
                           f'（{s["count"]}条 · {_esc("/".join(s["dims"]))}）'))
     rows = []
+    fresh = _policy_freshness_note(res)
+    if fresh:
+        rows.append(f'<div style="font-size:10px;color:{C_MUTED};padding:4px 0;'
+                    f'line-height:1.7;font-family:{FONT_MONO};">⏱ {_esc(fresh)}</div>')
     for h in res["headlines"][:POLICY_DISPLAY_HEADLINES]:
         if h["direction"] > 0:
             arrow, bcolor = "▲", C_GREEN
@@ -13902,7 +13954,8 @@ def _pixel_policy_block(res):
             f'＋其余 {more} 条已计入指数（仅展示前 {POLICY_DISPLAY_HEADLINES} 条）</div>')
     body = head + (_mini_table(board) if board else "") + "".join(rows)
     note = _note(f"政策因子口径：近 {res.get('window_days') or POLICY_WINDOW_DAYS} 日窗口标题 → 政策维度触发词命中 → "
-                 "关键词矩阵映射行业权重 → 汇总PSI + 量化复合分(PSI50%+新闻量30%+维度20%)；触发词被否定修饰时跳过 // RULESET v3 // 非投资建议")
+                 "关键词矩阵映射行业权重 → 汇总PSI + 量化复合分(PSI50%+新闻量30%+维度20%)；触发词被否定修饰时跳过；"
+                 "逐条按日期新→旧排列（同日按净影响强弱） // RULESET v3 // 非投资建议")
     return summary_html + _pixel_panel("QUANT POLICY // 政策因子趋势预判·量化强度", body, color, icon) + note
 
 
@@ -13950,6 +14003,10 @@ def gz_policy_block(res):
     heads = res["headlines"][:POLICY_DISPLAY_HEADLINES]
     if heads:
         out.append(gz_subsection("重点政策新闻"))
+        fresh = _policy_freshness_note(res)
+        if fresh:
+            out.append(f'<div style="color:{GZ_META};font-size:11px;padding-top:2px">'
+                       f'⏱ {_esc(fresh)}</div>')
     for h in heads:
         badge = "▲" if h["direction"] > 0 else ("▼" if h["direction"] < 0 else "■")
         inds = "、".join(h["industries"][:4]) if h["industries"] else "大盘"
