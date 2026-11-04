@@ -90,6 +90,11 @@ jobs:
           OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
           # OCTOPUS_LLM_TIMEOUT: "60"
           # OCTOPUS_HK7_FALLBACK: "1"
+          # ⚠️ 研报 AI 风险点提示（移植自 k-macao/007 的置顶风控栏目）：不配下面这个地址也能跑，
+          # 走本地规则（本仓 15 日标题池 + 风险词表 + 机构名单）；配了就先取 007 在线风险点，
+          # 不通或没条目再回落本地规则。007 的 server_dashboard 需公网可达。
+          OCTOPUS_007_BASE_URL: ${{ vars.OCTOPUS_007_BASE_URL }}
+          # 关掉整栏（排查用）：OCTOPUS_RESEARCH_RISK: "0"
         run: |
           set -euo pipefail
           EVENT_NAME="${{ github.event_name }}"

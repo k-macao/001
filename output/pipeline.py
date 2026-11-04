@@ -570,6 +570,7 @@ import octopus_ren as _ren  # noqa: E402
 import octopus_short as _short  # noqa: E402  # 🎯 短线速查卡（≤600 字，日报结尾）
 import sentiment_strategy as _senti_strategy  # noqa: E402  # 📐 散户情绪因子（有 Reddit / StockTwits 样本时渲染）
 import media_risk as _media_risk  # noqa: E402  # 🚨 A/H 媒体舆情风险事件提取（规则分，不是概率）
+import research_risk as _research_risk  # noqa: E402  # ⚠️ 研报 AI 风险点提示（移植自 k-macao/007，卷首）
 import octopus_lexicon as _lex  # noqa: E402  # 🦐 活鲜词库（AI帮你提鲜 / AI 研判点缀）
 import hk_seven_day as _hk7  # noqa: E402
 import jev_bridge as _jev  # noqa: E402
@@ -724,6 +725,7 @@ LITE_LIMITS = {
     "em_summary": (60, 0),           # 东财快讯摘要截断字数（0 = 不截断）
     "notes": (0, 1),                 # 方法论长注：0 = 折叠成一句，1 = 全文
     "risk_cards": (2, 0),            # 风险提示卡条数（0 = 全部）
+    "research_risk_points": (3, 5),   # ⚠️ 研报 AI 风险点提示：精简版 3 条 / 全量 5 条
 }
 
 
@@ -8770,6 +8772,17 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【事实】全球头条"
 SECTION_TITLE_NEWS_SENTIMENT = "【舆情】新闻情绪"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
 SECTION_TITLE_MEDIA_RISK = "【舆情】媒体风险"
+# 卷首块（2026-11-04 用户要求：新手三句话之后加入 007 的「研报 AI 风险点提示」）。
+# 标题保留 007 原栏目名——用户点名的是那一栏；它是卷首里的子块，不占正文编号。
+SECTION_TITLE_RESEARCH_RISK = "⚠️ 研报 AI 风险点提示"
+RESEARCH_RISK_ENABLED = os.environ.get("OCTOPUS_RESEARCH_RISK", "1").strip().lower() not in ("0", "false", "no")
+# 分条拥挤时把卷首「研报 AI 风险点提示」压成一行摘要用的锚点：
+#   完整块与压缩块同时渲染在标记之间，_split_html_for_push 只在「刚好超一条」时取压缩块。
+# 逐条线索的包裹标记：版面拥挤时按标记整段摘掉（只留定调与条数），
+# 页面上永远只有一份内容（不做「完整版 + 压缩版并存」那种看得见两遍的写法）。
+SPLIT_CONDENSE_START = "<!--RRP-->"
+SPLIT_CONDENSE_END = "<!--/RRP-->"
+SPLIT_CONDENSE_MARK = SPLIT_CONDENSE_START
 # 2026-10-21 新增：策略量化分析（图中 4 大类 6 细分，见 /strategy_quant.py）。
 # 1 个总览 + 4 个大类栏目，均基于基准指数日线量化计算，内部衍生、可离线兜底。
 SECTION_TITLE_STRATEGY_OVERVIEW = "【策略】全景对照"
@@ -8934,6 +8947,9 @@ REPORT_ANALYSIS_SECTIONS = (
     *REPORT_OUTLOOK_SECTIONS, *REPORT_ACTION_SECTIONS,
 )
 # 2026-10-13 起「今日预判」（FORECAST）按用户要求放在正文最开头；「总结」仍在末尾。
+# 2026-11-04 「研报 AI 风险点提示」（移植自 k-macao/007）：按用户要求排在
+# 卷首「新手三句话」之后，因此它**不进正文顺序表**，而是卷首栏目里的一块
+# （见 _collect_report_parts 的 research_risk_html 与 _poetry_sea_section）。
 REPORT_HEAD_SECTIONS = ("FORECAST",)
 REPORT_TAIL_SECTIONS = ("SUMMARY",)
 REPORT_SECTION_ORDER = (
@@ -10472,18 +10488,21 @@ def _bagua_report_day(date_str):
 
 
 def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
-                            policy_result=None, news_corpus=None):
+                            policy_result=None, news_corpus=None, research_risk=None):
     """提取逐栏目内容与当天检验统计（两主题共用；仅渲染套件不同）。
 
     sentiment_history: 跨日情绪基线（新闻情绪动量/新闻量窗口用）；
     date_str: 报告日期 YYYYMMDD（划分今日与历史的界线），缺省取当天；
     policy_result: main 1.6 阶段单独构建的政策因子结果，缺省时兜底构建；
     news_corpus: 跨运行标题存档（output/news_history.json），缺省时因子只用
-    本次抓取标题（测试 / 冷启动路径）。
+    本次抓取标题（测试 / 冷启动路径）；
+    research_risk: 研报 AI 风险点提示的结果（research_risk.build()）。缺省时在本函数内
+    用同一份 news_corpus 兜底构建（离线规则版，不触网；009 端点由 main 阶段负责）。
     """
     # 三地指数全页拼版：2026-10-23 已回滚，默认**不启用**（见 _index_page_enabled）。
     # 只有显式 OCTOPUS_INDEX_PAGE=1 且快照带 index_checks 契约时才分流到指数全页；
     # 默认路径回到原港股日报（恒指七日 / 港股量化 / 个股栏目与旧AI装饰器全部照旧）。
+    research_risk_result = {}
     index_result = (data.get(STRATEGY_QUANT_SOURCE) or {}).get("result") or {}
     if (_index_page_enabled() and "index_checks" in index_result):
         import index_page
@@ -10587,6 +10606,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         policy = policy_result if policy_result is not None else \
             build_policy_factor(data, date_str, news_corpus)
         ai_result = build_ai_analysis(data)
+
 
     # ---- 量化栏目：预测总览 → 资金流动性；港股概率分析并入每日趋势推演 ----
     quant = {}
@@ -11001,6 +11021,33 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             sections.append(card)
         if bagua_html:
             beginner_tips_html = _beginner_tips_block(tips, kit)
+    # ⚠️ 研报 AI 风险点提示（2026-11-04 用户要求）：不单独占一个编号栏目，而是紧接
+    #    「新手三句话」之后渲染在同一个卷首栏目里——用户点的是位置（三句话后），
+    #    不是要再开一栏。卦象 / 三句话缺席时本块为空串，栏目编号不受影响。
+    research_risk_html = ""
+    if RESEARCH_RISK_ENABLED:
+        try:
+            rr_result = research_risk if isinstance(research_risk, dict) else \
+                _research_risk.build(data=data, date_str=date_str,
+                                     news_corpus=news_corpus, allow_network=False)
+            if rr_result.get("enabled", True):
+                # 版面预算：精简版只列前 3 条（与其它栏目同一套 LITE 口径），
+                # 全量版 5 条；被裁掉的条数在「线索条数」行如实写全。
+                limit = LITE("research_risk_points")
+                if limit and len(rr_result.get("points") or []) > limit:
+                    trimmed = dict(rr_result)
+                    trimmed["points"] = list(rr_result["points"])[:limit]
+                    trimmed["points_total"] = len(rr_result["points"])
+                    rr_result = trimmed
+                research_risk_html = (
+                    SPLIT_CONDENSE_START
+                    + _research_risk_compact_line(rr_result)
+                    + _research_risk_block(rr_result, kit)
+                    + SPLIT_CONDENSE_END)
+                # 栏首结论（AI帮你提鲜）同源：把研究风险结果交给卷首渲染器
+                research_risk_result = rr_result
+        except Exception as _rr_exc:  # noqa: BLE001 单块失败不拖垮整份日报
+            print(f"  ⚠️ 研报 AI 风险点提示渲染异常：{_rr_exc}")
     return {
         "sections": sections,
         "total": total,
@@ -11010,11 +11057,13 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         "poem": poem,
         "bagua_html": bagua_html,
         "beginner_tips_html": beginner_tips_html,
+        "research_risk_html": research_risk_html,
+        "research_risk_result": research_risk_result if RESEARCH_RISK_ENABLED else {},
     }
 
 
 def _poetry_sea_section(parts, kit):
-    """刊头后的单一卷首栏目：诗泉诗选 + ☯ 今日卦象 + 🐣 新手三句话，同一栏目内分块展示。
+    """刊头后的单一卷首栏目：诗选 + 卦象 + 🐣 新手三句话 + ⚠️ 研报 AI 风险点提示。
 
     用主题自己的 section 渲染头部与 SECTION_BODY_MARK，分条时诗和卦先按一个
     栏目装箱；卷首编号「序」不挤占今日预判的 00 栏。三块都不可用时不出空栏目。
@@ -11027,7 +11076,11 @@ def _poetry_sea_section(parts, kit):
         (parts or {}).get("poem"), theme=kit.theme)
     bagua_html = (parts or {}).get("bagua_html") or ""
     tips_html = (parts or {}).get("beginner_tips_html") or ""
-    content = poem_html + bagua_html + tips_html
+    # ⚠️ 研报 AI 风险点提示（2026-11-04）：排在 🐣 新手三句话之后、正文之前。
+    #    卦象被关掉时三句话回落到速查卡末尾，本块仍留在卷首——用户要的是
+    #    「三句话之后」，不是「跟三句话共存亡」。
+    risk_html = (parts or {}).get("research_risk_html") or ""
+    content = poem_html + bagua_html + tips_html + risk_html
     if not content:
         return ""
     # 卷首也走同一套分类条：分类 = 「卷首」，与正文的结论 / 事实 / 舆情… 保持一致
@@ -12770,6 +12823,82 @@ def _media_risk_attention_text(stock):
                 f'{attention.get("label") or "正常"}')
     return (f'今日 {int(attention.get("today") or 0)} 条 · 历史 n={int(attention.get("n") or 0)}'
             f'（需≥{int(attention.get("need") or _media_risk.MIN_BASELINE_DAYS)}日，暂不判异常）')
+
+
+def _research_risk_block(res, kit, compact=False):
+    """⚠️ 研报 AI 风险点提示（移植自 k-macao/007）的正文渲染，五套主题共用 kit 原语。
+
+    只消费 `research_risk.build()` 给出的结构化结果（定调 / 关注点 / 逐条线索 / 来源），
+    渲染层不再二次判定风险，也不给概率、不给点位：
+
+    · 定调行标明「AI」还是「规则」写的（没配大模型 Key / 调用失败 → 规则兜底，如实标注）；
+    · 逐条线索：机构（未署名就说未署名）+ 类别 + 日期 + 标题 + 来源，
+      标题来自外部页面，必须先转义，链接只允许 http/https；
+    · 一条线索都没有时仍出栏目并写明「本期未检出」，不静默消失（与媒体风险同口径）。
+    """
+    if not isinstance(res, dict):
+        return ""
+    plain = PLAIN()
+    points = list(res.get("points") or [])
+    if compact:
+        # 分条拥挤时的压缩版：只留栏目名 + 一句定调 + 条数，逐条线索留在完整日报页。
+        tone = "AI 定调" if res.get("tone_source") == "AI" else "规则定调"
+        total = int(res.get("points_total") or len(points))
+        return (kit.sub(_esc(SECTION_TITLE_RESEARCH_RISK))
+                + f'<div style="font-size:12px;line-height:1.7;padding-top:2px;">'
+                  f'{_esc(tone)}：{_esc(str(res.get("summary") or "—"))}'
+                  f' · 线索 {total} 条（逐条见完整日报）</div>')
+    tone = "AI 定调" if res.get("tone_source") == "AI" else "规则定调"
+    source_line = str(res.get("summary_source") or "")
+    remote = res.get("remote") or {}
+    if remote.get("env") and remote.get("ok"):
+        source_line += f"（{remote['env']}）"
+    pairs = [
+        (tone, f'<b>{_esc(str(res.get("summary") or "—"))}</b>'),
+        ("关注点", _esc(str(res.get("focus") or "—"))),
+        ("线索条数", f'{len(points)} 条 · 窗口 近 {int(res.get("window_hours") or _research_risk.WINDOW_HOURS) // 24} 日'
+                     + (f' · 最新 {_esc(str(res.get("newest_date") or "")[5:])}' if res.get("newest_date") else "")),
+        ("取数", _esc(source_line or "本地规则")),
+    ]
+    if res.get("points_total"):
+        pairs[-1] = (pairs[-1][0],
+                     pairs[-1][1] + f'（共 {int(res["points_total"])} 条，精简版列前 {len(points)} 条）')
+    if res.get("categories") and not plain:
+        pairs.append(("风险类别",
+                      _esc(" · ".join(f"{k}×{v}" for k, v in (res.get("categories") or {}).items()))))
+    if not plain:
+        llm = res.get("llm") or {}
+        pairs.append(("文风", _esc(("大模型 " + str(llm.get("model") or "已润色")) if res.get("tone_source") == "AI"
+                                  else "规则兜底：" + str(llm.get("reason") or "未配置大模型 Key"))))
+    # 卷首子块：用主题自己的小标渲染栏目名（与 🐣 新手三句话同一层级）。
+    out = [kit.sub(_esc(SECTION_TITLE_RESEARCH_RISK)), kit.kv(pairs)]
+    for point in points:
+        title = _esc(str(point.get("title") or "")[:120])
+        url = str(point.get("url") or "").strip()
+        parsed = urlparse(url)
+        if parsed.scheme.lower() in {"http", "https"} and parsed.netloc:
+            title = (f'<a href="{_esc(url)}" style="color:{GZ_INK_STRONG if _is_guizang_like(kit) else C_INK};'
+                     f'text-decoration:none;border-bottom:1px dotted currentColor;">{title}</a>')
+        institution = str(point.get("institution") or "未署名")
+        tag = "外资" if point.get("intl") else ("中资" if institution != "未署名" else "未署名")
+        bits = [str(point.get("date") or "")[5:], str(point.get("category") or ""),
+                f'{tag} {institution}' if tag != "未署名" else "未署名机构",
+                str(point.get("source") or "")]
+        sub = " · ".join(_esc(x) for x in bits if x)
+        out.append(_research_risk_row(kit, title, sub))
+    if not points:
+        out.append(kit.note(_esc("本期窗口内没有触发风险词表的研报线索；"
+                                 "栏目照常出现，不代表没有风险，只是标题级证据不足。")
+                            if plain else _esc(_research_risk.DISCLAIMER)))
+    return "".join(out)
+
+
+def _research_risk_row(kit, title_html, sub):
+    """线索行：两套原语签名不同——guizang 系 kit.item_row(icon, text, sub)，
+    像素主题的 item_row 是 gz_item_row 兼容别名而真正的像素行渲染器是 _item_row。"""
+    if getattr(kit, "theme", "") == "pixel":
+        return _item_row("◆", title_html, sub)
+    return kit.item_row("◆", title_html, sub)
 
 
 def _media_risk_block(res, kit):
@@ -14516,7 +14645,8 @@ def _dossier_masthead(date_display, date_str, today_n, total, generated_at):
 
 
 def generate_report_dossier(data, date_display, date_str, sentiment_history=None,
-                            policy_result=None, news_corpus=None):
+                            policy_result=None, news_corpus=None,
+                            research_risk=None):
     """Dossier 排版（德国文件 + 包豪斯）：卷宗封面 + 文件夹标签栏目 + 档案尾注。
 
     内容块与 guizang 同源（同一套研报渲染器），只在 _dossier_palette 渲染期间换成
@@ -14531,7 +14661,8 @@ def generate_report_dossier(data, date_display, date_str, sentiment_history=None
                                       sentiment_history=sentiment_history,
                                       date_str=date_str,
                                       policy_result=policy_result,
-                                      news_corpus=news_corpus)
+                                      news_corpus=news_corpus,
+                                      research_risk=research_risk)
         sections = parts["sections"]
         # 栏目头也要在换色期间拼（斑马底等读的是当前全局色）
         content_html = "".join(
@@ -14902,7 +15033,8 @@ def _forum_footer(footer_text):
 
 
 def generate_report_forum(data, date_display, date_str, sentiment_history=None,
-                          policy_result=None, news_corpus=None):
+                          policy_result=None, news_corpus=None,
+                          research_risk=None):
     """Forum 排版（暗色社区仪表盘）：状态条刊头 + 卡片栏目 + 分段控件尾注。
 
     内容块与 guizang / dossier 同源（同一套研报渲染器），只在 _forum_palette
@@ -14914,7 +15046,8 @@ def generate_report_forum(data, date_display, date_str, sentiment_history=None,
                                       sentiment_history=sentiment_history,
                                       date_str=date_str,
                                       policy_result=policy_result,
-                                      news_corpus=news_corpus)
+                                      news_corpus=news_corpus,
+                                      research_risk=research_risk)
         sections = parts["sections"]
         content_html = "".join(
             PART_BREAK_MARK + banner + section
@@ -15225,14 +15358,16 @@ def _lime_html_frame(masthead, first_section, content_html, footer_text,
 
 
 def generate_report_lime(data, date_display, date_str, sentiment_history=None,
-                         policy_result=None, news_corpus=None):
+                         policy_result=None, news_corpus=None,
+                         research_risk=None):
     """Lime 排版（白底圆角卡片 + 荧光绿强调风）：与《整理-表格可视化.html》同款。"""
     with _lime_palette():
         parts = _collect_report_parts(data, LIME_KIT,
                                       sentiment_history=sentiment_history,
                                       date_str=date_str,
                                       policy_result=policy_result,
-                                      news_corpus=news_corpus)
+                                      news_corpus=news_corpus,
+                                      research_risk=research_risk)
         sections = parts["sections"]
         content_html = "".join(
             PART_BREAK_MARK + banner + section
@@ -15485,7 +15620,8 @@ def _enforce_dark_mode_font(html, bg=F_BG, ink=F_INK, strong=F_INK_STRONG,
 
 
 def generate_report(data, date_display, date_str, theme=None, sentiment_history=None,
-                    policy_result=None, news_corpus=None):
+                    policy_result=None, news_corpus=None,
+                    research_risk=None):
     """生成完整的 HTML 日报（按推送主题分发排版）。
 
     theme: "lime"（默认 · 白底圆角卡片 + 荧光绿强调风）/ "pixel"（DOS 复古监视器）
@@ -15499,40 +15635,47 @@ def generate_report(data, date_display, date_str, theme=None, sentiment_history=
         html = generate_report_lime(data, date_display, date_str,
                                     sentiment_history=sentiment_history,
                                     policy_result=policy_result,
-                                    news_corpus=news_corpus)
+                                    news_corpus=news_corpus,
+                                   research_risk=research_risk)
     elif theme == "forum":
         html = generate_report_forum(data, date_display, date_str,
                                      sentiment_history=sentiment_history,
                                      policy_result=policy_result,
-                                     news_corpus=news_corpus)
+                                     news_corpus=news_corpus,
+                                   research_risk=research_risk)
     elif theme == "dossier":
         html = generate_report_dossier(data, date_display, date_str,
                                        sentiment_history=sentiment_history,
                                        policy_result=policy_result,
-                                       news_corpus=news_corpus)
+                                       news_corpus=news_corpus,
+                                   research_risk=research_risk)
     elif theme == "guizang":
         html = generate_report_guizang(data, date_display, date_str,
                                        sentiment_history=sentiment_history,
                                        policy_result=policy_result,
-                                       news_corpus=news_corpus)
+                                       news_corpus=news_corpus,
+                                   research_risk=research_risk)
         html = _enforce_dark_gray_font(html)
     else:
         html = generate_report_pixel(data, date_display, date_str,
                                      sentiment_history=sentiment_history,
                                      policy_result=policy_result,
-                                     news_corpus=news_corpus)
+                                     news_corpus=news_corpus,
+                                   research_risk=research_risk)
     return _harden_wechat_table_widths(html)
 
 
 
 def generate_report_guizang(data, date_display, date_str, sentiment_history=None,
-                            policy_result=None, news_corpus=None):
+                            policy_result=None, news_corpus=None,
+                            research_risk=None):
     """归藏简洁排版（克莱因蓝 + 灰）：一页推送优先，结构扁平、样式全内联。"""
     parts = _collect_report_parts(data, GUIZANG_KIT,
                                   sentiment_history=sentiment_history,
                                   date_str=date_str,
                                   policy_result=policy_result,
-                                  news_corpus=news_corpus)
+                                  news_corpus=news_corpus,
+                                      research_risk=research_risk)
     sections = parts["sections"]
     total = parts["total"]
     today_n = parts["today_n"]
@@ -15602,7 +15745,8 @@ def generate_report_guizang(data, date_display, date_str, sentiment_history=None
 
 
 def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
-                              policy_result=None, news_corpus=None):
+                              policy_result=None, news_corpus=None,
+                          research_risk=None):
     """生成完整 HTML 日报（旧版 RETRO PIXEL 排版：终端 + 关卡 + 审计 + COLOPHON）。
 
     - 每个区块都带来源、抓取时间与「当天/非当天/无数据」徽标；
@@ -15613,7 +15757,8 @@ def generate_report_pixel(data, date_display, date_str, sentiment_history=None,
                                   sentiment_history=sentiment_history,
                                   date_str=date_str,
                                   policy_result=policy_result,
-                                  news_corpus=news_corpus)
+                                  news_corpus=news_corpus,
+                                      research_risk=research_risk)
     sections = parts["sections"]
     total = parts["total"]
     today_n = parts["today_n"]
@@ -16333,6 +16478,38 @@ def _pack_section_units(units, budget, min_split=None):
     return chunks, titles
 
 
+def _research_risk_compact_line(res, attr="data-rr-compact"):
+    """卷首风险块的分条压缩版：一行「定调 + 条数」，平时作为 data 属性随块下发
+    （页面上看不见），只有 _split_html_for_push 判定版面拥挤时才取出来替换整块。"""
+    total = int(res.get("points_total") or len(res.get("points") or []))
+    text = (f'{SECTION_TITLE_RESEARCH_RISK} · '
+            f'{"AI 定调" if res.get("tone_source") == "AI" else "规则定调"}：'
+            f'{res.get("summary") or "—"} · 线索 {total} 条（逐条见完整日报）')
+    return f'<div {attr}="{_esc(text)}" style="display:none"></div>'
+
+
+def _condense_research_risk(html):
+    """分条拥挤时把卷首风险块整块换成一页摘要（定调 + 条数，逐条见完整日报）。
+
+    摘要正文就在块的 `data-rr-compact` 属性里，因此这里不需要重新算任何内容；
+    标记不成对 / 找不到摘要时返回空串，调用方走原来的截断分支——绝不猜结构。
+    """
+    start = html.find(SPLIT_CONDENSE_START)
+    if start < 0:
+        return ""
+    end = html.find(SPLIT_CONDENSE_END, start + len(SPLIT_CONDENSE_START))
+    if end < 0:
+        return ""
+    block = html[start + len(SPLIT_CONDENSE_START):end]
+    match = re.search(r'data-rr-compact="([^"]*)"', block)
+    if not match:
+        return ""
+    import html as _html_lib
+    summary = _html_lib.unescape(match.group(1))
+    replacement = (f'<div style="padding-top:4px;font-size:12px;line-height:1.7;">{summary}</div>')
+    return html[:start] + replacement + html[end + len(SPLIT_CONDENSE_END):]
+
+
 def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
     """把超过单条上限的日报 HTML 拆成 N 条「各自完整可渲染」的消息；返回 list[str]。
 
@@ -16385,6 +16562,18 @@ def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
     chunks, chunk_titles = _pack_section_units(units, budget)
     if not chunks:
         return None
+
+    # 拥挤时的第一道腾挪：整份刚好超出上限一条，且超出的原因是卷首「⚠️ 研报 AI 风险点提示」
+    # 这块新增内容 → 把它压成一行摘要（保留定调 + 条数，逐条线索仍留在完整日报页），
+    # 让原本会被截掉的尾栏（短线速查卡）重新装得下。压缩后仍超限才走下面的截断分支。
+    if len(chunks) == max_parts + 1 and SPLIT_CONDENSE_MARK in html:
+        condensed = _condense_research_risk(html)
+        if condensed and len(condensed) < len(html):
+            trial = _split_html_for_push(condensed, limit, report_name, max_parts)
+            if trial and len(trial) <= max_parts:
+                print(f"  ℹ️ 版面接近单轮上限：卷首「研报 AI 风险点提示」已压成一行摘要，"
+                      f"逐条线索见完整日报（{len(trial)} 条推送）")
+                return trial
 
     # 条数超过安全上限（只会在把单条上限调得极小时发生）：前 max_parts-1 条完整推送，
     # 最后一条装到上限为止并附「完整日报」链接——比退回单条截断多送达十几倍内容，
@@ -17490,13 +17679,33 @@ def main():
     else:
         print(f"  📊 政策因子：近{POLICY_WINDOW_DAYS}日窗口内无显著政策新闻，栏目缺席")
 
+    # 1.7 ⚠️ 研报 AI 风险点提示（移植自 k-macao/007 的置顶风控栏目）：
+    #     先试在线 007 端点（OCTOPUS_007_BASE_URL），不通就本地规则兜底；
+    #     有大模型 Key 时只用来写一句定调 + 关注点（事实条目仍由规则产出）。
+    #     本栏失败不影响日报其它栏目。
+    research_risk_result = {}
+    if RESEARCH_RISK_ENABLED:
+        try:
+            # market 只用于给规则定调补一句「与盘面方向对照」；此处尚未算策略研判，
+            # 传 None 即不出这半句，避免为一句装饰语再跑一遍全量策略计算。
+            research_risk_result = _research_risk.build(
+                data=data, date_str=date_str, news_corpus=news_corpus)
+            rr_src = research_risk_result.get("summary_source") or "本地规则"
+            print(f"  ⚠️ 研报 AI 风险点提示：{len(research_risk_result.get('points') or [])} 条线索"
+                  f"（{rr_src} · 定调 {research_risk_result.get('tone_source')}）"
+                  f" → {research_risk_result.get('summary')}")
+        except Exception as _rr_exc:  # noqa: BLE001 单栏失败不拖垮整份日报
+            print(f"  ⚠️ 研报 AI 风险点提示构建失败（本条栏目将按无线索渲染）：{_rr_exc}")
+            research_risk_result = {}
+
     # 2. 生成报告
     print("\n📝 正在生成日报...")
     date_display = _date_display()
     html = generate_report(data, date_display, date_str, theme=theme,
                            sentiment_history=senti_history,
                            policy_result=policy_result,
-                           news_corpus=news_corpus)
+                           news_corpus=news_corpus,
+                           research_risk=research_risk_result)
     print("  ✅ 日报生成完成")
 
     # 3. dry-run 模式

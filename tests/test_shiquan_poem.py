@@ -245,13 +245,29 @@ class ShiquanPipelineIntegrationTests(unittest.TestCase):
 
     def test_both_features_off_hide_opening_without_changing_market_sections(self):
         data = self._sample_data()
+        # 2026-11-04 起卷首还挂着「⚠️ 研报 AI 风险点提示」，诗与卦象关掉后它仍要出；
+        # 这条用例守的是「诗 + 卦象」本身的开关，所以把风险点栏也一并关掉再看卷首。
         with (patch.dict(os.environ, {"OCTOPUS_SHIQUAN": "0"}),
-              patch.object(pipeline._bagua, "ENABLED", False)):
+              patch.object(pipeline._bagua, "ENABLED", False),
+              patch.object(pipeline, "RESEARCH_RISK_ENABLED", False)):
             html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme="lime")
         self.assertNotIn(pipeline.SECTION_TITLE_POETRY_SEA, html)
         self.assertNotIn("今日一首诗", html)
         self.assertNotIn('aria-label="算卦"', html)
         self.assertIn(pipeline.SECTION_TITLE_FORECAST, html)
+
+    def test_research_risk_keeps_opening_alive_when_poem_and_bagua_off(self):
+        """诗与卦象都关掉时，卷首仍因研报风险点块而存在（栏目不能静默消失）。"""
+        data = self._sample_data()
+        with (patch.dict(os.environ, {"OCTOPUS_SHIQUAN": "0"}),
+              patch.object(pipeline._bagua, "ENABLED", False)):
+            html = pipeline.generate_report(data, "2026年10月11日 · 周日", "20261011", theme="lime")
+        self.assertNotIn("今日一首诗", html)
+        self.assertNotIn('aria-label="算卦"', html)
+        self.assertIn(pipeline.SECTION_TITLE_POETRY_SEA, html)
+        self.assertIn(pipeline.SECTION_TITLE_RESEARCH_RISK, html)
+        self.assertLess(html.index(pipeline.SECTION_TITLE_RESEARCH_RISK),
+                        html.index(pipeline.SECTION_TITLE_FORECAST))
 
     def test_multipart_split_retains_opening_poem_in_first_part(self):
         data = self._sample_data()
