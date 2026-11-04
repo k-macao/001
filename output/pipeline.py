@@ -13635,6 +13635,10 @@ def build_policy_factor(data, date_str=None, news_corpus=None):
 
     量化趋势预判（2026-09-29 升级）：在 PSI 基础上做量化复合分：
     PSI 归一 50% + 政策新闻量 30% + 维度覆盖 20%，输出趋势分、强度榜与预判信号。
+
+    返回的 headlines 已按发布时间倒序（最新在前）——存档是追加式的，渲染侧只截
+    前 8 条，若不排序展示的就永远是窗口里最老的 8 条（2026-11-04 「全是 10-21」）。
+    排序只作用于展示顺序，PSI / 行业权重 / 总结仍按整窗口聚合。
     """
     anchor_dt = _factor_anchor_dt(date_str) if date_str else datetime.now(CST)
     anchor_date = anchor_dt.strftime("%Y-%m-%d")
@@ -13704,8 +13708,14 @@ def build_policy_factor(data, date_str=None, news_corpus=None):
             "direction": 1 if head_net > 0 else (-1 if head_net < 0 else 0),
             "net": head_net,
             "date": item_date,
+            "ts": _norm_item_ts(head.get("ts")),
             "old": item_date not in ("", today_iso),
         })
+    # 逐条展示按发布时间倒序（最新在前）：news_corpus 是「追加式」存档，顺序是最旧
+    # → 最新，若原样截前 8 条，展示的就是窗口里最老的 8 条（2026-11-04 报告里出现
+    # 全屏「10-21」即此因）。这里只改展示顺序，PSI / 维度计数仍按整窗口聚合。
+    policy_heads.sort(key=lambda h: (h.get("ts") or h.get("date") or ""),
+                      reverse=True)
     industries = [{
         "name": name, "score": v["score"], "count": v["count"],
         "dims": sorted(v["dims"]),
@@ -13945,8 +13955,9 @@ def gz_policy_block(res):
     if board:
         out.append(gz_subsection("政策冲击强度榜 · 量化趋势")
                    + gz_data_table(["行业", "PSI", "条数", "维度"], board))
-    # 政策新闻逐条不裁：条数已由 POLICY_DISPLAY_HEADLINES 封顶（8 条），而且旧闻
-    # （报告日前一天）必须留在正文里，读者才看得见「08-01 ·」这个日期前缀披露。
+    # 政策新闻逐条不裁：条数已由 POLICY_DISPLAY_HEADLINES 封顶（8 条），headlines
+    # 已按发布时间倒序（最新在前，见 build_policy_factor），旧闻靠「08-01 ·」日期
+    # 前缀披露其真实日期，不冒充当日新闻。
     heads = res["headlines"][:POLICY_DISPLAY_HEADLINES]
     if heads:
         out.append(gz_subsection("重点政策新闻"))

@@ -2433,6 +2433,48 @@ class PolicyFactorTests(unittest.TestCase):
         self.assertNotIn("政策因子口径", html)          # 口径说明已移除
         self.assertIn("08-01 ·", html)
 
+    def _corpus_items(self, days_titles):
+        """构造 news_corpus 存档（追加式：按最旧 → 最新写入，与生产一致）。"""
+        return {"items": [
+            {"title": title, "source": "存档源", "section": "内地财经媒体",
+             "ts": f"{day} 09:00", "date": day}
+            for day, title in days_titles]}
+
+    def test_headlines_sorted_newest_first(self):
+        # 存档是追加式（最旧在前）；展示必须最新在前，否则报告会通篇旧日期
+        corpus = self._corpus_items([
+            ("2026-07-31", "7月31日：央行宣布降准0.5个百分点"),
+            ("2026-08-01", "8月1日：证监会约谈多家券商"),
+            ("2026-08-02", "8月2日：新能源汽车补贴政策延续"),
+        ])
+        res = pipeline.build_policy_factor(None, "20260802", corpus)
+        self.assertEqual([h["date"] for h in res["headlines"]],
+                         ["2026-08-02", "2026-08-01", "2026-07-31"])
+        # 聚合口径不受展示排序影响：PSI 仍是整窗口累加
+        self.assertEqual(res["policy_n"], 3)
+        self.assertEqual(res["dim_counts"],
+                         {"货币宽松": 1, "监管收紧": 1, "产业扶持": 1})
+
+    def test_display_top8_are_newest_not_oldest(self):
+        # 11 条政策样本跨 6 天：展示前 8 条应是最新 8 条，最旧 3 条不占正文版面
+        days = ["2026-07-28", "2026-07-29", "2026-07-30", "2026-07-31",
+                "2026-08-01", "2026-08-02"]
+        days_titles = [(d, f"{d} 第{i}条：产业扶持补贴政策落地")
+                       for i, d in enumerate(days + days[:5])]
+        res = pipeline.build_policy_factor(None, "20260802",
+                                           self._corpus_items(days_titles))
+        self.assertEqual(res["policy_n"], 11)
+        self.assertEqual(len(res["headlines"]), 11)
+        html = pipeline.gz_policy_block(res)
+        shown = res["headlines"][:pipeline.POLICY_DISPLAY_HEADLINES]
+        shown_dates = [h["date"] for h in shown]
+        self.assertEqual(shown_dates, sorted(shown_dates, reverse=True))
+        self.assertEqual(shown_dates[0], "2026-08-02")   # 最新一条置顶
+        # 最新一条在正文里，最旧的一条被 8 条上限挤掉
+        self.assertIn(res["headlines"][0]["title"], html)
+        self.assertNotIn(res["headlines"][-1]["title"], html)
+        self.assertIn("08-01", html)   # 旧闻仍带 MM-DD 前缀披露真实日期
+
     def test_absent_without_policy_news(self):
         data = self._minimal_data(["美股三大指数集体收涨"])
         for theme in ("pixel", "guizang"):
