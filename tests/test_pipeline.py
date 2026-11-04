@@ -2585,7 +2585,8 @@ class NationalPolicySourceTests(unittest.TestCase):
 class SectionReadingOrderTests(unittest.TestCase):
     """日报栏目固定为专业分析 → 数据显示 → 结论（两主题共用 _collect_report_parts）。
 
-    正文分析在前、行情与资讯数据居中、今日结论收尾，短线速查卡置于全文末端。
+    正文分析在前、行情与资讯数据居中、今日总结收尾；短线速查卡（原 24 号）
+    2026-11-04 起前置到卷首研报风险点之后（正文栏首）。
     不生成全篇速览或推导摘要；无数据栏目缺席但不打乱其余顺序。
     2026-09-30 起「行情速览」与「全球大盘全景复盘」合并成一栏「【事实】行情复盘」，
     2026-10-02 起「东方财富快讯」「【事实】全球头条」「港股名家频道」三个资讯
@@ -2603,6 +2604,8 @@ class SectionReadingOrderTests(unittest.TestCase):
     # guizang 栏目标题统一以 </h2> 收尾，用它定位真实栏目头，避免命中
     # 策略研判内部的「→ 「全球头条」第N条」等跨栏目引用文字。
     GUIZANG_ORDER = [
+        # 速查卡前置到卷首研报风险点之后（原 24 号，2026-11-04 用户要求）
+        f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>",
         f"{pipeline.SECTION_TITLE_FORECAST}</h2>",
         # ① 发生了什么 → ② 传播得怎么样 → ④ 我们该怎么办 → 总结（2026-10-14 重排）
         f"{pipeline.SECTION_TITLE_MARKET_REVIEW}</h2>",
@@ -2610,7 +2613,6 @@ class SectionReadingOrderTests(unittest.TestCase):
         f"{pipeline.SECTION_TITLE_NEWS_SENTIMENT}</h2>",
         f"{pipeline.SECTION_TITLE_STRATEGY}</h2>",
         "总结</h2>",
-        f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>",
     ]
 
     def test_guizang_section_reading_order(self):
@@ -2630,7 +2632,7 @@ class SectionReadingOrderTests(unittest.TestCase):
     def _lvl_markers(self, data, kickers):
         """按本次实际渲染的栏目序列生成「LVL nn // KICKER」标记。
 
-        速查卡已收在结论之后，栏目编号按当前实际渲染序列推导；
+        速查卡已前置到正文栏首，栏目编号按当前实际渲染序列推导；
         编号由栏目序列计算而不是写死，精简 / 全量两种版面共用同一份断言。
         """
         sections = pipeline._collect_report_parts(data, pipeline.PIXEL_KIT,
@@ -2641,9 +2643,9 @@ class SectionReadingOrderTests(unittest.TestCase):
     def test_pixel_lvl_numbering_follows_reading_order(self):
         data = self._full_data()
         html = pipeline.generate_report(data, "2026年8月2日 · 周日", "20260802", theme="pixel")
-        # 2026-10-14 重排：今日预判 → ①行情复盘 / 政策 → ②新闻情绪 → ④策略研判 → 总结 → 速查卡
-        kickers = ["FORECAST", "MARKET REVIEW", "POLICY SHOCK",
-                   "NEWS SENTIMENT", "STRATEGY READ", "SUMMARY", "SHORT CARD"]
+        # 现行顺序：速查卡（前置）→ 今日预判 → ①行情复盘 / 政策 → ②新闻情绪 → ④策略研判 → 总结
+        kickers = ["SHORT CARD", "FORECAST", "MARKET REVIEW", "POLICY SHOCK",
+                   "NEWS SENTIMENT", "STRATEGY READ", "SUMMARY"]
         order, index = self._lvl_markers(data, kickers)
         self.assertEqual(len(order), len(kickers), "存在未渲染的栏目")
         positions = [html.find(s) for s in order]
@@ -2655,15 +2657,16 @@ class SectionReadingOrderTests(unittest.TestCase):
         for hidden_kick in ("EASTMONEY WIRE", "GLOBAL HEADLINES", "HK GURU CHANNELS"):
             self.assertNotIn(hidden_kick, index)
             self.assertNotIn(hidden_kick, html)
-        # 正文分析 → 数据 → 结论，短线速查卡在最终结论之后收尾。
+        # 速查卡前置栏首 → 正文分析 → 数据 → 结论（今日总结收尾）
         self.assertEqual([index[k] for k in kickers], sorted(index[k] for k in kickers))
         self.assertNotIn("AI DIGEST", index)
-        self.assertEqual(index["FORECAST"], 0)  # 今日预判置顶
+        self.assertEqual(index["SHORT CARD"], 0)  # 速查卡前置（原 24 号）
+        self.assertEqual(index["FORECAST"], 1)    # 今日预判紧随其后
         if "RETAIL SENTIMENT" in index and "MARKET REVIEW" in index:
             # 「发生了什么」组（行情复盘）先于「传播得怎么样」组（散户情绪）
             self.assertLess(index["MARKET REVIEW"], index["RETAIL SENTIMENT"])
         if "SHORT CARD" in index:
-            self.assertGreater(index["SHORT CARD"], index["SUMMARY"])
+            self.assertLess(index["SHORT CARD"], index["SUMMARY"])
 
     def test_order_skips_missing_sections_without_shifting_rest(self):
         # 无新闻/无政策/无情绪归因（缺席栏目）时，剩余栏目顺序与编号仍正确
@@ -2706,15 +2709,15 @@ class ConciseLayoutTests(unittest.TestCase):
         forecast = html.find("【结论】今日预判</h2>")
         short_card = html.find(f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>")
         self.assertGreaterEqual(strategy, 0)
-        # 2026-10-14 重排：行情复盘（①）→ 策略研判（④）→ 总结 → 速查卡
+        # 现行顺序：速查卡（前置）→ 今日预判 → 行情复盘（①）→ 策略研判（④）→ 总结
         self.assertLess(market, strategy)
         self.assertLess(strategy, recap)
-        self.assertLess(recap, short_card)
-        # 2026-10-13：今日预判置顶，位于策略研判之前
+        self.assertLess(short_card, forecast)
         self.assertLess(forecast, strategy)
         sections = pipeline._collect_report_parts(
             self._data(), pipeline.GUIZANG_KIT, date_str="20260802")["sections"]
-        self.assertEqual(sections[0][0], "FORECAST")
+        self.assertEqual(sections[0][0], "SHORT CARD")
+        self.assertEqual(sections[1][0], "FORECAST")
         # 渲染顺序必须与 REPORT_SECTION_ORDER 一致（不依赖具体夹具里有哪些栏目）
         kickers = [section[0] for section in sections if section[0] != "SHORT CARD"]
         self.assertEqual(kickers, [k for k in pipeline.REPORT_SECTION_ORDER if k in kickers])
@@ -3352,19 +3355,19 @@ class EconCalendarTests(unittest.TestCase):
             kickers = [s[0] for s in pipeline._collect_report_parts(
                 data, pipeline.PIXEL_KIT, date_str="20260928")["sections"]]
         pixel_markers = [f"LVL {kickers.index(k):02d} // {k}"
-                         for k in ("FORECAST", "MARKET REVIEW", "ECON CALENDAR", "SUMMARY",
-                                   "SHORT CARD") if k in kickers]
+                         for k in ("SHORT CARD", "FORECAST", "MARKET REVIEW",
+                                   "ECON CALENDAR", "SUMMARY") if k in kickers]
         for theme, markers in (
-            ("guizang", ["【结论】今日预判</h2>", "【事实】行情复盘</h2>",
-                         "【事实】时间节点</h2>", "总结</h2>",
-                         f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>"]),
+            ("guizang", [f"{pipeline.SECTION_TITLE_SHORT_CARD}</h2>",
+                         "【结论】今日预判</h2>", "【事实】行情复盘</h2>",
+                         "【事实】时间节点</h2>", "总结</h2>"]),
             ("pixel", pixel_markers),
         ):
             html = self._report(data, theme=theme)
             positions = [html.find(m) for m in markers]
             self.assertNotIn(-1, positions, f"{theme} 栏目缺失: {markers}")
             self.assertEqual(positions, sorted(positions),
-                             f"{theme} 顺序必须为今日预判 → 发生了什么（行情/日程）→ 总结 → 速查卡")
+                             f"{theme} 顺序必须为速查卡 → 今日预判 → 发生了什么（行情/日程）→ 总结")
 
     def test_section_body_carries_window_summary_and_star_levels(self):
         res, _ = self._fetch()
