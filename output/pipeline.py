@@ -498,6 +498,19 @@
       · 回归见 tests/test_push_split.py::PushDeliveryModeTests（默认一对多、群组编码路由、
         缺失告警回退、one2one 忽略群组、未知模式告警、显式 topic 覆盖）。
 
+  37. 删除 18–22 号栏目 + 24 号速查卡前置（2026-11-04 按用户要求）：
+      · **删除**：策略量化五栏（18 全景对照 / 19 权益 / 20 债券 / 21 CTA / 22 套利，
+        REPORT_STRATEGY_SECTIONS）整组下线——正文顺序表摘除、_collect_report_parts
+        不再建块，五套主题均不再出现（默认关闭的三地指数全页 index_page 亦同步
+        移除对应映射，同 32 条 QUANT FORECAST 先例）；同 32 条口径，只删栏目：底层引擎
+        strategy_quant（计算 + render_overview/render_major）、fetch_strategy_quant
+        采集与「策略量化」数据源审计保留（仍供三地指数页 index_checks 契约与
+        数据覆盖点名），历史归档日报不改写；
+      · **前置**：【行动】短线速查卡（原 24 号、原全文收尾）移到卷首
+        「⚠️ 研报 AI 风险点提示」之后（正文栏首，编号 00），其后今日预判顺延 01，
+        【收尾】今日总结回到全文末栏；速查卡缺席（--full / 无数据）时今日预判
+        回到 00 号。速查卡取材、字数预算与三句话配对逻辑不变。
+
 退出码约定：
   0 = 正常完成（含 --no-push / --dry-run 等有意的跳过，或检验未通过但告警已送达）；
   1 = 应当推送却失败，或用法错误。
@@ -8808,7 +8821,7 @@ def _summary_pairs(ai_result, pan, policy, source_items, today_n, total, quant=N
 # ------------------------------------------------------------
 SECTION_TITLE_RETAIL_SENTIMENT = _senti_strategy.SECTION_TITLE
 # 2026-09-30 新增（用户要求「内容再精炼，适合短线操作，入门观看」）：
-# 末尾「短线速查卡」——≤600 字归纳今日动作要点，末尾附【新手三句话】（从百句股票梗句库读取配对）。
+# 「短线速查卡」（正文栏首，卷首研报风险点之后）——≤600 字归纳今日动作要点，卡内末尾可附【新手三句话】（从百句股票梗句库读取配对）。
 # 纯规则合成（output/octopus_short.py），数字全部取自下文各栏同一批实参；
 # OCTOPUS_LITE=0 / --full 关闭，日报回到全量长版。
 SECTION_TITLE_SHORT_CARD = "【行动】短线速查卡"
@@ -8999,7 +9012,12 @@ REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
     # 资金流动性与【推演】七日走势两栏保留。
     "LIQUIDITY FLOW", "WEEKLY FORECAST",
 )
-REPORT_STRATEGY_SECTIONS = (                   # ④' 策略量化（图中 4 大类 6 细分）
+# 策略量化五栏（原 18–22 号：全景对照 / 权益 / 债券 / CTA / 套利）：
+# 2026-11-04 用户要求「18-22 栏目删除」——整组下线，kicker 不再进正文顺序表、
+# 正文也不再建块（见 _collect_report_parts），即使数据里带策略量化结果也不渲染。
+# 底层引擎（strategy_quant 的计算与渲染器）、数据采集与「策略量化」数据源审计
+# 保留（同量化分析总览下线口径：只删栏目，引擎仍供三地指数页 index_checks 契约）。
+REPORT_STRATEGY_SECTIONS = (                   # 已删除的策略量化栏组（保留登记供测试守关）
     "STRATEGY OVERVIEW", "STRATEGY EQUITY", "STRATEGY BOND", "STRATEGY CTA", "STRATEGY ARBITRAGE",
 )
 REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
@@ -9007,7 +9025,6 @@ REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
     # 2026-10-28 新增：低频小因子（港股五因子横截面 → 推荐 20 只）；
     # 排在「板块 / 行业轮动」之后：先看板块与行业往哪走，再落到低频个股清单。
     "LOWFREQ FACTORS",
-    *REPORT_STRATEGY_SECTIONS,
 )
 # 2026-10-02 起 GLOBAL HEADLINES（【事实】全球头条）与 HK GURU CHANNELS
 # （港股名家频道）按用户要求从页面隐藏，与此前隐藏的 EASTMONEY WIRE（东方财富快讯）
@@ -9018,10 +9035,13 @@ REPORT_ANALYSIS_SECTIONS = (
     *REPORT_FACT_SECTIONS, *REPORT_SPREAD_SECTIONS,
     *REPORT_OUTLOOK_SECTIONS, *REPORT_ACTION_SECTIONS,
 )
-# 2026-10-13 起「今日预判」（FORECAST）按用户要求放在正文最开头；「总结」仍在末尾。
-# 2026-11-04 「研报 AI 风险点提示」（移植自 k-macao/007）：按用户要求排在
-# 卷首「新手三句话」之后，因此它**不进正文顺序表**，而是卷首栏目里的一块
-# （见 _collect_report_parts 的 research_risk_html 与 _poetry_sea_section）。
+# 正文顺序表：今日预判 → ①发生了什么 → ②传播得怎么样 → ③可能会怎样 →
+# ④我们该怎么办 → 总结。【行动】短线速查卡（原 24 号）不在此表内——
+# 2026-11-04 用户要求把它放到卷首「研报 AI 风险点提示」栏目之后，由
+# _collect_report_parts 插到 sections 首位（编号 00），其后才是今日预判。
+# 2026-11-04 「研报 AI 风险点提示」（原样复制粘贴 k-macao/007 推送同样栏目文字）：
+# 按用户要求排在卷首「新手三句话」之后，因此它**不进正文顺序表**，而是卷首栏目
+# 里的一块（见 _collect_report_parts 的 research_risk_html 与 _poetry_sea_section）。
 REPORT_HEAD_SECTIONS = ("FORECAST",)
 REPORT_TAIL_SECTIONS = ("SUMMARY",)
 REPORT_SECTION_ORDER = (
@@ -10150,7 +10170,7 @@ def _beginner_tips_block(tips, kit):
 
 
 def _short_card_section(card_ctx, kit, today_n, total, tips=None, tips_in_card=True):
-    """🎯【行动】短线速查卡（2026-09-30 新增；正文结论之后的行动要点收尾）。
+    """🎯【行动】短线速查卡（2026-09-30 新增；2026-11-04 前置到卷首研报风险点之后）。
 
     用户要求「内容再精炼，适合短线操作，入门观看」：把全天数据里**最能直接动手**的
     几件事压成 ≤600 字一张卡——今天什么风、明天怎么做（概率 / 区间 / 仓位 / 止损 / 止盈）、
@@ -10769,35 +10789,10 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     except Exception as _lf_exc:  # 单栏失败不拖垮整份日报
         print(f"  ⚠️ 低频小因子渲染异常：{_lf_exc}")
 
-    # 📊 策略大类量化（图中 4 大类 6 细分，2026-10-21 新增）：总览 + 4 大类。
-    #     内部衍生、可离线兜底；只读基准指数日线，不计入当天检验 / 总源审计。
-    #     任一栏渲染异常只影响该栏（整段 try），绝不拖垮整份日报。
-    try:
-        sq_src = data.get(STRATEGY_QUANT_SOURCE) or {}
-        sq_res = sq_src.get("result") if isinstance(sq_src, dict) else None
-        if _strategy_quant is not None and isinstance(sq_res, dict) and sq_res.get("available"):
-            sq_badge = kit.badge("策略量化", "ai")
-            ov_html = _strategy_quant.render_overview(sq_res, kit)
-            if ov_html:
-                blocks["STRATEGY OVERVIEW"] = (
-                    "STRATEGY OVERVIEW", SECTION_TITLE_STRATEGY_OVERVIEW, ov_html, sq_badge,
-                    "" if PLAIN() else
-                    "图中 4 大类 6 细分 · 基准指数日线 · 20/60日收益 · 波动 · 夏普 · 回撤 · 胜率 · 趋势 · 信号（规则合成，非投资建议）")
-            for major, kicker, title, note in (
-                    ("权益多头", "STRATEGY EQUITY", SECTION_TITLE_STRATEGY_EQUITY,
-                     "权益多头：主观多头（沪深300） vs 量化多头（中证500） · 收益 / 波动 / 趋势 / 信号对比"),
-                    ("纯债策略", "STRATEGY BOND", SECTION_TITLE_STRATEGY_BOND,
-                     "纯债策略：国债ETF / 中证全债基准 · 低波动稳定器特征"),
-                    ("CTA策略", "STRATEGY CTA", SECTION_TITLE_STRATEGY_CTA,
-                     "CTA 策略：主观CTA（GSG） vs 量化CTA（DBC） · 商品趋势双视角"),
-                    ("套利策略", "STRATEGY ARBITRAGE", SECTION_TITLE_STRATEGY_ARBITRAGE,
-                     "套利策略 · 综合指数：私募综合 / 上证指数代理 · 市场中性合成表现")):
-                major_html = _strategy_quant.render_major(major, sq_res, kit)
-                if major_html:
-                    blocks[kicker] = (kicker, title, major_html, sq_badge,
-                                      "" if PLAIN() else note)
-    except Exception as _sq_exc:  # 单栏失败不拖垮整份日报
-        print(f"  ⚠️ 策略量化渲染异常：{_sq_exc}")
+    # 📊 策略大类量化五栏（原 18–22 号：全景对照 / 权益 / 债券 / CTA / 套利）已删除：
+    # 2026-11-04 用户要求「18-22 栏目删除」，此处不再建块、顺序表也不再登记，
+    # 即使 data["策略量化"] 带结果也不进日报。策略量化数据源的采集与审计
+    # （source_items / 数据覆盖点名）保持不变，底层引擎仍供三地指数页契约。
 
     # ⓪ 时间节点（原「未来 N 天影响经济时间点」，2026-09-29 改名）：
     #    开头栏目——先看清日程窗口，再读今天的盘；窗口天数仍在栏目内「窗口摘要 · 时间窗口」显示。
@@ -10996,7 +10991,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                              backup_events=(data.get("_backup_info") or {}).get("events"))
     blocks["SUMMARY"] = ("SUMMARY", SECTION_TITLE_SUMMARY, kit.kv(summary), "", "")
 
-    # 栏目顺序固定为：今日预判 → ①发生了什么 → ②传播得怎么样 → ③可能会怎样 → ④我们该怎么办 → 总结；
+    # 栏目顺序固定为：（速查卡前置，见下方插卡处）→ 今日预判 → ①发生了什么 → ②传播得怎么样 → ③可能会怎样 → ④我们该怎么办 → 总结；
     # 没有采集到社区样本时情绪因子缺席。
     sections = [blocks[k] for k in REPORT_SECTION_ORDER if k in blocks]
 
@@ -11072,8 +11067,11 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             bagua_html = _bagua.render_bagua_html(day=_bagua_report_day(date_str))
         except Exception as e:  # noqa: BLE001
             print(f"⚠️ 卷首卦象渲染失败（date_str={date_str!r}）：{type(e).__name__}: {e}")
-    # 短线速查卡收尾呈现：正文按 ①→④ 与总结阅读后，再给行动要点。
-    # 取材全部是上面渲染正文用的同一批对象，缺数据自动缺席（LITE=0 / --full 整卡不出）。
+    # 短线速查卡前置呈现（原 24 号栏，2026-11-04 用户要求「24 放研报 AI 风险点栏目后」）：
+    # 插到正文栏首（编号 00），紧接卷首「新手三句话 → ⚠️ 研报 AI 风险点提示」之后、
+    # 【结论】今日预判之前，先给行动要点再展开正文。
+    # 取材全部是上面渲染正文用的同一批对象，缺数据自动缺席（LITE=0 / --full 整卡不出，
+    # 此时今日预判回到 00 号）。
     beginner_tips_html = ""
     if LITE_ENABLED:
         card_ctx = {
@@ -11091,7 +11089,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         card = _short_card_section(card_ctx, kit, today_n, total,
                                    tips=tips, tips_in_card=not bagua_html)
         if card:
-            sections.append(card)
+            sections.insert(0, card)
         if bagua_html:
             beginner_tips_html = _beginner_tips_block(tips, kit)
     # ⚠️ 研报 AI 风险点提示（2026-11-04 用户要求）：不单独占一个编号栏目，而是紧接
@@ -11134,7 +11132,9 @@ def _poetry_sea_section(parts, kit):
     """刊头后的单一卷首栏目：诗选 + 卦象 + 🐣 新手三句话 + ⚠️ 研报 AI 风险点提示。
 
     用主题自己的 section 渲染头部与 SECTION_BODY_MARK，分条时诗和卦先按一个
-    栏目装箱；卷首编号「序」不挤占今日预判的 00 栏。三块都不可用时不出空栏目。
+    栏目装箱；卷首编号「序」不占正文编号，00 栏是紧随其后的【行动】短线速查卡
+    （2026-11-04 前置到研报风险点之后；速查卡缺席时今日预判回到 00 栏）。
+    三块都不可用时不出空栏目。
 
     🐣 新手三句话（2026-10-16 用户要求「放在卦象后」）：三句话紧跟卦象之后，
     让入门读者在翻到行情数字之前先拿到「看方向 / 放止损 / 别动手」三句人话；
@@ -16613,7 +16613,7 @@ def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
 
     # 拥挤时的第一道腾挪：整份刚好超出上限一条，且超出的原因是卷首「⚠️ 研报 AI 风险点提示」
     # 这块新增内容 → 把它压成一行摘要（保留 007 原文第一段，逐条原文仍留在完整日报页），
-    # 让原本会被截掉的尾栏（短线速查卡）重新装得下。压缩后仍超限才走下面的截断分支。
+    # 让原本会被截掉的尾栏（【收尾】今日总结）重新装得下。压缩后仍超限才走下面的截断分支。
     if len(chunks) == max_parts + 1 and SPLIT_CONDENSE_MARK in html:
         condensed = _condense_research_risk(html)
         if condensed and len(condensed) < len(html):

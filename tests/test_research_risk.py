@@ -239,12 +239,22 @@ class ResearchRiskReportTests(unittest.TestCase):
                 self.assertLess(html.index(self.pipeline.SECTION_TITLE_RESEARCH_RISK),
                                 html.index(self.pipeline.SECTION_TITLE_FORECAST),
                                 f"{theme}: 必须在正文（今日预判）之前")
-                # 不进正文编号序列：今日预判仍是第一个编号栏目
+                # 不进正文编号序列：风险块仍在卷首；正文栏首是前置的速查卡
+                # （原 24 号，2026-11-04 移到本块之后），再是今日预判
                 parts = self.pipeline._collect_report_parts(
                     data, self.pipeline.GUIZANG_KIT, date_str="20260802",
                     research_risk=self._result())
-                self.assertEqual(parts["sections"][0][0], "FORECAST")
-                self.assertNotIn("RESEARCH RISK", [s[0] for s in parts["sections"]])
+                kickers = [s[0] for s in parts["sections"]]
+                self.assertEqual(kickers[0], "SHORT CARD")
+                self.assertLess(kickers.index("SHORT CARD"), kickers.index("FORECAST"))
+                self.assertNotIn("RESEARCH RISK", kickers)
+                # 可见顺序：研报风险点（卷首）→ 速查卡 → 今日预判
+                self.assertLess(html.index(self.pipeline.SECTION_TITLE_RESEARCH_RISK),
+                                html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                                f"{theme}: 速查卡必须紧随研报风险点之后")
+                self.assertLess(html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                                html.index(self.pipeline.SECTION_TITLE_FORECAST),
+                                f"{theme}: 速查卡必须在今日预判之前")
 
     def test_verbatim_render_escaped_no_links_no_invented_rows(self):
         parts = self.pipeline._collect_report_parts(
@@ -316,7 +326,7 @@ class ResearchRiskReportTests(unittest.TestCase):
         self.assertEqual(parts["research_risk_html"], "")
 
     def test_split_condenses_block_when_one_part_over_the_cap(self):
-        """分条拥挤时压成一行摘要，尾栏（短线速查卡）不再被截掉。"""
+        """分条拥挤时压成一行摘要，尾栏（今日总结）与前置的速查卡都不再被截掉。"""
         from test_pipeline import SectionReadingOrderTests, MarketPanoramaTests
         data = SectionReadingOrderTests()._full_data()
         data["A股大盘全景"] = MarketPanoramaTests()._panorama_payload()
@@ -326,7 +336,9 @@ class ResearchRiskReportTests(unittest.TestCase):
         parts = self.pipeline._split_html_for_push(html, 12000) or []
         self.assertLessEqual(len(parts), self.pipeline.PUSHPLUS_MAX_PARTS)
         self.assertTrue(any(self.pipeline.SECTION_TITLE_SHORT_CARD in part for part in parts),
-                        "压缩卷首块之后，尾栏必须还在")
+                        "压缩卷首块之后，前置速查卡必须还在")
+        self.assertTrue(any(self.pipeline.SECTION_TITLE_SUMMARY in part for part in parts),
+                        "压缩卷首块之后，尾栏今日总结必须还在")
 
 
 if __name__ == "__main__":

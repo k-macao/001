@@ -453,34 +453,41 @@ class CardRenderingTests(unittest.TestCase):
     def _data(self):
         return pipeline_report_data(self.pipeline)
 
-    def test_card_closes_report_after_analysis_data_and_conclusion(self):
+    def test_card_leads_report_before_forecast(self):
+        # 2026-11-04 用户要求：原 24 号短线速查卡前置到卷首研报风险点之后
+        # （正文栏首、今日预判之前）；【收尾】今日总结回到全文末栏
         data = self._data()
         for kit in (self.pipeline.GUIZANG_KIT, self.pipeline.PIXEL_KIT):
             sections = self.pipeline._collect_report_parts(data, kit,
                                                            date_str="20260802")["sections"]
             self.assertNotEqual(sections[0][0], "AI DIGEST")
-            self.assertIn(sections[0][0], self.pipeline.REPORT_SECTION_ORDER)
-            self.assertEqual(sections[-1][0], "SHORT CARD")
-            self.assertEqual(sections[-1][1], self.pipeline.SECTION_TITLE_SHORT_CARD)
+            self.assertEqual(sections[0][0], "SHORT CARD")
+            self.assertEqual(sections[0][1], self.pipeline.SECTION_TITLE_SHORT_CARD)
+            self.assertIn(sections[1][0], self.pipeline.REPORT_SECTION_ORDER)
+            self.assertEqual(sections[-1][0], "SUMMARY")
             titles = [section[1] for section in sections]
             # 2026-10-14 重排：行情复盘（①）先于策略研判（④）
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
                             titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
                             titles.index(self.pipeline.SECTION_TITLE_SUMMARY))
-            # 2026-10-13：今日预判置顶，总结仍在速查卡之前
+            # 2026-11-04：速查卡前置到今日预判之前，总结回到全文最末
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_FORECAST),
                             titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
-            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_SUMMARY), titles.index(self.pipeline.SECTION_TITLE_SHORT_CARD))
+            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                            titles.index(self.pipeline.SECTION_TITLE_SUMMARY))
         for theme in ("guizang", "pixel"):
             html = self.pipeline.generate_report(data, "2026年8月2日 · 周日", "20260802",
                                                 theme=theme)
             self.assertIn(self.pipeline.SECTION_TITLE_SHORT_CARD, html)
+            self.assertLess(html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                            html.index(self.pipeline.SECTION_TITLE_FORECAST),
+                            f"{theme} 速查卡必须前置到今日预判之前")
             self.assertLess(html.index(self.pipeline.SECTION_TITLE_FORECAST),
-                            html.index(sections[1][1]))
-            self.assertLess(html.index("总结<"),
-                            html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
-                            f"{theme} 速查卡必须作为结论后的收尾")
+                            html.index(sections[2][1]))
+            self.assertLess(html.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
+                            html.index("总结<"),
+                            f"{theme} 速查卡不得再排在总结之后收尾")
             # 2026-10-16：三句话移到卷首卦象之后，仍在日报里，但不在速查卡内部
             self.assertIn("新手三句话", html)
             self.assertLess(html.index("新手三句话"),

@@ -163,7 +163,8 @@ class StrategyQuantEngineTests(unittest.TestCase):
 
 
 class StrategyQuantReportTests(unittest.TestCase):
-    """渲染层：5 个栏目、五种主题、暂缺披露、版面顺序与审计口径。"""
+    """渲染层：2026-11-04 起原 18–22 号五栏整组删除——五套主题均不得再出现；
+    底层引擎、暂缺披露与审计口径保留。"""
 
     TITLES = (
         pipeline.SECTION_TITLE_STRATEGY_OVERVIEW,
@@ -198,34 +199,32 @@ class StrategyQuantReportTests(unittest.TestCase):
             data[pipeline.STRATEGY_QUANT_SOURCE] = src
         return data
 
-    def test_five_sections_render_in_every_theme(self):
+    def test_deleted_sections_absent_in_every_theme(self):
+        # 2026-11-04 用户要求「18-22 栏目删除」：即使带可用策略量化结果，
+        # 五套主题均不得再出现这五栏的标题与细分明细
         data = self._data()
         for theme in ("lime", "guizang", "pixel", "dossier", "forum"):
             with self.subTest(theme=theme):
                 html = pipeline.generate_report(data, "2026年10月21日 · 周三", "20261021",
                                                 theme=theme)
                 for title in self.TITLES:
-                    self.assertIn(title, html, f"{theme} 缺少 {title}")
-                # 图中 6 个细分名称都要出现在页面上（分类表 + 明细表）
-                for sub in ("主观多头", "量化多头", "纯债基金", "主观CTA", "量化CTA", "综合指数"):
-                    self.assertIn(sub, html, f"{theme} 缺少细分 {sub}")
-                # 合成序列必须显式点名，绝不冒充真实行情
-                self.assertIn("演示序列", html, f"{theme} 未披露合成序列")
+                    self.assertNotIn(title, html, f"{theme} 不得再出现已删除栏目 {title}")
+                for kick in pipeline.REPORT_STRATEGY_SECTIONS:
+                    self.assertNotIn(kick, html, f"{theme} 不得再出现已删除 kicker {kick}")
+                self.assertNotIn("演示序列", html, f"{theme} 栏目已删，不得出现策略量化正文")
 
-    def test_section_order_is_after_industry_rotation_before_summary(self):
+    def test_deleted_sections_not_in_order_or_sections(self):
         kickers = [s[0] for s in pipeline._collect_report_parts(
             self._data(), pipeline.PIXEL_KIT, date_str="20261021")["sections"]]
         for kick in ("STRATEGY OVERVIEW", "STRATEGY EQUITY", "STRATEGY BOND",
                      "STRATEGY CTA", "STRATEGY ARBITRAGE"):
-            self.assertIn(kick, kickers)
-        order = [k for k in kickers if k in pipeline.REPORT_STRATEGY_SECTIONS]
-        self.assertEqual(order, ["STRATEGY OVERVIEW", "STRATEGY EQUITY", "STRATEGY BOND",
-                                 "STRATEGY CTA", "STRATEGY ARBITRAGE"])
-        self.assertLess(kickers.index("STRATEGY OVERVIEW"), kickers.index("SUMMARY"))
-        # 栏目顺序表本身也要登记（不依赖夹具里有哪些栏）
+            self.assertNotIn(kick, kickers, f"已删除栏目不得进 sections：{kick}")
+            self.assertNotIn(kick, pipeline.REPORT_SECTION_ORDER,
+                             f"已删除栏目不得进正文顺序表：{kick}")
+        # 删除后相邻栏目顺序不变：行业轮动 → 低频五因子 → 总结
         seq = pipeline.REPORT_SECTION_ORDER
-        self.assertLess(seq.index("INDUSTRY ROTATION"), seq.index("STRATEGY OVERVIEW"))
-        self.assertLess(seq.index("STRATEGY ARBITRAGE"), seq.index("SUMMARY"))
+        self.assertLess(seq.index("INDUSTRY ROTATION"), seq.index("LOWFREQ FACTORS"))
+        self.assertLess(seq.index("LOWFREQ FACTORS"), seq.index("SUMMARY"))
 
     def test_absent_and_named_in_coverage_when_bars_unavailable(self):
         src = pipeline._source_result(pipeline.STRATEGY_QUANT_SOURCE, "unavailable",
@@ -262,8 +261,10 @@ class StrategyQuantReportTests(unittest.TestCase):
         html = pipeline.generate_report(self._data(source=src),
                                         "2026年10月21日 · 周三", "20261021")
         self.assertNotIn("演示序列", html)
+        # 真实日线算出的结果本身不得标合成；五栏已删除，标题不得进日报
+        self.assertFalse(res["synthetic"])
         for title in self.TITLES:
-            self.assertIn(title, html)
+            self.assertNotIn(title, html)
 
     def test_fetch_wrapper_respects_switch_and_demo_flag(self):
         with patch.object(pipeline, "STRATEGY_QUANT_ENABLED", False):
@@ -280,17 +281,15 @@ class StrategyQuantReportTests(unittest.TestCase):
         self.assertTrue(src["result"]["synthetic"])
         self.assertFalse(src["is_today"])          # 内部衍生不打开当天检验
 
-    def test_push_split_keeps_every_strategy_section(self):
+    def test_push_split_no_strategy_section_leaks(self):
         html = pipeline.generate_report(self._data(), "2026年10月21日 · 周三", "20261021")
         parts = pipeline._split_html_for_push(html, 20000)
         self.assertIsNotNone(parts)
         self.assertGreater(len(parts), 1)
         for part in parts:
             self.assertLessEqual(len(part), 20000)
-        for title in self.TITLES:
-            self.assertGreaterEqual(
-                sum(1 for p in parts if f">{title}</h2>" in p), 1,
-                f"分条后 {title} 丢失")
+            for title in self.TITLES:
+                self.assertNotIn(title, part, "已删除栏目不得在任何分条中复活")
 
 
 if __name__ == "__main__":
