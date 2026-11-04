@@ -12,6 +12,7 @@
 from __future__ import annotations
 
 import os
+import threading as _threading
 from datetime import datetime, timezone, timedelta
 from zoneinfo import ZoneInfo
 
@@ -77,12 +78,96 @@ def em_secids_for_yahoo(symbol):
     return (secid,) if secid else ()
 
 
+# ------------------------------------------------------------------
+# 批量取数的日志闸门：几百只日线里几十只 404 不该把日志刷成一片。
+# 状态放在 providers（无依赖），pipeline.safe_request 与批量抓取方共用同一个闸门。
+# ------------------------------------------------------------------
+# 闸门必须是**进程级**的：批量抓日用线程池，失败发生在 worker 线程里，
+# 用 threading.local 会让 worker 看不见主线程开的静音开关（实测踩过）。
+_REQUEST_LOCK = _threading.Lock()
+_REQUEST_LOG = {"quiet": False}
+_REQUEST_FAILURES = {"batch": 0, "single": 0}
+
+
+def request_log_quiet():
+    """当前是否处于批量取数（静默逐条失败日志）。"""
+    return bool(_REQUEST_LOG.get("quiet"))
+
+
+def note_request_failure(batch=None):
+    """登记一次请求失败；返回本次是否为「批量模式」（批量模式不逐条打印）。"""
+    quiet = request_log_quiet() if batch is None else bool(batch)
+    with _REQUEST_LOCK:
+        _REQUEST_FAILURES["batch" if quiet else "single"] += 1
+    return quiet
+
+
+def request_failures():
+    with _REQUEST_LOCK:
+        return dict(_REQUEST_FAILURES)
+
+
+class request_quiet:
+    """把一段批量取数里的逐条失败日志静音，只保留调用方自己打的汇总一行。
+
+    用法::
+
+        with providers.request_quiet() as q:
+            raw = fetch_series_batch(fetch_json, specs, ...)
+        print(f"  ℹ️ 日线 {len(raw)}/{len(specs)} 只取到，{q.failed} 次请求失败（已在汇总里，不逐条刷屏）")
+    """
+
+    def __enter__(self):
+        with _REQUEST_LOCK:
+            self._prev = _REQUEST_LOG.get("quiet", False)
+            self._before = dict(_REQUEST_FAILURES)
+            _REQUEST_LOG["quiet"] = True
+        self.failed = 0
+        return self
+
+    def __exit__(self, *exc):
+        with _REQUEST_LOCK:
+            _REQUEST_LOG["quiet"] = self._prev
+            after = dict(_REQUEST_FAILURES)
+        self.failed = after["batch"] - self._before["batch"]
+        return False
+
+
+HK_YAHOO_CODE_WIDTH = 4
+
+
+def yahoo_hk_code(symbol):
+    """港股代码 → Yahoo 口径（**4 位**补零：``06160.HK`` → ``6160.HK``）；非港股原样返回。
+
+    2026-11-04 实测：Yahoo 只认 4 位（``0700.HK`` 有数据、``00700.HK`` 是 result:null；
+    ``6160.HK`` 有 2 年日线、``06160.HK`` 直接 404）。东财 / 交易所是 5 位，
+    所以内部一律存 5 位，**只在拼 Yahoo URL 时**折成 4 位。
+    """
+    sym = str(symbol or "").strip()
+    if not (sym.upper().endswith(".HK") and sym[:-3].isdigit()):
+        return sym
+    return f"{sym[:-3].lstrip('0').zfill(HK_YAHOO_CODE_WIDTH)}.HK"
+
+
+def _canonical_hk_symbol(symbol):
+    """港股代码 → 内部 5 位口径（``700.HK`` → ``00700.HK``）；非港股原样返回。"""
+    sym = str(symbol or "").strip()
+    if not (sym.upper().endswith(".HK") and sym[:-3].isdigit()):
+        return sym
+    return f"{sym[:-3].zfill(5)}.HK"
+
+
 def yahoo_symbols_for(symbol):
-    """Yahoo 代码候选链：``^HSTECH`` 已下线，改用 ``HSTECH.HK``（见 backup_sources 注释）。"""
+    """Yahoo 代码候选链：下线代码换现行代码 + 港股 4 位补零（见 backup_sources 注释）。"""
     if _bk is not None and hasattr(_bk, "yahoo_symbols_for"):
         return tuple(_bk.yahoo_symbols_for(symbol))
     sym = str(symbol or "").strip()
-    return ("HSTECH.HK",) if sym in ("^HSTECH", "%5EHSTECH") else (sym,)
+    out = []
+    for code in (("HSTECH.HK",) if sym in ("^HSTECH", "%5EHSTECH") else (sym,)):
+        for cand in (yahoo_hk_code(code), code):
+            if cand and cand not in out:
+                out.append(cand)
+    return tuple(out) or (sym,)
 
 
 def fetch_json_chain(fetch_json, urls, params, ok, timeout=15):
@@ -141,7 +226,11 @@ EM_HK_PREFIX = "116."
 
 
 def _env_list(name, default):
-    """从环境变量读取标的池（``代码:名称,代码:名称``）。"""
+    """从环境变量读取标的池（``代码:名称,代码:名称``）。
+
+    港股代码统一折成内部 5 位口径（``700.HK`` / ``0700.HK`` / ``00700.HK`` → ``00700.HK``），
+    拼 Yahoo URL 时再按 ``yahoo_hk_code()`` 折回 4 位 —— 两处口径不会互相漂移。
+    """
     raw = os.environ.get(name, "")
     items = []
     for chunk in str(raw or "").split(","):
@@ -150,9 +239,9 @@ def _env_list(name, default):
             continue
         if ":" in chunk:
             code, label = chunk.split(":", 1)
-            items.append((label.strip() or code.strip(), code.strip()))
         else:
-            items.append((chunk, chunk))
+            code, label = chunk, chunk
+        items.append((label.strip() or code.strip(), _canonical_hk_symbol(code.strip())))
     return items or default
 
 

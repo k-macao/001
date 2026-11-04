@@ -652,6 +652,19 @@ def _yahoo_quote_from_chart(data) -> Optional[Dict[str, Any]]:
 
 # Yahoo 代码候选。恒生科技：^HSTECH 已于 2026-11 起在 Yahoo 下线（result:null /
 # "No data found, symbol may be delisted"），现行代码是 HSTECH.HK，原代码留作兜底。
+# 港股 Yahoo 代码是 4 位补零（0700.HK / 0005.HK / 6160.HK）；东财与交易所是 5 位。
+# 内部一律 5 位，只在拼 Yahoo URL 时折成 4 位（见 backup_sources.yahoo_hk_code）。
+HK_YAHOO_CODE_WIDTH = 4
+
+
+def _yahoo_hk_code(symbol: str) -> str:
+    """港股代码 → Yahoo 口径（5 位补零 → 4 位补零）；非港股代码原样返回。"""
+    sym = str(symbol or "").strip()
+    if not (sym.upper().endswith(".HK") and sym[:-3].isdigit()):
+        return sym
+    return f"{sym[:-3].lstrip('0').zfill(HK_YAHOO_CODE_WIDTH)}.HK"
+
+
 _YAHOO_ALIASES: Dict[str, Tuple[str, ...]] = {
     "^HSTECH": ("HSTECH.HK", "^HSTECH"),
     "^HSCEI": ("^HSCEI", "^HSCE"),
@@ -663,11 +676,23 @@ def fetch_yahoo(symbols: Sequence[str], http, timeout: int = DEFAULT_TIMEOUT,
                 **_kw) -> Dict[str, Any]:
     started = time.time()
 
+    def _codes(sym: str) -> Tuple[str, ...]:
+        """Yahoo 代码候选：别名链 + 港股 4 位补零，去重保序。"""
+        out: List[str] = []
+        for code in _YAHOO_ALIASES.get(sym, (sym,)):
+            for cand in (code, _yahoo_hk_code(code)):
+                if cand and cand not in out:
+                    out.append(cand)
+        for cand in (_yahoo_hk_code(sym), sym):
+            if cand and cand not in out:
+                out.append(cand)
+        return tuple(out)
+
     def one(sym: str):
         # 单只标的的异常绝不允许拖垮整路源（网络抖动 / 返回结构变化只丢这一只）
         try:
             for host in SOURCES["yahoo"]["hosts"]:
-                for cand in _YAHOO_ALIASES.get(sym, (sym,)):
+                for cand in _codes(sym):
                     url = (f"https://{host}/v8/finance/chart/{cand}"
                            f"?range=1d&interval=1d&includePrePost=false")
                     data, err = http.get(url, timeout=timeout)
