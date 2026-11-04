@@ -53,8 +53,7 @@ TIMEOUT = 20
 REMOTE_TIMEOUT = 15
 USER_AGENT = "octopus-ai-daily/1.0 (+research-risk)"
 SECTION_TITLE = "研报 AI 风险点提示"
-CAPTION = "007 研报风控栏目 · 机构研报与快讯标题 · 风险线索非概率"
-DISCLAIMER = "风险点为标题级线索，需回看研报原文；规则打分不是概率，不构成投资建议。"
+SECTION_HEADING_MD = "## ⚠️ 研报 AI 风险点提示"   # 007 原文段首行（逐字）
 
 ENV_007_BASE = ("OCTOPUS_007_BASE_URL", "OCTOPUS_007_BASE", "RESEARCH_007_BASE_URL")
 ENV_007_TIMEOUT = "OCTOPUS_007_TIMEOUT"
@@ -196,6 +195,47 @@ def extract_rating(title):
     return m.group(1) if m else ""
 
 
+# ------------------------------------------------------------ 007 原文口径（逐字复刻）
+# 下面三件套与 007 推送脚本 pushplus_deepseek.py 同源，本地兜底生成「同样栏目文字」时
+# 必须用同一把尺：情绪词典 score_text（POS_WORDS / NEG_WORDS / 0.12 阈值）、
+# 快讯聚合锚点公式（50 + 45 × clamp(mean×3)），以及 _mk_item 的评级提取正则。
+_POS_WORDS_007 = ["利好", "上涨", "大涨", "增长", "中标", "突破", "创新高", "创纪录",
+                  "回购", "预增", "超预期", "盈利", "签约", "订单", "扩产", "获批",
+                  "分红", "surge", "rally", "beat", "upgrade", "record", "profit",
+                  "bullish", "soar", "win", "growth", "boost"]
+_NEG_WORDS_007 = ["利空", "下跌", "大跌", "亏损", "减持", "违约", "下调", "预警",
+                  "预亏", "低于预期", "处罚", "诉讼", "削减", "延期", "停产",
+                  "plunge", "miss", "downgrade", "loss", "lawsuit", "cut", "bearish",
+                  "slump", "drop", "warning", "fraud"]
+_RATING_RE_007 = re.compile(
+    r"(增持|买入|中性|减持|卖出|上调|下调|overweight|underweight|buy|sell|neutral|outperform)",
+    re.I)
+
+
+def _count_word_007(low, word):
+    """英文词按词边界匹配（防止 win 命中 downwind），中文按子串——007 同步实现。"""
+    if word.isascii():
+        return len(re.findall(r"\b" + re.escape(word.lower()) + r"\b", low))
+    return low.count(word)
+
+
+def score_text_007(text):
+    """007 推送脚本的词典法情绪打分：返回 (score∈[-1,1], 标签, 置信度∈[0,1])。逐字复刻。"""
+    low = str(text or "").lower()
+    pos = sum(_count_word_007(low, w) for w in _POS_WORDS_007)
+    neg = sum(_count_word_007(low, w) for w in _NEG_WORDS_007)
+    total = pos + neg
+    score = 0.0 if total == 0 else max(-1.0, min(1.0, (pos - neg) / total))
+    label = "利好" if score > 0.12 else ("利空" if score < -0.12 else "中性")
+    return round(score, 2), label, round(min(1.0, total / 4), 2)
+
+
+def extract_rating_007(title):
+    """007 _mk_item 的评级提取正则：原文条目尾注「（评级）」就用这一把尺。"""
+    m = _RATING_RE_007.search(_clean_title(title))
+    return m.group(1) if m else ""
+
+
 def is_risk_title(title):
     """风险线索判定：命中风险词，且不是「上调 / 买入」这类纯多头口径。"""
     text = _clean_title(title)
@@ -221,8 +261,32 @@ def _http_json(url, timeout=TIMEOUT):
         return json.loads(resp.read().decode("utf-8", "replace"))
 
 
+def extract_section_md(markdown):
+    """从 007 的 rule_md 里**原样**抠出「## ⚠️ 研报 AI 风险点提示」整段原文。
+
+    从段首标题行起、到下一个 ``##`` 标题行前为止，逐行一字不改（只去掉段首尾的
+    空行）；段里没有条目、只有空样本段落时同样照单全收——那也是 007 推送的原文。
+    找不到该段返回空串，调用方回落本地原文模板。
+    """
+    out, inside = [], False
+    for raw in str(markdown or "").splitlines():
+        stripped = raw.strip()
+        if stripped.startswith("##"):
+            if inside:
+                break
+            inside = "研报 AI 风险点提示" in stripped
+            if inside:
+                out.append(stripped)
+            continue
+        if inside:
+            out.append(raw.rstrip())
+    while out and not out[-1].strip():
+        out.pop()
+    return "\n".join(out).strip()
+
+
 def parse_rule_md(markdown):
-    """从 007 的 rule_md 里抠出风险点条目。
+    """从 007 的 rule_md 里抠出风险点条目（仅作结构化元数据；展示走整段原文）。
 
     007 的格式（`foreign_institution_weekly.render_foreign_weekly_rule`）：
         ## ⚠️ 研报 AI 风险点提示
@@ -262,10 +326,15 @@ def parse_rule_md(markdown):
 
 
 def fetch_remote(hours=REMOTE_HOURS):
-    """在线取 007 的风险点。返回 {"ok", "points", "url", "reason"}；任何失败都不抛。"""
+    """在线取 007 的栏目原文。返回 {"ok", "section_md", "points", "url", "reason"}。
+
+    ``section_md`` 是 007 返回的「⚠️ 研报 AI 风险点提示」**整段原文**（展示就用它，
+    一字不改）；``points`` 只是为结构化元数据（条数 / 类别）解析出的条目，不参与渲染。
+    任何失败都不抛。
+    """
     base, env_name = remote_base()
     if not base:
-        return {"ok": False, "points": [], "url": "", "reason": "未配置 007 端点"}
+        return {"ok": False, "section_md": "", "points": [], "url": "", "reason": "未配置 007 端点"}
     url = f"{base}/api/foreign_weekly?{urlencode({'hours': int(hours)})}"
     try:
         timeout = int(str(os.environ.get(ENV_007_TIMEOUT) or REMOTE_TIMEOUT))
@@ -274,16 +343,20 @@ def fetch_remote(hours=REMOTE_HOURS):
     try:
         payload = _http_json(url, timeout=max(3, min(60, timeout)))
     except urllib.error.HTTPError as exc:
-        return {"ok": False, "points": [], "url": url, "reason": f"HTTP {exc.code}", "env": env_name}
+        return {"ok": False, "section_md": "", "points": [], "url": url,
+                "reason": f"HTTP {exc.code}", "env": env_name}
     except Exception as exc:                       # noqa: BLE001 网络/解析异常一律降级
-        return {"ok": False, "points": [], "url": url,
+        return {"ok": False, "section_md": "", "points": [], "url": url,
                 "reason": f"{type(exc).__name__}: {str(exc)[:80]}", "env": env_name}
     if not isinstance(payload, dict) or not payload.get("ok"):
         reason = str((payload or {}).get("error") or "端点返回 ok=false") if isinstance(payload, dict) else "返回不是对象"
-        return {"ok": False, "points": [], "url": url, "reason": reason[:100], "env": env_name}
-    points = parse_rule_md(payload.get("rule_md") or payload.get("teaser_md") or "")
-    return {"ok": bool(points), "points": points, "url": url, "env": env_name,
-            "reason": "" if points else "端点未返回风险点条目",
+        return {"ok": False, "section_md": "", "points": [], "url": url,
+                "reason": reason[:100], "env": env_name}
+    markdown = payload.get("rule_md") or payload.get("teaser_md") or ""
+    section_md = extract_section_md(markdown)
+    return {"ok": bool(section_md), "section_md": section_md,
+            "points": parse_rule_md(markdown), "url": url, "env": env_name,
+            "reason": "" if section_md else "端点未返回风险点栏目原文",
             "count": int(payload.get("count") or 0)}
 
 
@@ -384,116 +457,155 @@ def category_counts(points):
     return dict(sorted(counts.items(), key=lambda kv: (-kv[1], kv[0])))
 
 
-# ------------------------------------------------------------ ④ 大模型：只润色文案
-# 提示词要求严格 JSON；事实（机构 / 标题 / 日期）由调用方另行渲染，模型只写定调与关注点，
-# 因此「编造一条不存在的研报」在结构上就落不了地。
-SYSTEM_PROMPT = (
-    "你是中文财经日报的风控编辑。用户给你一批来自券商研报与财经快讯的**标题级风险线索**，"
-    "你要写一句定调 + 一句关注点。硬性要求：\n"
-    "1) 只依据给你的线索，不得新增机构、研报、数字、日期或事件；\n"
-    "2) 不预测涨跌、不给点位与仓位、不使用「一定/必然/保证/无风险」等绝对化措辞；\n"
-    "3) 定调 ≤ 40 个汉字，关注点 ≤ 60 个汉字，中文书面语，不用 markdown；\n"
-    "4) 只输出 JSON：{\"summary\": \"...\", \"focus\": \"...\"}，不要任何额外文字。"
-)
+# ------------------------------------------------------------ ④ 本地兜底：007推送原文模板
+# 与 007 推送脚本 pushplus_deepseek.render_brief_risk_rule() 逐字同源：
+# 同样的开头句、条目标签、空样本句与收尾段，一个字不改。差异只在输入——
+# 007 用它当次采集的国外投行 / 香港券商 / 快讯三包，这里用本仓当次标题池
+# 检出的风险点（外资署名 → 国外投行；中资券商署名 → 香港券商一档，与 007
+# hk_brokers 按别名归入驻港券商的口径一致；未署名 → 快讯风险信号，情绪分用
+# 007 score_text 同一把尺现算）。收尾段数字来自 feed_agg_local() 对同一标题池
+# 的聚合（007 同公式），样本为 0 时整段不写，绝不出现「0/0 条」。
+def feed_agg_local(items, anchor_dt, hours=WINDOW_HOURS):
+    """本地标题池 → 007 快讯聚合口径 {n, pos, neg, neu, mean, 综合多头概率锚点}。
+
+    逐条标题用 score_text_007 打分（007 POS/NEG 词表 + 0.12 阈值），锚点用
+    007 collect_feed_pack 的公式 ``50 + 45 × clamp(mean×3)``；窗口与 collect_local
+    一致（默认 360h），无时间戳的条目与 collect_local 一样按在窗口内处理。
+    """
+    cutoff = anchor_dt - timedelta(hours=hours)
+    scores, labels = [], []
+    for item in items or []:
+        if not isinstance(item, dict):
+            continue
+        title = _clean_title(item.get("title"))
+        if len(title) < 8:
+            continue
+        dt = parse_datetime(item.get("ts")) or parse_datetime(item.get("date"))
+        if dt is not None and not (cutoff <= dt <= anchor_dt + timedelta(hours=1)):
+            continue
+        score, label, _conf = score_text_007(title)
+        scores.append(score)
+        labels.append(label)
+    n = len(scores)
+    mean = round(sum(scores) / n, 2) if n else 0.0
+    pos = labels.count("利好")
+    neg = labels.count("利空")
+    return {"n": n, "pos": pos, "neg": neg, "neu": n - pos - neg, "mean": mean,
+            "综合多头概率锚点": round(50 + 45 * max(-1.0, min(1.0, mean * 3)))}
 
 
-def build_context(points, market=None):
-    """给大模型的闭合输入：只含已检出的线索与一句盘面方向（都不含未来信息）。"""
-    return {
-        "window_hours": WINDOW_HOURS,
-        "risk_points": [{"institution": p.get("institution") or "未署名",
-                         "category": p.get("category") or "其他",
-                         "title": p.get("title") or "",
-                         "date": p.get("date") or ""} for p in points[:MAX_POINTS]],
-        "market_direction": str((market or {}).get("direction") or "")[:40],
-        "category_counts": category_counts(points),
-    }
+def render_brief_risk_md(points, feed_agg=None):
+    """007 推送「⚠️ 研报 AI 风险点提示」的原文模板（render_brief_risk_rule 逐字复刻）。
 
+    points 为已检出的风险点（字段同 collect_local / parse_rule_md）；展示顺序与
+    007 一致：国外投行 → 香港券商 → 快讯风险信号（快讯按情绪分从低到高），最多 5 条。
+    """
+    lines = [SECTION_HEADING_MD, ""]
+    risk_hits = []
+    seen_titles = set()
 
-def _numbers(text):
-    return set(re.findall(r"\d+(?:\.\d+)?", str(text or "")))
+    def _take(point):
+        title = str(point.get("title") or "").strip()
+        key = normalize_title(title)
+        if not title or not key or key in seen_titles:
+            return ""
+        seen_titles.add(key)
+        return title
 
+    def _signed(point):
+        # build() 的结构化条目把空机构补成「未署名」；两种写法都不算署名
+        return str(point.get("institution") or "") not in ("", "未署名")
 
-def polish_with_llm(points, market=None, config=None):
-    """大模型写一句定调 + 关注点。返回 {"ok", "summary", "focus", "model", "reason"}。"""
-    if not points:
-        return {"ok": False, "summary": "", "focus": "", "reason": "无风险线索，跳过润色"}
-    try:
-        import hk_seven_day as hk7
-    except Exception as exc:                       # noqa: BLE001
-        return {"ok": False, "summary": "", "focus": "", "reason": f"LLM 模块不可用：{exc}"}
-    cfg = config if config is not None else hk7.llm_config()
-    if not cfg.get("enabled"):
-        return {"ok": False, "summary": "", "focus": "", "reason": "未配置大模型 Key"}
-    context = build_context(points, market)
-    context["_system_prompt"] = SYSTEM_PROMPT
-    trace = {}
-    payload, err = hk7.call_llm(cfg, context, trace=trace,
-                                models=[cfg.get("model")] if cfg.get("model") else None)
-    if payload is None:
-        return {"ok": False, "summary": "", "focus": "", "reason": str(err or "调用失败")[:120]}
-    summary = str(payload.get("summary") or "").strip()
-    focus = str(payload.get("focus") or "").strip()
-    if not summary:
-        return {"ok": False, "summary": "", "focus": "", "reason": "模型未给出定调"}
-    # 护栏：绝对化措辞 / 长度 / 凭空数字 / 凭空机构 —— 命中任意一条就退回规则文案
-    problems = []
-    for label, text, limit in (("定调", summary, 60), ("关注点", focus, 100)):
-        if hk7._FORBIDDEN_RE.search(text):
-            problems.append(f"{label}含绝对化措辞")
-        if len(text) > limit:
-            problems.append(f"{label}超长({len(text)}字)")
-    allowed_numbers = set()
-    for point in points[:MAX_POINTS]:
-        allowed_numbers |= _numbers(point.get("title")) | _numbers(point.get("date"))
-    stray = _numbers(summary) | _numbers(focus)
-    if stray - allowed_numbers:
-        problems.append(f"{label if False else '文案'}新增了线索里没有的数字：{'、'.join(sorted(stray - allowed_numbers))[:40]}")
-    for name in re.findall(r"[\u4e00-\u9fffA-Za-z]{2,10}(?:证券|高盛|大摩|小摩|花旗|瑞银|汇丰|野村)", summary + focus):
-        if name not in INSTITUTION_NAMES and not any(name in n or n in name for n in INSTITUTION_NAMES):
-            problems.append(f"文案提到未在名单内的机构：{name}")
+    for point in points or []:
+        if not _signed(point) or not point.get("intl"):
+            continue
+        title = _take(point)
+        if not title:
+            continue
+        rating = extract_rating_007(title)
+        tag = f"（{rating}）" if rating else ""
+        risk_hits.append(f"- **[国外投行 · {point.get('institution')}]** {title}{tag}")
+
+    for point in points or []:
+        if not _signed(point) or point.get("intl"):
+            continue
+        title = _take(point)
+        if not title:
+            continue
+        rating = extract_rating_007(title)
+        tag = f"（{rating}）" if rating else ""
+        risk_hits.append(f"- **[香港券商 · {point.get('institution')}]** {title}{tag}")
+
+    unsigned = [p for p in (points or [])
+                if not p.get("institution") or p.get("institution") == "未署名"]
+    unsigned.sort(key=lambda p: score_text_007(str(p.get("title") or ""))[0])
+    for point in unsigned:
+        title = _take(point)
+        if not title:
+            continue
+        src = str(point.get("source") or "市场快讯")
+        score = score_text_007(title)[0]
+        risk_hits.append(f"- **[快讯风险信号 · {src}]** {title}（情绪 {score:+.2f}）")
+        if len(risk_hits) >= 5:
             break
-    if problems:
-        return {"ok": False, "summary": "", "focus": "", "reason": "；".join(problems[:3]),
-                "model": trace.get("model") or ""}
-    return {"ok": True, "summary": summary, "focus": focus,
-            "model": trace.get("model") or cfg.get("model") or "", "reason": ""}
 
-
-# ------------------------------------------------------------ ⑤ 规则定调（兜底）
-def rule_summary(points, market=None):
-    """无大模型时的确定性定调：由类别分布与机构构成直接合成，可复现。"""
-    if not points:
-        return ("本期窗口内未检出研报风险线索：机构研报与快讯标题里没有触发下调 / 减持 / "
-                "监管或基本面警示的条目"), "继续观察评级与目标价变动即可"
-    counts = category_counts(points)
-    top = "、".join(f"{k}{v}条" for k, v in list(counts.items())[:2])
-    intl_n = sum(1 for p in points if p.get("intl"))
-    local_n = sum(1 for p in points if p.get("institution") and not p.get("intl"))
-    signed = intl_n + local_n
-    if points[0].get("category") == "评级与目标价":
-        tone = "机构口径偏谨慎，下调与降级集中在评级端"
-    elif points[0].get("category") == "宏观与利率":
-        tone = "风险主要来自宏观与利率预期"
-    elif points[0].get("category") == "合规与监管":
-        tone = "监管与合规事项是本期最需要盯的线"
+    if risk_hits:
+        lines.append(
+            "先把丑话说在前面。盘面上热闹归热闹，但下面这几处暗礁眼下还真不能假装看不见——"
+            "尤其是机构开始收紧口径的地方，往往藏着资金最真实的顾虑："
+        )
+        lines.append("")
+        lines.extend(risk_hits[:5])
     else:
-        tone = "风险线索偏散，未见单一方向集中发酵"
-    direction = str((market or {}).get("direction") or "").strip()
-    tail = f"；与盘面「{direction}」的方向对照看" if direction else ""
-    summary = f"{tone}（{top}）"
-    focus = (f"署名线索 {signed} 条（外资 {intl_n} / 中资 {local_n}），"
-             f"按标题线索先做防守清单，不当作事实定论") + tail
-    return summary[:60], focus[:100]
+        total_n = int((feed_agg or {}).get("n", 0) or 0)
+        if total_n > 0:
+            lines.append(
+                "说起来，这轮窗口期里各大机构倒是没集中亮出降级红牌。但盘面越是顺风顺水，"
+                "我们反而越得留个心眼：热门赛道的筹码是不是已经挤在窄门里了？"
+                "一旦海外利率路径或汇率预期轻轻晃一下，拥挤交易松动起来往往不打招呼。"
+            )
+        else:
+            lines.append(
+                "坦白讲，眼下这个时间窗抓到的有效快讯和研报样本偏少——或许正赶上休市空窗，"
+                "又或许是部分公开信源暂时卡壳。越是这种像在薄雾里开车的时刻，"
+                "越别急着重仓押单边，等跨市场的暗流看清了再落子也不迟。"
+            )
+
+    if feed_agg and int(feed_agg.get("n", 0) or 0) > 0:
+        a = feed_agg
+        lines.append("")
+        lines.append(
+            f"翻看这批快讯底稿，利空消息占了 {a.get('neg', 0)}/{a.get('n', 0)} 条"
+            f"（情绪均值 {a.get('mean', 0.0):+.2f}，多头胜率锚点大概在 {a.get('综合多头概率锚点', 50)}% 上下）。"
+            "实际上，在多数情况下，单靠一两条刺耳标题未必能砸出深坑；"
+            "真正要追问一句的是：这些零散的逆风信号，接下来会不会和资金面形成共振？"
+        )
+    return "\n".join(lines)
+
+
+def first_paragraph(section_md):
+    """原文段的第一段正文（跳过标题行与条目行）——只供日志与分条压缩摘要引用原文。"""
+    for raw in str(section_md or "").splitlines():
+        line = raw.strip()
+        if line and not line.startswith("#") and not line.startswith(("-", "*")):
+            return line
+    return ""
 
 
 # ------------------------------------------------------------ ⑥ 入口
 def build(data=None, date_str=None, news_corpus=None, llm_config=None,
           market=None, allow_network=True, now=None):
-    """构建「研报 AI 风险点提示」结果（渲染在 pipeline，本函数只产出结构化事实）。
+    """构建「研报 AI 风险点提示」结果：展示文字只有 ``verbatim_md`` 一份 007 原文。
+
+    原文二选一，绝不拼凑改写：在线取到 → 007 接口整段原文（不与本地条目合并）；
+    取不到 → 007 推送原文模板（render_brief_risk_md）+ 本地标题池条目与聚合数字。
+    ``llm_config`` / ``market`` 参数仅为兼容旧调用保留——原文直搬后这一栏不再
+    调用大模型、也不再合成定调（历史上的「定调 / 关注点」字段保留为空兼容）。
 
     返回字典字段（渲染层只用这些，不再二次计算）：
-      available / points / summary / focus / tone_source / summary_source
+      verbatim_md / verbatim_source / available / points（结构化元数据）
+      summary（= 原文第一段，供日志与压缩摘要引用）/ focus（恒空串，兼容）
+      tone_source（恒「原文」）/ summary_source / feed_agg
       remote{ok,url,reason} / local_n / window_hours / categories / newest_date
       llm{ok,model,reason} / enabled
     """
@@ -514,17 +626,21 @@ def build(data=None, date_str=None, news_corpus=None, llm_config=None,
         except Exception:                          # noqa: BLE001 兜底失败就按空样本处理
             items = []
     remote = (fetch_remote() if allow_network
-              else {"ok": False, "points": [], "url": "", "reason": "本次禁用在线取数"})
+              else {"ok": False, "section_md": "", "points": [], "url": "",
+                    "reason": "本次禁用在线取数"})
     local = collect_local(items, anchor)
-    points = merge_points(remote.get("points") or [], local)
-    summary, focus = rule_summary(points, market)
-    llm = {"ok": False, "model": "", "reason": "未启用"}
-    tone_source = "规则"
-    if points and (llm_config is None or llm_config.get("enabled")):
-        llm = polish_with_llm(points, market, llm_config)
-        if llm.get("ok"):
-            summary, focus = llm["summary"], (llm.get("focus") or focus)
-            tone_source = "AI"
+    feed_agg = feed_agg_local(items, anchor)
+    section_md = str(remote.get("section_md") or "") if remote.get("ok") else ""
+    if section_md:
+        # ① 在线原文整段直搬：不解析重组、不与本地条目合并、不润色
+        verbatim_md = section_md
+        verbatim_source = "007在线原文"
+        points = merge_points(remote.get("points") or [], [])
+    else:
+        # ② 本地兜底：007 推送原文模板逐字生成，条目与聚合数字来自本地标题池
+        points = merge_points([], local)
+        verbatim_md = render_brief_risk_md(points, feed_agg)
+        verbatim_source = "007推送原文模板（本地标题池）"
     # 每条线索补齐「评分口径」用的可读字段，渲染层不再算
     enriched = []
     for point in points:
@@ -539,23 +655,25 @@ def build(data=None, date_str=None, news_corpus=None, llm_config=None,
         "enabled": is_enabled(),
         "available": bool(enriched),
         "points": enriched,
-        "summary": summary,
-        "focus": focus,
-        "tone_source": tone_source,
-        "summary_source": "远程 007 + 本地规则" if (remote.get("ok") and local) else
-                          ("007 在线" if remote.get("ok") else "本地规则"),
+        "verbatim_md": verbatim_md,
+        "verbatim_source": verbatim_source,
+        "summary": first_paragraph(verbatim_md),
+        "focus": "",
+        "tone_source": "原文",
+        "summary_source": "007 在线" if section_md else "本地规则",
+        "feed_agg": feed_agg,
         "remote": {k: remote.get(k) for k in ("ok", "url", "reason", "env", "count") if k in remote},
         "local_n": len(local),
         "window_hours": WINDOW_HOURS,
         "categories": category_counts(enriched),
         "newest_date": max(dates) if dates else "",
-        "llm": llm,
+        "llm": {"ok": False, "model": "", "reason": "原文直搬，不调用大模型"},
         "corpus_n": len(items),
     }
 
 
 def selftest():
-    """离线自检：词表 / 机构识别 / 去重排序 / 007 报文解析 / 文案护栏，全部不触网。"""
+    """离线自检：词表 / 机构识别 / 去重排序 / 007 整段原文提取 / 007 原文模板，全部不触网。"""
     checks = []
 
     def check(name, ok, detail=""):
@@ -569,14 +687,30 @@ def selftest():
     check("类别归类（合规）", classify("某公司遭立案调查") == "合规与监管")
     md = ("## 🧭 美银牛熊指标\n- 不要把这条当风险点\n\n"
           "## ⚠️ 研报 AI 风险点提示\n\n"
+          "先把防线划清楚。翻开这周外资大行的研报夹，唱多声里其实夹着几记颇为冷静的刹车声——"
+          "凡是机构主动下调评级或改口观望的地方，往往正对着市场最脆弱的预期软肋：\n\n"
           "- **[国外投行 · 高盛]** 下调某车企评级至中性（neutral）\n"
           "- **[国外投行 · 瑞银]** 中国互联网板块盈利预期存在下修风险\n\n"
+          "从样本冷暖来看，这 5 篇外资报告里利空占 1 篇、中性 2 篇、利好 2 篇。"
+          "在多数情况下，大行的纸面评级只是参考坐标，真正在牌桌上决定方向的，"
+          "还得看资金愿不愿意掏真金白银跟进。\n\n"
           "## 🏛 国外研报\n- 明细条目\n")
+    section = extract_section_md(md)
+    check("007 整段原文一字不差",
+          section.startswith(SECTION_HEADING_MD)
+          and "先把防线划清楚" in section and "从样本冷暖来看" in section
+          and "下调某车企评级至中性（neutral）" in section
+          and "美银牛熊指标" not in section and "明细条目" not in section,
+          section[:80])
+    check("无该段时返回空串", extract_section_md("## 其他\n- x\n") == "")
     parsed = parse_rule_md(md)
     check("007 报文只取风险段", len(parsed) == 2 and parsed[0]["institution"] == "高盛", str(len(parsed)))
     check("007 报文带类别与评级", parsed[0]["category"] == "评级与目标价" and parsed[0]["rating"] == "中性")
     merged = merge_points(parsed, [{"title": "下调某车企评级至中性", "category": "评级与目标价"}])
     check("在线 + 本地去重", len(merged) == 2, str(len(merged)))
+    check("007 打分与评级尺",
+          score_text_007("大跌亏损，下调评级")[1] == "利空"
+          and extract_rating_007("下调特斯拉评级至中性") == "下调")
     now = datetime(2026, 11, 4, 12, tzinfo=CST)
     local = collect_local([
         {"title": "高盛：下调某车企评级至中性", "ts": "2026-11-03 10:00", "source": "研报"},
@@ -584,13 +718,35 @@ def selftest():
         {"title": "瑞银：看好明年行情", "ts": "2026-10-01 11:00", "source": "研报"},
     ], now)
     check("本地只收风险且在窗口内", len(local) == 1, str([x["title"] for x in local]))
-    summary, focus = rule_summary(local, {"direction": "偏空"})
-    check("规则定调可复现", "评级与目标价" in summary and "偏空" in focus, summary)
-    check("空样本不编造", "未检出" in rule_summary([])[0])
-    bad = polish_with_llm([], None, {})       # 无线索不调用
-    check("无线索不调大模型", bad["ok"] is False)
-    banned = "一定上涨"
-    check("绝对化措辞拦截", bool(__import__("hk_seven_day")._FORBIDDEN_RE.search(banned)))
+    agg = feed_agg_local([
+        {"title": "高盛：下调某车企评级至中性", "ts": "2026-11-03 10:00", "source": "研报"},
+        {"title": "花旗：盈利增长超预期，上调目标价", "ts": "2026-11-03 11:00", "source": "研报"},
+    ], now)
+    check("本地聚合 007 口径", agg["n"] == 2 and agg["neg"] == 1
+          and agg["综合多头概率锚点"] == 50, str(agg))
+    brief_md = render_brief_risk_md(local, agg)
+    check("本地兜底 007 原文模板",
+          brief_md.startswith(SECTION_HEADING_MD)
+          and "先把丑话说在前面。盘面上热闹归热闹，但下面这几处暗礁眼下还真不能假装看不见——" in brief_md
+          and "- **[国外投行 · 高盛]** 高盛：下调某车企评级至中性（下调）" in brief_md
+          and "翻看这批快讯底稿，利空消息占了 1/2 条（情绪均值 +0.00，多头胜率锚点大概在 50% 上下）。" in brief_md,
+          brief_md[:120])
+    check("有样本无风险用 007 空样本句",
+          "这轮窗口期里各大机构倒是没集中亮出降级红牌" in render_brief_risk_md([], agg))
+    empty_md = render_brief_risk_md([], {"n": 0})
+    check("零样本用 007 空样本句且不写 0/0 收尾",
+          "有效快讯和研报样本偏少" in empty_md and "0/0" not in empty_md, empty_md[:80])
+    built = build(date_str="20261104",
+                  news_corpus={"items": [
+                      {"title": "高盛：下调某车企评级至中性",
+                       "ts": "2026-11-03 10:00", "source": "研报"}]},
+                  allow_network=False)
+    check("构建只出原文不润色",
+          built["verbatim_source"].startswith("007推送原文模板")
+          and built["verbatim_md"] == render_brief_risk_md(
+              built["points"], built["feed_agg"])
+          and built["summary"] == first_paragraph(built["verbatim_md"])
+          and built["llm"]["ok"] is False, built.get("verbatim_source", ""))
     return checks
 
 
@@ -620,13 +776,9 @@ def main(argv=None):
     if args.json:
         print(json.dumps(result, ensure_ascii=False, indent=1, default=str))
     else:
-        print(f"⚠️ {SECTION_TITLE} · {'有线索' if result['available'] else '未检出'} · "
-              f"{result['summary_source']} · 定调来源 {result['tone_source']}")
-        print(f"  {result['summary']}")
-        print(f"  {result['focus']}")
-        for point in result["points"]:
-            print(f"  · [{point['category']}] {point['institution']} {point['date']} "
-                  f"{point['title'][:40]}")
+        print(f"⚠️ {SECTION_TITLE} · {'有线索' if result['available'] else '无风险线索'} · "
+              f"{result['verbatim_source']}")
+        print(result["verbatim_md"])
     return 0
 
 

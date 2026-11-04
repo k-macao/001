@@ -725,7 +725,7 @@ LITE_LIMITS = {
     "em_summary": (60, 0),           # 东财快讯摘要截断字数（0 = 不截断）
     "notes": (0, 1),                 # 方法论长注：0 = 折叠成一句，1 = 全文
     "risk_cards": (2, 0),            # 风险提示卡条数（0 = 全部）
-    "research_risk_points": (3, 5),   # ⚠️ 研报 AI 风险点提示：精简版 3 条 / 全量 5 条
+    # ⚠️ 研报 AI 风险点提示不设精简条数：原样复制粘贴 007 推送原文（最多 5 条），裁剪即非原文
 }
 
 
@@ -8843,13 +8843,14 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【事实】全球头条"
 SECTION_TITLE_NEWS_SENTIMENT = "【舆情】新闻情绪"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
 SECTION_TITLE_MEDIA_RISK = "【舆情】媒体风险"
-# 卷首块（2026-11-04 用户要求：新手三句话之后加入 007 的「研报 AI 风险点提示」）。
-# 标题保留 007 原栏目名——用户点名的是那一栏；它是卷首里的子块，不占正文编号。
+# 卷首块（2026-11-04 用户要求：新手三句话之后加入 007 的「研报 AI 风险点提示」，
+# 并原样复制粘贴 007 推送的同样栏目文字）。标题与正文都是 007 原文
+# （research_risk.verbatim_md）；它是卷首里的子块，不占正文编号。
 SECTION_TITLE_RESEARCH_RISK = "⚠️ 研报 AI 风险点提示"
 RESEARCH_RISK_ENABLED = os.environ.get("OCTOPUS_RESEARCH_RISK", "1").strip().lower() not in ("0", "false", "no")
 # 分条拥挤时把卷首「研报 AI 风险点提示」压成一行摘要用的锚点：
 #   完整块与压缩块同时渲染在标记之间，_split_html_for_push 只在「刚好超一条」时取压缩块。
-# 逐条线索的包裹标记：版面拥挤时按标记整段摘掉（只留定调与条数），
+# 逐条原文的包裹标记：版面拥挤时按标记整段摘掉（只留栏目名 + 原文第一段），
 # 页面上永远只有一份内容（不做「完整版 + 压缩版并存」那种看得见两遍的写法）。
 SPLIT_CONDENSE_START = "<!--RRP-->"
 SPLIT_CONDENSE_END = "<!--/RRP-->"
@@ -10567,8 +10568,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     policy_result: main 1.6 阶段单独构建的政策因子结果，缺省时兜底构建；
     news_corpus: 跨运行标题存档（output/news_history.json），缺省时因子只用
     本次抓取标题（测试 / 冷启动路径）；
-    research_risk: 研报 AI 风险点提示的结果（research_risk.build()）。缺省时在本函数内
-    用同一份 news_corpus 兜底构建（离线规则版，不触网；009 端点由 main 阶段负责）。
+    research_risk: 研报 AI 风险点提示的结果（research_risk.build()，含 007 原文
+    verbatim_md）。缺省时在本函数内用同一份 news_corpus 兜底构建（007 推送原文
+    模板版，不触网；007 在线整段直搬由 main 阶段负责）。
     """
     # 三地指数全页拼版：2026-10-23 已回滚，默认**不启用**（见 _index_page_enabled）。
     # 只有显式 OCTOPUS_INDEX_PAGE=1 且快照带 index_checks 契约时才分流到指数全页；
@@ -11102,14 +11104,9 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 _research_risk.build(data=data, date_str=date_str,
                                      news_corpus=news_corpus, allow_network=False)
             if rr_result.get("enabled", True):
-                # 版面预算：精简版只列前 3 条（与其它栏目同一套 LITE 口径），
-                # 全量版 5 条；被裁掉的条数在「线索条数」行如实写全。
-                limit = LITE("research_risk_points")
-                if limit and len(rr_result.get("points") or []) > limit:
-                    trimmed = dict(rr_result)
-                    trimmed["points"] = list(rr_result["points"])[:limit]
-                    trimmed["points_total"] = len(rr_result["points"])
-                    rr_result = trimmed
+                # 原样复制粘贴 007 推送的同样栏目文字（2026-11-04 用户要求）：
+                # 原文最多 5 条就是 007 的版面口径，不再按精简版裁到 3 条——
+                # 裁剪后与 007 推送就不是同样文字了。分条拥挤时另有整段压缩兜底。
                 research_risk_html = (
                     SPLIT_CONDENSE_START
                     + _research_risk_compact_line(rr_result)
@@ -12896,71 +12893,51 @@ def _media_risk_attention_text(stock):
             f'（需≥{int(attention.get("need") or _media_risk.MIN_BASELINE_DAYS)}日，暂不判异常）')
 
 
+def _md_inline_html(text):
+    """007 原文的 markdown 行内记法转等价 HTML：先全量转义，再把 **加粗** 还原成 <b>。
+
+    只做排版等价转换，可见文字一字不改；不解析链接（007 原文不带链接，
+    标题里的尖括号/& 必须按纯文本转义，杜绝外部文本注入）。
+    """
+    return re.sub(r"\*\*(.+?)\*\*", r"<b>\1</b>", _esc(str(text or "")))
+
+
 def _research_risk_block(res, kit, compact=False):
-    """⚠️ 研报 AI 风险点提示（移植自 k-macao/007）的正文渲染，五套主题共用 kit 原语。
+    """⚠️ 研报 AI 风险点提示：**原样复制粘贴 007 推送的同样栏目文字**，五套主题共用。
 
-    只消费 `research_risk.build()` 给出的结构化结果（定调 / 关注点 / 逐条线索 / 来源），
-    渲染层不再二次判定风险，也不给概率、不给点位：
+    只渲染 `research_risk.build()` 的 ``verbatim_md`` 一份 007 原文（在线整段直搬，
+    或本地按 007 推送原文模板生成）；外部传入的结果缺原文时，用同一原文模板
+    现场补生成。渲染层只做 markdown → HTML 的排版等价转换：
 
-    · 定调行标明「AI」还是「规则」写的（没配大模型 Key / 调用失败 → 规则兜底，如实标注）；
-    · 逐条线索：机构（未署名就说未署名）+ 类别 + 日期 + 标题 + 来源，
-      标题来自外部页面，必须先转义，链接只允许 http/https；
-    · 一条线索都没有时仍出栏目并写明「本期未检出」，不静默消失（与媒体风险同口径）。
+    · 不再自创「定调 / 关注点 / 线索条数 / 取数 / 风险类别 / 文风」等行，
+      不在条目下再挂日期·类别·来源小字，不润色、不续写、不截断条目到精简数；
+    · 段落行原样成段，``- **[…]** …`` 条目原样成行（加粗等价还原，标题先转义）；
+    · 一条线索都没有时，原文模板自带 007 空样本句，栏目照常出现，不静默消失。
     """
     if not isinstance(res, dict):
         return ""
-    plain = PLAIN()
-    points = list(res.get("points") or [])
+    verbatim_md = str(res.get("verbatim_md") or "")
+    if not verbatim_md:
+        verbatim_md = _research_risk.render_brief_risk_md(
+            list(res.get("points") or []), res.get("feed_agg"))
     if compact:
-        # 分条拥挤时的压缩版：只留栏目名 + 一句定调 + 条数，逐条线索留在完整日报页。
-        tone = "AI 定调" if res.get("tone_source") == "AI" else "规则定调"
-        total = int(res.get("points_total") or len(points))
+        # 分条拥挤时的压缩版：栏目名 + 原文第一段，逐条原文留在完整日报页。
         return (kit.sub(_esc(SECTION_TITLE_RESEARCH_RISK))
                 + f'<div style="font-size:12px;line-height:1.7;padding-top:2px;">'
-                  f'{_esc(tone)}：{_esc(str(res.get("summary") or "—"))}'
-                  f' · 线索 {total} 条（逐条见完整日报）</div>')
-    tone = "AI 定调" if res.get("tone_source") == "AI" else "规则定调"
-    source_line = str(res.get("summary_source") or "")
-    remote = res.get("remote") or {}
-    if remote.get("env") and remote.get("ok"):
-        source_line += f"（{remote['env']}）"
-    pairs = [
-        (tone, f'<b>{_esc(str(res.get("summary") or "—"))}</b>'),
-        ("关注点", _esc(str(res.get("focus") or "—"))),
-        ("线索条数", f'{len(points)} 条 · 窗口 近 {int(res.get("window_hours") or _research_risk.WINDOW_HOURS) // 24} 日'
-                     + (f' · 最新 {_esc(str(res.get("newest_date") or "")[5:])}' if res.get("newest_date") else "")),
-        ("取数", _esc(source_line or "本地规则")),
-    ]
-    if res.get("points_total"):
-        pairs[-1] = (pairs[-1][0],
-                     pairs[-1][1] + f'（共 {int(res["points_total"])} 条，精简版列前 {len(points)} 条）')
-    if res.get("categories") and not plain:
-        pairs.append(("风险类别",
-                      _esc(" · ".join(f"{k}×{v}" for k, v in (res.get("categories") or {}).items()))))
-    if not plain:
-        llm = res.get("llm") or {}
-        pairs.append(("文风", _esc(("大模型 " + str(llm.get("model") or "已润色")) if res.get("tone_source") == "AI"
-                                  else "规则兜底：" + str(llm.get("reason") or "未配置大模型 Key"))))
-    # 卷首子块：用主题自己的小标渲染栏目名（与 🐣 新手三句话同一层级）。
-    out = [kit.sub(_esc(SECTION_TITLE_RESEARCH_RISK)), kit.kv(pairs)]
-    for point in points:
-        title = _esc(str(point.get("title") or "")[:120])
-        url = str(point.get("url") or "").strip()
-        parsed = urlparse(url)
-        if parsed.scheme.lower() in {"http", "https"} and parsed.netloc:
-            title = (f'<a href="{_esc(url)}" style="color:{GZ_INK_STRONG if _is_guizang_like(kit) else C_INK};'
-                     f'text-decoration:none;border-bottom:1px dotted currentColor;">{title}</a>')
-        institution = str(point.get("institution") or "未署名")
-        tag = "外资" if point.get("intl") else ("中资" if institution != "未署名" else "未署名")
-        bits = [str(point.get("date") or "")[5:], str(point.get("category") or ""),
-                f'{tag} {institution}' if tag != "未署名" else "未署名机构",
-                str(point.get("source") or "")]
-        sub = " · ".join(_esc(x) for x in bits if x)
-        out.append(_research_risk_row(kit, title, sub))
-    if not points:
-        out.append(kit.note(_esc("本期窗口内没有触发风险词表的研报线索；"
-                                 "栏目照常出现，不代表没有风险，只是标题级证据不足。")
-                            if plain else _esc(_research_risk.DISCLAIMER)))
+                  f'{_md_inline_html(_research_risk.first_paragraph(verbatim_md))}'
+                  f'（逐条见完整日报）</div>')
+    # 卷首子块：用主题自己的小标渲染栏目名（与 🐣 新手三句话同一层级），
+    # 文字与 007 原文段首行「## ⚠️ 研报 AI 风险点提示」逐字一致，故段首行不重复渲染。
+    out = [kit.sub(_esc(SECTION_TITLE_RESEARCH_RISK))]
+    for raw in verbatim_md.splitlines():
+        line = raw.strip()
+        if not line or line.startswith("#"):
+            continue
+        if line.startswith(("-", "*")):
+            out.append(_research_risk_row(kit, _md_inline_html(line[1:].strip()), ""))
+        else:
+            out.append(f'<div style="font-size:12px;line-height:1.7;padding-top:2px;">'
+                       f'{_md_inline_html(line)}</div>')
     return "".join(out)
 
 
@@ -16550,17 +16527,17 @@ def _pack_section_units(units, budget, min_split=None):
 
 
 def _research_risk_compact_line(res, attr="data-rr-compact"):
-    """卷首风险块的分条压缩版：一行「定调 + 条数」，平时作为 data 属性随块下发
-    （页面上看不见），只有 _split_html_for_push 判定版面拥挤时才取出来替换整块。"""
-    total = int(res.get("points_total") or len(res.get("points") or []))
-    text = (f'{SECTION_TITLE_RESEARCH_RISK} · '
-            f'{"AI 定调" if res.get("tone_source") == "AI" else "规则定调"}：'
-            f'{res.get("summary") or "—"} · 线索 {total} 条（逐条见完整日报）')
+    """卷首风险块的分条压缩版：栏目名 + **007 原文第一段**，平时作为 data 属性随块下发
+    （页面上看不见），只有 _split_html_for_push 判定版面拥挤时才取出来替换整块；
+    逐条原文仍在完整日报页，压缩行如实注明。"""
+    first = _research_risk.first_paragraph(str(res.get("verbatim_md") or "")) \
+        or str(res.get("summary") or "—")
+    text = f'{SECTION_TITLE_RESEARCH_RISK} · {first}（逐条见完整日报）'
     return f'<div {attr}="{_esc(text)}" style="display:none"></div>'
 
 
 def _condense_research_risk(html):
-    """分条拥挤时把卷首风险块整块换成一页摘要（定调 + 条数，逐条见完整日报）。
+    """分条拥挤时把卷首风险块整块换成一页摘要（栏目名 + 007 原文第一段，逐条见完整日报）。
 
     摘要正文就在块的 `data-rr-compact` 属性里，因此这里不需要重新算任何内容；
     标记不成对 / 找不到摘要时返回空串，调用方走原来的截断分支——绝不猜结构。
@@ -16635,7 +16612,7 @@ def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
         return None
 
     # 拥挤时的第一道腾挪：整份刚好超出上限一条，且超出的原因是卷首「⚠️ 研报 AI 风险点提示」
-    # 这块新增内容 → 把它压成一行摘要（保留定调 + 条数，逐条线索仍留在完整日报页），
+    # 这块新增内容 → 把它压成一行摘要（保留 007 原文第一段，逐条原文仍留在完整日报页），
     # 让原本会被截掉的尾栏（短线速查卡）重新装得下。压缩后仍超限才走下面的截断分支。
     if len(chunks) == max_parts + 1 and SPLIT_CONDENSE_MARK in html:
         condensed = _condense_research_risk(html)
@@ -17750,20 +17727,17 @@ def main():
     else:
         print(f"  📊 政策因子：近{POLICY_WINDOW_DAYS}日窗口内无显著政策新闻，栏目缺席")
 
-    # 1.7 ⚠️ 研报 AI 风险点提示（移植自 k-macao/007 的置顶风控栏目）：
-    #     先试在线 007 端点（OCTOPUS_007_BASE_URL），不通就本地规则兜底；
-    #     有大模型 Key 时只用来写一句定调 + 关注点（事实条目仍由规则产出）。
+    # 1.7 ⚠️ 研报 AI 风险点提示（原样复制粘贴 k-macao/007 推送的同样栏目文字）：
+    #     先试在线 007 端点整段直搬（OCTOPUS_007_BASE_URL），不通就用 007 推送
+    #     原文模板 + 本地标题池兜底；不改写、不润色、不调大模型。
     #     本栏失败不影响日报其它栏目。
     research_risk_result = {}
     if RESEARCH_RISK_ENABLED:
         try:
-            # market 只用于给规则定调补一句「与盘面方向对照」；此处尚未算策略研判，
-            # 传 None 即不出这半句，避免为一句装饰语再跑一遍全量策略计算。
             research_risk_result = _research_risk.build(
                 data=data, date_str=date_str, news_corpus=news_corpus)
-            rr_src = research_risk_result.get("summary_source") or "本地规则"
             print(f"  ⚠️ 研报 AI 风险点提示：{len(research_risk_result.get('points') or [])} 条线索"
-                  f"（{rr_src} · 定调 {research_risk_result.get('tone_source')}）"
+                  f"（{research_risk_result.get('verbatim_source') or '—'}）"
                   f" → {research_risk_result.get('summary')}")
         except Exception as _rr_exc:  # noqa: BLE001 单栏失败不拖垮整份日报
             print(f"  ⚠️ 研报 AI 风险点提示构建失败（本条栏目将按无线索渲染）：{_rr_exc}")
