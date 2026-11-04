@@ -77,6 +77,44 @@ EM_SECID_CANDIDATES = {
     "%5EHSTECH": ("124.HSTECH", "100.HSTECH"),
 }
 
+# 港股 Yahoo 代码格式：**4 位补零**，不是交易所的 5 位。
+# 2026-11-04 实测（同一天、同一接口）：
+#   0700.HK → 腾讯 401.6 ✅      00700.HK → result:null「No data found, symbol may be delisted」❌
+#   0005.HK → 汇丰 136.4 ✅      06160.HK → 404 ❌     6160.HK → BeOne 231.6 ✅
+# 东财 / 交易所口径是 5 位（116.06160 / 06160.HK），所以内部一律存 5 位，
+# **只在拼 Yahoo URL 时**折成 4 位（不足 4 位的保持原样，如 700 → 0700）。
+HK_YAHOO_CODE_WIDTH = 4
+
+
+def yahoo_hk_code(code: str) -> str:
+    """港股代码 → Yahoo 口径（5 位补零 → 4 位补零）。非港股代码原样返回。
+
+    接受带不带后缀两种写法：``06160`` → ``6160``、``06160.HK`` → ``6160.HK``、
+    ``700`` → ``0700``；``600519.SS`` / ``^HSI`` / ``HSTECH.HK`` 一律原样返回
+    （绝不把 A股 / 指数的后缀吃掉）。
+    """
+    raw = str(code or "").strip()
+    base, dot, suffix = raw.partition(".")
+    if not base.isdigit() or (dot and suffix.upper() != "HK"):
+        return raw
+    fixed = base.lstrip("0").zfill(HK_YAHOO_CODE_WIDTH)
+    return f"{fixed}.HK" if dot else fixed
+
+
+def is_hk_yahoo_symbol(symbol: str) -> bool:
+    """``0700.HK`` / ``00700.HK`` 这类港股 Yahoo 代码（指数 ``^HSI`` 与 ``HSTECH.HK`` 不算）。"""
+    sym = str(symbol or "").strip()
+    return sym.upper().endswith(".HK") and sym[:-3].isdigit()
+
+
+def normalize_yahoo_symbol(symbol: str) -> str:
+    """把港股代码折成 Yahoo 能认的口径；其它代码（指数 / A股 / 美股）原样返回。"""
+    sym = str(symbol or "").strip()
+    if not is_hk_yahoo_symbol(sym):
+        return sym
+    return f"{yahoo_hk_code(sym[:-3])}.HK"
+
+
 # Yahoo 代码候选：2026-11-04 实测 ^HSTECH 在 Yahoo 已不再提供数据
 # （HTTP 200 + ``{"chart":{"result":null,"error":{"code":"Not Found",
 # "description":"No data found, symbol may be delisted"}}}``），Yahoo 搜索里恒生科技指数
@@ -113,9 +151,19 @@ def em_secids_for_yahoo(symbol: str) -> Tuple[str, ...]:
 
 
 def yahoo_symbols_for(symbol: str) -> Tuple[str, ...]:
-    """Yahoo 代码 → 依次尝试的 Yahoo 代码（已下线的代码不再排在前面白请求一次）。"""
+    """Yahoo 代码 → 依次尝试的 Yahoo 代码（已下线的代码不再排在前面白请求一次）。
+
+    港股再按「4 位补齐（Yahoo 现行口径）→ 原写法」排序：``06160.HK`` → ``6160.HK``，
+    ``00700.HK`` → ``0700.HK``；两种写法相同的标的只留一个。
+    """
     sym = str(symbol or "").strip()
-    return YAHOO_SYMBOL_ALIASES.get(sym, (sym,))
+    out: List[str] = []
+    for code in YAHOO_SYMBOL_ALIASES.get(sym, (sym,)):
+        fixed = normalize_yahoo_symbol(code)
+        for cand in (fixed, code, sym):          # Yahoo 现行口径 → 别名原写法 → 调用方写法
+            if cand and cand not in out:
+                out.append(cand)
+    return tuple(out) or (sym,)
 
 
 def _em(host: str, path: str) -> str:
@@ -376,8 +424,8 @@ _YAHOO_SYMBOL_LINES = ("yahoo_chart", "yahoo_bars")
 
 
 def _resolve_yahoo_code(symbol: str) -> str:
-    """Yahoo 代码 → URL 里实际使用的代码（``^HSTECH`` → ``HSTECH.HK``）。"""
-    codes = YAHOO_SYMBOL_ALIASES.get(str(symbol or "").strip())
+    """Yahoo 代码 → URL 里实际使用的代码（``^HSTECH`` → ``HSTECH.HK``，``06160.HK`` → ``6160.HK``）。"""
+    codes = yahoo_symbols_for(symbol)
     return codes[0] if codes else symbol
 
 

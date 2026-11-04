@@ -120,7 +120,9 @@ class SymbolChainTests(unittest.TestCase):
     def test_providers_fallbacks_match_registry(self):
         self.assertEqual(providers.em_secid_for_yahoo("^HSTECH"), "124.HSTECH")
         self.assertEqual(providers.em_secids_for_yahoo("^HSTECH"), ("124.HSTECH", "100.HSTECH"))
-        self.assertEqual(providers.yahoo_symbols_for("^HSTECH"), ("HSTECH.HK",))
+        # 现行代码在前，已下线的 ^HSTECH 只作最后一试（2026-11-04 起两者顺序一致）
+        self.assertEqual(providers.yahoo_symbols_for("^HSTECH"), ("HSTECH.HK", "^HSTECH"))
+        self.assertEqual(bk.yahoo_symbols_for("^HSTECH"), ("HSTECH.HK", "^HSTECH"))
 
 
 # ======================================================================

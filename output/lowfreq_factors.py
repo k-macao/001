@@ -232,6 +232,17 @@ def _normalize_code(value):
     return digits.zfill(5) if digits else ""
 
 
+HK_YAHOO_CODE_WIDTH = 4
+
+
+def _yahoo_hk_symbol(code):
+    """5 位港股代码 → Yahoo 代码（4 位补零）：``06160`` → ``6160.HK``、``00700`` → ``0700.HK``。"""
+    digits = "".join(ch for ch in str(code or "").split(".", 1)[0] if ch.isdigit())
+    if not digits:
+        return str(code or "").strip()
+    return f"{digits.lstrip('0').zfill(HK_YAHOO_CODE_WIDTH)}.HK"
+
+
 def fetch_hk_snapshot(fetch_json, *, max_pages=6, page_size=100, timeout=12):
     """港股快照（总市值降序）：``{items, pages, complete, errors, served_urls}``。
 
@@ -326,12 +337,29 @@ def fetch_hk_bars(fetch_json, codes, *, workers=DEFAULT_WORKERS, timeout=12, lev
         # 320 只里只回来 37 只）。分批后单批突发量小，限流触发概率明显下降。
         for start in range(0, len(pending), BARS_BATCH_SIZE):
             chunk = pending[start:start + BARS_BATCH_SIZE]
-            specs = [(code, f"{code}.HK") for code in chunk]
+            # 🤖 Yahoo 只认 **4 位**补零的港股代码（2026-11-04 实测：6160.HK 有 2 年日线，
+            # 06160.HK 直接 404；0700.HK 有数据、00700.HK 是 result:null）。
+            # 内部一律 5 位（与东财 / 交易所口径一致），拼 Yahoo 代码时才折成 4 位。
+            specs = [(code, _yahoo_hk_symbol(code)) for code in chunk]
+            quiet_ctx = getattr(prov, "request_quiet", None)
             try:
-                raw = prov.fetch_series_batch(fetch_json, specs, rng=rng,
-                                              workers=concurrency, timeout=level_timeout)
+                if quiet_ctx is None:
+                    raw = prov.fetch_series_batch(fetch_json, specs, rng=rng,
+                                                  workers=concurrency, timeout=level_timeout)
+                    failures = 0
+                else:
+                    # 批量段内逐条失败日志静音：40 只一批里十几只 404，逐条打印就是刷屏。
+                    with quiet_ctx() as quiet:
+                        raw = prov.fetch_series_batch(fetch_json, specs, rng=rng,
+                                                      workers=concurrency, timeout=level_timeout)
+                    failures = getattr(quiet, "failed", 0)
             except Exception:
-                raw = {}
+                raw, failures = {}, 0
+            missed = len(chunk) - len(raw or {})
+            if missed:
+                detail = f"（其中 {failures} 次请求失败）" if failures else ""
+                print(f"  ℹ️ 日线批次：{len(raw or {})}/{len(chunk)} 只取到{detail}"
+                      f"，未取到的会按重试阶梯再试")
             for symbol, bars in (raw or {}).items():
                 code = _normalize_code(symbol)
                 if code and bars and code not in out:

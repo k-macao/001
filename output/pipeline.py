@@ -1521,7 +1521,12 @@ def _date_is_today(dt):
 
 
 def safe_request(url, headers=None, params=None, timeout=15, is_json=True):
-    """安全请求，失败返回 None"""
+    """安全请求，失败返回 None
+
+    批量取数（几百只港股日线）期间不逐条打印失败——那会把日志刷成一片
+    （2026-11-04 用户贴的「大量请求失败」就是这么来的）。闸门在
+    ``providers.request_quiet()``：批量段内只计数，由调用方打一行汇总。
+    """
     try:
         h = {**DEFAULT_HEADERS, **(headers or {})}
         resp = requests.get(url, headers=h, params=params, timeout=timeout)
@@ -1530,7 +1535,8 @@ def safe_request(url, headers=None, params=None, timeout=15, is_json=True):
             return resp.json()
         return resp.text
     except Exception as e:
-        print(f"  ⚠️ 请求失败 [{url[:60]}...]: {e}")
+        if not _quant.providers.note_request_failure():
+            print(f"  ⚠️ 请求失败 [{url[:60]}...]: {e}")
         return None
 
 
