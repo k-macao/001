@@ -2385,6 +2385,37 @@ class PolicyFactorTests(unittest.TestCase):
         self.assertEqual(yesterday["date"], "2026-08-01")
         self.assertEqual(yesterday["dims"], ["监管收紧"])
 
+    def test_headlines_sorted_newest_first_not_by_corpus_order(self):
+        # 存档按抓取顺序累积：窗口最早一天（07-19 一带）排在最前。若不排序，
+        # 逐条展示的前 8 条会被最旧的旧闻占满（线上表现为「全是 10-21」）。
+        older = [{"title": f"央行降准{i}", "source": "s", "url": "",
+                  "published_cst": f"2026-07-{20 + i:02d} 10:00", "is_today": False}
+                 for i in range(3)]
+        newer = [{"title": "证监会约谈多家券商，严查违规行为", "source": "s", "url": "",
+                  "published_cst": "2026-08-01 10:00", "is_today": False}]
+        data = {"全球头条": pipeline._source_result(
+            "test", "success", is_today=True, content_date="2026-08-02",
+            headlines=older + newer)}
+        res = pipeline.build_policy_factor(data, "20260802")
+        dates = [h["date"] for h in res["headlines"]]
+        self.assertEqual(dates, sorted(dates, reverse=True))
+        self.assertEqual(dates[0], "2026-08-01")
+        self.assertEqual(res["headlines"][0]["age_days"], 1)
+
+    def test_freshness_note_only_when_latest_is_stale(self):
+        # 当天有政策 → 不出提示；只有旧闻 → 明确写出「最新一条是哪天」
+        fresh_data = self._policy_data()
+        self.assertEqual(pipeline._policy_freshness_note(
+            pipeline.build_policy_factor(fresh_data, "20260802")), "")
+        stale = {"全球头条": pipeline._source_result(
+            "test", "success", is_today=True, content_date="2026-08-02",
+            headlines=[{"title": "央行宣布降准0.5个百分点", "source": "s", "url": "",
+                        "published_cst": "2026-07-28 10:00", "is_today": False}])}
+        note = pipeline._policy_freshness_note(
+            pipeline.build_policy_factor(stale, "20260802"))
+        self.assertIn("07-28", note)
+        self.assertIn("当天暂未检出", note)
+
     def test_macro_data_dimension_counts_cpi_ppi(self):
         # 2026-09-09 增补：CPI/PPI/统计局等宏观数据视为政策因子输入，
         # 让“0 政策新闻”的宏观数据日也能出栏目（不再整日缺席）
