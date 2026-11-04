@@ -58,12 +58,31 @@ def em_secid_for_yahoo(symbol):
     if _bk is not None and hasattr(_bk, "em_secid_for_yahoo"):
         return _bk.em_secid_for_yahoo(symbol)
     sym = str(symbol or "")
-    table = {"^HSI": "100.HSI", "^HSTECH": "100.HSTECH", "^HSCE": "100.HSCEI"}
+    table = {"^HSI": "100.HSI", "^HSTECH": "124.HSTECH", "^HSCE": "100.HSCEI"}
     if sym in table:
         return table[sym]
     if sym.endswith(".HK") and sym[:-3].isdigit():
         return f"116.{int(sym[:-3]):05d}"
     return ""
+
+
+def em_secids_for_yahoo(symbol):
+    """东财 secid 候选链（主候选在前）；恒生科技 124 优先、100 兜底。"""
+    if _bk is not None and hasattr(_bk, "em_secids_for_yahoo"):
+        return tuple(_bk.em_secids_for_yahoo(symbol))
+    sym = str(symbol or "").strip()
+    if sym in ("^HSTECH", "%5EHSTECH"):
+        return ("124.HSTECH", "100.HSTECH")
+    secid = em_secid_for_yahoo(sym)
+    return (secid,) if secid else ()
+
+
+def yahoo_symbols_for(symbol):
+    """Yahoo 代码候选链：``^HSTECH`` 已下线，改用 ``HSTECH.HK``（见 backup_sources 注释）。"""
+    if _bk is not None and hasattr(_bk, "yahoo_symbols_for"):
+        return tuple(_bk.yahoo_symbols_for(symbol))
+    sym = str(symbol or "").strip()
+    return ("HSTECH.HK",) if sym in ("^HSTECH", "%5EHSTECH") else (sym,)
 
 
 def fetch_json_chain(fetch_json, urls, params, ok, timeout=15):
@@ -315,10 +334,16 @@ def fetch_bars(fetch_json, symbol, *, rng="1y", interval="1d", timeout=15,
         return bool(bars) and (validate_bars(bars) if validate_bars else True)
 
     # 数据线 yahoo_bars：query1 → query2 → 东财日 K（独立解析）
-    data, url = fetch_json_chain(
-        fetch_json, chain_urls("yahoo_chart", symbol=symbol),
-        {"range": rng, "interval": interval}, ok=_ok, timeout=timeout)
-    if data is not None:
+    # 代码候选：已下线的 Yahoo 代码先换成现行代码（^HSTECH → HSTECH.HK），原代码留作最后一试。
+    codes = list(yahoo_symbols_for(symbol) or (symbol,))
+    if str(symbol or "").strip() not in codes:
+        codes.append(str(symbol).strip())
+    for code in codes:
+        data, url = fetch_json_chain(
+            fetch_json, chain_urls("yahoo_chart", symbol=code),
+            {"range": rng, "interval": interval}, ok=_ok, timeout=timeout)
+        if data is None:
+            continue
         bars = parse_chart_result(_result(data), with_meta=interval == "1d")
         result = {"bars": bars, "source": "Yahoo Finance " + url.split("/")[2], "url": url}
         return result if with_source else bars
@@ -353,30 +378,38 @@ def fetch_bars_eastmoney(fetch_json, symbol, *, rng="1y", timeout=15, interval="
                          validate_bars=None, with_source=False):
     """东方财富前复权日/周 K；主机依次回退，解析无效也回退。"""
     empty = {"bars": [], "source": None, "url": None}
-    secid = em_secid_for_yahoo(symbol)
-    if not fetch_json or not secid or interval not in ("1d", "1wk"):
+    secids = em_secids_for_yahoo(symbol)
+    if not fetch_json or not secids or interval not in ("1d", "1wk"):
         return empty if with_source else []
     # 旧注册表把综合指数 ^IXIC 映射到 100.NDX；未经核验不能串成另一只指数。
-    if str(symbol).strip().upper().replace("%5E", "^") == "^IXIC" and secid == "100.NDX":
-        return empty if with_source else []
+    if str(symbol).strip().upper().replace("%5E", "^") == "^IXIC":
+        secids = tuple(s for s in secids if s != "100.NDX")
+        if not secids:
+            return empty if with_source else []
     limit = _EM_LIMIT_FOR_RANGE.get(str(rng), 520)
     if interval == "1wk" and str(rng) != "max":
         limit = (limit + 4) // 5 + 2  # range 表是日线数量，周 K 使用约 1/5 + 边界缓冲
-    params = {"secid": secid, "klt": "102" if interval == "1wk" else "101", "fqt": "1", "end": "20500101",
-              "lmt": str(limit),
-              "fields1": "f1,f2,f3,f4,f5,f6", "fields2": "f51,f52,f53,f54,f55,f56,f57"}
 
     def _ok(data):
         bars = _parse_eastmoney_bars(data)
         return bool(bars) and (validate_bars(bars) if validate_bars else True)
 
-    data, url = fetch_json_chain(fetch_json, chain_urls("em_kline"), params,
-                                 ok=_ok, timeout=timeout)
-    if data is None:
-        return empty if with_source else []
-    bars = _parse_eastmoney_bars(data)
-    result = {"bars": bars, "source": ("东方财富周K " if interval == "1wk" else "东方财富日K ") + url.split("/")[2], "url": url}
-    return result if with_source else bars
+    # 同一标的可能有多个东财编号（恒生科技 124 现行 / 100 已失效）：前一个拿不到有效
+    # K 线（rc:100 且 data:null）再试下一个，全部失败才返回空，绝不拿别的指数凑数。
+    for secid in secids:
+        params = {"secid": secid, "klt": "102" if interval == "1wk" else "101", "fqt": "1",
+                  "end": "20500101", "lmt": str(limit),
+                  "fields1": "f1,f2,f3,f4,f5,f6", "fields2": "f51,f52,f53,f54,f55,f56,f57"}
+        data, url = fetch_json_chain(fetch_json, chain_urls("em_kline"), params,
+                                     ok=_ok, timeout=timeout)
+        if data is None:
+            continue
+        bars = _parse_eastmoney_bars(data)
+        result = {"bars": bars,
+                  "source": ("东方财富周K " if interval == "1wk" else "东方财富日K ") + url.split("/")[2],
+                  "url": url}
+        return result if with_source else bars
+    return empty if with_source else []
 
 
 def fetch_series_batch(fetch_json, specs, *, rng="1y", workers=6, timeout=15,
@@ -567,21 +600,34 @@ def fetch_hk_index_quotes(fetch_json, timeout=12):
     """恒指 / 恒科 / 国企指数的最新价与成交额（东财口径）。
 
     返回 ``{代码: {name, price, chg_pct, amount}}``；失败返回 {}。
+
+    🔙 2026-11-04：恒生科技的东财 secid 已从 100.HSTECH 改为 **124.HSTECH**（100 失效，
+    混进批量请求会让整条 ulist 返回 ``rc:102 / data:null``）。这里按「主候选批量取 →
+    缺行的再用备用编号单独取」两步走，一个失效编号不再拖垮另外两只指数。
     """
     if not fetch_json:
         return {}
-    secids = ",".join(f"100.{code}" for code in ("HSI", "HSTECH", "HSCEI"))
-    data, _url = fetch_json_chain(fetch_json, chain_urls("em_ulist"), {
-        "fltt": "2", "invt": "2", "secids": secids,
-        # f124 = 行情时间戳（秒）：用来标注这条报价属于哪个交易日，
-        # 也是「行情速览」核对 Yahoo 是否回退的独立时间基准。
-        "fields": "f2,f3,f4,f6,f12,f14,f124",
-    }, ok=lambda d: bool(((d or {}).get("data") or {}).get("diff")), timeout=timeout)
+    fields = "f2,f3,f4,f6,f12,f14,f124"   # f124 = 行情时间戳（秒），独立时间基准
+    primary = ["100.HSI", "124.HSTECH", "100.HSCEI"]
+    alternates = {"124.HSTECH": ("100.HSTECH",)}
+
+    def _rows(secids):
+        if not secids:
+            return []
+        data, _url = fetch_json_chain(fetch_json, chain_urls("em_ulist"), {
+            "fltt": "2", "invt": "2", "secids": ",".join(secids), "fields": fields,
+        }, ok=lambda d: bool(((d or {}).get("data") or {}).get("diff")), timeout=timeout)
+        try:
+            return list(((data or {}).get("data") or {}).get("diff") or [])
+        except (AttributeError, TypeError):
+            return []
+
+    rows = _rows(primary)
+    seen = {str(it.get("f12") or "").strip() for it in rows}
+    retry = [alt for secid, alts in alternates.items()
+             for alt in alts if secid.split(".")[-1] not in seen]
+    rows += _rows(retry)
     out = {}
-    try:
-        rows = ((data or {}).get("data") or {}).get("diff") or []
-    except (AttributeError, TypeError):
-        return out
     for it in rows:
         code = str(it.get("f12") or "").strip()
         try:

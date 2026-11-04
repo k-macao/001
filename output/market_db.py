@@ -244,7 +244,7 @@ def em_secid(symbol: str) -> str:
     except Exception:
         pass
     sym = str(symbol or "").strip()
-    table = {"^HSI": "100.HSI", "^HSTECH": "100.HSTECH", "^HSCEI": "100.HSCEI", "^HSCE": "100.HSCEI",
+    table = {"^HSI": "100.HSI", "^HSTECH": "124.HSTECH", "^HSCEI": "100.HSCEI", "^HSCE": "100.HSCEI",
              "^DJI": "100.DJIA", "^GSPC": "100.SPX", "^IXIC": "100.NDX"}
     if sym in table:
         return table[sym]
@@ -260,10 +260,10 @@ def em_secid(symbol: str) -> str:
 
 
 def em_secids(symbol: str) -> Tuple[str, ...]:
-    """东财 secid 候选列表（恒生科技同时尝试 100.HSTECH 与 124.HSTECH）。"""
+    """东财 secid 候选列表（恒生科技 124.HSTECH 现行，100.HSTECH 已失效、只作兜底）。"""
     sym = str(symbol or "").strip()
     if sym == "^HSTECH":
-        return ("100.HSTECH", "124.HSTECH")
+        return ("124.HSTECH", "100.HSTECH")
     sec = em_secid(sym)
     return (sec,) if sec else ()
 
@@ -650,8 +650,10 @@ def _yahoo_quote_from_chart(data) -> Optional[Dict[str, Any]]:
                   quote_time=quote_time, name=meta.get("shortName") or "")
 
 
+# Yahoo 代码候选。恒生科技：^HSTECH 已于 2026-11 起在 Yahoo 下线（result:null /
+# "No data found, symbol may be delisted"），现行代码是 HSTECH.HK，原代码留作兜底。
 _YAHOO_ALIASES: Dict[str, Tuple[str, ...]] = {
-    "^HSTECH": ("^HSTECH", "HSTECH.HK"),
+    "^HSTECH": ("HSTECH.HK", "^HSTECH"),
     "^HSCEI": ("^HSCEI", "^HSCE"),
     "^HSCE": ("^HSCE", "^HSCEI"),
 }

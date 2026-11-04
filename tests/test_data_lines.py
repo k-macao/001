@@ -381,7 +381,27 @@ class FallbackChainTests(unittest.TestCase):
             return None
         out = providers.fetch_hk_index_quotes(fj)
         self.assertAlmostEqual(out["HSI"]["price"], 24642.51)
-        self.assertEqual(len(urls_seen), 2)
+        # 第一批（主域名 + 82 镜像）已是 2 次；恒科缺行 → 用兜底编号 100.HSTECH 再补一批。
+        self.assertEqual(len(urls_seen), 4)
+
+    def test_hk_index_quotes_retry_only_missing_symbol_with_alternate_secid(self):
+        batches = []
+
+        def fj(url, params=None, timeout=15):
+            if "push2" not in url:
+                return None
+            secids = (params or {}).get("secids", "").split(",")
+            batches.append(secids)
+            if "124.HSTECH" in secids:                 # 现行恒科编号：一次拿全
+                return {"data": {"diff": [
+                    {"f12": "HSI", "f14": "恒生指数", "f2": 24642.51, "f3": 0.54, "f6": 1e11, "f124": 1790000000},
+                    {"f12": "HSTECH", "f14": "恒生科技指数", "f2": 3936.02, "f3": 1.77, "f6": 5e10, "f124": 1790000000},
+                    {"f12": "HSCEI", "f14": "国企指数", "f2": 8057.59, "f3": 1.44, "f6": 6e10, "f124": 1790000000}]}}
+            return {"rc": 102, "data": None}           # 失效编号 → 整批 rc:102
+        out = providers.fetch_hk_index_quotes(fj)
+        self.assertEqual(batches, [["100.HSI", "124.HSTECH", "100.HSCEI"]])
+        self.assertEqual(sorted(out), ["HSCEI", "HSI", "HSTECH"])
+        self.assertAlmostEqual(out["HSTECH"]["price"], 3936.02)
 
 # ======================================================================
 # ③ 可见性

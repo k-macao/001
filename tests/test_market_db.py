@@ -286,7 +286,9 @@ class RegistryTests(unittest.TestCase):
     def test_code_mappings(self):
         self.assertEqual(m.em_secid("0700.HK"), "116.00700")
         self.assertEqual(m.em_secid("^HSI"), "100.HSI")
-        self.assertEqual(m.em_secids("^HSTECH"), ("100.HSTECH", "124.HSTECH"))
+        # 恒生科技：124.HSTECH 现行（100.HSTECH 已失效，只作兜底）
+        self.assertEqual(m.em_secids("^HSTECH"), ("124.HSTECH", "100.HSTECH"))
+        self.assertEqual(m.em_secid("^HSTECH"), "124.HSTECH")
         self.assertEqual(m.em_secid("000001.SS"), "1.000001")
         self.assertEqual(m.em_secid("399006.SZ"), "0.399006")
         self.assertEqual(m.em_secid("MSFT"), "105.MSFT")
