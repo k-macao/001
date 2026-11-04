@@ -42,12 +42,15 @@ EM_DATACENTER_URLS = (
 RSSHUB_BASES = ("https://rsshub.app", "https://rsshub.rssforever.com", "https://rsshub.pseudoyu.com")
 
 # Yahoo 代码 → 东方财富 secid（独立备用源的字段映射；映射不到的品种只走 Yahoo 双主机）
+# 🔙 2026-11-04 修正：恒生科技的东财 secid 是 **124**（124.HSTECH），旧的 100.HSTECH 已失效
+#    （K 线 `rc:100 / data:null`，ulist `rc:102 / data:null`），只作为兜底候选留在
+#    EM_SECID_CANDIDATES 里。
 EM_SECID_FOR_YAHOO = {
     "^DJI": "100.DJIA", "%5EDJI": "100.DJIA",
     "^GSPC": "100.SPX", "%5EGSPC": "100.SPX",
     "^IXIC": "100.NDX", "%5EIXIC": "100.NDX",
     "^HSI": "100.HSI", "%5EHSI": "100.HSI",
-    "^HSTECH": "100.HSTECH", "%5EHSTECH": "100.HSTECH",
+    "^HSTECH": "124.HSTECH", "%5EHSTECH": "124.HSTECH",
     "^HSCE": "100.HSCEI", "%5EHSCE": "100.HSCEI",
     "MSFT": "105.MSFT", "META": "105.META",
     # NYMEX 美原油连续（东财 globalfuture/CL00Y）；若接口不认该代码，AI 行情复盘的 WTI 行
@@ -66,6 +69,26 @@ SINA_LIVE_NEWS_URL = ("https://zhibo.sina.com.cn/api/zhibo/feed?page=1&page_size
                       "&zhibo_id=152&tag_id=0&dire=f&dpc=1")
 
 
+# 同一标的的东财 secid 候选（主候选在前）。恒生科技在东方财富有两个编号：124 是现行口径，
+# 100.HSTECH 已于 2026-11 前后失效（日K 返回 rc:100 / data:null，行情快照 rc:102），
+# 留作兜底只因为「万一恢复」——绝不把它放在最前面白等一次超时。
+EM_SECID_CANDIDATES = {
+    "^HSTECH": ("124.HSTECH", "100.HSTECH"),
+    "%5EHSTECH": ("124.HSTECH", "100.HSTECH"),
+}
+
+# Yahoo 代码候选：2026-11-04 实测 ^HSTECH 在 Yahoo 已不再提供数据
+# （HTTP 200 + ``{"chart":{"result":null,"error":{"code":"Not Found",
+# "description":"No data found, symbol may be delisted"}}}``），Yahoo 搜索里恒生科技指数
+# 只剩 HSTECH.HK（只有 meta + 1 根当日报价，没有历史序列）。
+# 所以恒生科技**不再请求 ^HSTECH**：那种请求只会刷出「⚠️ 请求失败，404」，
+# 而 HSTECH.HK 拿不到足够 K 线时会被显式判定为「内容无效」，再由东财 124.HSTECH 顶上。
+YAHOO_SYMBOL_ALIASES = {
+    "^HSTECH": ("HSTECH.HK",),
+    "%5EHSTECH": ("HSTECH.HK",),
+}
+
+
 def em_secid_for_yahoo(symbol: str) -> str:
     """Yahoo 代码 → 东财 secid；港股 0700.HK → 116.00700，A股 600519.SS → 1.600519。"""
     sym = str(symbol or "").strip()
@@ -78,6 +101,21 @@ def em_secid_for_yahoo(symbol: str) -> str:
     if sym.endswith(".SZ") and sym[:-3].isdigit():
         return f"0.{sym[:-3]}"
     return ""
+
+
+def em_secids_for_yahoo(symbol: str) -> Tuple[str, ...]:
+    """Yahoo 代码 → 东财 secid **候选链**（主候选在前）；映射不到返回空元组。"""
+    sym = str(symbol or "").strip()
+    if sym in EM_SECID_CANDIDATES:
+        return EM_SECID_CANDIDATES[sym]
+    secid = em_secid_for_yahoo(sym)
+    return (secid,) if secid else ()
+
+
+def yahoo_symbols_for(symbol: str) -> Tuple[str, ...]:
+    """Yahoo 代码 → 依次尝试的 Yahoo 代码（已下线的代码不再排在前面白请求一次）。"""
+    sym = str(symbol or "").strip()
+    return YAHOO_SYMBOL_ALIASES.get(sym, (sym,))
 
 
 def _em(host: str, path: str) -> str:
@@ -333,6 +371,16 @@ DATA_LINES: Dict[str, Dict[str, Any]] = {
 # ------------------------------------------------------------------
 # 查询接口
 # ------------------------------------------------------------------
+# 会把 symbol 直接拼进 Yahoo Chart URL 的数据线（yahoo_chart 快照 / yahoo_bars 日线序列）
+_YAHOO_SYMBOL_LINES = ("yahoo_chart", "yahoo_bars")
+
+
+def _resolve_yahoo_code(symbol: str) -> str:
+    """Yahoo 代码 → URL 里实际使用的代码（``^HSTECH`` → ``HSTECH.HK``）。"""
+    codes = YAHOO_SYMBOL_ALIASES.get(str(symbol or "").strip())
+    return codes[0] if codes else symbol
+
+
 def _fmt(template: str, fmt: Dict[str, Any]) -> str:
     try:
         return template.format(**fmt) if fmt else template
@@ -341,8 +389,14 @@ def _fmt(template: str, fmt: Dict[str, Any]) -> str:
 
 
 def candidates(line_id: str, **fmt) -> List[Tuple[str, str, bool]]:
-    """[(label, url, same_format)]：主源 + 两个备用源（按尝试顺序）。"""
+    """[(label, url, same_format)]：主源 + 两个备用源（按尝试顺序）。
+
+    行情类数据线（yahoo_chart / yahoo_bars）先按 ``YAHOO_SYMBOL_ALIASES`` 换成现行代码：
+    Yahoo 已下线的 ``^HSTECH`` 不再排在前面白请求一次（只会刷出 404 噪音）。
+    """
     line = DATA_LINES[line_id]
+    if line_id in _YAHOO_SYMBOL_LINES and fmt.get("symbol"):
+        fmt = dict(fmt, symbol=_resolve_yahoo_code(fmt["symbol"]))
     label, url = line["primary"]
     out = [(label, _fmt(url, fmt), True)]
     for b_label, b_url, same in line["backups"]:
@@ -430,8 +484,19 @@ def try_urls_with_fallback(fetch_func: Callable, urls_: List[str], **kwargs) -> 
 # 兼容旧调用名（全部改为从注册表取值）
 # ------------------------------------------------------------------
 def get_yahoo_urls(symbol: str) -> List[str]:
-    """Yahoo Chart 同格式主备（query1 → query2）；东财独立备用由调用方走适配器。"""
-    return urls("yahoo_chart", symbol=symbol)
+    """Yahoo Chart 同格式主备（query1 → query2）；东财独立备用由调用方走适配器。
+
+    代码已下线的标的（如恒生科技 ``^HSTECH``）先按 ``YAHOO_SYMBOL_ALIASES`` 换成现行代码，
+    顺序为「现行代码的主源、现行代码的备用源、原代码的主源、原代码的备用源」——
+    既不放弃原代码（万一恢复），也不让已确定失效的请求排在前面白等。
+    """
+    line = DATA_LINES["yahoo_chart"]
+    templates = [line["primary"][1]] + [b[1] for b in line["backups"] if b[2]]   # 只取同格式镜像
+    codes = list(yahoo_symbols_for(symbol) or (str(symbol or "").strip(),))
+    sym = str(symbol or "").strip()
+    if sym and sym not in codes:
+        codes.append(sym)                       # 已下线的原代码留作最后一试
+    return list(dict.fromkeys(_fmt(t, {"symbol": code}) for code in codes for t in templates))
 
 
 def get_google_news_urls(category: str = "zh", query: str = "") -> List[str]:

@@ -11,7 +11,7 @@ from octopus_quant import providers
 # 不以 ETF、期货或另一市场指数替代；供应商不是指数编制机构。
 SPECS = [
     ("港股", "恒生指数", "^HSI", "100.HSI"),
-    ("港股", "恒生科技", "^HSTECH", "100.HSTECH"),
+    ("港股", "恒生科技", "^HSTECH", "124.HSTECH"),
     ("港股", "国企指数", "^HSCE", "100.HSCEI"),
     ("A股", "沪深300", "000300.SS", "1.000300"),
     ("A股", "上证指数", "000001.SS", "1.000001"),
@@ -26,11 +26,11 @@ EM_HOSTS = ("push2his.eastmoney.com", "91.push2his.eastmoney.com", "63.push2his.
 EM = f"https://{EM_HOSTS[0]}/api/qt/stock/kline/get"
 
 YAHOO_CODES = {
-    "^HSTECH": ("^HSTECH", "HSTECH.HK"),
+    "^HSTECH": ("HSTECH.HK", "^HSTECH"),   # ^HSTECH 已从 Yahoo 下线（2026-11 实测）
     "^HSCE": ("^HSCE", "^HSCEI"),
 }
 EM_SECIDS = {
-    "^HSTECH": ("100.HSTECH", "124.HSTECH"),
+    "^HSTECH": ("124.HSTECH", "100.HSTECH"),
 }
 
 

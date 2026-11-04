@@ -1730,19 +1730,54 @@ def _refresh_market_dates(market):
     return market
 
 
+def _meta_only_quote(result, bars):
+    """只有「一根报价 / 没有序列」时，用 meta 的最新价 + 官方前收组出报价（不编历史）。
+
+    背景（2026-11-04 实测）：Yahoo 已下线 ``^HSTECH``（返回 ``result:null`` + 「No data found,
+    symbol may be delisted」），恒生科技指数只剩 ``HSTECH.HK`` 这个代码，而它只返回
+    **一根**当日 K 线（``validRanges:["1d","5d"]``，没有历史序列）。旧解析器要求 ≥2 根，
+    于是把唯一还能用的 Yahoo 报价也判死，整行落到「⚠️ 请求失败」。
+
+    meta 里 ``regularMarketPrice`` / ``chartPreviousClose`` / ``regularMarketTime`` 三项齐全
+    （且都与东财 124.HSTECH、腾讯 r_hkHSTECH 对得上）时才采用；缺任何一项就抛 ValueError，
+    由调用方记入失败列表并切东财备用源 —— 宁可少一行，也不拿猜出来的数字充数。
+    返回的 ``prev_date`` 为 None（meta 不提供前收所属交易日），``via="meta_only"``。
+    """
+    meta = (result or {}).get("meta") or {}
+    price = _panorama_float(meta.get("regularMarketPrice"))
+    previous = (_panorama_float(meta.get("chartPreviousClose"))
+                or _panorama_float(meta.get("previousClose")))
+    stamp = _panorama_int(meta.get("regularMarketTime"))
+    if price is None or price <= 0 or previous is None or previous <= 0 or not stamp:
+        raise ValueError("报价记录不足")
+    try:
+        tz = _quant.providers.market_timezone(meta.get("symbol") or "")
+        as_of = datetime.fromtimestamp(int(stamp), tz).strftime("%Y-%m-%d")
+    except (OverflowError, OSError, TypeError, ValueError):
+        raise ValueError("报价时间无法解析")
+    return {"price": float(price), "change_pct": (float(price) / float(previous) - 1) * 100,
+            "volume": _panorama_float(meta.get("regularMarketVolume")) or 0,
+            "currency": meta.get("currency") or "",
+            "as_of": as_of, "prev_date": None, "via": "meta_only"}
+
+
 def _yahoo_quote_from_chart(data):
     """把一份 Yahoo Chart 响应解析成单品种报价：
 
     {price, change_pct, volume, currency, as_of, prev_date, via}
       · as_of    —— 「price」实际所属的交易日（取自有收盘价的那根 K 线，不是时间戳末尾的空 K 线）；
-      · via      —— "bar"（日线）或 "meta"（Yahoo 暂缺刚收盘日线，用 meta 最新报价补出，见
-                    octopus_quant.providers.session_bar_from_meta）。
+      · via      —— "bar"（日线）、"meta"（Yahoo 暂缺刚收盘日线，用 meta 最新报价补出，见
+                    octopus_quant.providers.session_bar_from_meta）或 "meta_only"
+                    （该代码只返回一根报价、没有历史序列，见 _meta_only_quote）。
     解析失败抛 ValueError（由调用方记入失败列表）。
     """
-    result = data["chart"]["result"][0]
-    bars = _quant.providers.parse_chart_result(result)
+    try:
+        result = (data or {})["chart"]["result"][0]
+    except (KeyError, IndexError, TypeError):
+        raise ValueError("返回结构无行情")
+    bars = _quant.providers.parse_chart_result(result) if result else []
     if len(bars) < 2:
-        raise ValueError("报价记录不足")
+        return _meta_only_quote(result, bars)
     last, prev = bars[-1], bars[-2]
     price, previous = float(last["close"]), float(prev["close"])
     if previous == 0:
@@ -1798,8 +1833,9 @@ def fetch_market_snapshot():
         except (KeyError, TypeError, IndexError, ValueError, ZeroDivisionError) as exc:
             failures.append(f"{label}: {exc}")
             continue
-        served[label] = "备用源1" if success_url != yahoo_urls[0] else "主源"
-        if quotes[label]["via"] == "meta":
+        # 主源 = Yahoo query1（现行代码）；命中 query2 镜像即「备用源1」，东财补的记「备用源2」。
+        served[label] = "主源" if success_url == yahoo_urls[0] else "备用源1"
+        if quotes[label]["via"] in ("meta", "meta_only"):
             meta_filled.append(f"{label}({quotes[label]['as_of'][5:]})")
 
     em_used = []
@@ -1834,7 +1870,7 @@ def fetch_market_snapshot():
         span = " / ".join(f"{g} {gd[g]}" for g, _ in MARKET_QUOTE_GROUPS if gd.get(g))
         print(f"  ✅ 成功抓取 {len(quotes)}/{len(specs)} 个实时行情（数据日期 {span}）")
         if meta_filled:
-            print("  ℹ️ Yahoo 日线暂缺刚收盘 K 线，已用 meta 最新报价补齐："
+            print("  ℹ️ 以下品种用 Yahoo meta 最新报价补齐（该代码无对应日线序列）："
                   + "、".join(meta_filled))
         if market.get("lagging"):
             print("  ⚠️ 以下品种数据日期落后于最新交易日（页面将标注日期，不计入指数均值）："
@@ -1845,7 +1881,7 @@ def fetch_market_snapshot():
 
 
 _EM_MARKET_CURRENCY = {"100": "", "105": "USD", "106": "USD", "107": "USD", "102": "USD",
-                       "116": "HKD", "1": "CNY", "0": "CNY"}
+                       "116": "HKD", "124": "HKD", "1": "CNY", "0": "CNY"}
 
 
 def _eastmoney_snapshot_quotes(pairs, quote_urls=None):
@@ -1855,20 +1891,49 @@ def _eastmoney_snapshot_quotes(pairs, quote_urls=None):
     返回 {品种名: quote}，quote 与 _yahoo_quote_from_chart 同结构（via="eastmoney"，
     as_of 取东财行情时间戳 f124 的北京日期，prev_date 未知记 None）。失败返回 {}。
     """
-    secid_to_label = {}
+    # 一个品种可能有多个东财编号（恒生科技 124 现行 / 100 已失效）。这里先只取主候选批量请求，
+    # 主候选缺行的品种再用备用编号单独补一次 —— 绝不因为一个失效编号丢掉整批报价
+    # （实测 ulist 混进失效 secid 会整条返回 rc:102 / data:null）。
+    label_cands = {}
     for label, symbol in pairs or []:
-        secid = _backup.em_secid_for_yahoo(symbol)
-        if secid:
-            secid_to_label[secid] = label
-    if not secid_to_label:
+        cands = _backup.em_secids_for_yahoo(symbol)
+        if cands:
+            label_cands[label] = cands
+    if not label_cands:
         return {}
-    params = {"fltt": "2", "invt": "2", "secids": ",".join(secid_to_label),
-              "fields": "f2,f3,f4,f12,f13,f14,f18,f124"}
     urls = quote_urls or _backup.get_eastmoney_ulist_urls()
-    data, _, _ = safe_request_with_fallback(
-        urls, params=params, timeout=12, line="em_ulist",
-        validate=lambda d: bool(((d or {}).get("data") or {}).get("diff")))
-    rows = ((data or {}).get("data") or {}).get("diff") or []
+    fields = "f2,f3,f4,f12,f13,f14,f18,f124"
+
+    def _fetch(secids):
+        """返回 (行列表, rc)。rc 非 0 且 data 为 null = 某个 secid 不被接受（整批作废）。"""
+        if not secids:
+            return [], None
+        params = {"fltt": "2", "invt": "2", "secids": ",".join(secids), "fields": fields}
+        data, _, _ = safe_request_with_fallback(
+            urls, params=params, timeout=12, line="em_ulist",
+            validate=lambda d: bool(((d or {}).get("data") or {}).get("diff")))
+        if not isinstance(data, dict):
+            return [], None
+        return (list(((data.get("data") or {}) or {}).get("diff") or []),
+                _panorama_int(data.get("rc")))
+
+    secid_to_label = {}
+    for label, cands in label_cands.items():
+        secid_to_label[cands[0]] = label
+    rows, rc = _fetch(list(secid_to_label))
+    got = {f"{it.get('f13')}.{it.get('f12')}" for it in rows}
+    # 备用编号只在两种情况下补请一次：批量拿到了别的品种（该品种缺行），或东财明确回了
+    # 「secid 不被接受」（rc 非 0 且 data 为 null）。整条链路无响应时不重复打三台主机。
+    retry, need = {}, (rc not in (None, 0))
+    for label, cands in label_cands.items():
+        if cands[0] in got:
+            continue
+        for secid in cands[1:]:
+            retry[secid] = label
+    if retry and (rows or need):
+        secid_to_label.update(retry)
+        more, _rc = _fetch(list(retry))
+        rows += more
     out = {}
     for it in rows:
         secid = f"{it.get('f13')}.{it.get('f12')}"
@@ -1904,7 +1969,7 @@ def _reconcile_market_snapshot(market, pan=None, hk_ref=None):
 
     规则（只在东财数据日期**严格晚于** Yahoo 该品种 as_of 时替换；东财失败或日期相同不动）：
       · A股四指数：对照 A股大盘全景同一次抓取的东财指数（quote_time 为行情时间）；
-      · 恒生指数 / 恒生科技：对照东财 100.HSI / 100.HSTECH（f124 行情时间）；
+      · 恒生指数 / 恒生科技：对照东财 100.HSI / 124.HSTECH（f124 行情时间）；
         Yahoo 完全没给港股报价时也用东财补上（港股是本日报的主市场）。
     替换后的品种 via="eastmoney"，记录 yahoo_as_of 供审计；快照级 content_date /
     is_today / lagging 重新计算；来源名追加「东方财富回补」。绝不回补成更旧的数字。
@@ -1942,7 +2007,7 @@ def _reconcile_market_snapshot(market, pan=None, hk_ref=None):
                     _apply(label, row.get("price"), row.get("chg_pct"), pan_date,
                            "东方财富·A股全景", pan.get("quote_time"))
 
-    # ---- 港股：对照东财港股指数（100.HSI / 100.HSTECH）----
+    # ---- 港股：对照东财港股指数（100.HSI / 124.HSTECH）----
     for code, label in MARKET_HK_REFERENCE_CODES.items():
         ref = (hk_ref or {}).get(code) or {}
         if not ref or not ref.get("as_of"):
