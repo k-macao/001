@@ -21864,22 +21864,12 @@
  ],
  "updated_cst": "2026-11-04 15:13:23",
  "industry_rotation_diag": {
-  "ran_at": "2026-11-04 15:12:02",
-  "cutoff": "2026-11-03",
+  "ran_at": "2026-11-04 16:53:07",
+  "cutoff": "2026-11-04",
   "universe": 31,
   "universe_kind": "sw_l1_fixed",
-  "fqt": "1",
-  "kline_series": 31,
-  "sources": {
-   "eastmoney": 31
-  },
-  "missing": [],
-  "asof": "2026-11-03",
-  "asof_hits": 31,
-  "scored": 31,
-  "required": 19,
-  "state": "reused",
-  "holdings": 5
+  "fqt": null,
+  "reason": "行业日K接口未返回数据（东财前复权/不复权两种口径均无有效日线，申万官方源亦无数据）"
  },
  "industry_rotation": {
   "month": "2026-11",
