@@ -419,6 +419,15 @@ class LLMTests(unittest.TestCase):
         self.assertEqual(res["engine"], "quant")
         self.assertIn("RuntimeError", res["llm_reason"])
 
+    def test_prompt_uses_natural_professional_chinese_without_extra_notes(self):
+        system, user = hk7.build_prompt({"sample": "给定数据"})
+        for phrase in ("经验丰富的港股投研分析师", "主动、具体", "机械连接词", "不写过程说明"):
+            self.assertIn(phrase, system)
+        for phrase in ("总之", "综上所述", "值得注意的是", "毫无疑问"):
+            self.assertIn(phrase, system)
+        self.assertIn('"summary"', user)
+        self.assertIn("只输出一个符合要求的 JSON 对象", system)
+
     def test_prompt_only_carries_given_data(self):
         bars = bars_by_symbol()
         with tempfile.TemporaryDirectory() as tmp:
