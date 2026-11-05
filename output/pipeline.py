@@ -8856,10 +8856,9 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【事实】全球头条"
 SECTION_TITLE_NEWS_SENTIMENT = "【舆情】新闻情绪"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
 SECTION_TITLE_MEDIA_RISK = "【舆情】媒体风险"
-# 卷首块（2026-11-04 用户要求：新手三句话之后加入 007 的「研报 AI 风险点提示」，
-# 并原样复制粘贴 007 推送的同样栏目文字）。标题与正文都是 007 原文
-# （research_risk.verbatim_md）；它是卷首里的子块，不占正文编号。
-SECTION_TITLE_RESEARCH_RISK = "⚠️ 研报 AI 风险点提示"
+# 卷首块：正文沿用 007 的「研报 AI 风险点提示」原文，日报展示标题独立命名为
+# 「全球研报 AI 速递」；源栏目标题仍由 research_risk.py 用于识别 007 原文。
+SECTION_TITLE_RESEARCH_RISK = "全球研报 AI 速递"
 RESEARCH_RISK_ENABLED = os.environ.get("OCTOPUS_RESEARCH_RISK", "1").strip().lower() not in ("0", "false", "no")
 # 分条拥挤时把卷首「研报 AI 风险点提示」压成一行摘要用的锚点：
 #   完整块与压缩块同时渲染在标记之间，_split_html_for_push 只在「刚好超一条」时取压缩块。

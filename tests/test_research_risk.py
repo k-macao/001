@@ -222,6 +222,7 @@ class ResearchRiskReportTests(unittest.TestCase):
         return base
 
     def test_block_sits_after_beginner_tips_and_before_forecast_in_every_theme(self):
+        self.assertEqual(self.pipeline.SECTION_TITLE_RESEARCH_RISK, "全球研报 AI 速递")
         data = self._data()
         for theme in self.pipeline.PUSH_THEMES:
             with self.subTest(theme=theme):
@@ -285,8 +286,9 @@ class ResearchRiskReportTests(unittest.TestCase):
             self._data(), self.pipeline.GUIZANG_KIT, date_str="20260802",
             research_risk=res)
         html = parts["research_risk_html"]
-        expected = re.sub(r"\s+", "", section.replace("**", "").replace("## ", "")
-                          .replace("- ", ""))
+        expected = re.sub(
+            r"\s+", "", section.replace("## ⚠️ 研报 AI 风险点提示", "全球研报 AI 速递")
+            .replace("**", "").replace("- ", ""))
         # 去掉 data-rr-compact 隐藏摘要与主题列表符（◆ 等价于 md 的「-」）后，
         # 可见正文必须与 007 原文逐字一致
         text = re.sub(r"\s+", "", re.sub(r"<[^>]+>", "",
