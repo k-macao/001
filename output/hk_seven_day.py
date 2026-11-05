@@ -1130,11 +1130,20 @@ def merge_llm_estimate(payload, contexts, allowed):
                 p_up = _clamp(q_p + math.copysign(MAX_PROB_DEVIATION, p_up - q_p))
                 converged = True
                 notes["converged"] += 1
-        extra_values = [p_up * 100, ctx.get("close"),
-                        item.get("support"), item.get("resistance")]
+        close = _num(ctx.get("close")) or 0.0
+        support = _num(item.get("support"))
+        resistance = _num(item.get("resistance"))
+        if support is not None and not (close * 0.85 <= support <= close * 1.15):
+            support = None
+        if resistance is not None and not (close * 0.85 <= resistance <= close * 1.15):
+            resistance = None
+        if support is not None and resistance is not None and support >= resistance:
+            support = resistance = None
+        # 只把通过区间校验的预测位放进文案溯源集合，避免无效点位先被自己「证明」。
+        extra_values = [p_up * 100, close, support, resistance]
+        # 单一标的文案只允许引用该标的上下文与其输出值；不能拿全局数据池过关，
+        # 否则恒指文案误用了恒科或新闻里的数字也会被误判为「可溯源」。
         allowed_for_target = _allowed_numbers(ctx, extra_values)
-        allowed_for_target["strings"].update(allowed.get("strings", set()))
-        allowed_for_target["values"].extend(allowed.get("values", []))
 
         def _pick(field, limit, max_items=3):
             raw = item.get(field)
@@ -1155,7 +1164,8 @@ def merge_llm_estimate(payload, contexts, allowed):
         summary, drop_s = _pick("summary", 64)
         drivers, drop_d = _pick("drivers", 32)
         risks, drop_r = _pick("risks", 32)
-        cross, _drop_c = _sanitize_text(payload.get("cross_note"), 80, allowed_for_target)
+        # 跨市场短评才使用全局 prompt 数据（汇率/资金/其他指数等）；不能借此放宽单标的文案。
+        cross, _drop_c = _sanitize_text(payload.get("cross_note"), 80, allowed)
         d_sum, d_drv, d_rsk = _quant_texts(ctx)
         summary = summary[0] if summary else d_sum
         if not drivers:
@@ -1163,13 +1173,6 @@ def merge_llm_estimate(payload, contexts, allowed):
         if not risks:
             risks = d_rsk
         notes["text_fallback"] += drop_s + drop_d + drop_r
-        support = _num(item.get("support"))
-        resistance = _num(item.get("resistance"))
-        close = _num(ctx.get("close")) or 0.0
-        if support is not None and not (close * 0.85 <= support <= close * 1.15):
-            support = None
-        if resistance is not None and not (close * 0.85 <= resistance <= close * 1.15):
-            resistance = None
         out[code] = {
             "p_up": p_up, "quant_p_up": q_p, "converged": converged,
             "summary": summary, "drivers": drivers, "risks": risks,

@@ -370,6 +370,47 @@ class LLMTests(unittest.TestCase):
         # 可溯源的文案保留（南向资金一句不含数字，直接通过）
         self.assertEqual(res["cross_note"], "南向资金回暖")
 
+    def test_target_text_cannot_borrow_numbers_from_global_context(self):
+        target_context = {
+            "symbol": "^HSI", "close": 24000.0,
+            "quant": {"p_up": 0.55, "n_resolved": 12},
+            "factor_breakdown": {},
+        }
+        global_allowed = hk7._allowed_numbers({
+            "global_us_indices": {"^HSTECH": {"close": 8765.43}},
+        })
+        payload = {
+            "targets": [{"code": "^HSI", "p_up": 0.55,
+                         "summary": "恒指关键位 8765.43 点", "drivers": ["趋势平稳"],
+                         "risks": ["事件风险仍在"]}],
+            "cross_note": "恒科报价 8765.43 点",
+        }
+        merged, notes = hk7.merge_llm_estimate(payload, [target_context], global_allowed)
+        hsi = merged["^HSI"]
+        self.assertNotIn("8765.43", hsi["summary"])
+        self.assertIn("量化基准", hsi["summary"])
+        self.assertEqual(hsi["cross_note"], "恒科报价 8765.43 点")
+        self.assertEqual(notes["text_fallback"], 1)
+
+    def test_out_of_range_levels_cannot_validate_narrative_numbers(self):
+        target_context = {
+            "symbol": "^HSI", "close": 24000.0,
+            "quant": {"p_up": 0.55, "n_resolved": 12},
+            "factor_breakdown": {},
+        }
+        payload = {
+            "targets": [{"code": "^HSI", "p_up": 0.55,
+                         "summary": "支撑位 12345.67 点附近", "drivers": ["趋势平稳"],
+                         "risks": ["事件风险仍在"], "support": 12345.67}],
+            "cross_note": "",
+        }
+        merged, _notes = hk7.merge_llm_estimate(payload, [target_context],
+                                                hk7._allowed_numbers({}))
+        hsi = merged["^HSI"]
+        self.assertIsNone(hsi["support"])
+        self.assertNotIn("12345.67", hsi["summary"])
+        self.assertIn("量化基准", hsi["summary"])
+
     def test_traceable_numbers_are_kept(self):
         bars = bars_by_symbol()
         close = bars["^HSI"][-1]["close"]
