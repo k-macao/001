@@ -376,6 +376,13 @@
      "neg": 0,
      "total": 4,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -579,6 +586,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -754,6 +768,13 @@
      "neg": 0,
      "total": 1,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1034,6 +1055,13 @@
      "neg": 0,
      "total": 7,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1314,6 +1342,13 @@
      "neg": 0,
      "total": 4,
      "score": 0.75
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1587,6 +1622,13 @@
      "neg": 0,
      "total": 3,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1867,6 +1909,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -2140,6 +2189,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -2385,6 +2441,13 @@
      "neg": 0,
      "total": 3,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -2665,6 +2728,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 2,
+     "neg": 0,
+     "total": 2,
+     "score": 0.0
     }
    }
   },
@@ -2924,6 +2994,13 @@
      "neg": 0,
      "total": 3,
      "score": 0.6667
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 2,
+     "neg": 1,
+     "total": 3,
+     "score": -0.3333
     }
    }
   },
@@ -3505,6 +3582,13 @@
      "neg": 0,
      "total": 2,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -4296,6 +4380,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -4674,6 +4765,13 @@
      "neg": 0,
      "total": 1,
      "score": 1.0
+    },
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -5012,7 +5110,21 @@
      "score": null
     }
    }
+  },
+  "美股:SOXL": {
+   "market": "美股",
+   "code": "SOXL",
+   "name": "三倍做多半导体ETF-Direxion",
+   "days": {
+    "20261106": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
   }
  },
- "updated_cst": "2026-11-05 15:41:54"
+ "updated_cst": "2026-11-06 01:07:22"
 }
