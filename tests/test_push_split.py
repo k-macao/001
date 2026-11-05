@@ -217,9 +217,15 @@ class SplitHtmlForPushTests(unittest.TestCase):
             self.assertTrue(part.startswith(head), "每条都要带完整刊头")
             self.assertTrue(part.endswith(tail), "每条都要带页脚与闭合标签")
             inner = part[len(head):len(part) - len(tail)]
-            banner = _BANNER_RE.search(inner)
-            self.assertIsNotNone(banner, "每条都要有条序横幅")
-            chunks.append(inner[banner.end():])
+            banner_text = inner.find("已尽量合并推送")
+            if banner_text < 0:
+                banner_text = inner.find("已达单次推送条数上限")
+            self.assertGreaterEqual(banner_text, 0, "每条都要有条序横幅")
+            banner_start = inner.rfind("<table", 0, banner_text)
+            banner_end = inner.find("</table>", banner_text)
+            self.assertGreater(banner_start, -1, "条序横幅应使用独立表格")
+            self.assertGreater(banner_end, banner_text, "条序横幅表格应闭合")
+            chunks.append(inner[:banner_start] + inner[banner_end + len("</table>"):])
         return chunks
 
     def test_parts_never_exceed_limit_and_keep_every_character(self):
@@ -274,6 +280,12 @@ class SplitHtmlForPushTests(unittest.TestCase):
         self.assertIn("本条未完", parts[0])
         self.assertIn("承接上条「行情速览」（续）", parts[1])
         self.assertIn("承接上条", parts[-1])
+        # 条序 / 续接提示放在本条正文之后、整页尾注之前。
+        banner_text0 = parts[0].index("已尽量合并推送")
+        banner_start0 = parts[0].rfind("<table", 0, banner_text0)
+        banner_end0 = parts[0].find("</table>", banner_text0) + len("</table>")
+        self.assertLess(parts[0].index("甲"), banner_start0)
+        self.assertLess(banner_end0, parts[0].rfind("</body>"))
 
     def test_legacy_report_without_body_anchor_still_merges(self):
         # 旧版日报没有 <!--BODY-->：续片不带栏目头，但同样按上限填满、内容不丢

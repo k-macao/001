@@ -16561,8 +16561,8 @@ def _condense_research_risk(html):
 def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
     """把超过单条上限的日报 HTML 拆成 N 条「各自完整可渲染」的消息；返回 list[str]。
 
-    每条 = 原文档头部外壳（含刊头）+ 条序横幅 + 若干完整栏目（末条可能是一栏的续片）
-    + 原文档页脚与闭合标签，因此每条都是独立、标签平衡、样式一致的 HTML，
+    每条 = 原文档头部外壳（含刊头）+ 若干完整栏目（末条可能是一栏的续片）
+    + 条序横幅 + 原文档页脚与闭合标签，因此每条都是独立、标签平衡、样式一致的 HTML，
     微信端排版与单条推送完全相同。全部内容按原文顺序送达，不做任何删减。
 
     **尽量合并**：顺序装箱时把每条都填到单条上限为止——整栏放得下就整栏装，
@@ -16597,9 +16597,12 @@ def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
     # 每条的固定开销：外壳 + 页脚 + 横幅（按最宽的条序数字与最长栏目名预留）+ 安全余量
     longest_title = max((unit[1] for unit in units), key=len, default="")
     cap = max(max_parts, len(units))
-    banner_w = max(len(_build_part_banner(
-                       index, cap, theme, limit, continuation=longest_title, unfinished=True))
-                   for index in (1, cap))
+    banner_w = max(
+        max(len(_build_part_banner(
+                index, cap, theme, limit, continuation=longest_title, unfinished=True))
+            for index in (1, cap)),
+        len(_build_part_banner(1, cap, theme, limit, tail_cut=True)),
+    )
     overhead = len(shell) + len(tail) + banner_w + 64
     budget = limit - overhead
     if budget < 2000:
@@ -16651,7 +16654,9 @@ def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
             head = title_re.sub(
                 lambda m: f"{m.group(1)}{m.group(2)}（第 {index}/{total} 条）{m.group(3)}",
                 shell, count=1)
-        part = head + banner + chunk + tail
+        # 分条说明收在正文之后，让每条消息先读内容、末尾再提示续接 / 页码。
+        # 完整日报（只有一条）不受影响；推送尾注仍保持整页最末。
+        part = head + chunk + banner + tail
         if len(part) > limit:
             if not last_cut:
                 # 只可能是「一整段没有标签边界的超长正文」切不开：宁可回退到截断，
@@ -16659,7 +16664,11 @@ def _split_html_for_push(html, limit=None, report_name=None, max_parts=None):
                 print(f"  ⚠️ 第 {index}/{total} 条装不进 {limit:,} 字且无法在标签边界切开"
                       f"（正文存在超长无标签文本），本次不做分条")
                 return None
-            part, _ = _truncate_html_for_push(part, limit, report_name)
+            # 收尾超长条也必须保留末尾的「未全部推送」横幅：只截正文，
+            # 给横幅和完整日报尾注预留位置，避免从整条末尾截断时把横幅裁掉。
+            chunk_limit = limit - len(head) - len(banner) - len(tail)
+            chunk, _ = _truncate_html_for_push(chunk, chunk_limit, report_name)
+            part = head + chunk + banner + tail
         parts.append(part)
     return parts
 
