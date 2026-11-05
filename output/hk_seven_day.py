@@ -726,12 +726,17 @@ def list_models(config, get_json=None):
 def build_prompt(context):
     """(system, user)：把结构化预测因子与输出结构写清楚，禁止自由发挥。"""
     system = (
-        "你是港股量化研究员，只做多因子概率研判、不做投资建议。硬性要求："
-        "① 只能使用用户消息里给出的预测因子与事实数据，禁止编造任何数字、日期、点位或新闻；"
+        "你是经验丰富的港股投研分析师，表达专业、自然、清楚，像专家把话说给普通投资者听；"
+        "只做多因子概率研判，不给个性化买卖建议。硬性要求："
+        "① 只能使用用户消息里给出的预测因子与事实数据，禁止编造数字、日期、点位、新闻、场景或因果；"
         "② 概率必须在 0.05~0.95 之间，绝不出现 0%/100% 的假确定性；"
         "③ 不使用「一定 / 必然 / 保证」等绝对化措辞；"
         "④ 研判需综合动量、均线趋势、RSI反转、美股隔夜联动与南向资金五大因子；"
-        "⑤ 只输出一个 JSON 对象，不要 markdown 代码块、不要多余文字。")
+        "⑤ summary、drivers、risks、cross_note 只写结论与有数据支撑的依据，采用主动、具体、长短句自然交替的中文；"
+        "避免机械连接词和 AI 套话（如首先、其次、总之、综上所述、值得注意的是、毫无疑问）；"
+        "必要时可用少量自然口语、限定词或设问，也可用紧贴已给数据的具体比喻，但不得凭空编场景或渲染情绪；"
+        "不写过程说明、格式说明、重复免责声明或空洞铺垫；"
+        "⑥ 只输出一个符合要求的 JSON 对象，不要 markdown 代码块或 JSON 外的解释文字。")
     user = (
         "任务：估计下列港股指数在未来 {h} 个交易日（按交易日计数，假期顺延）收盘价"
         "高于当前收盘价的概率。\n"
@@ -1125,11 +1130,20 @@ def merge_llm_estimate(payload, contexts, allowed):
                 p_up = _clamp(q_p + math.copysign(MAX_PROB_DEVIATION, p_up - q_p))
                 converged = True
                 notes["converged"] += 1
-        extra_values = [p_up * 100, ctx.get("close"),
-                        item.get("support"), item.get("resistance")]
+        close = _num(ctx.get("close")) or 0.0
+        support = _num(item.get("support"))
+        resistance = _num(item.get("resistance"))
+        if support is not None and not (close * 0.85 <= support <= close * 1.15):
+            support = None
+        if resistance is not None and not (close * 0.85 <= resistance <= close * 1.15):
+            resistance = None
+        if support is not None and resistance is not None and support >= resistance:
+            support = resistance = None
+        # 只把通过区间校验的预测位放进文案溯源集合，避免无效点位先被自己「证明」。
+        extra_values = [p_up * 100, close, support, resistance]
+        # 单一标的文案只允许引用该标的上下文与其输出值；不能拿全局数据池过关，
+        # 否则恒指文案误用了恒科或新闻里的数字也会被误判为「可溯源」。
         allowed_for_target = _allowed_numbers(ctx, extra_values)
-        allowed_for_target["strings"].update(allowed.get("strings", set()))
-        allowed_for_target["values"].extend(allowed.get("values", []))
 
         def _pick(field, limit, max_items=3):
             raw = item.get(field)
@@ -1150,7 +1164,8 @@ def merge_llm_estimate(payload, contexts, allowed):
         summary, drop_s = _pick("summary", 64)
         drivers, drop_d = _pick("drivers", 32)
         risks, drop_r = _pick("risks", 32)
-        cross, _drop_c = _sanitize_text(payload.get("cross_note"), 80, allowed_for_target)
+        # 跨市场短评才使用全局 prompt 数据（汇率/资金/其他指数等）；不能借此放宽单标的文案。
+        cross, _drop_c = _sanitize_text(payload.get("cross_note"), 80, allowed)
         d_sum, d_drv, d_rsk = _quant_texts(ctx)
         summary = summary[0] if summary else d_sum
         if not drivers:
@@ -1158,13 +1173,6 @@ def merge_llm_estimate(payload, contexts, allowed):
         if not risks:
             risks = d_rsk
         notes["text_fallback"] += drop_s + drop_d + drop_r
-        support = _num(item.get("support"))
-        resistance = _num(item.get("resistance"))
-        close = _num(ctx.get("close")) or 0.0
-        if support is not None and not (close * 0.85 <= support <= close * 1.15):
-            support = None
-        if resistance is not None and not (close * 0.85 <= resistance <= close * 1.15):
-            resistance = None
         out[code] = {
             "p_up": p_up, "quant_p_up": q_p, "converged": converged,
             "summary": summary, "drivers": drivers, "risks": risks,

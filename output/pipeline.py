@@ -15321,11 +15321,10 @@ def lime_section(num, kicker_en, title, content, badge_html="", caption=""):
 
 
 def _lime_masthead(date_display, date_str, today_n, total, generated_at):
-    """Lime 刊头：OCTOPUS AI · FIELD GUIDE 眉标 + 粗黑大标题 + 圆角胶囊元信息 + 浅灰阅读说明条。"""
+    """Lime 刊头：OCTOPUS AI · FIELD GUIDE 眉标 + 粗黑大标题 + 当天来源与日期胶囊。"""
     pills = (
         lime_pill(f"当天源 {today_n}/{total}", lime=True)
         + lime_pill(str(date_display))
-        + lime_pill("多行多列表格 · 圆角卡片")
     )
     hero = (
         f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{L_BG}" '
@@ -15341,20 +15340,7 @@ def _lime_masthead(date_display, date_str, today_n, total, generated_at):
         f'<div style="padding-top:6px;color:{L_INK};">{pills}</div>'
         f'</td></tr></table>'
     )
-    legend = (
-        f'<table width="100%" cellpadding="0" cellspacing="0" bgcolor="{L_CARD}" '
-        f'style="width:100%!important;border-collapse:collapse;background:{L_CARD};'
-        f'border-radius:14px;color:{L_MUTED};">'
-        f'<tr><td width="28%" style="padding:10px 14px;font-size:11px;color:{L_MUTED};line-height:1.6;">'
-        f'<span style="display:inline-block;padding:0 6px;margin-right:6px;border-radius:999px;'
-        f'background:{L_LIME};color:{L_INK_STRONG};font-size:10px;font-weight:900;">■</span>'
-        f'多行多列表格</td>'
-        f'<td style="padding:10px 14px;font-size:11px;color:{L_MUTED};line-height:1.6;">'
-        f'条目底色交替 · 结构化分列排版 · 涨 <b style="color:{L_LIME_INK};">▲</b> / '
-        f'跌 <b style="color:{L_RED_INK};">▼</b> / 平 <b style="color:{L_MUTED};">■</b>'
-        f'</td></tr></table>'
-    )
-    return f'<div style="padding:0 0 4px;background:{L_BG};color:{L_INK};">{hero}{legend}</div>'
+    return f'<div style="padding:0 0 4px;background:{L_BG};color:{L_INK};">{hero}</div>'
 
 
 def _lime_footer(footer_text):

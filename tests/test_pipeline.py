@@ -4550,6 +4550,8 @@ class LimeThemeTests(unittest.TestCase):
         self.assertIn(f"background:{pipeline.L_LIME}", html)
         self.assertIn("border-radius:22px", html)
         self.assertIn("border-radius:999px", html)
+        for annotation in ("多行多列表格", "圆角卡片", "条目底色交替", "结构化分列排版"):
+            self.assertNotIn(annotation, html)
         for banned in ("<style", 'class="', "<img", "<svg", "<script"):
             self.assertNotIn(banned, html, banned)
 
