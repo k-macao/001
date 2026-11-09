@@ -352,7 +352,7 @@
 
 | 方式 | 配置 / 操作 |
 |---|---|
-| GitHub 定时任务 | `.github/workflows/octopus-daily.yml` 当前设置为每天北京时间 09:00 至 21:00 每两小时自动运行（对应 UTC 01:00~13:00 奇数整点，共 7 次）；09:00 早盘前与 21:00 晚间复盘推送到微信，盘中时段静默更新数据与网页（`--no-push`）。 |
+| GitHub 定时任务 | 拆分为**早盘**（`.github/workflows/octopus-daily.yml`：UTC `17 1` / `47 3`，对应北京 `09:17` / `11:47`）与**晚间**（`.github/workflows/octopus-evening.yml`：UTC `23 7` / `41 9` / `17 13`，对应北京 `15:23` / `17:41` / `21:17`）两条独立工作流，全部错开整点队列拥堵；并通过 `tools/push_gate.py` 与 `output/push_state.json` 按「今日早盘（07:00-19:29）/ 今日晚间（19:30-23:59 及 00:00-01:59 跨日兜底）是否已成功推过」去重——即使 GitHub 延迟 4~7 小时仍能自动补推，同一时段绝不重推，已推后自动 `--no-push` 静默更新网页与留痕（深夜 `02:00-06:59` 保持静默不扰民）。 |
 | GitHub 定时任务（隐藏功能） | `.github/workflows/market-db.yml` 每天北京时间 08:00 / 12:30 / 17:00 各跑一次，把多源行情快照落库到 `output/market_db/` 并提交；不推微信、不进日报。 |
 | GitHub 手动运行 | Actions → **🐙 章鱼AI · 手动抓取推送** → **Run workflow**；可勾选**只生成、不推送**，或勾选**全量长版**（`--full`：恢复长文 / 完整表格 / 方法细节，仍使用默认 pixel DOS 复古监视器风格，不出短线速查卡）。与定时作业共用一把并发锁（`octopus-report`）：撞上时**排队**而不是并行生成同一批文件。 |
 | Jev 接入探针（手动 / 相关文件变更时） | `.github/workflows/jev-integration-probe.yml`：① 接入层离线回归（无权重 / 无 Key / 无外网，约 30 秒）② 开源本地运行时安装 + Hugging Face 可达性 ③ 真权重端到端（需勾 `build_model` 或提交信息带 `[jev-model]`，产出 ONNX 目录 Artifact）。只读仓库、不提交、不改文件。 |

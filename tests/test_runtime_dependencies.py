@@ -10,7 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 class RuntimeDependencyTests(unittest.TestCase):
     def test_report_workflows_install_shared_requirements(self):
-        for name in ("octopus-daily.yml", "manual.yml"):
+        for name in ("octopus-daily.yml", "octopus-evening.yml", "manual.yml"):
             with self.subTest(workflow=name):
                 workflow = (ROOT / ".github" / "workflows" / name).read_text()
                 self.assertIn(

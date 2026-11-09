@@ -2,10 +2,13 @@ name: 🐙 章鱼AI · 每日自动推送
 
 on:
   schedule:
-    # 每天北京时间 09:00 至 21:00 每两小时自动运行（对应 UTC 01:00、03:00、05:00、07:00、09:00、11:00、13:00，共 7 次）
-    # 09:00 早盘前 + 21:00 晚间复盘：推送到微信
-    # 11:00、13:00、15:00、17:00、19:00：盘中与盘后静默更新数据与网页（--no-push），不打扰微信
-    - cron: "0 1-13/2 * * *"
+    # 早盘推送主档 + 午间补漏/静默更新（错开整点队列拥堵，两档间隔 2.5 小时避免同工作流合并丢档）
+    # 配合 tools/push_gate.py 与 output/push_state.json 按「今日早盘/晚间是否已推」去重：
+    # · GitHub 准点或延迟至 13~18 时触发时，只要今日早盘未成功推送，自动补推而非丢弃；
+    # · 已成功推过早盘后，后续触发展开为 --no-push 静默刷新网页与留痕。
+    # 晚间复盘由独立工作流 .github/workflows/octopus-evening.yml 独立排队负责，互不阻塞。
+    - cron: "17 1 * * *"    # 北京 09:17（早盘推送主档）
+    - cron: "47 3 * * *"    # 北京 11:47（早盘兜底 / 盘中静默更新）
 
   workflow_dispatch:
     inputs:
@@ -30,10 +33,9 @@ on:
         default: false
         required: false
 
-# 与「🐙 章鱼AI · 手动抓取推送」共用一把锁：两个作业生成同一批文件、推同一个分支，
-# 并行跑必然有一方 `git push` 被拒（2026-10-03 18:39 UTC 实测：本作业与手动作业相差
-# 37 秒启动，手动方先推成功，本作业被拒 → 日报与留痕全部没进库）。
-# 排队而不取消：取消会打断「已经推到微信、还没提交留痕」的那一轮。
+# 与「🐙 章鱼AI · 晚间自动推送」「🐙 章鱼AI · 手动抓取推送」共用一把锁：三个作业
+# 生成同一批文件、推同一个分支，并行跑必然有一方 `git push` 被拒。
+# 排队而不取消：取消会打断「已经推到微信、还没提交留痕与推送状态」的那一轮。
 concurrency:
   group: octopus-report
   cancel-in-progress: false
@@ -45,6 +47,8 @@ jobs:
     # 声明仓库写入权限，解决git push 403问题
     permissions:
       contents: write
+    env:
+      PYTHONUNBUFFERED: "1"
 
     steps:
       - name: 📥 检出仓库
@@ -104,7 +108,7 @@ jobs:
           LLM_CHECK="${{ github.event.inputs.llm_check || 'false' }}"
           HK7_ONLY="${{ github.event.inputs.hk7_only || 'false' }}"
 
-          CURRENT_HOUR=$(TZ='Asia/Shanghai' date +%H)
+          CURRENT_HOUR=$(TZ='Asia/Shanghai' date +%H:%M)
 
           # 只报「有没有配、配在哪个变量名上」，绝不回显 Key 本身
           LLM_KEY_SOURCE=""
@@ -130,11 +134,36 @@ jobs:
           elif [ "$NO_PUSH" = "true" ]; then
             echo "运行模式：手动指定静默更新（--no-push，不推微信）"
             python3 output/pipeline.py --no-push
-          elif [ "$EVENT_NAME" = "schedule" ] && [ "$CURRENT_HOUR" != "09" ] && [ "$CURRENT_HOUR" != "10" ] && [ "$CURRENT_HOUR" != "21" ] && [ "$CURRENT_HOUR" != "22" ]; then
-            echo "运行模式：定时盘中静默更新（当前北京时间 ${CURRENT_HOUR} 时，不推微信，仅更新数据与网页）"
-            python3 output/pipeline.py --no-push
+          elif [ "$EVENT_NAME" = "schedule" ]; then
+            DECISION=$(python3 tools/push_gate.py decide --state output/push_state.json --format tsv)
+            IFS=$'\t' read -r GATE_MODE TARGET_DATE GATE_SLOT GATE_REASON <<< "$DECISION"
+            echo "📅 定时推送门禁：mode=${GATE_MODE} | date=${TARGET_DATE} | slot=${GATE_SLOT} | ${GATE_REASON}"
+            if [ "$GATE_MODE" = "push" ]; then
+              RUN_LOG=$(mktemp)
+              set +e
+              python3 output/pipeline.py 2>&1 | tee "$RUN_LOG"
+              PIPE_RC=${PIPESTATUS[0]}
+              set -e
+              if [ "$PIPE_RC" -ne 0 ]; then
+                rm -f "$RUN_LOG"
+                exit "$PIPE_RC"
+              fi
+              if python3 tools/push_gate.py verify-log --log "$RUN_LOG"; then
+                python3 tools/push_gate.py record \
+                  --state output/push_state.json \
+                  --date "$TARGET_DATE" \
+                  --slot "$GATE_SLOT" \
+                  --workflow "octopus-daily.yml" \
+                  --run-id "${{ github.run_id }}"
+              else
+                echo "ℹ️ 本次未实际送出日报正文（例如当天检验未通过仅发提醒），保留 ${TARGET_DATE} ${GATE_SLOT} 待补推状态。"
+              fi
+              rm -f "$RUN_LOG"
+            else
+              python3 output/pipeline.py --no-push
+            fi
           else
-            echo "运行模式：全流程生成并推送微信（当前北京时间 ${CURRENT_HOUR} 时）"
+            echo "运行模式：手动全流程生成并推送微信（当前北京时间 ${CURRENT_HOUR}）"
             python3 output/pipeline.py
           fi
 
@@ -143,18 +172,6 @@ jobs:
         if: always()
         run: |
           set -euo pipefail
-          # 通配符匹配失败不报错，兼容无日报文件的场景
-          # 留痕 JSON 必须一起提交，否则「预测留痕 / 命中率」每次都会从零开始：
-          #   hk7_forecast.json    → ◧ AI 七日港股走势分析概率（满 7 个交易日结算）
-          #   weekly_forecast.json → 🗓️ 每周量化走势预测（满 5 个交易日结算）
-          #
-          # 提交与推送交给 tools/safe_push.sh：本作业要跑 2~15 分钟，期间 main 可能被
-          # PR 合并 / 手动抓取推送 / 市场数据库作业推动，裸 `git push origin HEAD` 会被拒
-          # （2026-10-02~04 实测三次，其中一次与 PR 合并只差 5 秒，详见
-          #   自动更新推送被拒-原因诊断.md）。被拒后它把本次改动重放到远端最新提交之上：
-          #   · 日报 HTML 以本次为准（本次是更晚完成的一轮）；
-          #   · 留痕 JSON 按 tools/merge_generated.py 的规则并集（两边条目都不丢）；
-          #   · 别人的代码 / 文档一律保留远端版本，绝不回退。
           COMMIT_TIME=$(TZ='Asia/Macau' date +'%Y-%m-%d %H:%M')
           bash tools/safe_push.sh \
             --branch "${GITHUB_REF_NAME:-main}" \
@@ -162,11 +179,9 @@ jobs:
             -- output/daily_report_*.html output/latest.html \
                output/sentiment_history.json output/news_history.json \
                output/quant_history.json output/hk7_forecast.json \
-               output/weekly_forecast.json
+               output/weekly_forecast.json output/push_state.json
 
       - name: 🧯 推送失败兜底：把生成物存成 Artifact
-        # 万一还是推不上去（远端持续在动 / 权限或保护分支问题），至少把这轮的日报与
-        # 预测留痕留下来，可以人工补提交，不至于「白跑一轮、留痕从零开始」
         if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -179,5 +194,6 @@ jobs:
             output/quant_history.json
             output/hk7_forecast.json
             output/weekly_forecast.json
+            output/push_state.json
           if-no-files-found: ignore
           retention-days: 14

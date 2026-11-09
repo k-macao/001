@@ -61,6 +61,7 @@ class TestMergePolicy(unittest.TestCase):
         self.assertEqual(mg.policy_for("output/weekly_forecast.json"), mg.POLICY_JOURNAL)
         self.assertEqual(mg.policy_for("output/sentiment_history.json"), mg.POLICY_LEDGER)
         self.assertEqual(mg.policy_for("output/quant_history.json"), mg.POLICY_LEDGER)
+        self.assertEqual(mg.policy_for("output/push_state.json"), mg.POLICY_LEDGER)
         self.assertEqual(mg.policy_for("output/market_db/20261004.json"), mg.POLICY_LOCAL)
         self.assertEqual(mg.policy_for("output/latest.html"), mg.POLICY_LOCAL)
         self.assertEqual(mg.policy_for("README.md"), mg.POLICY_LOCAL)
@@ -272,13 +273,22 @@ class TestOutputFormatting(unittest.TestCase):
     def test_round_trip_identity_on_repo_files(self):
         """仓库里真实的留痕文件：远端 == 本次时，合并输出必须与原文件逐字节相同。"""
         for name in ("news_history.json", "sentiment_history.json", "quant_history.json",
-                     "hk7_forecast.json", "weekly_forecast.json"):
+                     "hk7_forecast.json", "weekly_forecast.json", "push_state.json"):
             path = OUTPUT_DIR / name
             if not path.is_file():
                 continue
             original = path.read_text(encoding="utf-8")
             with self.subTest(file=name):
                 self.assertEqual(mg.merge_texts(f"output/{name}", original, original), original)
+
+    def test_push_state_union_keeps_morning_and_evening(self):
+        remote = {"version": 1, "days": {"2026-11-09": {"morning": {"pushed": True, "at_cst": "09:17"}}},
+                  "updated_cst": "09:17"}
+        local = {"version": 1, "days": {"2026-11-09": {"evening": {"pushed": True, "at_cst": "21:20"}}},
+                 "updated_cst": "21:20"}
+        merged = mg.merge_docs("output/push_state.json", remote, local)
+        self.assertTrue(merged["days"]["2026-11-09"]["morning"]["pushed"])
+        self.assertTrue(merged["days"]["2026-11-09"]["evening"]["pushed"])
 
     def test_merge_is_idempotent(self):
         remote = {"version": 1, "items": [{"title": "R", "date": "2026-10-04", "ts": "",
@@ -637,8 +647,8 @@ class SafePushFixture(unittest.TestCase):
 # ③ 工作流接线（纯文本解析，不依赖 pyyaml）
 # ============================================================
 WORKFLOW_DIR = REPO_ROOT / ".github" / "workflows"
-PUSHING_WORKFLOWS = ("octopus-daily.yml", "manual.yml", "market-db.yml")
-REPORT_WORKFLOWS = ("octopus-daily.yml", "manual.yml")
+PUSHING_WORKFLOWS = ("octopus-daily.yml", "octopus-evening.yml", "manual.yml", "market-db.yml")
+REPORT_WORKFLOWS = ("octopus-daily.yml", "octopus-evening.yml", "manual.yml")
 # 每次运行会写、必须跟着日报一起提交回库的留痕文件（漏一个 = 命中率统计缺样本）
 JOURNAL_SOURCES = ("output/pipeline.py", "output/hk_seven_day.py",
                    "output/octopus_weekly.py", "output/octopus_quant/engine.py")
@@ -774,10 +784,11 @@ class TestWorkflowWiring(unittest.TestCase):
                     self.assertIn(f"output/{journal}", specs)
 
     def test_report_workflows_commit_identical_pathspecs(self):
-        daily = _push_invocations(self.texts["octopus-daily.yml"])[0][1]
-        manual = _push_invocations(self.texts["manual.yml"])[0][1]
-        self.assertEqual(sorted(daily), sorted(manual),
-                         "定时与手动两条流水线跑的是同一个 pipeline，提交清单必须一致")
+        baseline = sorted(_push_invocations(self.texts[REPORT_WORKFLOWS[0]])[0][1])
+        for name in REPORT_WORKFLOWS[1:]:
+            with self.subTest(workflow=name):
+                self.assertEqual(sorted(_push_invocations(self.texts[name])[0][1]), baseline,
+                                 "早盘/晚间/手动三条日报流水线跑的是同一个 pipeline，提交清单必须一致")
 
     def test_every_pathspec_matches_something_in_the_repo(self):
         """清单里写错文件名会静默丢提交（git add 的通配符没匹配到也不报错）。"""
