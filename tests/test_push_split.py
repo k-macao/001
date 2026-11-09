@@ -455,6 +455,7 @@ class PushWorkflowTopicDefaultTests(unittest.TestCase):
     """
 
     WORKFLOWS = (".github/workflows/octopus-daily.yml",
+                 ".github/workflows/octopus-evening.yml",
                  ".github/workflows/manual.yml",
                  "output/manual_push_workflow.yml.example")
 

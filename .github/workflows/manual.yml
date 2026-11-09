@@ -100,7 +100,7 @@ jobs:
             -- output/daily_report_*.html output/latest.html \
                output/sentiment_history.json output/news_history.json \
                output/quant_history.json output/hk7_forecast.json \
-               output/weekly_forecast.json
+               output/weekly_forecast.json output/push_state.json
 
       - name: 🧯 推送失败兜底：把生成物存成 Artifact
         if: failure()
@@ -115,5 +115,6 @@ jobs:
             output/quant_history.json
             output/hk7_forecast.json
             output/weekly_forecast.json
+            output/push_state.json
           if-no-files-found: ignore
           retention-days: 14

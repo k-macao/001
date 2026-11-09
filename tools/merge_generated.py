@@ -70,6 +70,7 @@ JOURNAL_RULES: Dict[str, Dict[str, Any]] = {
 LEDGER_RULES: Dict[str, Dict[str, Any]] = {
     "output/sentiment_history.json": {"map": "stocks", "sub_map": "days"},
     "output/quant_history.json": {"map": "days", "sub_map": None},
+    "output/push_state.json": {"map": "days", "sub_map": None},
 }
 
 # 只能整份取一边：文件自带内容哈希，合并后哈希必然对不上
@@ -80,12 +81,14 @@ LOCAL_ONLY_PREFIXES: Tuple[str, ...] = ("output/market_db/",)
 #   output/hk_seven_day.py::_save_journal     → json.dump(..., ensure_ascii=False, sort_keys=True)
 #   output/octopus_weekly.py::_save_journal   → 同上
 #   output/octopus_quant/engine.py::_save     → 同上（compact + sort_keys）
+#   tools/push_gate.py::_atomic_write_json    → json.dumps(..., ensure_ascii=False, indent=2, sort_keys=True)
 STYLE_RULES: Dict[str, Dict[str, Any]] = {
     "output/news_history.json": {"indent": 1, "sort_keys": False},
     "output/sentiment_history.json": {"indent": 1, "sort_keys": False},
     "output/quant_history.json": {"indent": None, "sort_keys": True},
     "output/hk7_forecast.json": {"indent": None, "sort_keys": True},
     "output/weekly_forecast.json": {"indent": None, "sort_keys": True},
+    "output/push_state.json": {"indent": 2, "sort_keys": True},
 }
 
 POLICY_JOURNAL = "journal"     # 条目列表并集

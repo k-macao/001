@@ -1,0 +1,176 @@
+name: 🐙 章鱼AI · 晚间自动推送
+
+on:
+  schedule:
+    # 晚间推送独立调度队列（不与早盘工作流争抢同一条 schedule 队列，且全部错开整点）：
+    # · 按 GitHub Actions 实测 5~7 小时队列延迟，15:23 档常在 20:20~22:20 CST 落地执行；
+    # · 若 GitHub 队列恢复准点，15:23 / 17:41 因早盘已推过而自动 --no-push 静默刷新，
+    #   最后由 21:17 准点触发并完成晚间推送；
+    # · 均通过 tools/push_gate.py 查 output/push_state.json 去重，绝不重复推送或凌晨扰民。
+    - cron: "23 7 * * *"    # 北京 15:23（高延迟工况下晚间主力档 / 低延迟工况下盘后静默刷新）
+    - cron: "41 9 * * *"    # 北京 17:41（晚间主力与补推档）
+    - cron: "17 13 * * *"   # 北京 21:17（准点晚间档；若延迟跨过 02:00 CST 自动转静默）
+
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "仅采集预览，不推送"
+        type: boolean
+        default: false
+        required: false
+      no_push:
+        description: "仅更新数据与生成日报，不推送到微信"
+        type: boolean
+        default: false
+        required: false
+      llm_check:
+        description: "只探活大模型 API（验证 Key / 端点 / 模型名，不生成日报）"
+        type: boolean
+        default: false
+        required: false
+      hk7_only:
+        description: "只跑 AI 七日港股走势分析概率（研究模式，不推送）"
+        type: boolean
+        default: false
+        required: false
+
+# 与「🐙 章鱼AI · 每日自动推送」「🐙 章鱼AI · 手动抓取推送」共用同一把锁：
+# 排队而不取消，防止打断已推微信后的留痕与推送状态提交。
+concurrency:
+  group: octopus-report
+  cancel-in-progress: false
+
+jobs:
+  octopus-evening:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    env:
+      PYTHONUNBUFFERED: "1"
+
+    steps:
+      - name: 📥 检出仓库
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🐍 配置 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: 📦 安装依赖
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip --quiet
+          python -m pip install --quiet -r requirements.txt
+
+      - name: 🐙 运行章鱼AI流水线
+        env:
+          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          PUSHPLUS_TOPIC: ${{ secrets.PUSHPLUS_TOPIC || 'oai.1' }}
+          PUSHPLUS_MODE: ${{ vars.PUSHPLUS_MODE || 'one2many' }}
+          OCTOPUS_MACD: ${{ vars.OCTOPUS_MACD || '1' }}
+          OCTOPUS_MACD_SYMBOLS: ${{ vars.OCTOPUS_MACD_SYMBOLS }}
+          OCTOPUS_LLM_API_KEY: ${{ secrets.OCTOPUS_LLM_API_KEY }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
+          OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
+          OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
+          OCTOPUS_007_BASE_URL: ${{ vars.OCTOPUS_007_BASE_URL }}
+        run: |
+          set -euo pipefail
+          EVENT_NAME="${{ github.event_name }}"
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          NO_PUSH="${{ github.event.inputs.no_push || 'false' }}"
+          LLM_CHECK="${{ github.event.inputs.llm_check || 'false' }}"
+          HK7_ONLY="${{ github.event.inputs.hk7_only || 'false' }}"
+
+          CURRENT_HOUR=$(TZ='Asia/Shanghai' date +%H:%M)
+
+          LLM_KEY_SOURCE=""
+          for name in OCTOPUS_LLM_API_KEY DEEPSEEK_API_KEY OPENAI_API_KEY; do
+            if [ -n "${!name:-}" ]; then LLM_KEY_SOURCE="$name"; break; fi
+          done
+          if [ -n "$LLM_KEY_SOURCE" ]; then
+            echo "◧ 大模型：已配置 Key（来源 ${LLM_KEY_SOURCE} · 端点 ${OCTOPUS_LLM_BASE_URL:-默认 https://api.deepseek.com/v1} · 模型 ${OCTOPUS_LLM_MODEL:-未指定 → 候选链自动挑}）"
+          else
+            echo "◧ 大模型：未配置 Key（OCTOPUS_LLM_API_KEY / DEEPSEEK_API_KEY / OPENAI_API_KEY 都没有）→ AI 七日港股走势分析概率整栏缺席"
+          fi
+
+          if [ "$LLM_CHECK" = "true" ]; then
+            echo "运行模式：大模型 API 探活（不生成日报）"
+            python3 output/pipeline.py --llm-check
+          elif [ "$HK7_ONLY" = "true" ]; then
+            echo "运行模式：只跑 AI 七日港股走势分析概率（研究模式，不推送）"
+            python3 output/pipeline.py --hk7-only
+          elif [ "$DRY_RUN" = "true" ]; then
+            echo "运行模式：预览模式（不推送）"
+            python3 output/pipeline.py --dry-run
+          elif [ "$NO_PUSH" = "true" ]; then
+            echo "运行模式：手动指定静默更新（--no-push，不推微信）"
+            python3 output/pipeline.py --no-push
+          elif [ "$EVENT_NAME" = "schedule" ]; then
+            DECISION=$(python3 tools/push_gate.py decide --state output/push_state.json --format tsv)
+            IFS=$'\t' read -r GATE_MODE TARGET_DATE GATE_SLOT GATE_REASON <<< "$DECISION"
+            echo "📅 定时推送门禁：mode=${GATE_MODE} | date=${TARGET_DATE} | slot=${GATE_SLOT} | ${GATE_REASON}"
+            if [ "$GATE_MODE" = "push" ]; then
+              RUN_LOG=$(mktemp)
+              set +e
+              python3 output/pipeline.py 2>&1 | tee "$RUN_LOG"
+              PIPE_RC=${PIPESTATUS[0]}
+              set -e
+              if [ "$PIPE_RC" -ne 0 ]; then
+                rm -f "$RUN_LOG"
+                exit "$PIPE_RC"
+              fi
+              if python3 tools/push_gate.py verify-log --log "$RUN_LOG"; then
+                python3 tools/push_gate.py record \
+                  --state output/push_state.json \
+                  --date "$TARGET_DATE" \
+                  --slot "$GATE_SLOT" \
+                  --workflow "octopus-evening.yml" \
+                  --run-id "${{ github.run_id }}"
+              else
+                echo "ℹ️ 本次未实际送出日报正文（例如当天检验未通过仅发提醒），保留 ${TARGET_DATE} ${GATE_SLOT} 待补推状态。"
+              fi
+              rm -f "$RUN_LOG"
+            else
+              python3 output/pipeline.py --no-push
+            fi
+          else
+            echo "运行模式：手动全流程生成并推送微信（当前北京时间 ${CURRENT_HOUR}）"
+            python3 output/pipeline.py
+          fi
+
+      - name: 📤 提交生成的日报
+        if: always()
+        run: |
+          set -euo pipefail
+          COMMIT_TIME=$(TZ='Asia/Macau' date +'%Y-%m-%d %H:%M')
+          bash tools/safe_push.sh \
+            --branch "${GITHUB_REF_NAME:-main}" \
+            --message "📰 晚间自动更新 ${COMMIT_TIME}" \
+            -- output/daily_report_*.html output/latest.html \
+               output/sentiment_history.json output/news_history.json \
+               output/quant_history.json output/hk7_forecast.json \
+               output/weekly_forecast.json output/push_state.json
+
+      - name: 🧯 推送失败兜底：把生成物存成 Artifact
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: octopus-evening-unpushed-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            output/daily_report_*.html
+            output/latest.html
+            output/sentiment_history.json
+            output/news_history.json
+            output/quant_history.json
+            output/hk7_forecast.json
+            output/weekly_forecast.json
+            output/push_state.json
+          if-no-files-found: ignore
+          retention-days: 14
