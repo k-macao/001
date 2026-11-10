@@ -221,10 +221,10 @@ class StrategyQuantReportTests(unittest.TestCase):
             self.assertNotIn(kick, kickers, f"已删除栏目不得进 sections：{kick}")
             self.assertNotIn(kick, pipeline.REPORT_SECTION_ORDER,
                              f"已删除栏目不得进正文顺序表：{kick}")
-        # 删除后相邻栏目顺序不变：行业轮动 → 低频五因子 → 总结
+        # 2026-11-10 五栏下线后相邻栏目顺序：七日走势 → 板块轮动 → 总结
         seq = pipeline.REPORT_SECTION_ORDER
-        self.assertLess(seq.index("INDUSTRY ROTATION"), seq.index("LOWFREQ FACTORS"))
-        self.assertLess(seq.index("LOWFREQ FACTORS"), seq.index("SUMMARY"))
+        self.assertLess(seq.index("WEEKLY FORECAST"), seq.index("SECTOR ROTATION"))
+        self.assertLess(seq.index("SECTOR ROTATION"), seq.index("SUMMARY"))
 
     def test_absent_and_named_in_coverage_when_bars_unavailable(self):
         src = pipeline._source_result(pipeline.STRATEGY_QUANT_SOURCE, "unavailable",

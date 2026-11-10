@@ -517,41 +517,44 @@ class PushRenderTests(unittest.TestCase):
                                        is_today=True, content_date=asof, result=result)
 
     def test_section_rendered_when_available(self):
+        block = pipeline._render_industry_rotation(self._source("2026-09-25"), pipeline.GUIZANG_KIT)
+        self.assertIn("目标权重", block)
+        self.assertIn("80%", block)
+        self.assertIn("2026-09-25", block)
+        self.assertIn("申万一级行业 31 个", block)
+        self.assertIn("有效 5/31", block)
+        self.assertIn("行业宽度", block)
+        self.assertIn("vs MA20", block)
+        self.assertIn("东方财富 4 / 申万官方 1", block)
+        self.assertIn("未取到日线：BK1217", block)
+        self.assertIn("待下一交易日执行", block)
+        # 2026-11-10 下线后：整份日报不再渲染本栏
         html = pipeline.generate_report({pipeline.INDUSTRY_ROTATION_SOURCE_NAME: self._source("2026-09-25")},
                                         "2026年9月25日", "20260925")
-        self.assertIn("【策略】行业轮动（申万）", html)
-        self.assertIn("目标权重", html)
-        self.assertIn("80%", html)
-        self.assertIn("2026-09-25", html)
-        self.assertIn("申万一级行业 31 个", html)
-        self.assertIn("有效 5/31", html)
-        self.assertIn("行业宽度", html)
-        self.assertIn("vs MA20", html)
-        self.assertIn("东方财富 4 / 申万官方 1", html)
-        self.assertIn("未取到日线：BK1217", html)
-        self.assertIn("待下一交易日执行", html)
+        self.assertNotIn("【策略】行业轮动（申万）", html)
+        self.assertNotIn("INDUSTRY ROTATION", html)
 
     def test_tracking_rendered_after_exec_day(self):
         tracking = {"rebalance_date": "2026-09-19", "exec_date": "2026-09-22", "pending": False,
                     "holdings": [{"code": f"BK00{i}", "name": f"行业BK00{i}", "weight": 0.2,
                                   "since_exec": 0.01 * i} for i in range(1, 6)],
                     "portfolio": 0.03, "benchmark": 0.012, "benchmark_n": 30}
-        html = pipeline.generate_report({pipeline.INDUSTRY_ROTATION_SOURCE_NAME: self._source("2026-09-25", tracking=tracking)},
-                                        "2026年9月25日", "20260925")
-        self.assertIn("执行日 2026-09-22 收盘起算表现", html)
-        self.assertIn("组合执行日以来 +3.00%", html)
-        self.assertIn("全行业等权 +1.20%", html)
-        self.assertIn("超额 +1.80pp", html)
-        self.assertIn("执行日以来 +1.00%", html)
-        self.assertNotIn("待下一交易日执行", html)
+        block = pipeline._render_industry_rotation(
+            self._source("2026-09-25", tracking=tracking), pipeline.GUIZANG_KIT)
+        self.assertIn("执行日 2026-09-22 收盘起算表现", block)
+        self.assertIn("组合执行日以来 +3.00%", block)
+        self.assertIn("全行业等权 +1.20%", block)
+        self.assertIn("超额 +1.80pp", block)
+        self.assertIn("执行日以来 +1.00%", block)
+        self.assertNotIn("待下一交易日执行", block)
 
     def test_absent_section_named_in_audit_only(self):
         html = pipeline.generate_report({pipeline.INDUSTRY_ROTATION_SOURCE_NAME: self._source("2026-09-25", ok=False)},
                                         "2026年9月25日", "20260925")
         self.assertNotIn("INDUSTRY ROTATION", html)        # 正文不留空栏
         self.assertNotIn("目标权重", html)                  # 也不留半截表格
-        self.assertEqual(html.count(pipeline.INDUSTRY_ROTATION_SOURCE_NAME), 1)
-        self.assertIn(pipeline.INDUSTRY_ROTATION_SOURCE_NAME, html.split("数据覆盖")[-1])
+        # 2026-11-10 下线后数据覆盖亦不再点名已删除栏目
+        self.assertNotIn(pipeline.INDUSTRY_ROTATION_SOURCE_NAME, html)
 
     def test_fetch_logs_reason_on_failure(self):
         api = FakeAPI()                                       # 东财三主机与申万官方源都无数据
@@ -615,13 +618,8 @@ class SectionWiringTests(unittest.TestCase):
     """2026-10-04 移植时新增的接线：正文顺序、图标、开关键、来源名与港股板块轮动区分。"""
 
     def test_section_registered_in_order_and_icons(self):
-        self.assertIn("INDUSTRY ROTATION", pipeline.REPORT_SECTION_ORDER)
-        # 排在港股板块轮动之后（同族栏目相邻），且在政策因子之前
-        self.assertGreater(pipeline.REPORT_SECTION_ORDER.index("INDUSTRY ROTATION"),
-                           pipeline.REPORT_SECTION_ORDER.index("SECTOR ROTATION"))
-        # 2026-10-14 重排：行业轮动属「④我们该怎么办」，位于「③可能会怎样」之后
-        self.assertGreater(pipeline.REPORT_SECTION_ORDER.index("INDUSTRY ROTATION"),
-                           pipeline.REPORT_SECTION_ORDER.index("WEEKLY FORECAST"))
+        self.assertNotIn("INDUSTRY ROTATION", pipeline.REPORT_SECTION_ORDER)
+        self.assertIn("INDUSTRY ROTATION", pipeline.REPORT_REMOVED_SECTIONS_20261110)
         for icon_map in (pipeline._SECTION_ICON_META, pipeline.DOSSIER_ICONS):
             self.assertIn("INDUSTRY ROTATION", icon_map)
         self.assertNotEqual(pipeline._SECTION_ICON_META["INDUSTRY ROTATION"],
@@ -656,8 +654,8 @@ class SectionWiringTests(unittest.TestCase):
         html = pipeline.generate_report(
             {pipeline.INDUSTRY_ROTATION_SOURCE_NAME: PushRenderTests._source("2026-09-25")},
             "2026年9月25日", "20260925")
-        self.assertIn(pipeline.SECTION_TITLE_INDUSTRY_ROTATION, html)
-        self.assertNotIn("【策略】", html.split(pipeline.SECTION_TITLE_INDUSTRY_ROTATION)[0].split("数据覆盖")[-1])
+        self.assertNotIn(pipeline.SECTION_TITLE_INDUSTRY_ROTATION, html)
+        self.assertNotIn("INDUSTRY ROTATION", html)
 
 
 def _FrozenDatetime(fixed):

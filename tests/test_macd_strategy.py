@@ -349,38 +349,49 @@ class PipelineIntegrationTests(unittest.TestCase):
         data = self._data()
         old_score = pipeline.build_daily_quant_strategy({"实时行情": data["实时行情"]})["score"]
         self.assertEqual(pipeline.build_daily_quant_strategy(data)["score"], old_score)
-        for theme in ("guizang", "pixel"):
+        for theme, kit in (("guizang", pipeline.GUIZANG_KIT), ("pixel", pipeline.PIXEL_KIT)):
             with patch.object(pipeline, "safe_request", side_effect=AssertionError("渲染不能联网")), \
                     patch.object(market_db, "load_daily_bars", side_effect=AssertionError("渲染不能读库")), \
                     pipeline.notes_mode():            # 计算口径 / 执行规则属于说明文字：--notes 下齐全
+                block_html = pipeline._quant.macd_strategy.render_strategy(
+                    data[pipeline.MACD_SOURCE_NAME]["result"], kit, plain=False)
                 html = pipeline.generate_report(data, "2026年10月2日", "20261002", theme=theme)
-            self.assertEqual(html.count("MACD 量化策略 · 日线"), 1)
-            marker = f"{pipeline.SECTION_TITLE_STRATEGY}</h2>" if theme == "guizang" else "// STRATEGY READ"
-            self.assertIn(marker, html)
-            self.assertLess(html.find(marker), html.find("MACD 量化策略 · 日线"))
+            self.assertEqual(block_html.count("MACD 量化策略 · 日线"), 1)
             for text in ("DIF / DEA", "MACD柱", "2026-09-30", "EMA12−EMA26", "非投资建议", "信号不等于上涨概率", "36 根"):
-                self.assertIn(text, html)
+                self.assertIn(text, block_html)
+            # 2026-11-10 用户要求下线 STRATEGY READ，日报正文不再渲染本栏，今日预判与总结仍正常产出
+            self.assertNotIn(f"{pipeline.SECTION_TITLE_STRATEGY}</h2>", html)
+            self.assertNotIn("// STRATEGY READ", html)
+            self.assertNotIn("MACD 量化策略 · 日线", html)
+            self.assertIn(pipeline.SECTION_TITLE_FORECAST, html)
 
     def test_plain_mode_keeps_macd_table_without_methodology(self):
-        """入门版（默认）：MACD 表格与数字照出，计算口径 / 执行规则 / 风险长文不出。"""
+        """入门版（默认）：底层 MACD 表格与数字照出，计算口径 / 执行规则 / 风险长文不出；整篇日报不再渲染 STRATEGY READ 栏。"""
         data = self._data()
-        for theme in ("guizang", "pixel"):
+        for theme, kit in (("guizang", pipeline.GUIZANG_KIT), ("pixel", pipeline.PIXEL_KIT)):
             with patch.object(pipeline, "safe_request", side_effect=AssertionError("渲染不能联网")), \
                     patch.object(market_db, "load_daily_bars", side_effect=AssertionError("渲染不能读库")):
+                block_html = pipeline._quant.macd_strategy.render_strategy(
+                    data[pipeline.MACD_SOURCE_NAME]["result"], kit, plain=True)
                 html = pipeline.generate_report(data, "2026年10月2日", "20261002", theme=theme)
-            self.assertEqual(html.count("MACD 量化策略 · 日线"), 1)
+            self.assertEqual(block_html.count("MACD 量化策略 · 日线"), 1)
             for text in ("DIF / DEA", "MACD柱", "2026-09-30", "退出/规避"):
-                self.assertIn(text, html, theme)
+                self.assertIn(text, block_html, theme)
             for text in ("EMA12−EMA26", "计算口径", "执行规则", "信号不等于上涨概率", "--full"):
-                self.assertNotIn(text, html, theme)
+                self.assertNotIn(text, block_html, theme)
+            self.assertNotIn("MACD 量化策略 · 日线", html, theme)
 
     def test_macd_only_still_has_strategy_column_without_fake_market_neutral_score(self):
-        for theme in ("guizang", "pixel"):
-            html = pipeline.generate_report(self._data(False), "2026年10月2日", "20261002", theme=theme)
-            self.assertIn(f"{pipeline.SECTION_TITLE_STRATEGY}</h2>" if theme == "guizang" else "// STRATEGY READ", html)
-            self.assertIn("MACD 量化策略", html)
-            self.assertNotIn("市场倾向", html)
-            self.assertNotIn("量化信号 · 策略总览", html)
+        data = self._data(False)
+        for theme, kit in (("guizang", pipeline.GUIZANG_KIT), ("pixel", pipeline.PIXEL_KIT)):
+            block_html = pipeline._quant.macd_strategy.render_strategy(
+                data[pipeline.MACD_SOURCE_NAME]["result"], kit, plain=True)
+            self.assertIn("MACD 量化策略", block_html)
+            self.assertNotIn("市场倾向", block_html)
+            self.assertNotIn("量化信号 · 策略总览", block_html)
+            html = pipeline.generate_report(data, "2026年10月2日", "20261002", theme=theme)
+            self.assertNotIn(f"{pipeline.SECTION_TITLE_STRATEGY}</h2>", html)
+            self.assertNotIn("// STRATEGY READ", html)
 
     def test_failure_omits_empty_macd_but_is_in_missing_source_audit(self):
         data = self._data()

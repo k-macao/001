@@ -466,14 +466,13 @@ class CardRenderingTests(unittest.TestCase):
             self.assertIn(sections[1][0], self.pipeline.REPORT_SECTION_ORDER)
             self.assertEqual(sections[-1][0], "SUMMARY")
             titles = [section[1] for section in sections]
-            # 2026-10-14 重排：行情复盘（①）先于策略研判（④）
-            self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
-                            titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
+            # 2026-10-14 重排 + 2026-11-10 下线 STRATEGY READ：行情复盘（①）先于板块轮动（④）与总结
+            self.assertNotIn(self.pipeline.SECTION_TITLE_STRATEGY, titles)
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_MARKET_REVIEW),
                             titles.index(self.pipeline.SECTION_TITLE_SUMMARY))
             # 2026-11-04：速查卡前置到今日预判之前，总结回到全文最末
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_FORECAST),
-                            titles.index(self.pipeline.SECTION_TITLE_STRATEGY))
+                            titles.index(self.pipeline.SECTION_TITLE_WEEKLY_FORECAST))
             self.assertLess(titles.index(self.pipeline.SECTION_TITLE_SHORT_CARD),
                             titles.index(self.pipeline.SECTION_TITLE_SUMMARY))
         for theme in ("guizang", "pixel"):

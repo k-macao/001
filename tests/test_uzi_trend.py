@@ -315,24 +315,22 @@ class PipelineIntegrationTest(unittest.TestCase):
                        "coverage": {"valid": 0, "total": 0}, "as_of": None,
                        "latest_as_of": None, "golden_n": 0, "death_n": 0,
                        "bars_by_code": self.bars}
-        with patch.object(pipeline._quant.macd_strategy, "run_macd", return_value=macd_result), \
+        with patch.object(pipeline._quant.macd_strategy, "run_macd", return_value=macd_result) as run_macd, \
                 patch.object(pipeline, "_note_backup_served"):
             source = pipeline.fetch_macd_strategy({})
-        self.assertEqual(set(source["_bars_by_code"]), {"^HSI", "000001.SS"})
-        self.assertNotIn("bars_by_code", source["result"])
-        # 私有键交给趋势栏目后立即消失，不进 data / 不入库
-        trend = pipeline.fetch_uzi_trend({pipeline.MACD_SOURCE_NAME: source}, None)
-        self.assertEqual(trend["status"], "success")
+        # 2026-11-10 下线 UZI TREND 后，fetch_macd_strategy 不再额外收集 bars_by_code
+        self.assertFalse(run_macd.call_args.kwargs["include_bars"])
         self.assertNotIn("_bars_by_code", source)
+        self.assertNotIn("bars_by_code", source["result"])
+        # 显式调用 fetch_uzi_trend 传 bars 仍可直接计算供单测使用
+        trend = pipeline.fetch_uzi_trend({pipeline.MACD_SOURCE_NAME: source}, self.bars)
+        self.assertEqual(trend["status"], "success")
 
     def test_section_title_is_in_analysis_order(self):
         self.assertEqual(pipeline.SECTION_TITLE_UZI_TREND, "【策略】多流派研判")
-        self.assertIn("UZI TREND", pipeline.REPORT_ANALYSIS_SECTIONS)
-        order = pipeline.REPORT_ANALYSIS_SECTIONS
-        self.assertLess(order.index("STRATEGY READ"), order.index("UZI TREND"))
-        # 2026-10-14 重排：UZI 趋势与策略研判同属「④我们该怎么办」，位于板块轮动之前
-        self.assertLess(order.index("UZI TREND"), order.index("SECTOR ROTATION"))
-        self.assertIn("UZI TREND", pipeline.REPORT_SECTION_ORDER)
+        self.assertNotIn("UZI TREND", pipeline.REPORT_ANALYSIS_SECTIONS)
+        self.assertNotIn("UZI TREND", pipeline.REPORT_SECTION_ORDER)
+        self.assertIn("UZI TREND", pipeline.REPORT_REMOVED_SECTIONS_20261110)
 
     def test_render_helper_respects_availability(self):
         source = pipeline.fetch_uzi_trend({}, self.bars)
@@ -350,7 +348,7 @@ class PipelineIntegrationTest(unittest.TestCase):
 
 
 class ReportIntegrationTest(unittest.TestCase):
-    """整份日报层面的集成：栏目位置、五套主题、缺席时的审计口径。"""
+    """整份日报层面的集成：2026-11-10 下线后不再渲染，底层渲染器仍可用。"""
 
     def _data(self, uzi_status="success"):
         macd_row = macd.analyze_bars(series(80), label="恒生指数", code="^HSI", now=NOW)
@@ -374,74 +372,72 @@ class ReportIntegrationTest(unittest.TestCase):
 
     def test_section_lands_between_strategy_and_quant_forecast_in_every_theme(self):
         data = self._data()
-        for theme in ("lime", "guizang", "pixel", "forum", "dossier"):
+        for theme, kit in (("lime", pipeline.LIME_KIT), ("guizang", pipeline.GUIZANG_KIT),
+                           ("pixel", pipeline.PIXEL_KIT), ("forum", pipeline.FORUM_KIT),
+                           ("dossier", pipeline.DOSSIER_KIT)):
+            # 底层 helper 仍可独立渲染，但整份日报不再包含 UZI TREND
+            block = pipeline._render_uzi_trend(data[pipeline.UZI_TREND_SOURCE_NAME], kit)
+            self.assertIn("多流派研判 · 已收盘日线", block, theme)
+            self.assertIn("Stage 2 上升", block, theme)
             html = self._html(data, theme)
-            self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html, theme)
-            self.assertIn("多流派研判 · 已收盘日线", html, theme)
-            self.assertIn("Stage 2 上升", html, theme)
-            self.assertLess(html.find(pipeline.SECTION_TITLE_STRATEGY),
-                            html.find(pipeline.SECTION_TITLE_UZI_TREND), theme)
-            self.assertLess(html.find(pipeline.SECTION_TITLE_UZI_TREND),
-                            html.find(pipeline.SECTION_TITLE_SUMMARY), theme)      # 专业分析栏目一律在结论之前
+            self.assertNotIn(pipeline.SECTION_TITLE_UZI_TREND, html, theme)
+            self.assertNotIn("UZI TREND", html, theme)
+            self.assertNotIn("多流派研判 · 已收盘日线", html, theme)
 
     def test_plain_report_keeps_conclusion_and_drops_rule_detail(self):
         data = self._data()
-        plain = self._html(data, "lime")
+        plain_block = pipeline._render_uzi_trend(data[pipeline.UZI_TREND_SOURCE_NAME], pipeline.LIME_KIT)
         with pipeline.notes_mode():
-            full = self._html(data, "lime")
-        self.assertIn("评委结论", plain)
-        self.assertNotIn("方法来源", plain)
-        self.assertIn("方法来源", full)
-        self.assertIn("准入门禁", full)
+            full_block = pipeline._render_uzi_trend(data[pipeline.UZI_TREND_SOURCE_NAME], pipeline.LIME_KIT)
+        self.assertIn("评委结论", plain_block)
+        self.assertNotIn("方法来源", plain_block)
+        self.assertIn("方法来源", full_block)
+        self.assertIn("准入门禁", full_block)
 
     def test_absent_section_is_named_in_coverage_audit(self):
         html = self._html(self._data("unavailable"), "lime")
         self.assertNotIn(pipeline.SECTION_TITLE_UZI_TREND, html)
         self.assertNotIn("多流派研判 · 已收盘日线", html)
-        self.assertIn(pipeline.UZI_TREND_SOURCE_NAME, html)   # 数据覆盖里点名缺席
+        # 2026-11-10 下线后不再进数据覆盖审计，避免点名已删除栏目
+        self.assertNotIn(pipeline.UZI_TREND_SOURCE_NAME, html)
         parts = pipeline._collect_report_parts(self._data("unavailable"), pipeline.LIME_KIT,
                                                date_str="20261002")
         self.assertNotIn("UZI TREND", [section[0] for section in parts["sections"]])
 
     def test_section_carries_its_own_ren_block_with_same_source_numbers(self):
-        """「🦑 AI帮你提鲜」接进本栏（2026-10-13）：解读引用的数字与正文同一份结果。
-
-        真跑 run_trend()（不手搓 fixture）：ctx["uzi"] 与 blocks["UZI TREND"] 走
-        pipeline._uzi_result() 同一个出口，解读里的数字必须能在正文结果里逐字对上。
-        """
+        """底层解读块生成器仍保留同源数字与结构校验，整份日报不再渲染本栏。"""
         data = self._data()
         result = data[pipeline.UZI_TREND_SOURCE_NAME]["result"]
         self.assertTrue(result["available"])
-        html = self._html(data, "guizang")
-        self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html)
-        self.assertIn("趋势评审团：", html)
-        cover, panel = result["coverage"], result["panel"]
-        self.assertIn(f"观察池 {cover['total']} 只里 {cover['valid']} 只这次算出了结果", html)
-        self.assertIn(f"{panel['investors']} 位方法评委按 {result['rules_enabled']} 条规则投票",
-                      html)
-        self.assertIn(f"看多 {panel['bullish']} / 看空 {panel['bearish']} / "
-                      f"中性 {panel['neutral']}", html)
-        # 定调用语取 items 自带的 tone（与正文同一套 _verdict，不另写一份翻译）
-        for row in result["items"]:
-            self.assertIn(row["tone"], html)
-        # 本栏没有概率口径 → 解读块不出几率条（绝不硬凑一个涨跌概率）
         block = pipeline._ren.section_ren_block(
             "UZI TREND", {"uzi": result, "date_str": "20261002"})
         self.assertIsNotNone(block)
         self.assertIsNone(block["p_pct"])
         self.assertIsNone(block["label"])
+        self.assertIn("趋势评审团：", block["text"])
+        cover, panel = result["coverage"], result["panel"]
+        self.assertIn(f"观察池 {cover['total']} 只里 {cover['valid']} 只这次算出了结果", block["text"])
+        self.assertIn(f"{panel['investors']} 位方法评委按 {result['rules_enabled']} 条规则投票",
+                      block["text"])
+        self.assertIn(f"看多 {panel['bullish']} / 看空 {panel['bearish']} / "
+                      f"中性 {panel['neutral']}", block["text"])
+        for row in result["items"]:
+            self.assertIn(row["tone"], block["text"])
+        html = self._html(data, "guizang")
+        self.assertNotIn(pipeline.SECTION_TITLE_UZI_TREND, html)
+        self.assertNotIn("趋势评审团：", html)
 
     def test_ren_block_disappears_with_the_section(self):
-        """栏目缺席时解读一起缺席：不留一句硬编的大白话。"""
+        """栏目下线 / 缺席时解读不出现在日报里。"""
         self.assertNotIn("趋势评审团：", self._html(self._data("unavailable"), "guizang"))
 
     def test_ren_can_be_switched_off_without_touching_the_section(self):
-        """OCTOPUS_REN=0 / --no-ren 与其它栏目同一开关：关解读不关栏目。"""
+        """OCTOPUS_REN=0 关闭提鲜，且已下线栏目不回流日报正文。"""
         data = self._data()
         with patch.object(pipeline, "REN_ENABLED", False):
             html = self._html(data, "guizang")
-        self.assertIn(pipeline.SECTION_TITLE_UZI_TREND, html)
-        self.assertIn("多流派研判 · 已收盘日线", html)
+        self.assertNotIn(pipeline.SECTION_TITLE_UZI_TREND, html)
+        self.assertNotIn("多流派研判 · 已收盘日线", html)
         self.assertNotIn("趋势评审团：", html)
 
 
