@@ -149,9 +149,10 @@ class ReportPlainTests(unittest.TestCase):
 
     def test_notes_report_restores_process_text(self):
         text = _strip(self.notes["guizang"])
-        # 「推进式（walk-forward）」只出现在已下线的量化分析总览里（2026-10-23），
+        # 「推进式（walk-forward）」只出现在已下线的量化分析总览里（2026-10-23）；
+        # 「计算口径 / 执行规则」只出现在已下线的【策略】MACD 趋势里（2026-11-10）。
         # 其余过程文字仍由各个在栏章节在 --notes 模式下恢复。
-        for marker in ("--full 看全文", "规则合成 · 大白话翻译", "计算口径", "执行规则",
+        for marker in ("--full 看全文", "规则合成 · 大白话翻译",
                        "无未来函数口径", "先存档后结算", "筛选口径", "五维权重",
                        "Brier", "数字与下文各栏同源", "百句股票梗库"):
             self.assertIn(marker, text, marker)

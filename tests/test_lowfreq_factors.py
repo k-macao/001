@@ -428,11 +428,8 @@ class LowFreqRenderTests(unittest.TestCase):
 # ------------------------------------------------------------------
 class LowFreqPipelineTests(unittest.TestCase):
     def test_section_registered_after_industry_rotation(self):
-        self.assertIn("LOWFREQ FACTORS", pipeline.REPORT_SECTION_ORDER)
-        self.assertGreater(pipeline.REPORT_SECTION_ORDER.index("LOWFREQ FACTORS"),
-                           pipeline.REPORT_SECTION_ORDER.index("INDUSTRY ROTATION"))
-        self.assertLess(pipeline.REPORT_SECTION_ORDER.index("LOWFREQ FACTORS"),
-                        pipeline.REPORT_SECTION_ORDER.index("SUMMARY"))
+        self.assertNotIn("LOWFREQ FACTORS", pipeline.REPORT_SECTION_ORDER)
+        self.assertIn("LOWFREQ FACTORS", pipeline.REPORT_REMOVED_SECTIONS_20261110)
 
     def test_title_and_source_name(self):
         self.assertEqual(pipeline.SECTION_TITLE_LOWFREQ, "【策略】低频五因子选股")
@@ -450,16 +447,20 @@ class LowFreqPipelineTests(unittest.TestCase):
 
     def test_block_rendered_from_data(self):
         res = lf.run_lowfreq_factors(None, date_str="20261028", allow_synthetic_flag=True)
+        # 底层渲染器仍可直接渲染，但整份日报不再包含 LOWFREQ FACTORS
+        block_html = lf.render(res, pipeline.LIME_KIT, plain=True)
+        self.assertIn("港股推荐", block_html)
         src = {"source": pipeline.LOWFREQ_SOURCE_NAME, "status": "success",
                "fetched_at": "2026-10-28 09:00", "is_today": False,
                "content_date": res.get("as_of"), "result": res}
         parts = pipeline._collect_report_parts(
             {pipeline.LOWFREQ_SOURCE_NAME: src}, pipeline.LIME_KIT, date_str="20261028")
         kicks = [s[0] for s in parts["sections"]]
-        self.assertIn("LOWFREQ FACTORS", kicks)
-        block = next(s for s in parts["sections"] if s[0] == "LOWFREQ FACTORS")
-        self.assertEqual(block[1], pipeline.SECTION_TITLE_LOWFREQ)
-        self.assertIn("港股推荐", block[2])
+        self.assertNotIn("LOWFREQ FACTORS", kicks)
+        html = pipeline.generate_report(
+            {pipeline.LOWFREQ_SOURCE_NAME: src}, "2026年10月28日", "20261028")
+        self.assertNotIn(pipeline.SECTION_TITLE_LOWFREQ, html)
+        self.assertNotIn(pipeline.LOWFREQ_SOURCE_NAME, html)
 
     def test_absent_without_data_key(self):
         parts = pipeline._collect_report_parts({}, pipeline.LIME_KIT, date_str="20261028")

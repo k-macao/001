@@ -95,15 +95,21 @@ class SubMergeRenderTests(unittest.TestCase):
         self.assertIn("1,350.25", text)
         self.assertNotIn(pipeline.SUB_MERGE_POINTER, text)
 
-    # ---- ② 板块涨跌 / 主力净流入：行情复盘的板块热力为准 ----
+    # ---- ② 板块涨跌 / 主力净流入：行情复盘的板块热力为准（策略研判下线后直接守住底层块） ----
     def test_board_merge_dedupes_price_and_flow(self):
-        text = _text(self.render())
-        board = _section(self.render(), "板块趋势跟踪 · 量化强度榜")
+        ai_res = pipeline.build_ai_analysis(self.data)
+        pan = self.data["A股大盘全景"]
+        shown = pipeline._panorama_heat_selection(pan, "guizang")
+        board = _text(pipeline.gz_ai_analysis_block(
+            ai_res, merge_boards=shown, board_owner=pipeline.SUB_MERGE_OWNER_MARKET_REVIEW))
         self.assertIn(pipeline.SUB_MERGE_POINTER, board)
         self.assertNotIn("+3.50%", board)        # 涨跌已由行情复盘展示
         self.assertNotIn("15.00亿", board)       # 主力净流入同理
         self.assertIn("趋势分", board)            # 趋势分 / 趋势 / 信号一个不少
-        # 全篇只出现一次（行情复盘 · 板块热力）
+        # 整篇日报里（行情复盘 · 板块热力）只出现一次，且策略研判栏已不再渲染
+        html = self.render()
+        text = _text(html)
+        self.assertNotIn("板块趋势跟踪 · 量化强度榜", text)
         self.assertEqual(text.count("15.00亿"), 1)
         self.assertEqual(text.count("-8.00亿"), 1)
 
@@ -128,10 +134,11 @@ class SubMergeRenderTests(unittest.TestCase):
         pan = self._ten_board_pan()
         data["A股大盘全景"] = pipeline._source_result(
             "A股全景（测试）", "success", is_today=True, content_date="2026-10-12", **pan)
+        ai_res = pipeline.build_ai_analysis(data)
         with patch.dict(pipeline.LITE_LIMITS, {"sector_heat": (1, 1)}):
-            html = self.render(data)
             shown = pipeline._panorama_heat_selection(pan, "lime")
-        board = _section(html, "板块趋势跟踪 · 量化强度榜")
+        board = _text(pipeline.gz_ai_analysis_block(
+            ai_res, merge_boards=shown, board_owner=pipeline.SUB_MERGE_OWNER_MARKET_REVIEW))
         body = board.split("▼ 规避")[0]
         names = [f"{g}{i}" for g in ("甲", "乙") for i in range(5)]
         shown_rows = [n for n in names if n in body]
@@ -144,9 +151,13 @@ class SubMergeRenderTests(unittest.TestCase):
                         "该夹具应至少有一个板块没被 12 栏展示，才能守住「不误合并」")
 
     def test_board_merge_can_be_switched_off(self):
+        ai_res = pipeline.build_ai_analysis(self.data)
+        pan = self.data["A股大盘全景"]
+        shown = pipeline._panorama_heat_selection(pan, "guizang")
         with patch.object(pipeline, "SUB_MERGE_ENABLED", False):
+            board = _text(pipeline.gz_ai_analysis_block(
+                ai_res, merge_boards=shown, board_owner=pipeline.SUB_MERGE_OWNER_MARKET_REVIEW))
             html = self.render()
-        board = _section(html, "板块趋势跟踪 · 量化强度榜")
         self.assertIn("+3.50%", board)
         self.assertIn("15.00亿", board)
         self.assertNotIn(pipeline.SUB_MERGE_POINTER, _text(html))

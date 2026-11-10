@@ -17,6 +17,7 @@ def _disclosure(kit, text):
 # 保留原栏目角色；改变不适用于指数的产品分类名称，避免虚构债券/CTA/套利收益。
 # 2026-10-23「量化分析总览」（QUANT FORECAST）整栏下线，映射同步移除。
 # 2026-11-04 策略量化五栏（日报原 18–22 号）整栏下线，映射同步移除。
+# 2026-11-10 媒体风险 / MACD 趋势 / 多流派研判 / 行业轮动（申万） / 低频五因子选股整栏下线，映射同步移除。
 TITLES = {
     'FORECAST': '今日预判 · 三地指数',
     'MARKET REVIEW': '【事实】三地指数行情复盘',
@@ -27,16 +28,10 @@ TITLES = {
     'RETAIL SENTIMENT': '散户情绪因子 · 三地指数',
     'TREND TRACKING': '【舆情】三地指数趋势跟踪',
     'MAINLAND HOTLIST': '【舆情】三地指数热点因子',
-    'MEDIA RISK': '【舆情】三地指数媒体风险',
     'NEWS SENTIMENT': '【舆情】三地指数新闻情绪',
     'LIQUIDITY FLOW': '资金流动性 · 三地指数',
     'WEEKLY FORECAST': '【推演】七日走势 · 三地指数',
-    'STRATEGY READ': '策略研判 · 三地指数',
-    'UZI TREND': '【策略】三地指数技术信号',
     'SECTOR ROTATION': '【策略】三地指数相对强弱',
-    'INDUSTRY ROTATION': '【策略】三地指数轮动观察',
-    # 2026-10-28 新增的低频小因子栏目只覆盖港股个股截面，指数全页不给它编方向。
-    'LOWFREQ FACTORS': '【策略】三地指数低频因子观察',
     'SUMMARY': '总结 · 三地指数',
 }
 
@@ -46,10 +41,8 @@ FACTOR_LIMITS = {
     'GEO TREND': '缺少可核查事件及指数暴露权重；不将泛化地缘标题转换为指数风险分。',
     'RETAIL SENTIMENT': '缺少按指数归因的境内外社区样本及基线；个股帖子不等于指数情绪。',
     'MAINLAND HOTLIST': '缺少三地指数层面的热点覆盖率与发布时间核验；个股热度不直接汇总为指数因子。',
-    'MEDIA RISK': '缺少指数成分权重与事件归因；证据不足不代表没有风险。',
     'NEWS SENTIMENT': '缺少按指数归因的新闻样本及来源去重；不复用港股个股情绪或虚构美股因子。',
     'LIQUIDITY FLOW': '指数本身没有可直接相加的资金净流入；缺少一致口径的成分成交、ETF申赎或衍生品数据。不将南向资金替代三地流动性。',
-    'LOWFREQ FACTORS': '缺少指数层面的市值、壳价值与逐只换手横截面；不将港股个股五因子清单套用到三地指数。',
 }
 
 
@@ -125,18 +118,15 @@ def build_parts(rows, kit, order, *, calendar=None, date_str=None):
                                  ('判断边界', '缺数或过期的指数暂停判断；不同市场不混排；不输出未经回测校准的涨跌概率')])
             body += _table(rows, kit, [('trend', '趋势'), ('momentum_signal', '20日动量')])
             note = scope
-        elif key in ('SECTOR ROTATION', 'INDUSTRY ROTATION'):
+        elif key == 'SECTOR ROTATION':
             ranks = relative_rows(rows)
             body = _kit_table(kit, ['市场', '交易日', '排名', '指数', '20日收益', '相对组内末位差(百分点)'], ranks) if ranks else _disclosure(kit, '同市场、同截止日、有效20日收益的指数不足两个，暂停比较。')
             note = ('仅市场内部指数相对强弱；不代表行业轮动持仓、市场中性组合或可执行套利。'
                     '指数成分可能重叠，收益差不等于无风险价差；不生成买卖配对。')
-        elif key in ('TREND TRACKING', 'UZI TREND', 'WEEKLY FORECAST'):
+        elif key in ('TREND TRACKING', 'WEEKLY FORECAST'):
             body = _table(rows, kit, [('ma20', 'MA20'), ('ma60', 'MA60'), ('trend', '均线状态'), ('trend_signal', '规则观察')])
             note = ('收盘>MA20>MA60为多头排列，反之为空头排列，其余震荡。样本不足60根不判排列。'
                     '原港股七日预测不外推到其他指数；这里展示当前条件信号，不编造未来逐日点位或概率。')
-        elif key == 'STRATEGY READ':
-            body = _table(rows, kit, [('ret_5d', '5日收益'), ('ret_20d', '20日收益'), ('ret_60d', '60日收益'), ('momentum_signal', '动量状态')])
-            note = '20日收益>0标正动量，否则标非正动量。基准收益不是选股策略收益；未包含成本、换仓及样本外检验。'
         else:  # 其余栏目使用一致的指数级收益与风险口径
             body = _table(rows, kit, [('ret_1d', '日收益'), ('ret_20d', '20日收益'), ('ret_60d', '60日收益'), ('vol_20', '年化波动'), ('max_dd_60', '最大回撤')])
             note = ('收益需N+1根收盘；波动需20个日收益，样本标准差×√252；回撤需完整60根收盘。'

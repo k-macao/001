@@ -585,25 +585,31 @@ class MediaRiskPipelineTests(unittest.TestCase):
              "url": "https://example.com/risk?a=1&b=2"},
         ])
         corpus = self._corpus(data)
-        for theme in ("pixel", "guizang", "dossier", "forum", "lime"):
+        result = pipeline.build_media_risk(
+            data, self.DATE, {}, news_corpus=corpus)
+        self.assertTrue(result["available"])
+        self.assertNotIn("MEDIA RISK", pipeline.REPORT_SECTION_ORDER)
+        for theme, kit in (("pixel", pipeline.PIXEL_KIT), ("guizang", pipeline.GUIZANG_KIT),
+                           ("dossier", pipeline.DOSSIER_KIT), ("forum", pipeline.FORUM_KIT),
+                           ("lime", pipeline.LIME_KIT)):
             with self.subTest(theme=theme):
+                # 底层块渲染器仍可生成完整风险与可点击证据，但整份日报不再包含本栏
+                block_html = pipeline._media_risk_block(result, kit)
+                self.assertIn("红色预警", block_html)
+                self.assertIn("风险指数", block_html)
+                self.assertIn("https://example.com/risk?a=1&amp;b=2", block_html)
+                self.assertIn("暂停新增仓位", block_html)
+                self.assertIn("标准动作", block_html)
+                self.assertIn("Blacklist", block_html)
+                self.assertIn("事件时态", block_html)
                 html = pipeline.generate_report(
                     data, "2026年8月2日 · 周日", self.DATE,
                     theme=theme, news_corpus=corpus)
-                self.assertIn(pipeline.SECTION_TITLE_MEDIA_RISK, html)
-                self.assertIn("红色预警", html)
-                self.assertIn("风险指数", html)
-                self.assertIn("https://example.com/risk?a=1&amp;b=2", html)
-                self.assertIn("暂停新增仓位", html)
-                self.assertIn("标准动作", html)
-                self.assertIn("Blacklist", html)
-                self.assertIn("事件时态", html)
-                self.assertIn("结构化预警 1 只", html)
-                # 同一风险标题也进入新闻情绪；正文必须先呈现可核验的具体事件。
-                self.assertLess(html.index(pipeline.SECTION_TITLE_MEDIA_RISK),
-                                html.index(pipeline.SECTION_TITLE_NEWS_SENTIMENT))
-        self.assertLess(pipeline.REPORT_SECTION_ORDER.index("MEDIA RISK"),
-                        pipeline.REPORT_SECTION_ORDER.index("NEWS SENTIMENT"))
+                self.assertNotIn(pipeline.SECTION_TITLE_MEDIA_RISK, html)
+                self.assertNotIn("MEDIA RISK", html)
+                self.assertNotIn("媒体舆情", html)
+                # 新闻情绪共用同一标题池，不受媒体风险下线影响。
+                self.assertIn(pipeline.SECTION_TITLE_NEWS_SENTIMENT, html)
 
     def test_feature_switch_removes_only_the_derived_section(self):
         data = self._data([
@@ -620,7 +626,6 @@ class MediaRiskPipelineTests(unittest.TestCase):
         self.assertIn(pipeline.SECTION_TITLE_NEWS_SENTIMENT, html)
 
     def test_section_absent_without_event_or_reliable_attention_baseline(self):
-        # 2026-10-21 起：无风险时不再静默缺席，改为“监控中”占位，避免“栏目不见”误判
         data = self._data([
             {"title": "测试股份发布例行经营公告", "source": "公司",
              "published_cst": "2026-08-02 09:30", "url": "https://example.com/normal"},
@@ -630,13 +635,15 @@ class MediaRiskPipelineTests(unittest.TestCase):
         self.assertFalse(result["available"])
         self.assertIn("headline_n", result)
         self.assertIn("window_text", result)
+        block_html = pipeline._media_risk_block(result, pipeline.GUIZANG_KIT)
+        self.assertIn("监控中", block_html)
+        self.assertIn("未检出", block_html)
+        self.assertIn("标题覆盖", block_html)
         html = pipeline.generate_report(
             data, "2026年8月2日 · 周日", self.DATE,
             theme="guizang", news_corpus=self._corpus(data))
-        self.assertIn(pipeline.SECTION_TITLE_MEDIA_RISK, html)
-        self.assertIn("监控中", html)
-        self.assertIn("未检出", html)
-        self.assertIn("标题覆盖", html)
+        self.assertNotIn(pipeline.SECTION_TITLE_MEDIA_RISK, html)
+        self.assertNotIn("媒体舆情", html)
 
 
 if __name__ == "__main__":

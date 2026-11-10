@@ -4931,7 +4931,7 @@ def fetch_macd_strategy(data=None):
             existing[row["code"]] = row["bars"]
     try:
         result = _quant.macd_strategy.run_macd(safe_request, existing=existing,
-                                               include_bars=UZI_TREND_ENABLED)
+                                               include_bars=False)
     except Exception as exc:
         print(f"  ⚠️ MACD 策略异常：{type(exc).__name__}")
         return _source_result(MACD_SOURCE_NAME, "unavailable", result=None,
@@ -4956,13 +4956,10 @@ def fetch_macd_strategy(data=None):
           f"{result['as_of']} ~ {result['latest_as_of']} · 金叉 {result['golden_n']} / 死叉 {result['death_n']}")
     # 已有库 / 已有日线不因今天计算过而冒充当天行情；不使用 snapshot 绕过日期检查。
     today = datetime.now(CST).strftime("%Y-%m-%d")
+    result.pop("bars_by_code", None)
     source = _source_result(MACD_SOURCE_NAME, "success", result=result,
                             content_date=result["as_of"],
                             is_today=any(row["as_of"] == today for row in result["items"]))
-    if UZI_TREND_ENABLED:
-        # 私有键：本次选中的日线交给 fetch_uzi_trend()（同一批数据、同一次取数），
-        # 由调用方弹出后立刻丢弃，不写进日报 / JSON 留痕。
-        source["_bars_by_code"] = result.pop("bars_by_code", {})
     return source
 
 
@@ -6299,14 +6296,13 @@ def collect_all_data():
     data["港股量化"] = fetch_hk_quant()
     time.sleep(0.5)
 
+    # MACD 日线策略继续采集：供「今日预判 / 短线速查卡 / 今日总结」的 build_ai_analysis 复用；
+    # 「【策略】MACD 趋势」「【策略】多流派研判（UZI）」栏目已按 2026-11-10 用户要求下线，
+    # 不再采集 UZI_TREND。
     macd_src = fetch_macd_strategy(data)
     if macd_src is not None:
-        # 日线只在这一刻交给 UZI 趋势栏目（私有键，用完即弹出，不进 data / 不入库）。
-        uzi_bars = macd_src.pop("_bars_by_code", {})
+        macd_src.pop("_bars_by_code", None)
         data[MACD_SOURCE_NAME] = macd_src
-        uzi_src = fetch_uzi_trend(data, uzi_bars)
-        if uzi_src is not None:
-            data[UZI_TREND_SOURCE_NAME] = uzi_src
 
     # 「时间节点」财经日历先抓：逐日表格要用窗口内的 ★★★ 日程做「事件日提醒」
     # （日程不参与概率计算，缺席也只是少一行提醒，不影响预测）。
@@ -6341,10 +6337,6 @@ def collect_all_data():
     data[SECTOR_ROTATION_SOURCE_NAME] = fetch_sector_rotation(data)
     time.sleep(0.5)
 
-    # 申万一级行业轮动（A股 31 个行业）：固定股票池 + 板块指数日线，失败整栏缺席。
-    data[INDUSTRY_ROTATION_SOURCE_NAME] = fetch_industry_rotation()
-    time.sleep(0.5)
-
     # 策略大类量化（图中 4 大类 6 细分）：内部衍生、可离线兜底，不计入当天检验 / 总源审计。
     if STRATEGY_QUANT_ENABLED:
         sq = fetch_strategy_quant(date_str=datetime.now(CST).strftime("%Y%m%d"))
@@ -6352,12 +6344,8 @@ def collect_all_data():
             data[STRATEGY_QUANT_SOURCE] = sq
             time.sleep(0.2)
 
-    # 🐟 低频小因子（港股五因子 → 推荐 20 只）：独立数据线，取不到就整栏缺席。
-    if LOWFREQ_ENABLED:
-        lf = fetch_lowfreq_factors(date_str=datetime.now(CST).strftime("%Y%m%d"))
-        if lf is not None:
-            data[LOWFREQ_SOURCE_NAME] = lf
-            time.sleep(0.2)
+    # 2026-11-10 按用户要求下线【策略】行业轮动（申万）与【策略】低频五因子选股：
+    # 不再在主采集流程抓取这两条独立数据线（底层 helper 与模块保留供单测调用）。
 
     # === 新增：全栏目新鲜度检查 ===
     print("\n🕐 正在检查全栏目数据新鲜度...")
@@ -9003,8 +8991,7 @@ REPORT_SPREAD_SECTIONS = (                     # ② 传播得怎么样
     # 【舆情】媒体热点（2026-10-13 新增，2026-10-19 更名）紧跟趋势跟踪，
     # 「内地口径」与「港股口径」相邻。
     "MAINLAND HOTLIST",
-    # 具体风险事实优先于模糊情绪：先看结构化事件预警，再看标题情绪分。
-    "MEDIA RISK", "NEWS SENTIMENT",
+    "NEWS SENTIMENT",
 )
 REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
     # 2026-10-23 起「QUANT FORECAST」下线（量化分析总览整栏取消），
@@ -9019,11 +9006,13 @@ REPORT_OUTLOOK_SECTIONS = (                    # ③ 可能会怎样
 REPORT_STRATEGY_SECTIONS = (                   # 已删除的策略量化栏组（保留登记供测试守关）
     "STRATEGY OVERVIEW", "STRATEGY EQUITY", "STRATEGY BOND", "STRATEGY CTA", "STRATEGY ARBITRAGE",
 )
+# 2026-11-10 用户要求下线五栏（10 媒体风险 / 14 MACD 趋势 / 15 多流派研判 /
+# 17 行业轮动（申万） / 18 低频五因子选股）：kicker 不再进正文顺序表、正文不再建块。
+REPORT_REMOVED_SECTIONS_20261110 = (
+    "MEDIA RISK", "STRATEGY READ", "UZI TREND", "INDUSTRY ROTATION", "LOWFREQ FACTORS",
+)
 REPORT_ACTION_SECTIONS = (                     # ④ 我们该怎么办
-    "STRATEGY READ", "UZI TREND", "SECTOR ROTATION", "INDUSTRY ROTATION",
-    # 2026-10-28 新增：低频小因子（港股五因子横截面 → 推荐 20 只）；
-    # 排在「板块 / 行业轮动」之后：先看板块与行业往哪走，再落到低频个股清单。
-    "LOWFREQ FACTORS",
+    "SECTOR ROTATION",
 )
 # 2026-10-02 起 GLOBAL HEADLINES（【事实】全球头条）与 HK GURU CHANNELS
 # （港股名家频道）按用户要求从页面隐藏，与此前隐藏的 EASTMONEY WIRE（东方财富快讯）
@@ -10637,20 +10626,13 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     # 板块轮动是独立的 A股概念库 + 港股观察篮子来源；仅外部调用确实传入时计入审计。
     if isinstance(data.get(SECTOR_ROTATION_SOURCE_NAME), dict):
         source_items.append((SECTOR_ROTATION_SOURCE_NAME, data[SECTOR_ROTATION_SOURCE_NAME]))
-    # 申万一级行业轮动：独立数据线（固定股票池 + 板块指数日K + 申万官方兜底），同样按需进审计。
-    if isinstance(data.get(INDUSTRY_ROTATION_SOURCE_NAME), dict):
-        source_items.append((INDUSTRY_ROTATION_SOURCE_NAME, data[INDUSTRY_ROTATION_SOURCE_NAME]))
+    # MACD 日线策略仍参与底层 build_ai_analysis 供「今日预判 / 速查卡 / 总结」；
+    # 2026-11-10 下线的 行业轮动（申万）/ UZI多流派 / 低频五因子 不再进数据覆盖审计。
     if isinstance(data.get(MACD_SOURCE_NAME), dict):
         source_items.append((MACD_SOURCE_NAME, data[MACD_SOURCE_NAME]))
-    # 多专家流派趋势分析：独立栏目 + 独立来源行（关闭时不写 data 键，审计口径不变）。
-    if isinstance(data.get(UZI_TREND_SOURCE_NAME), dict):
-        source_items.append((UZI_TREND_SOURCE_NAME, data[UZI_TREND_SOURCE_NAME]))
     # 策略大类量化（图中 4 大类 6 细分）：内部衍生自基准指数日线；取不到时在「数据覆盖」点名。
     if isinstance(data.get(STRATEGY_QUANT_SOURCE), dict):
         source_items.append((STRATEGY_QUANT_SOURCE, data[STRATEGY_QUANT_SOURCE]))
-    # 🐟 低频小因子（2026-10-28）：独立数据线（港股快照 + 日线），存在即按需进审计。
-    if isinstance(data.get(LOWFREQ_SOURCE_NAME), dict):
-        source_items.append((LOWFREQ_SOURCE_NAME, data[LOWFREQ_SOURCE_NAME]))
     # 前瞻日程（「时间节点」栏目）：关掉采集时不进审计，总源数保持不变。
     # 它是「今日抓取的日程快照」而非当天发布的内容，因此不计入当天源（当天检验不受影响）。
     if isinstance(data.get("财经日历"), dict):
@@ -10758,35 +10740,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "SECTOR ROTATION", SECTION_TITLE_SECTOR_ROTATION, rotation_html,
                 kit.source_badge(rotation_src), _short_source(rotation_src))
 
-    # ⑦b 【策略】行业轮动（申万）（2026-10-04 移植 #84 上线）：
-    #     股票池 = 申万一级 31 个行业固定表（不再依赖被 502 的 clist 大页列表）；
-    #     口径行 → 行业宽度 → 全行业评分表（含 20/60 日与 vs MA20 背景因子）→ 月度持仓与
-    #     自执行日以来表现（对照全行业等权）→ 规则行。数据不足则整栏缺席，不补造行情。
-    industry_src = data.get(INDUSTRY_ROTATION_SOURCE_NAME) or {}
-    if industry_src.get("status") == "success":
-        industry_html = _render_industry_rotation(industry_src, kit)
-        if industry_html:
-            blocks["INDUSTRY ROTATION"] = (
-                "INDUSTRY ROTATION", SECTION_TITLE_INDUSTRY_ROTATION, industry_html,
-                kit.source_badge(industry_src), _short_source(industry_src))
-
-    # 🐟 【策略】低频五因子选股（2026-10-28 新增）：
-    #     港股五因子横截面（小市值 / 短期反转 / 动量 12-1 / 换手率 / 价值 EP）→ 推荐 20 只。
-    #     取不到快照或日线时整栏缺席；渲染异常只影响本栏，绝不拖垮整份日报。
-    lf_src = data.get(LOWFREQ_SOURCE_NAME) or {}
-    try:
-        lf_res = lf_src.get("result") if isinstance(lf_src, dict) else None
-        if _lowfreq is not None and isinstance(lf_res, dict) and lf_res.get("available"):
-            lf_html = _lowfreq.render(lf_res, kit, plain=PLAIN())
-            if lf_html:
-                blocks["LOWFREQ FACTORS"] = (
-                    "LOWFREQ FACTORS", SECTION_TITLE_LOWFREQ, lf_html,
-                    kit.source_badge(lf_src),
-                    "" if PLAIN() else
-                    "港股五因子横截面：小市值（先剥壳价值）/ 短期反转（当镜子）/ 12-1 动量 / "
-                    "低换手 / 同行业 EP → 推荐 20 只（规则合成，非投资建议）")
-    except Exception as _lf_exc:  # 单栏失败不拖垮整份日报
-        print(f"  ⚠️ 低频小因子渲染异常：{_lf_exc}")
+    # 2026-11-10 用户要求下线【策略】行业轮动（申万）、【策略】低频五因子选股：
+    # 此处不再建块、顺序表也不再登记，即使 data 带结果也不进日报。
 
     # 📊 策略大类量化五栏（原 18–22 号：全景对照 / 权益 / 债券 / CTA / 套利）已删除：
     # 2026-11-04 用户要求「18-22 栏目删除」，此处不再建块、顺序表也不再登记，
@@ -10852,40 +10807,8 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
                 "GEO TREND", SECTION_TITLE_GEO_TREND, kit.trend_topic_block(geo_res),
                 kit.ai_badge(), "")
 
-    # ④ 策略研判（倾向 / 结论已置顶，此处只展开依据；MACD 是栏内子块）
-    #    同子栏合并：12 栏「板块热力」已按行情口径展示的板块，强度榜不再重复其
-    #    涨跌 / 主力净流入（与 12 栏同一份 pan 数据、同一条切片规则，见 _panorama_heat_selection）。
-    merge_boards = (_panorama_heat_selection(pan, getattr(kit, "theme", ""))
-                    if (SUB_MERGE_ENABLED and review_html) else set())
-    board_owner = SUB_MERGE_OWNER_MARKET_REVIEW if merge_boards else ""
-    strategy_html = kit.ai_block(ai_result, merge_boards=merge_boards,
-                                 board_owner=board_owner) if ai_result.get("available") else \
-        _quant.macd_strategy.render_strategy(ai_result.get("macd"), kit,
-                                              limit=9 if LITE_ENABLED else 0,
-                                              plain=PLAIN())
-    if strategy_html:
-        blocks["STRATEGY READ"] = (
-            "STRATEGY READ", SECTION_TITLE_STRATEGY, strategy_html,
-            kit.badge("量化策略", "ai"), "",
-        )
-        # 兼容旧 kicker 的锚点引用（如风险提示中的 AI READ 引用）
-        blocks["AI READ"] = blocks["STRATEGY READ"]
-
-    # ④b 【策略】多流派研判（独立栏目）：Weinstein 四阶段 / 均线排列 + 上游
-    #     评委规则打分。日线复用 MACD 栏目同一批；规则引擎缺席或日线不足 → 整栏缺席。
-    uzi_src = data.get(UZI_TREND_SOURCE_NAME) or {}
-    uzi_res = _uzi_result(data)      # 正文与「🦑 AI帮你提鲜」共用同一份结果（不另算一套）
-    if isinstance(uzi_src, dict) and uzi_src.get("status") == "success":
-        uzi_html = _render_uzi_trend(uzi_src, kit)
-        if uzi_html:
-            uzi_panel = uzi_res.get("panel") or {}
-            uzi_caption = ("" if PLAIN() else
-                           f"{uzi_panel.get('investors', 0)} 位评委 × "
-                           f"{uzi_res.get('rules_enabled', 0)} 条价格类规则 · "
-                           f"收盘日 {_asof_short(uzi_res.get('latest_as_of'))}")
-            blocks["UZI TREND"] = (
-                "UZI TREND", SECTION_TITLE_UZI_TREND, uzi_html,
-                kit.badge("量化策略", "ai"), uzi_caption)
+    # ④ 【策略】MACD 趋势（STRATEGY READ）与【策略】多流派研判（UZI TREND）已于 2026-11-10
+    #    按用户要求下线：此处不再建块，ai_result 仍保留给「今日预判 / 短线速查卡 / 今日总结」。
 
     # ⑤ 趋势跟踪：全网 36 个新闻源头（港股挖掘）+ 内地财经媒体 18 家（标题池覆盖）
     #    + 多平台信息员（Reddit / StockTwits / TradingView / Bogleheads），
@@ -10937,34 +10860,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
     #    风险提示命中这些标题时 shown=False（见 build_daily_quant_strategy），
     #    因此保留完整标题、不生成指向已隐藏栏目的死链锚点。
 
-    # ⑦ 媒体舆情风险点：A/H 成交活跃标的，具体事件事实优先于模糊情绪。
-    #     复用同一 72h 标题池与 sentiment_history 新闻量基线；2026-10-21 起
-    #     无风险时展示“监控中”占位，不再静默缺席（避免“栏目不见”误判）。
-    media_risk_result = {}
-    if MEDIA_RISK_ENABLED:
-        media_risk_result = build_media_risk(
-            data, date_str or _today_str(), sentiment_history,
-            news_corpus=news_corpus)
-        if media_risk_result.get("available"):
-            red_orange = sum(int((media_risk_result.get("level_counts") or {}).get(k) or 0)
-                             for k in ("red", "orange"))
-            blocks["MEDIA RISK"] = (
-                "MEDIA RISK", SECTION_TITLE_MEDIA_RISK,
-                _media_risk_block(media_risk_result, kit),
-                kit.badge(f"{red_orange} 项高等级" if red_orange else "风险观察",
-                          "bad" if red_orange else "warn"),
-                "" if PLAIN() else "A股＋港股 · 72 小时标题事件 · 风险指数非概率",
-            )
-        else:
-            # 清洁态：仍展示占位（监控中），不静默缺席；监控范围为空时亦给出诊断
-            badge_text = "监控范围待恢复" if not media_risk_result.get("universe_n") else "监控中"
-            badge_kind = "warn" if not media_risk_result.get("universe_n") else "ok"
-            blocks["MEDIA RISK"] = (
-                "MEDIA RISK", SECTION_TITLE_MEDIA_RISK,
-                _media_risk_block(media_risk_result, kit),
-                kit.badge(badge_text, badge_kind),
-                "" if PLAIN() else "A股＋港股 · 72 小时标题事件 · 持续监控",
-            )
+    # ⑦ 【舆情】媒体风险已于 2026-11-10 按用户要求下线：不再建块也不进总结「风险关注」。
 
     # ⑧ 新闻情绪：只有真正归因到个股时才出现（样本不足不再占位）
     senti_result = {}
@@ -10986,7 +10882,7 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
         blocks["FORECAST"] = ("FORECAST", SECTION_TITLE_FORECAST,
                                _conclusion_panel(kit, conclusion), "", "")
     summary = _summary_pairs(ai_result, pan, policy, source_items, today_n, total,
-                             quant=quant, media_risk=media_risk_result,
+                             quant=quant, media_risk=None,
                              backup_events=(data.get("_backup_info") or {}).get("events"))
     blocks["SUMMARY"] = ("SUMMARY", SECTION_TITLE_SUMMARY, kit.kv(summary), "", "")
 
@@ -11020,16 +10916,14 @@ def _collect_report_parts(data, kit, sentiment_history=None, date_str=None,
             "quant": quant, "weekly": weekly_res, "hk7": hk7_res,
             "fed": fed_res, "geo": geo_res, "senti": senti_result,
             "retail_sentiment": retail_sentiment_result,
-            "media_risk": media_risk_result,
+            "media_risk": {},
             "sector_rotation": (rotation_src.get("result") or {}) if isinstance(rotation_src, dict) else {},
-            "industry_rotation": (industry_src.get("result") or {}) if isinstance(industry_src, dict) else {},
-            # 🐟 低频小因子：与正文 blocks["LOWFREQ FACTORS"] 用的是同一份结果
-            "lowfreq": (lf_src.get("result") or {}) if isinstance(lf_src, dict) else {},
+            "industry_rotation": {},
+            "lowfreq": {},
             "macd": ai_result.get("macd") if isinstance(ai_result, dict) else {},
             "cal": cal, "yt": yt, "google": google, "em": em,
             "trend": _trend_section_stats(data),
-            # 【策略】：与正文 blocks["UZI TREND"] 用的同一份 run_trend() 结果
-            "uzi": uzi_res,
+            "uzi": {},
             "coverage": {
                 "today": today_n, "total": total,
                 "missing": _missing_source_names(source_items),

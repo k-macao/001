@@ -582,21 +582,20 @@ class PipelineIntegrationTests(unittest.TestCase):
             self.assertIn("大白话", html, theme)
 
     def test_uzi_column_carries_its_own_ren_block(self):
-        """【策略】的解读走 ctx["uzi"]（该栏正文渲染另由 tests/test_uzi_trend.py 覆盖，
-        这里把正文渲染打桩，只验解读块确实挂进了这一栏）。"""
+        """2026-11-10 下线【策略】多流派研判：独立块生成器仍同源可用，整份日报不再渲染本栏。"""
         p = self.pipeline
         data = self._data()
         data[p.UZI_TREND_SOURCE_NAME] = p._source_result(
             p.UZI_TREND_SOURCE_LABEL, "success", result=uzi_result(),
             content_date="2026-09-29", is_today=True)
-        stub = "<p>UZI 正文（测试桩）</p>"
-        with unittest.mock.patch.object(p, "_render_uzi_trend", return_value=stub):
-            html = p.generate_report(data, "2026年9月29日 · 周二", "20260929")
-        self.assertIn(p.SECTION_TITLE_UZI_TREND, html)
-        self.assertIn(stub, html)
-        self.assertIn("趋势评审团：", html)
-        self.assertIn("观察池 3 只里 2 只这次算出了结果", html)
-        self.assertIn("最高分：恒生指数（均分 18.4 · 多头趋势成立）", html)
+        html = p.generate_report(data, "2026年9月29日 · 周二", "20260929")
+        self.assertNotIn(p.SECTION_TITLE_UZI_TREND, html)
+        self.assertNotIn("趋势评审团：", html)
+        block = ren.section_ren_block("UZI TREND", {"uzi": uzi_result(), "date_str": "20260929"})
+        self.assertIsNotNone(block)
+        self.assertIn("趋势评审团：", block["text"])
+        self.assertIn("观察池 3 只里 2 只这次算出了结果", block["text"])
+        self.assertIn("最高分：恒生指数（均分 18.4 · 多头趋势成立）", block["text"])
 
     def test_uzi_ren_disappears_when_the_column_is_absent(self):
         """栏目缺席 → 解读也缺席，不留一句硬编的大白话。"""
