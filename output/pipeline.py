@@ -8856,9 +8856,9 @@ SECTION_TITLE_GLOBAL_HEADLINES = "【事实】全球头条"
 SECTION_TITLE_NEWS_SENTIMENT = "【舆情】新闻情绪"
 # 2026-10-20 新增：A/H 成交活跃标的的媒体风险事件、来源权重、热度异常与分级处置。
 SECTION_TITLE_MEDIA_RISK = "【舆情】媒体风险"
-# 卷首块：正文沿用 007 的「研报 AI 风险点提示」原文，日报展示标题独立命名为
-# 「全球研报 AI 速递」；源栏目标题仍由 research_risk.py 用于识别 007 原文。
-SECTION_TITLE_RESEARCH_RISK = "全球研报 AI 速递"
+# 卷首块（2026-11-04 起移植 k-macao/007 的「## ⚠️ 研报 AI 风险点提示」）：
+# 标题与正文均原样取自 007 最新一篇推送/同源生成结果，排在卷首新手三句话之后。
+SECTION_TITLE_RESEARCH_RISK = "⚠️ 研报 AI 风险点提示"
 RESEARCH_RISK_ENABLED = os.environ.get("OCTOPUS_RESEARCH_RISK", "1").strip().lower() not in ("0", "false", "no")
 # 分条拥挤时把卷首「研报 AI 风险点提示」压成一行摘要用的锚点：
 #   完整块与压缩块同时渲染在标记之间，_split_html_for_push 只在「刚好超一条」时取压缩块。
@@ -12930,10 +12930,26 @@ def _research_risk_block(res, kit, compact=False):
     out = [kit.sub(_esc(SECTION_TITLE_RESEARCH_RISK))]
     for raw in verbatim_md.splitlines():
         line = raw.strip()
-        if not line or line.startswith("#"):
+        if not line:
             continue
-        if line.startswith(("-", "*")):
+        if re.match(r"^#{1,2}(?!#)\s+", line):
+            continue
+        if re.match(r"^-{3,}$", line):
+            continue
+        if line.startswith("###"):
+            sub_txt = line.lstrip("#").strip()
+            if sub_txt:
+                out.append(
+                    f'<div style="font-size:12px;font-weight:700;line-height:1.7;padding-top:4px;">'
+                    f'{_md_inline_html(sub_txt)}</div>')
+        elif re.match(r"^[-*]\s+", line):
             out.append(_research_risk_row(kit, _md_inline_html(line[1:].strip()), ""))
+        elif line.startswith(">"):
+            quote_txt = line.lstrip(">").strip()
+            if quote_txt:
+                out.append(
+                    f'<div style="font-size:12px;line-height:1.7;padding:2px 0 2px 8px;'
+                    f'border-left:2px solid #999999;">{_md_inline_html(quote_txt)}</div>')
         else:
             out.append(f'<div style="font-size:12px;line-height:1.7;padding-top:2px;">'
                        f'{_md_inline_html(line)}</div>')
@@ -17721,17 +17737,21 @@ def main():
     else:
         print(f"  📊 政策因子：近{POLICY_WINDOW_DAYS}日窗口内无显著政策新闻，栏目缺席")
 
-    # 1.7 ⚠️ 研报 AI 风险点提示（原样复制粘贴 k-macao/007 推送的同样栏目文字）：
-    #     先试在线 007 端点整段直搬（OCTOPUS_007_BASE_URL），不通就用 007 推送
-    #     原文模板 + 本地标题池兜底；不改写、不润色、不调大模型。
-    #     本栏失败不影响日报其它栏目。
+    # 1.7 ⚠️ 研报 AI 风险点提示（照抄 k-macao/007 最新一篇的「## ⚠️ 研报 AI 风险点提示」）：
+    #     ① 优先直读 007 已发布正文 / 最新 Actions 运行日志 / OCTOPUS_007_BASE_URL；
+    #     ② 取不到时拉取公开的 k-macao/007 最新代码在本地跑同款 feedscan（--dry-run）提取；
+    #     ③ 断网兜底 007 原文模板 + 本地标题池；本栏失败不影响日报其它栏目。
     research_risk_result = {}
     if RESEARCH_RISK_ENABLED:
         try:
             research_risk_result = _research_risk.build(
                 data=data, date_str=date_str, news_corpus=news_corpus)
+            _rr_src = research_risk_result.get('verbatim_source') or '—'
+            _rr_detail = (research_risk_result.get('remote') or {}).get('source_label') or ''
+            if _rr_detail:
+                _rr_src = f"{_rr_src} · {_rr_detail}"
             print(f"  ⚠️ 研报 AI 风险点提示：{len(research_risk_result.get('points') or [])} 条线索"
-                  f"（{research_risk_result.get('verbatim_source') or '—'}）"
+                  f"（{_rr_src}）"
                   f" → {research_risk_result.get('summary')}")
         except Exception as _rr_exc:  # noqa: BLE001 单栏失败不拖垮整份日报
             print(f"  ⚠️ 研报 AI 风险点提示构建失败（本条栏目将按无线索渲染）：{_rr_exc}")

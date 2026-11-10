@@ -63,6 +63,10 @@ jobs:
           OCTOPUS_LLM_BASE_URL: ${{ vars.OCTOPUS_LLM_BASE_URL }}
           OCTOPUS_LLM_MODEL: ${{ vars.OCTOPUS_LLM_MODEL }}
           OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
+          OCTOPUS_007_BRIEF_URL: ${{ vars.OCTOPUS_007_BRIEF_URL }}
+          OCTOPUS_007_GH_TOKEN: ${{ secrets.OCTOPUS_007_GH_TOKEN }}
+          OCTOPUS_007_BASE_URL: ${{ vars.OCTOPUS_007_BASE_URL }}
+          OCTOPUS_007_AUTO_RUN: ${{ vars.OCTOPUS_007_AUTO_RUN || '1' }}
         run: |
           set -euo pipefail
           NO_PUSH="${{ github.event.inputs.no_push || 'false' }}"

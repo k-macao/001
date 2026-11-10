@@ -17,6 +17,7 @@ import json
 import os
 import re
 import sys
+import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -182,6 +183,107 @@ class ResearchRiskModuleTests(unittest.TestCase):
         self.assertEqual(res["verbatim_md"],
                          rr.render_brief_risk_md(res["points"], res["feed_agg"]))
 
+    def test_extract_log_and_subsection_markdown(self):
+        log_text = (
+            "2026-11-09T19:21:55.1234567Z \ufeff📝 生成的内容：\n"
+            "2026-11-09T19:21:55.1234567Z " + ("-" * 60) + "\n"
+            "2026-11-09T19:21:55.1234567Z # 章鱼 AI.券商研报 007\n\n"
+            "2026-11-09T19:21:55.1234567Z ## ⚠️ 研报 AI 风险点提示\n\n"
+            "2026-11-09T19:21:55.1234567Z ### 1. 估值与利率错配\n"
+            "2026-11-09T19:21:55.1234567Z - **高盛提示估值承压**：美债长端上行限制估值扩张\n"
+            "2026-11-09T19:21:55.1234567Z 1. **瑞银提示盈利下修**：汽车链条价格战持续\n\n"
+            "2026-11-09T19:21:55.1234567Z > 注：以上摘要仅作投研风险观察。\n\n"
+            "2026-11-09T19:21:55.1234567Z ---\n\n"
+            "2026-11-09T19:21:55.1234567Z ## 🏛 国外研报\n"
+            "2026-11-09T19:21:55.1234567Z - 外部明细不该进来\n"
+            "2026-11-09T19:21:55.1234567Z " + ("-" * 60) + "\n"
+        )
+        brief = rr._extract_brief_from_007_log(log_text)
+        section = rr.extract_section_md(brief)
+        self.assertTrue(section.startswith("## ⚠️ 研报 AI 风险点提示"))
+        self.assertIn("### 1. 估值与利率错配", section)
+        self.assertIn("> 注：以上摘要仅作投研风险观察。", section)
+        self.assertFalse(section.endswith("---"))
+        self.assertNotIn("外部明细不该进来", section)
+        pts = rr.parse_rule_md(section)
+        self.assertEqual([p["institution"] for p in pts], ["高盛", "瑞银"])
+
+    def test_fetch_remote_priority_and_gh_actions_log(self):
+        gh_log = (
+            "2026-11-09T19:21:55Z 📝 生成的内容：\n"
+            "2026-11-09T19:21:55Z ------------------------------------------------------------\n"
+            "2026-11-09T19:21:55Z ## ⚠️ 研报 AI 风险点提示\n\n"
+            "2026-11-09T19:21:55Z - **[国外投行 · 高盛]** 提示港股高股息板块短期波动\n"
+            "2026-11-09T19:21:55Z ------------------------------------------------------------\n"
+        )
+
+        def fake_json(url, timeout=20, headers=None):
+            if "runs?status=success" in url:
+                return {"workflow_runs": [{"id": 999, "conclusion": "success",
+                                           "html_url": "https://github.com/k-macao/007/actions/runs/999"}]}
+            if "/artifacts" in url:
+                return {"artifacts": []}
+            if "/jobs" in url:
+                return {"jobs": [{"id": 888, "conclusion": "success"}]}
+            raise AssertionError(f"unexpected json url: {url}")
+
+        with patch.dict(os.environ, {
+            "OCTOPUS_007_GH_TOKEN": "tok_dummy",
+            "OCTOPUS_007_AUTO_RUN": "0",
+        }, clear=False), \
+             patch.object(rr, "_fetch_remote_brief_url",
+                          return_value={"ok": False, "section_md": "", "points": [], "url": "", "reason": "skip"}), \
+             patch.object(rr, "_http_json", side_effect=fake_json), \
+             patch.object(rr, "_http_text", return_value=gh_log):
+            res = rr.fetch_remote()
+        self.assertTrue(res["ok"])
+        self.assertEqual(res["run_id"], 999)
+        self.assertIn("007最新运行日志", res["source_label"])
+        self.assertIn("高盛", res["section_md"])
+
+    def test_run_007_latest_code_strips_push_secrets_and_extracts_section(self):
+        fake_script = (
+            "import os, sys\n"
+            "assert '--dry-run' in sys.argv\n"
+            "assert '--template' in sys.argv and sys.argv[sys.argv.index('--template') + 1] == 'feedscan'\n"
+            "assert '--ai-provider' in sys.argv and sys.argv[sys.argv.index('--ai-provider') + 1] == 'deepseek'\n"
+            "for k in ('PUSHPLUS_TOKEN', 'WECOM_KEY', 'SERVERCHAN_SENDKEY', 'PUSHPLUS_TOPIC'):\n"
+            "    assert k not in os.environ, f'leaked secret: {k}'\n"
+            "assert os.environ.get('DEEPSEEK_API_KEY') == 'ds_test_key'\n"
+            "print('📝 生成的内容：')\n"
+            "print('-' * 60)\n"
+            "print('# 章鱼 AI.券商研报 007')\n"
+            "print('## ⚠️ 研报 AI 风险点提示\\n')\n"
+            "print('### 1. 流动性警示\\n- **摩根士丹利下调**：风险偏好短期收敛')\n"
+            "print('---\\n## 🏛 国外研报\\n- 明细')\n"
+            "print('-' * 60)\n"
+        )
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with open(os.path.join(tmpdir, "pushplus_deepseek.py"), "w", encoding="utf-8") as fh:
+                fh.write(fake_script)
+            env_patch = {
+                "OCTOPUS_007_LOCAL_DIR": tmpdir,
+                "OCTOPUS_007_AUTO_RUN": "1",
+                "DEEPSEEK_API_KEY": "ds_test_key",
+                "PUSHPLUS_TOKEN": "pp_secret",
+                "WECOM_KEY": "wc_secret",
+                "SERVERCHAN_SENDKEY": "sc_secret",
+                "PUSHPLUS_TOPIC": "oai.1",
+            }
+            with patch.dict(os.environ, env_patch, clear=False), \
+                 patch.object(rr, "_fetch_remote_brief_url",
+                              return_value={"ok": False, "section_md": "", "points": [], "url": "", "reason": "none"}), \
+                 patch.object(rr, "_fetch_remote_github_actions",
+                              return_value={"ok": False, "section_md": "", "points": [], "url": "", "reason": "none"}), \
+                 patch.object(rr, "_fetch_remote_api",
+                              return_value={"ok": False, "section_md": "", "points": [], "url": "", "reason": "none"}):
+                res = rr.fetch_remote()
+        self.assertTrue(res["ok"], res.get("reason"))
+        self.assertIn("007最新源码同源生成(deepseek)", res["source_label"])
+        self.assertIn("### 1. 流动性警示", res["section_md"])
+        self.assertNotIn("国外研报", res["section_md"])
+        self.assertEqual([p["institution"] for p in res["points"]], ["摩根士丹利"])
+
 
 class ResearchRiskReportTests(unittest.TestCase):
     """渲染层：位置 / 唯一 / 诚实占位 / 转义。"""
@@ -222,7 +324,7 @@ class ResearchRiskReportTests(unittest.TestCase):
         return base
 
     def test_block_sits_after_beginner_tips_and_before_forecast_in_every_theme(self):
-        self.assertEqual(self.pipeline.SECTION_TITLE_RESEARCH_RISK, "全球研报 AI 速递")
+        self.assertEqual(self.pipeline.SECTION_TITLE_RESEARCH_RISK, "⚠️ 研报 AI 风险点提示")
         data = self._data()
         for theme in self.pipeline.PUSH_THEMES:
             with self.subTest(theme=theme):
@@ -287,7 +389,7 @@ class ResearchRiskReportTests(unittest.TestCase):
             research_risk=res)
         html = parts["research_risk_html"]
         expected = re.sub(
-            r"\s+", "", section.replace("## ⚠️ 研报 AI 风险点提示", "全球研报 AI 速递")
+            r"\s+", "", section.replace("## ⚠️ 研报 AI 风险点提示", "⚠️ 研报 AI 风险点提示")
             .replace("**", "").replace("- ", ""))
         # 去掉 data-rr-compact 隐藏摘要与主题列表符（◆ 等价于 md 的「-」）后，
         # 可见正文必须与 007 原文逐字一致
@@ -295,6 +397,26 @@ class ResearchRiskReportTests(unittest.TestCase):
                       re.sub(r'<div data-rr-compact="[^"]*"[^>]*></div>', "", html)
                       .replace("◆", "")))
         self.assertEqual(text, expected)
+
+    def test_remote_subsection_and_quote_render_cleanly(self):
+        section = (
+            "## ⚠️ 研报 AI 风险点提示\n\n"
+            "### 1. 海外利率风险\n"
+            "- **高盛**：维持防御视角<script>x</script>\n"
+            "> 注：仅供投研观察。\n"
+        )
+        res = self._result(verbatim_md=section, verbatim_source="007在线原文",
+                           points=rr.parse_rule_md(section))
+        parts = self.pipeline._collect_report_parts(
+            self._data(), self.pipeline.GUIZANG_KIT, date_str="20260802",
+            research_risk=res)
+        html = parts["research_risk_html"]
+        self.assertIn("1. 海外利率风险", html)
+        self.assertIn("高盛", html)
+        self.assertIn("注：仅供投研观察。", html)
+        self.assertNotIn("<script>", html)
+        self.assertNotIn("href=", html)
+        self.assertNotIn("###", html)
 
     def test_empty_points_still_render_the_section(self):
         parts = self.pipeline._collect_report_parts(

@@ -94,10 +94,15 @@ jobs:
           OCTOPUS_LLM_MAX_TOKENS: ${{ vars.OCTOPUS_LLM_MAX_TOKENS }}
           # OCTOPUS_LLM_TIMEOUT: "60"
           # OCTOPUS_HK7_FALLBACK: "1"
-          # ⚠️ 研报 AI 风险点提示（原样复制粘贴 k-macao/007 推送的同样栏目文字）：不配下面
-          # 这个地址也能跑，用 007 推送原文模板 + 本仓 15 日标题池本地生成；配了就整段
-          # 直搬 007 接口返回的栏目原文，不改写、不混入本地条目。007 的 server_dashboard 需公网可达。
+          # ⚠️ 研报 AI 风险点提示（照抄 k-macao/007 最新一篇「## ⚠️ 研报 AI 风险点提示」）：
+          #   ① 优先直读 007 已发布正文（OCTOPUS_007_BRIEF_URL / 007 仓库文件）/ 跨仓日志
+          #      （OCTOPUS_007_GH_TOKEN）/ 旧接口（OCTOPUS_007_BASE_URL）；
+          #   ② 取不到时自动拉取公开的 k-macao/007 最新源码在本地安全 --dry-run 同源生成；
+          #   ③ 断网兜底 007 原文模板 + 本地标题池。
+          OCTOPUS_007_BRIEF_URL: ${{ vars.OCTOPUS_007_BRIEF_URL }}
+          OCTOPUS_007_GH_TOKEN: ${{ secrets.OCTOPUS_007_GH_TOKEN }}
           OCTOPUS_007_BASE_URL: ${{ vars.OCTOPUS_007_BASE_URL }}
+          OCTOPUS_007_AUTO_RUN: ${{ vars.OCTOPUS_007_AUTO_RUN || '1' }}
           # 关掉整栏（排查用）：OCTOPUS_RESEARCH_RISK: "0"
         run: |
           set -euo pipefail
