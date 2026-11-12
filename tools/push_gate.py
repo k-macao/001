@@ -31,7 +31,7 @@ import json
 import os
 import sys
 from datetime import datetime, timedelta, timezone
-from typing import Any, Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Sequence, Tuple
 
 CST = timezone(timedelta(hours=8))
 DEFAULT_RETAIN_DAYS = 60
@@ -39,6 +39,7 @@ DEFAULT_RETAIN_DAYS = 60
 SLOT_MORNING = "morning"
 SLOT_EVENING = "evening"
 SLOT_QUIET = "quiet"
+VALID_PUSH_SLOTS = (SLOT_MORNING, SLOT_EVENING)
 
 # 与 output/pipeline.py::main() 末尾打印严格对齐：
 # · 当天检验通过并推送成功 → 打印 "🎉 全部完成！"
@@ -117,8 +118,41 @@ def _atomic_write_json(path: str, data: Dict[str, Any]) -> None:
             os.unlink(tmp)
 
 
-def decide(state_path: str, now_cst: Optional[datetime] = None) -> Dict[str, str]:
+def _normalize_allow_slots(allow_slots: Optional[Sequence[str]]) -> Optional[Tuple[str, ...]]:
+    """校验并去重可选的允许推送时段列表；传入 None 表示不限制。"""
+    if allow_slots is None:
+        return None
+    if isinstance(allow_slots, str):
+        raise ValueError("allow_slots 应为时段序列，而非单个字符串；请先调用 parse_allow_slots")
+    seen = []
+    for raw in allow_slots:
+        slot = str(raw).strip()
+        if slot not in VALID_PUSH_SLOTS:
+            raise ValueError(f"不支持的推送时段 {raw!r}（仅支持 {', '.join(VALID_PUSH_SLOTS)}）")
+        if slot not in seen:
+            seen.append(slot)
+    if not seen:
+        raise ValueError("allow_slots 不能为空")
+    return tuple(seen)
+
+
+def parse_allow_slots(raw: str) -> Tuple[str, ...]:
+    """解析命令行逗号分隔的允许时段（如 'morning' 或 'morning,evening'）。"""
+    parts = [item.strip() for item in str(raw or "").split(",") if item.strip()]
+    if not parts:
+        raise ValueError(f"--allow-slots 不能为空（可选：{', '.join(VALID_PUSH_SLOTS)}）")
+    normalized = _normalize_allow_slots(parts)
+    assert normalized is not None
+    return normalized
+
+
+def decide(
+    state_path: str,
+    now_cst: Optional[datetime] = None,
+    allow_slots: Optional[Sequence[str]] = None,
+) -> Dict[str, str]:
     """判定本次定时运行应当 `push` 还是 `no-push`。"""
+    allowed = _normalize_allow_slots(allow_slots)
     current = (now_cst.astimezone(CST) if now_cst and now_cst.tzinfo
                else (now_cst.replace(tzinfo=CST) if now_cst else datetime.now(CST)))
     target_date, slot, window_desc = resolve_window(current)
@@ -132,10 +166,22 @@ def decide(state_path: str, now_cst: Optional[datetime] = None) -> Dict[str, str
             "reason": f"当前北京 {hhmm}（{window_desc}），保持静默更新，不打扰微信且不占用早盘额度",
         }
 
+    slot_label = "早盘" if slot == SLOT_MORNING else "晚间"
+    if allowed is not None and slot not in allowed:
+        allowed_labels = " / ".join("早盘" if s == SLOT_MORNING else "晚间" for s in allowed)
+        return {
+            "mode": "no-push",
+            "target_date": target_date,
+            "slot": slot,
+            "reason": (
+                f"当前北京 {hhmm}（{window_desc}）属{slot_label}窗口，"
+                f"本工作流仅允许推送{allowed_labels}时段，本次转为静默更新"
+            ),
+        }
+
     state = load_state(state_path)
     day_rec = state["days"].get(target_date)
     slot_rec = day_rec.get(slot) if isinstance(day_rec, dict) else None
-    slot_label = "早盘" if slot == SLOT_MORNING else "晚间"
 
     if isinstance(slot_rec, dict) and slot_rec.get("pushed") is True:
         prev_at = slot_rec.get("at_cst") or "早前"
@@ -221,6 +267,8 @@ def main(argv: list[str]) -> int:
     p_decide = sub.add_parser("decide", help="判断本次定时运行应 push 还是 no-push")
     p_decide.add_argument("--state", required=True, help="状态文件（如 output/push_state.json）")
     p_decide.add_argument("--now", default="", help="可选 ISO 时间戳（单测用）")
+    p_decide.add_argument("--allow-slots", default=None,
+                          help="可选允许推送的时段（逗号分隔，如 morning 或 morning,evening）")
     p_decide.add_argument("--format", choices=("tsv", "json"), default="tsv")
 
     p_record = sub.add_parser("record", help="记录本次定时推送成功")
@@ -239,7 +287,13 @@ def main(argv: list[str]) -> int:
 
     if args.command == "decide":
         now_cst = parse_cst_now(args.now) if args.now else None
-        result = decide(args.state, now_cst=now_cst)
+        try:
+            allow_slots = (parse_allow_slots(args.allow_slots)
+                           if args.allow_slots is not None else None)
+        except ValueError as exc:
+            print(f"❌ 参数错误：{exc}", file=sys.stderr)
+            return 2
+        result = decide(args.state, now_cst=now_cst, allow_slots=allow_slots)
         if args.format == "json":
             print(json.dumps(result, ensure_ascii=False))
         else:

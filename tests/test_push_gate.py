@@ -147,6 +147,56 @@ class TestPushGateWindowAndDedup(unittest.TestCase):
         mode2, date2, slot2, _ = out2.stdout.strip().split("\t")
         self.assertEqual((mode2, date2, slot2), ("no-push", "2026-11-10", "morning"))
 
+    def test_morning_workflow_delayed_past_1930_does_not_steal_evening_slot(self):
+        # 复现 2026-11-10 事故：早盘 11:47 档延迟到 19:49 才触发时，绝不可抢发 evening
+        pg.record_push(self.state_path, "2026-11-10", pg.SLOT_MORNING,
+                       workflow="octopus-daily.yml", run_id="1001",
+                       now_cst=pg.parse_cst_now("2026-11-10T16:33:27+08:00"))
+
+        for ts, expected_date in (
+            ("2026-11-10T19:49:05+08:00", "2026-11-10"),
+            ("2026-11-11T00:45:00+08:00", "2026-11-10"),
+        ):
+            d = pg.decide(self.state_path, now_cst=pg.parse_cst_now(ts),
+                          allow_slots=(pg.SLOT_MORNING,))
+            self.assertEqual(d["mode"], "no-push", ts)
+            self.assertEqual(d["target_date"], expected_date, ts)
+            self.assertEqual(d["slot"], pg.SLOT_EVENING, ts)
+            self.assertIn("仅允许推送早盘", d["reason"])
+
+        # 随后晚间工作流在 23:41 到场仍应正常推送 2026-11-10 evening
+        d_evening = pg.decide(self.state_path,
+                              now_cst=pg.parse_cst_now("2026-11-10T23:41:30+08:00"))
+        self.assertEqual(d_evening["mode"], "push")
+        self.assertEqual(d_evening["target_date"], "2026-11-10")
+        self.assertEqual(d_evening["slot"], pg.SLOT_EVENING)
+
+    def test_allow_slots_rejects_invalid_and_empty_inputs_and_cli_round_trip(self):
+        with self.assertRaises(ValueError):
+            pg.decide(self.state_path, now_cst=pg.parse_cst_now("2026-11-10T04:00:00+08:00"),
+                      allow_slots=("quiet",))
+        with self.assertRaises(ValueError):
+            pg.parse_allow_slots("")
+        with self.assertRaises(ValueError):
+            pg.parse_allow_slots("noon")
+
+        bad = subprocess.run(
+            [sys.executable, str(TOOLS_DIR / "push_gate.py"),
+             "decide", "--state", self.state_path, "--allow-slots", "noon", "--format", "tsv"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(bad.returncode, 2)
+
+        ok = subprocess.run(
+            [sys.executable, str(TOOLS_DIR / "push_gate.py"),
+             "decide", "--state", self.state_path, "--allow-slots", "morning",
+             "--now", "2026-11-10T19:49:05+08:00", "--format", "tsv"],
+            capture_output=True, text=True, check=True,
+        )
+        mode, date_s, slot, reason = ok.stdout.strip().split("\t")
+        self.assertEqual((mode, date_s, slot), ("no-push", "2026-11-10", "evening"))
+        self.assertIn("仅允许推送早盘", reason)
+
 
 class TestAutoScheduleWorkflowsConfig(unittest.TestCase):
     """确保早盘与晚间两条工作流已拆分、错开整点并接入 push_gate。"""
@@ -166,6 +216,8 @@ class TestAutoScheduleWorkflowsConfig(unittest.TestCase):
                 for expr in crons:
                     minute_field = expr.split()[0]
                     self.assertNotEqual(minute_field, "0", f"{fname} cron 不应设在整点 0 分: {expr}")
+        daily_text = (WORKFLOW_DIR / "octopus-daily.yml").read_text(encoding="utf-8")
+        self.assertIn("--allow-slots morning", daily_text)
 
 
 if __name__ == "__main__":

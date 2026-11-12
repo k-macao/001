@@ -3,10 +3,10 @@ name: 🐙 章鱼AI · 每日自动推送
 on:
   schedule:
     # 早盘推送主档 + 午间补漏/静默更新（错开整点队列拥堵，两档间隔 2.5 小时避免同工作流合并丢档）
-    # 配合 tools/push_gate.py 与 output/push_state.json 按「今日早盘/晚间是否已推」去重：
-    # · GitHub 准点或延迟至 13~18 时触发时，只要今日早盘未成功推送，自动补推而非丢弃；
-    # · 已成功推过早盘后，后续触发展开为 --no-push 静默刷新网页与留痕。
-    # 晚间复盘由独立工作流 .github/workflows/octopus-evening.yml 独立排队负责，互不阻塞。
+    # 配合 tools/push_gate.py 与 output/push_state.json 按「今日早盘是否已推」去重（--allow-slots morning）：
+    # · GitHub 准点或延迟至 19:29 前触发时，只要今日早盘未成功推送，自动补推而非丢弃；
+    # · 已成功推过早盘后，或延迟跨过 19:30 进入晚间窗口时，自动转为 --no-push 静默刷新网页与留痕，
+    #   绝不越界抢占晚间推送额度；晚间复盘由 .github/workflows/octopus-evening.yml 独立负责。
     - cron: "17 1 * * *"    # 北京 09:17（早盘推送主档）
     - cron: "47 3 * * *"    # 北京 11:47（早盘兜底 / 盘中静默更新）
 
@@ -140,7 +140,7 @@ jobs:
             echo "运行模式：手动指定静默更新（--no-push，不推微信）"
             python3 output/pipeline.py --no-push
           elif [ "$EVENT_NAME" = "schedule" ]; then
-            DECISION=$(python3 tools/push_gate.py decide --state output/push_state.json --format tsv)
+            DECISION=$(python3 tools/push_gate.py decide --state output/push_state.json --allow-slots morning --format tsv)
             IFS=$'\t' read -r GATE_MODE TARGET_DATE GATE_SLOT GATE_REASON <<< "$DECISION"
             echo "📅 定时推送门禁：mode=${GATE_MODE} | date=${TARGET_DATE} | slot=${GATE_SLOT} | ${GATE_REASON}"
             if [ "$GATE_MODE" = "push" ]; then
