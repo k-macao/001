@@ -1942,6 +1942,975 @@
     "algo": "sha256",
     "hash": "9433eecd7dd1e093c296e007be57743755d8b3d5875f0cb3d758dfa22c5e37c6"
    }
+  },
+  "1700": {
+   "slot": "1700",
+   "label": "盘后 17:00",
+   "date": "2026-11-13",
+   "pulled_at": "2026-11-13 20:27:00",
+   "scheduled_at": "2026-11-13 17:00:00",
+   "trading_day": true,
+   "sources": {
+    "yahoo": {
+     "key": "yahoo",
+     "label": "Yahoo Finance chart（主源）",
+     "status": "ok",
+     "role": "primary",
+     "host": "query1.finance.yahoo.com",
+     "error": null,
+     "elapsed_ms": 570,
+     "quote_time": "2026-11-13 16:29:52",
+     "symbols": 37
+    },
+    "eastmoney": {
+     "key": "eastmoney",
+     "label": "东方财富 push2 行情快照（备用源）",
+     "status": "standby",
+     "role": "backup",
+     "host": "",
+     "error": null,
+     "elapsed_ms": 0,
+     "quote_time": null,
+     "symbols": 0
+    },
+    "tencent": {
+     "key": "tencent",
+     "label": "腾讯财经 qt.gtimg.cn（备用源）",
+     "status": "standby",
+     "role": "backup",
+     "host": "",
+     "error": null,
+     "elapsed_ms": 0,
+     "quote_time": null,
+     "symbols": 0
+    },
+    "sina": {
+     "key": "sina",
+     "label": "新浪财经 hq.sinajs.cn（备用源）",
+     "status": "standby",
+     "role": "backup",
+     "host": "",
+     "error": null,
+     "elapsed_ms": 0,
+     "quote_time": null,
+     "symbols": 0
+    },
+    "tdx": {
+     "key": "tdx",
+     "label": "通达信行情 mootdx（沪深 · 备用源）",
+     "status": "failed",
+     "role": "backup",
+     "host": "",
+     "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
+     "elapsed_ms": 10859,
+     "quote_time": null,
+     "symbols": 0
+    },
+    "em_kline": {
+     "key": "em_kline",
+     "label": "东方财富 push2his 日K收盘（兜底备用源）",
+     "status": "standby",
+     "role": "backup",
+     "host": "",
+     "error": null,
+     "elapsed_ms": 0,
+     "quote_time": null,
+     "symbols": 0
+    }
+   },
+   "quotes": {
+    "^HSI": {
+     "name": "恒生指数",
+     "market": "HK",
+     "price": 23637.6,
+     "prev_close": 24315.9,
+     "change_pct": -2.7895,
+     "open": null,
+     "high": 23930.13,
+     "low": 23595.36,
+     "volume": 0.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:40",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "^HSTECH": {
+     "name": "恒生科技",
+     "market": "HK",
+     "price": 3813.19,
+     "prev_close": 3931.93,
+     "change_pct": -3.0199,
+     "open": null,
+     "high": 3938.39,
+     "low": 3802.84,
+     "volume": 0.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:40",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "^HSCEI": {
+     "name": "国企指数",
+     "market": "HK",
+     "price": 7937.53,
+     "prev_close": 8171.45,
+     "change_pct": -2.8626,
+     "open": null,
+     "high": 8042.01,
+     "low": 7927.17,
+     "volume": 0.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:40",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "000001.SS": {
+     "name": "上证指数",
+     "market": "A",
+     "price": 3634.353,
+     "prev_close": 3680.64,
+     "change_pct": -1.2576,
+     "open": null,
+     "high": 3669.44,
+     "low": 3623.841,
+     "volume": 4279692740.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:00:29",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "399001.SZ": {
+     "name": "深证成指",
+     "market": "A",
+     "price": 10968.787,
+     "prev_close": 11389.7,
+     "change_pct": -3.6956,
+     "open": null,
+     "high": 11253.314,
+     "low": 10941.108,
+     "volume": 545192809.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:29:52",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "399006.SZ": {
+     "name": "创业板指",
+     "market": "A",
+     "price": 2426.0845,
+     "prev_close": 2509.4292,
+     "change_pct": -3.3213,
+     "open": null,
+     "high": 2528.989,
+     "low": 2417.2192,
+     "volume": 3372624192.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:29:07",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "^DJI": {
+     "name": "道琼斯",
+     "market": "US",
+     "price": 52297.09,
+     "prev_close": 52486.5,
+     "change_pct": -0.3609,
+     "open": null,
+     "high": 52751.22,
+     "low": 52271.16,
+     "volume": 1015162862.0,
+     "amount": null,
+     "quote_time": "2026-11-13 05:58:18",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "^GSPC": {
+     "name": "标普500",
+     "market": "US",
+     "price": 7592.4,
+     "prev_close": 7619.38,
+     "change_pct": -0.3541,
+     "open": null,
+     "high": 7652.76,
+     "low": 7550.84,
+     "volume": 3182097000.0,
+     "amount": null,
+     "quote_time": "2026-11-13 05:58:23",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "^IXIC": {
+     "name": "纳斯达克",
+     "market": "US",
+     "price": 25366.094,
+     "prev_close": 25466.19,
+     "change_pct": -0.3931,
+     "open": null,
+     "high": 25597.225,
+     "low": 25068.283,
+     "volume": 8857475000.0,
+     "amount": null,
+     "quote_time": "2026-11-13 06:15:59",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "MSFT": {
+     "name": "微软",
+     "market": "US",
+     "price": 523.0,
+     "prev_close": 521.125,
+     "change_pct": 0.3598,
+     "open": null,
+     "high": 529.61,
+     "low": 520.02,
+     "volume": 17899545.0,
+     "amount": null,
+     "quote_time": "2026-11-13 05:00:01",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "META": {
+     "name": "Meta",
+     "market": "US",
+     "price": 623.61,
+     "prev_close": 628.77,
+     "change_pct": -0.8206,
+     "open": null,
+     "high": 630.277,
+     "low": 618.92,
+     "volume": 10253879.0,
+     "amount": null,
+     "quote_time": "2026-11-13 05:00:01",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "600519.SS": {
+     "name": "贵州茅台",
+     "market": "A",
+     "price": 1435.26,
+     "prev_close": 1410.27,
+     "change_pct": 1.772,
+     "open": null,
+     "high": 1437.69,
+     "low": 1394.0,
+     "volume": 4177984.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:00:02",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "300750.SZ": {
+     "name": "宁德时代",
+     "market": "A",
+     "price": 237.7,
+     "prev_close": 240.0,
+     "change_pct": -0.9583,
+     "open": null,
+     "high": 242.38,
+     "low": 236.66,
+     "volume": 30299488.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:04:46",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "300308.SZ": {
+     "name": "中际旭创",
+     "market": "A",
+     "price": 466.2,
+     "prev_close": 508.9,
+     "change_pct": -8.3906,
+     "open": null,
+     "high": 525.0,
+     "low": 461.71,
+     "volume": 53609714.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:04:46",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "002594.SZ": {
+     "name": "比亚迪",
+     "market": "A",
+     "price": 79.99,
+     "prev_close": 80.32,
+     "change_pct": -0.4109,
+     "open": null,
+     "high": 80.84,
+     "low": 79.86,
+     "volume": 26533819.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:04:33",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "600036.SS": {
+     "name": "招商银行",
+     "market": "A",
+     "price": 42.93,
+     "prev_close": 42.63,
+     "change_pct": 0.7037,
+     "open": null,
+     "high": 43.0,
+     "low": 42.2,
+     "volume": 76740311.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:00:01",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "601318.SS": {
+     "name": "中国平安",
+     "market": "A",
+     "price": 53.8,
+     "prev_close": 53.33,
+     "change_pct": 0.8813,
+     "open": null,
+     "high": 53.85,
+     "low": 52.82,
+     "volume": 46918816.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:00:02",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "000858.SZ": {
+     "name": "五粮液",
+     "market": "A",
+     "price": 73.38,
+     "prev_close": 72.63,
+     "change_pct": 1.0326,
+     "open": null,
+     "high": 73.5,
+     "low": 71.82,
+     "volume": 24500404.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:04:12",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "000333.SZ": {
+     "name": "美的集团",
+     "market": "A",
+     "price": 90.55,
+     "prev_close": 87.99,
+     "change_pct": 2.9094,
+     "open": null,
+     "high": 90.77,
+     "low": 87.16,
+     "volume": 34928301.0,
+     "amount": null,
+     "quote_time": "2026-11-13 15:04:18",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0700.HK": {
+     "name": "腾讯控股",
+     "market": "HK",
+     "price": 386.6,
+     "prev_close": 398.8,
+     "change_pct": -3.0592,
+     "open": null,
+     "high": 395.2,
+     "low": 385.6,
+     "volume": 31488153.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "9988.HK": {
+     "name": "阿里巴巴-W",
+     "market": "HK",
+     "price": 90.55,
+     "prev_close": 93.8,
+     "change_pct": -3.4648,
+     "open": null,
+     "high": 94.45,
+     "low": 89.6,
+     "volume": 158412438.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "3690.HK": {
+     "name": "美团-W",
+     "market": "HK",
+     "price": 69.8,
+     "prev_close": 72.1,
+     "change_pct": -3.19,
+     "open": null,
+     "high": 72.65,
+     "low": 69.65,
+     "volume": 24952585.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "1810.HK": {
+     "name": "小米集团-W",
+     "market": "HK",
+     "price": 28.86,
+     "prev_close": 29.98,
+     "change_pct": -3.7358,
+     "open": null,
+     "high": 29.8,
+     "low": 28.8,
+     "volume": 109047187.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "1299.HK": {
+     "name": "友邦保险",
+     "market": "HK",
+     "price": 77.75,
+     "prev_close": 79.25,
+     "change_pct": -1.8927,
+     "open": null,
+     "high": 78.95,
+     "low": 76.85,
+     "volume": 26727309.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0005.HK": {
+     "name": "汇丰控股",
+     "market": "HK",
+     "price": 139.9,
+     "prev_close": 140.7,
+     "change_pct": -0.5686,
+     "open": null,
+     "high": 140.6,
+     "low": 139.6,
+     "volume": 5675873.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0939.HK": {
+     "name": "建设银行",
+     "market": "HK",
+     "price": 10.5,
+     "prev_close": 10.44,
+     "change_pct": 0.5747,
+     "open": null,
+     "high": 10.56,
+     "low": 10.31,
+     "volume": 163903946.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0941.HK": {
+     "name": "中国移动",
+     "market": "HK",
+     "price": 80.4,
+     "prev_close": 80.7,
+     "change_pct": -0.3717,
+     "open": null,
+     "high": 80.75,
+     "low": 80.2,
+     "volume": 10278426.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0388.HK": {
+     "name": "香港交易所",
+     "market": "HK",
+     "price": 378.4,
+     "prev_close": 382.0,
+     "change_pct": -0.9424,
+     "open": null,
+     "high": 382.0,
+     "low": 377.2,
+     "volume": 2634193.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0981.HK": {
+     "name": "中芯国际",
+     "market": "HK",
+     "price": 48.52,
+     "prev_close": 48.74,
+     "change_pct": -0.4514,
+     "open": null,
+     "high": 52.3,
+     "low": 48.1,
+     "volume": 153263275.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "1211.HK": {
+     "name": "比亚迪股份",
+     "market": "HK",
+     "price": 65.0,
+     "prev_close": 67.55,
+     "change_pct": -3.775,
+     "open": null,
+     "high": 68.5,
+     "low": 64.8,
+     "volume": 26965273.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "1024.HK": {
+     "name": "快手-W",
+     "market": "HK",
+     "price": 25.92,
+     "prev_close": 27.14,
+     "change_pct": -4.4952,
+     "open": null,
+     "high": 27.0,
+     "low": 25.84,
+     "volume": 41815524.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "9618.HK": {
+     "name": "京东集团-SW",
+     "market": "HK",
+     "price": 107.0,
+     "prev_close": 107.7,
+     "change_pct": -0.65,
+     "open": null,
+     "high": 108.7,
+     "low": 106.6,
+     "volume": 9394724.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "0883.HK": {
+     "name": "中国海洋石油",
+     "market": "HK",
+     "price": 22.84,
+     "prev_close": 22.84,
+     "change_pct": 0.0,
+     "open": null,
+     "high": 23.18,
+     "low": 22.82,
+     "volume": 36759642.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "2318.HK": {
+     "name": "中国平安",
+     "market": "HK",
+     "price": 51.6,
+     "prev_close": 52.3,
+     "change_pct": -1.3384,
+     "open": null,
+     "high": 52.25,
+     "low": 51.45,
+     "volume": 31200243.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "2020.HK": {
+     "name": "安踏体育",
+     "market": "HK",
+     "price": 79.1,
+     "prev_close": 79.0,
+     "change_pct": 0.1266,
+     "open": null,
+     "high": 79.6,
+     "low": 77.95,
+     "volume": 6443765.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "9999.HK": {
+     "name": "网易-S",
+     "market": "HK",
+     "price": 190.4,
+     "prev_close": 194.5,
+     "change_pct": -2.108,
+     "open": null,
+     "high": 193.5,
+     "low": 188.9,
+     "volume": 7267681.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    },
+    "2269.HK": {
+     "name": "药明生物",
+     "market": "HK",
+     "price": 46.74,
+     "prev_close": 48.88,
+     "change_pct": -4.3781,
+     "open": null,
+     "high": 49.16,
+     "low": 46.38,
+     "volume": 28502832.0,
+     "amount": null,
+     "quote_time": "2026-11-13 16:08:15",
+     "source": "yahoo",
+     "source_label": "Yahoo Finance chart（主源）",
+     "source_role": "主源",
+     "is_backup": false,
+     "sources": [
+      "yahoo"
+     ],
+     "n_sources": 1
+    }
+   },
+   "source_summary": {
+    "mode": "single_with_backup",
+    "primary_source": "yahoo",
+    "active_sources": [
+     "yahoo"
+    ],
+    "backup_sources_used": [],
+    "standby_sources": [
+     "eastmoney",
+     "tencent",
+     "sina",
+     "em_kline"
+    ],
+    "sources_ok": 1,
+    "sources_total": 6,
+    "symbols_total": 37,
+    "symbols_ok": 37,
+    "primary_hit": 37,
+    "backup_hit": 0,
+    "prices": {
+     "^HSI": 23637.6,
+     "^HSTECH": 3813.19,
+     "^HSCEI": 7937.53,
+     "000001.SS": 3634.353,
+     "399001.SZ": 10968.787,
+     "399006.SZ": 2426.0845,
+     "^DJI": 52297.09,
+     "^GSPC": 7592.4,
+     "^IXIC": 25366.094,
+     "MSFT": 523.0,
+     "META": 623.61,
+     "600519.SS": 1435.26,
+     "300750.SZ": 237.7,
+     "300308.SZ": 466.2,
+     "002594.SZ": 79.99,
+     "600036.SS": 42.93,
+     "601318.SS": 53.8,
+     "000858.SZ": 73.38,
+     "000333.SZ": 90.55,
+     "0700.HK": 386.6,
+     "9988.HK": 90.55,
+     "3690.HK": 69.8,
+     "1810.HK": 28.86,
+     "1299.HK": 77.75,
+     "0005.HK": 139.9,
+     "0939.HK": 10.5,
+     "0941.HK": 80.4,
+     "0388.HK": 378.4,
+     "0981.HK": 48.52,
+     "1211.HK": 65.0,
+     "1024.HK": 25.92,
+     "9618.HK": 107.0,
+     "0883.HK": 22.84,
+     "2318.HK": 51.6,
+     "2020.HK": 79.1,
+     "9999.HK": 190.4,
+     "2269.HK": 46.74
+    }
+   },
+   "self_check": {
+    "score": 96,
+    "ok": true,
+    "checks": [
+     {
+      "name": "slot_valid",
+      "ok": true,
+      "warn_only": false,
+      "detail": "时段 1700 ∈ ['0800', '1230', '1700']"
+     },
+     {
+      "name": "schedule_window",
+      "ok": false,
+      "warn_only": true,
+      "detail": "拉取时刻距计划 ±207 分钟（容差 180）"
+     },
+     {
+      "name": "source_available",
+      "ok": true,
+      "warn_only": false,
+      "detail": "启用源 1（yahoo） · 备用待命 4"
+     },
+     {
+      "name": "symbol_coverage",
+      "ok": true,
+      "warn_only": false,
+      "detail": "标的覆盖 37/37（100%，下限 80%）"
+     },
+     {
+      "name": "numeric_sanity",
+      "ok": true,
+      "warn_only": false,
+      "detail": "全部价格 >0 且涨跌幅在容差内"
+     },
+     {
+      "name": "slot_jump",
+      "ok": true,
+      "warn_only": false,
+      "detail": "同日内相邻时段最大价差 1.20%"
+     },
+     {
+      "name": "freshness",
+      "ok": true,
+      "warn_only": true,
+      "detail": "本时段存在当天行情"
+     }
+    ],
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±207 分钟（容差 180）"
+    ]
+   },
+   "integrity": {
+    "algo": "sha256",
+    "hash": "953b65f0013b503e7d52720d93f35b525df5d5d2be513025efc32f2327d4d04f"
+   }
   }
  },
  "audit": {
@@ -1961,17 +2930,26 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-11-13 20:27:00",
+    "overwrote": false,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-11-13 14:22:33",
+ "updated_at": "2026-11-13 20:27:00",
  "ai": {
-  "row_count": 74,
+  "row_count": 111,
   "symbols": 37,
   "slots_present": [
    "0800",
-   "1230"
+   "1230",
+   "1700"
   ],
   "feature_names": [
    "price",
@@ -2006,6 +2984,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "4626f42b62b7ce1873d771d99af89e2d5d17236f63be20e1e827d6d65d0b3ca0"
+  "hash": "c2d159e66ad0723af1df3ad52440d2c40877daebadc0d85cef438464944c3a02"
  }
 }
