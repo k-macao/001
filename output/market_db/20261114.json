@@ -1947,7 +1947,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-11-14",
-   "pulled_at": "2026-11-14 19:39:02",
+   "pulled_at": "2026-11-14 23:33:00",
    "scheduled_at": "2026-11-14 17:00:00",
    "trading_day": false,
    "sources": {
@@ -1958,7 +1958,7 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 613,
+     "elapsed_ms": 1282,
      "quote_time": "2026-11-14 06:15:59",
      "symbols": 37
     },
@@ -2002,7 +2002,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10849,
+     "elapsed_ms": 10496,
      "quote_time": null,
      "symbols": 0
     },
@@ -2191,7 +2191,7 @@
      "name": "纳斯达克",
      "market": "US",
      "price": 25136.273,
-     "prev_close": 25366.094,
+     "prev_close": 25366.1,
      "change_pct": -0.906,
      "open": null,
      "high": 25423.09,
@@ -2857,7 +2857,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -2868,9 +2868,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±159 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±393 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -2903,11 +2903,13 @@
       "detail": "本时段存在当天行情"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±393 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "033dc6e14a2edc352b622f17289a0d1ce1fd4afea172bbfd54ecd0bdac6e5de6"
+    "hash": "11537816ce6bee9f475fde4bd052ecc8300254bd675d169cccf18526849aec59"
    }
   }
  },
@@ -2936,11 +2938,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-11-14 23:33:00",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 3
+  "pull_count": 4
  },
- "updated_at": "2026-11-14 19:39:02",
+ "updated_at": "2026-11-14 23:33:00",
  "ai": {
   "row_count": 111,
   "symbols": 37,
@@ -2982,6 +2992,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "50471d43010bce6ea1e66154348adfcecb9caaa2d10edb57b6752bdf71a9a18f"
+  "hash": "fce7ccd15d277af1ec80137763dd4b41c68da14de81bfea79da4cf0c086709ee"
  }
 }
