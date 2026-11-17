@@ -99,6 +99,12 @@
       }
     },
     "2026-11-17": {
+      "evening": {
+        "at_cst": "2026-11-18 01:01:13+0800",
+        "pushed": true,
+        "run_id": "44131757487",
+        "workflow": "octopus-evening.yml"
+      },
       "morning": {
         "at_cst": "2026-11-17 17:21:15+0800",
         "pushed": true,
@@ -107,6 +113,6 @@
       }
     }
   },
-  "updated_cst": "2026-11-17 17:21:15+0800",
+  "updated_cst": "2026-11-18 01:01:13+0800",
   "version": 1
 }
