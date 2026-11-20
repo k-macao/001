@@ -379,10 +379,10 @@
     },
     "20261120": {
      "pos": 0,
-     "neu": 0,
+     "neu": 6,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 6,
+     "score": 0.0
     }
    }
   },
@@ -803,6 +803,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261120": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -1107,10 +1114,10 @@
     },
     "20261120": {
      "pos": 0,
-     "neu": 0,
-     "neg": 0,
-     "total": 0,
-     "score": null
+     "neu": 1,
+     "neg": 5,
+     "total": 6,
+     "score": -0.8333
     }
    }
   },
@@ -1415,10 +1422,10 @@
     },
     "20261120": {
      "pos": 0,
-     "neu": 0,
-     "neg": 0,
-     "total": 0,
-     "score": null
+     "neu": 6,
+     "neg": 1,
+     "total": 7,
+     "score": -0.1429
     }
    }
   },
@@ -1723,10 +1730,10 @@
     },
     "20261120": {
      "pos": 0,
-     "neu": 0,
+     "neu": 6,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 6,
+     "score": 0.0
     }
    }
   },
@@ -2599,9 +2606,9 @@
     "20261120": {
      "pos": 0,
      "neu": 0,
-     "neg": 0,
-     "total": 0,
-     "score": null
+     "neg": 2,
+     "total": 2,
+     "score": -1.0
     }
    }
   },
@@ -3199,11 +3206,11 @@
      "score": 0.0
     },
     "20261120": {
-     "pos": 0,
-     "neu": 1,
-     "neg": 0,
-     "total": 1,
-     "score": 0.0
+     "pos": 2,
+     "neu": 8,
+     "neg": 1,
+     "total": 11,
+     "score": 0.0909
     }
    }
   },
@@ -3449,6 +3456,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261120": {
+     "pos": 0,
+     "neu": 1,
+     "neg": 5,
+     "total": 6,
+     "score": -0.8333
     }
    }
   },
@@ -4768,10 +4782,10 @@
     },
     "20261120": {
      "pos": 0,
-     "neu": 0,
-     "neg": 0,
-     "total": 0,
-     "score": null
+     "neu": 1,
+     "neg": 1,
+     "total": 2,
+     "score": -0.5
     }
    }
   },
@@ -5304,6 +5318,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261120": {
+     "pos": 1,
+     "neu": 0,
+     "neg": 0,
+     "total": 1,
+     "score": 1.0
     }
    }
   },
@@ -5378,12 +5399,26 @@
     "20261120": {
      "pos": 0,
      "neu": 0,
+     "neg": 1,
+     "total": 1,
+     "score": -1.0
+    }
+   }
+  },
+  "美股:ANT": {
+   "market": "美股",
+   "code": "ANT",
+   "name": "Anthropic",
+   "days": {
+    "20261120": {
+     "pos": 2,
+     "neu": 3,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 5,
+     "score": 0.4
     }
    }
   }
  },
- "updated_cst": "2026-11-20 05:31:06"
+ "updated_cst": "2026-11-20 16:42:30"
 }
