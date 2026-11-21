@@ -979,7 +979,7 @@
    "slot": "1700",
    "label": "盘后 17:00",
    "date": "2026-11-21",
-   "pulled_at": "2026-11-21 14:52:51",
+   "pulled_at": "2026-11-21 20:52:12",
    "scheduled_at": "2026-11-21 17:00:00",
    "trading_day": false,
    "sources": {
@@ -990,7 +990,7 @@
      "role": "primary",
      "host": "query1.finance.yahoo.com",
      "error": null,
-     "elapsed_ms": 541,
+     "elapsed_ms": 880,
      "quote_time": "2026-11-21 06:15:59",
      "symbols": 37
     },
@@ -1034,7 +1034,7 @@
      "role": "backup",
      "host": "",
      "error": "8.129.13.54:7709 TCP 预检失败（TimeoutError）；120.24.149.49:7709 TCP 预检失败（TimeoutError）；47.113.94.204:7709 TCP 预检失败（TimeoutError）",
-     "elapsed_ms": 10879,
+     "elapsed_ms": 10431,
      "quote_time": null,
      "symbols": 0
     },
@@ -1889,7 +1889,7 @@
     }
    },
    "self_check": {
-    "score": 100,
+    "score": 96,
     "ok": true,
     "checks": [
      {
@@ -1900,9 +1900,9 @@
      },
      {
       "name": "schedule_window",
-      "ok": true,
+      "ok": false,
       "warn_only": true,
-      "detail": "拉取时刻距计划 ±127 分钟（容差 180）"
+      "detail": "拉取时刻距计划 ±232 分钟（容差 180）"
      },
      {
       "name": "source_available",
@@ -1935,11 +1935,13 @@
       "detail": "本时段存在当天行情"
      }
     ],
-    "alerts": []
+    "alerts": [
+     "提示·schedule_window：拉取时刻距计划 ±232 分钟（容差 180）"
+    ]
    },
    "integrity": {
     "algo": "sha256",
-    "hash": "4b362b134fe53a6bfdbb67853d7ba8b27754b92fe7e45f804755877f2d00af4b"
+    "hash": "ff5c88187fcd20e2ada9b821e43208eb08f043c660b7fd195dd1e0c0fed1490d"
    }
   }
  },
@@ -1960,11 +1962,19 @@
     "sources_ok": 1,
     "symbols_ok": 37,
     "score": 100
+   },
+   {
+    "slot": "1700",
+    "pulled_at": "2026-11-21 20:52:12",
+    "overwrote": true,
+    "sources_ok": 1,
+    "symbols_ok": 37,
+    "score": 96
    }
   ],
-  "pull_count": 2
+  "pull_count": 3
  },
- "updated_at": "2026-11-21 14:52:51",
+ "updated_at": "2026-11-21 20:52:12",
  "ai": {
   "row_count": 74,
   "symbols": 37,
@@ -2005,6 +2015,6 @@
  },
  "integrity": {
   "algo": "sha256",
-  "hash": "99cdd80002e8d2a0a6d1b31e5a71c6a5230d4ede1556fe3bc545266a924966fe"
+  "hash": "7cdfdf58f3652c2f0a0db7776ee3a2e83446acfc5ca24c8925c399dccab0cba5"
  }
 }
