@@ -1415,9 +1415,9 @@
     },
     "20261124": {
      "pos": 0,
-     "neu": 1,
+     "neu": 2,
      "neg": 0,
-     "total": 1,
+     "total": 2,
      "score": 0.0
     }
    }
@@ -2030,11 +2030,11 @@
      "score": null
     },
     "20261124": {
-     "pos": 0,
+     "pos": 1,
      "neu": 0,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 1,
+     "score": 1.0
     }
    }
   },
@@ -3213,11 +3213,11 @@
      "score": 0.0625
     },
     "20261124": {
-     "pos": 0,
-     "neu": 2,
+     "pos": 1,
+     "neu": 3,
      "neg": 0,
-     "total": 2,
-     "score": 0.0
+     "total": 4,
+     "score": 0.25
     }
    }
   },
@@ -3808,11 +3808,11 @@
      "score": null
     },
     "20261124": {
-     "pos": 0,
+     "pos": 1,
      "neu": 0,
      "neg": 0,
-     "total": 0,
-     "score": null
+     "total": 1,
+     "score": 1.0
     }
    }
   },
@@ -5066,6 +5066,13 @@
      "neg": 0,
      "total": 0,
      "score": null
+    },
+    "20261124": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
     }
    }
   },
@@ -5082,6 +5089,13 @@
      "score": null
     },
     "20261105": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    },
+    "20261124": {
      "pos": 0,
      "neu": 0,
      "neg": 0,
@@ -5117,6 +5131,13 @@
      "score": 0.0
     },
     "20261120": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    },
+    "20261124": {
      "pos": 0,
      "neu": 0,
      "neg": 0,
@@ -5159,6 +5180,13 @@
      "score": null
     },
     "20261105": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    },
+    "20261124": {
      "pos": 0,
      "neu": 0,
      "neg": 0,
@@ -5425,7 +5453,21 @@
      "score": null
     }
    }
+  },
+  "A股:688845": {
+   "market": "A股",
+   "code": "688845",
+   "name": "傲拓科技",
+   "days": {
+    "20261124": {
+     "pos": 0,
+     "neu": 0,
+     "neg": 0,
+     "total": 0,
+     "score": null
+    }
+   }
   }
  },
- "updated_cst": "2026-11-24 05:42:57"
+ "updated_cst": "2026-11-24 08:52:11"
 }
