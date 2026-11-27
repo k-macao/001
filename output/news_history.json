@@ -2,1679 +2,6 @@
  "version": 1,
  "items": [
   {
-   "title": "据消息人士称，黄仁勋计划参加Semafor举办的“硅谷与世界”活动。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 04:05",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpk6133733.d.html"
-  },
-  {
-   "title": "【美众议员向众议院提交决议 要求弹劾国防部长赫格塞思】当地时间11月9日，美国肯塔基州共和党籍联邦众议员托马斯·梅西向众议院提交决议，试图推动全院就弹劾国防部长皮特·赫格塞思进行表决",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 04:02",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpq9566664.d.html"
-  },
-  {
-   "title": "思科：将Claude Mythos纳入AI防御体系，用于AI应用和智能体的红队测试。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 04:01",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpn2909225.d.html"
-  },
-  {
-   "title": "市场消息：Anthropic将于周二启动纳斯达克IPO的市场推介。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 03:59",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpn2908927.d.html"
-  },
-  {
-   "title": "市场消息：一名了解美国总统特朗普、美国副总统万斯与卡塔尔首相会晤情况的外交官表示，会晤“积极”，双方讨论了推进与伊朗谈判的途径。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 03:57",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyetpk6132796.d.html"
-  },
-  {
-   "title": "国际油价9日显著下跌",
-   "source": "新华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 04:50",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNNnNneXlXdDdYbFVwMTlsbE5IbFpTQ3FEXzhVNHpEV0c2YnNqZm5UdUtSckI1LXgtZW9JX2FWcEo0QXdLTjViZ0poS0hmQndUcDYxWFl2c1VSaWFQNnhGZ0VBLTV4VGVMS0dQd0dZdEthOVUydlRlZ09uY01KTFRsdFFfcmxnRHEt?oc=5"
-  },
-  {
-   "title": "10月份CPI、PPI同比分别上涨0.7%、5.7%—— 物价总水平保持平稳运行",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-11-10 05:41",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE02MlRQbThXNzRPSS00azNTYTk4S0d4anZGN1owT20tZW1NS1JXYWJRcVdkMnFSYndqRGFfVWtMR0hiYVIyNWVCclJiUmpsekpWUGxTSmpTbERvM21rRHdLaHE4eVZSQQ?oc=5"
-  },
-  {
-   "title": "黄仁勋丑闻搅动市场，英伟达跌5%，美股三大指数齐涨，半导体指数涨3%，布油跌超3%",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 05:55",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE9ndkEtcF9fSjFMRE11b0hwNTFWVEhkTF9LbEZrT0l1VFJZcUpmSjBGSGV1MGtoYnhpRlIxMEM0eV9id2pBaGVEajRlbC1vUlZERm1V?oc=5"
-  },
-  {
-   "title": "科技信贷、科技保险、长期资本协同发力 金融机构深度嵌入科技创新链条",
-   "source": "zqrb.cn",
-   "section": "全球头条",
-   "ts": "2026-11-10 01:04",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE1vN1hNVlQ0akR5UTFPNFBiYmt1ekpudFBORWM3MzhGV3BhTDg0UjJmMnJ4UFVsOVBwdm9wb1VTU2dOdHF6bm9za212ME0zbnRXWVNsZ3d0S3VtaUFXU1pVQ3dYQndGcTNm?oc=5"
-  },
-  {
-   "title": "欧洲主要股指收盘普涨",
-   "source": "新浪网",
-   "section": "全球头条",
-   "ts": "2026-11-10 00:33",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTE04NXctNzR6Nzd1Q2RSRGxxaVdqWnlERlh3X0tuVVZoQlh2aUJSSlpQTlU5aVZxUmdSb1dxeWZESEJTZHF4Y19jZW9wVQ?oc=5"
-  },
-  {
-   "title": "美国总统特朗普提名杰弗里·科利尔出任美国驻阿联酋大使。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 06:55",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyexvm2832810.d.html"
-  },
-  {
-   "title": "【A股上市公司积极回购，机构称市场底部构筑相对充分】随着近期市场连续震荡，A股估值已处于相对低位，上市公司积极开展回购",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 06:54",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyexvm2832673.d.html"
-  },
-  {
-   "title": "【乌总统办主任：乌方比任何一方都更愿意尽快结束冲突】乌克兰总统办公室主任布达诺夫9日晚在社交媒体发文称，乌方比任何一方都更愿意尽快结束冲突",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 06:48",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyexvk2824609.d.html"
-  },
-  {
-   "title": "【11月10日隔夜要闻一览】\n1、特朗普表示，美国目前似乎没有必要对伊朗采取军事行动，认为这场冲突很快就会结束",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 06:47",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyexvk2824518.d.html"
-  },
-  {
-   "title": "【中证报：公开市场灵活“削峰填谷”，呵护流动性充裕】“近期在公开市场操作上，人民银行在不同期限的净投放出现一定分化",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 06:44",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyexvm2830110.d.html"
-  },
-  {
-   "title": "Can Hong Kong hold its ground as Nasdaq brings Wall Street into Asian hours?",
-   "source": "南华早报 SCMP·Business",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 06:30",
-   "date": "2026-11-10",
-   "url": "https://www.scmp.com/business/markets/article/3373745/can-hong-kong-hold-its-ground-nasdaq-brings-wall-street-asian-hours"
-  },
-  {
-   "title": "格隆汇港股通5日资金流入流出排行榜 | 11月9日 - 金融界",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:10",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE5ndWQybHV6S1lZNDZSQlhkWHhRQnJUdFhjLWFEVFU3YkJLVXlDYUhKakJBeUxaeVNveHJZQUdOaW5UVmluRjJ6UlJ4akE4UWhtT3lpU1plTTJjSmJ3Nl84YUNKZEhPUQ?oc=5"
-  },
-  {
-   "title": "Hong Kong Stock Exchange Today: Hang Seng Slips to 24,448.95 as Tech and Meituan Fade After Early Gains - BBN Times",
-   "source": "Google 新闻·英文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 04:15",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxPUXZkbG1GQnhxUndGVFdKVTQtcF9IRkl3cHJ1dnFQVDhpeTNYSk1QVXdmdzhFMWpqaGlxb0JxOVAxa21DMl9iZlQ0eWUxWW1sVEkzU2pyeDFOS2c1dzFQS1pCeDZEV0dWdUZzaWNjUVNjTklRSTVqak1iQ05TREZKQThnNWRFVUIwVXVUb3hwelUtOGpmc2hkeFhnbzVzZVk5WDNPak5ndGZLaDB4WWtjaFMyN2J3UWNhdjJaQUdJXzVMOUt2ZW1xb0twOU9hNHdSM1BIN25zenRGdw?oc=5"
-  },
-  {
-   "title": "Meta 旗下 AI 助手 Muse 登陆苹果 Apple Watch",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:58",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/571.htm"
-  },
-  {
-   "title": "苹果推送 iOS 27.2.1 更新，修复 Message 群聊权限在内的 9 个漏洞",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:58",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/572.htm"
-  },
-  {
-   "title": "Take-Two CEO 泽尔尼克称《GTA 6》预购量远远超出预期，有望为公司树立新业绩基准",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:47",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/570.htm"
-  },
-  {
-   "title": "黄仁勋对特朗普称自己不知婚外情对象疑似中国间谍",
-   "source": "纽约时报中文网",
-   "section": "全球头条",
-   "ts": "2026-11-10 10:04",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTE5KZzg4Z05EVWFOSmtmNjRKNXNvX210SW00TUVSMVR4MC1jNGJ2ZTRhUWFkTmozSnpnczMxa2lLd202SVlLM0NKd24zSkYwQjJKWm1DV1l2SlpWY3Jjd1lZVFdlRzA3M3BIY0Zj?oc=5"
-  },
-  {
-   "title": "BMI：铜市场短期面临下行风险",
-   "source": "搜狐网",
-   "section": "全球头条",
-   "ts": "2026-11-10 10:10",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNVHVXYjB0UC1MXzlBY182TVBnZ3hscUtLaTN2ZmpHZFJTZTdYSUUwbmFQR2t2ZkNhbXhXeVg5cTNSX0JVS2E5eFg4TjhMdHREZ1NMSkQ5WEVCMXFyTFN4NWtmQjdYTVA4d2p4QVBsTGR6SWpqZEN2REtCLVVsb2xSRWp4ZDVNVGYwVkt6aQ?oc=5"
-  },
-  {
-   "title": "第九届进博会丨“台前开直播，台后谈大单”",
-   "source": "新华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 11:56",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPRXBNcllVQTlEZG1SMGFReWVyV3JybV9uaFROc25YVlBocjRKZjRmMUZTRXYtWjd6Ul9iSUYzRXMxNE5fRmNXM1RGVFlPLXhnYzRqLWw1VzAzbWdfVDNXTTgyZTQ2WEM5N2JpNXZHQWhJSXJfNm5JM1lxRWtXVVlvTGV4NWU4NzZ2?oc=5"
-  },
-  {
-   "title": "直观复星全球新品亮相第九届进博会本土化数字成果正式上线_行业新闻",
-   "source": "证券之星",
-   "section": "全球头条",
-   "ts": "2026-11-10 10:45",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE5kLWltQ01BS0FSMFJRenBrSUEtYkg0TjhNa0JqR1pUdWlNSlQtSDFwbTlxRm9fdGo2YzRFc1JJZkptY08xTUhjcUstUXBKdEhTRTVjVlhoSVRVMGN4SUlsMThTWUQ?oc=5"
-  },
-  {
-   "title": "人民币市场汇价（11月10日）",
-   "source": "新华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 10:32",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxOYU54czlIczdLY3FkMjVPYW45aFRSRmZxaFNualdfVVJUZ2c2WVAxVmkxVEg2QkdsUksxY3FjNGRoWC1PTy1ZMS1laVY5d0szTzI3cWFnT2stTVpZU1FqT0tneUxfVnNoYm9zbzlIVWFHVk9MWF85U2NwR1JNVUF5ZFJzWk5PVUto?oc=5"
-  },
-  {
-   "title": "国际油价集体大跌，布油跌6.24%",
-   "source": "每日经济新闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 06:13",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFB2TWltU2pXY2ZfMm5MdTM0MGpuQXJoQUdGSjFoTzNfcUZfMC1BYjZUaEZtdlhyMG1ZUTRTTmxoR1NIejAyejhVUTRrVXNDRzJjeGtNS0hCUDhfZXpyM2JhVzFLbmc0dw?oc=5"
-  },
-  {
-   "title": "A股三大指数集体高开，创业板涨超2%，AI硬件反弹、“易中天”拉升",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 09:28",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBtcjJEUExUVC1mVXMyWDhjd29QRXJIeXpWRkEyYWNZMVFHbDdtaExxelZCM3BkSUtKdmJfM3R6RmpOQlQ2alhGdjhJcnhIaXNfSElj?oc=5"
-  },
-  {
-   "title": "从乌镇窗口看科技创新",
-   "source": "中国网",
-   "section": "全球头条",
-   "ts": "2026-11-10 10:48",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMib0FVX3lxTE9mRHdtYTdmM0QwNUY1dkIzWEo4UmFZSy1GV2hWUk9PTUxNVmtUenVXSjVncnVuSmNTTU5YeVBkZ0R6TWdtU0t3dVUwcmMyTlh5ekV6clcwZEhfSlplWml0WXdXQ3dsT1Nvdmc5Z3lUcw?oc=5"
-  },
-  {
-   "title": "创业板指涨2.01%，现报2507.927点；上证指数涨0.26%，现报3670.330点；深证成指涨1.22%，现报11281.286点。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 13:22",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.com.cn/7x24/"
-  },
-  {
-   "title": "【四川“民间投资21条”发布 支持民营企业扩大有效投资】从四川省发展改革委获悉，《四川省促进民间投资高质量发展工作措施》已印发实施，提出21条具体措施，多措并举支持民营企业扩大有效投资",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 13:22",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfqte9329506.d.html"
-  },
-  {
-   "title": "【大众CEO称计划明年实现L3级技术就绪】“能在中国市场取得成功，就能在全球市场取得成功",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 13:19",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfqta2708823.d.html"
-  },
-  {
-   "title": "【原油延续跌势 此前特朗普称无需进一步打击伊朗】原油价格从8月以来最低收盘水平进一步下跌，此前美国总统唐纳德·特朗普表示，没必要进一步打击伊朗",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 13:17",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfqta2708195.d.html"
-  },
-  {
-   "title": "【贵金属价格波动 中国金币集团发布风险提示】11月10日，中国金币集团有限公司发布关于贵金属价格波动的风险提示：近期受国内外多重宏观因素叠加影响，贵金属价格震荡加剧",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 13:16",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfqta2707401.d.html"
-  },
-  {
-   "title": "貿發局率港企參展德國 MEDICA 歷來最大香港館展示醫療創科實力",
-   "source": "香港经济日报 HKET·财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 04:59",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2aa65efca4342b7f04e469b6eb752&url=https%3a%2f%2fpaper.hket.com%2farticle%2f4222133%2f%25E8%25B2%25BF%25E7%2599%25BC%25E5%25B1%2580%25E7%258E%2587%25E6%25B8%25AF%25E4%25BC%2581%25E5%258F%2583%25E5%25B1%2595%25E5%25BE%25B7%25E5%259C%258B%2520MEDICA%25E3%2580%2580%25E6%25AD%25B7%25E4%25BE%2586%25E6%259C%2580%25E5%25A4%25A7%25E9%25A6%2599%25E6%25B8%25AF%25E9%25A4%25A8%25E5%25B1%2595%25E7%25A4%25BA%25E9%2586%25AB%25E7%2599%2582%25E5%2589%25B5%25E7%25A7%2591%25E5%25AF%25A6%25E5%258A%259B&c=14092351730848318945&mkt=en-us"
-  },
-  {
-   "title": "【港股市況】恒指午後初段升約75點 滙豐渣打齊升3% 中芯國際升近4% ...",
-   "source": "香港经济日报 HKET·财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:01",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2aa65efca4342b7f04e469b6eb752&url=https%3a%2f%2finews.hket.com%2farticle%2f4222504%2f%25E3%2580%2590%25E6%25B8%25AF%25E8%2582%25A1%25E5%25B8%2582%25E6%25B3%2581%25E3%2580%2591%25E6%2581%2592%25E6%258C%2587%25E5%258D%2588%25E5%25BE%258C%25E5%2588%259D%25E6%25AE%25B5%25E5%258D%2587%25E7%25B4%258475%25E9%25BB%259E%25E3%2580%2580%25E6%25BB%2599%25E8%25B1%2590%25E6%25B8%25A3%25E6%2589%2593%25E9%25BD%258A%25E5%258D%25873-%25E3%2580%2580%25E4%25B8%25AD%25E8%258A%25AF%25E5%259C%258B%25E9%259A%259B%25E5%258D%2587%25E8%25BF%25914-%25E3%2580%2580%25E9%2598%25BF%25E9%2587%258C%25E5%25B7%25B4%25E5%25B7%25B4%25E9%2580%2586%25E5%25B8%2582%25E8%25B7%258C%25E9%2580%25BE3-%25EF%25BC%2588%25E4%25B8%258D%25E6%2596%25B7%25E6%259B%25B4%25E6%2596%25B0%25EF%25BC%2589%3fmtc%3d20023&c=16511236654875585154&mkt=en-us"
-  },
-  {
-   "title": "As 1 mainland Chinese chip IPO soars, another stumbles in busy Hong Kong week",
-   "source": "南华早报 SCMP·Business",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 13:00",
-   "date": "2026-11-10",
-   "url": "https://www.scmp.com/business/companies/article/3373886/1-mainland-chinese-chip-ipo-soars-another-stumbles-busy-hong-kong-week"
-  },
-  {
-   "title": "UK talent connect with Hong Kong and mainland China employers at London career showcase",
-   "source": "南华早报 SCMP·Business",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 12:00",
-   "date": "2026-11-10",
-   "url": "https://www.scmp.com/native/business/topics/hong-kong-global-hub-talent/article/3373483/uk-talent-connect-hong-kong-and-mainland-china-employers-london-career-showcase"
-  },
-  {
-   "title": "Taiwanese lender moves to West Kowloon as financial firms lead Hong Kong office leasing",
-   "source": "南华早报 SCMP·Business",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 11:00",
-   "date": "2026-11-10",
-   "url": "https://www.scmp.com/business/article/3373858/taiwanese-lender-moves-west-kowloon-financial-firms-lead-hong-kong-office-leasing"
-  },
-  {
-   "title": "Explainer: Hong Kong’s national security crackdown – month 76",
-   "source": "香港自由新闻 HKFP",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://hongkongfp.com/2026/11/10/explainer-hong-kongs-national-security-crackdown-month-76/"
-  },
-  {
-   "title": "港股开盘高开 恒指涨0.70%报24621.13点 - 观点网",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 10:46",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE91bkNnWmI4MnN6ZmgwRDI4eWN1WDltYnNVdnd6WVlWcWlMZ0YzblJOS0xxajF2VjM1N2xsY0VCUm5nSV9RSGdCZ3JQNTJPX2lid01RWFdnSnhLbWlmR09PMDdn?oc=5"
-  },
-  {
-   "title": "港股CRO概念集体走强丨港股异动 - 证券之星",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 12:18",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTFBEanh2VDlTZUlSN1NBbVRjNFBmalFCMXVHYWExSlNSOGRPNWpWN3lsU2U0SDE3aEViSE5zMDlWdkRaOFVvb3IzNEZSTmRxOXh0NnZkajJrRkVERWdtcVF3cXNR?oc=5"
-  },
-  {
-   "title": "China And Hong Kong Stocks Rose With AI Chip Suppliers - Finimize",
-   "source": "Google 新闻·英文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 12:01",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiiwFBVV95cUxPNjd5ZXB1azZqT0FPVGZMVENZMkhacUtMOWpCRW9PSmxXNTFDZGg5T0ZFWmpOVTZKZmdBb05wZ0VnY3RfRXg4a0xuaWwzd29KUmpPcmwtSnFjS20tempMZDA0a0hyY2ROc0VOaFhvSmJQdC1QSU9YODJyVS1tLTZHWUZfZTY0N2poYW1J?oc=5"
-  },
-  {
-   "title": "Hong Kong Stocks Open Higher as Oil Slump Lifts Global Sentiment - marketscreener.com",
-   "source": "Google 新闻·英文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 09:53",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxPZ3J1c2k1Wjc3NDB5UUJfWXdDenpLcEZDbWtjWVNpWFpzd3lDallNV2p0WHlIQ1BXcmx1VWV5Ui1XdGthTmt1MkhDMm44NDZTeWJ0TTlVYi1ZcFBDcHZwMVY4N2lHUlZhRjB1V3hobjFsTEpIeXJKdGRCQUlYLU9HT1BSZTFNeURfOUZydmEzdklVRmNSemNXN0ozQ3Vxb1lsejNSUDR0NmNyaHFhNUJDSzhJSi05dDVh?oc=5"
-  },
-  {
-   "title": "A股三大指数集体高开，CPO概念股集体反弹，AI漫剧板块再度走高",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:23",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR6260a9b0-4175-635a-b173-3a24d556da42"
-  },
-  {
-   "title": "终端需求与内部改革共振 中药老字号业绩走向分化",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/bb9d27a24d964db99a08809a1c8e3eb8/c.html"
-  },
-  {
-   "title": "COP31在土耳其安塔利亚举行",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/9a310b3e30a046d4b25d89c5a51284bc/c.html"
-  },
-  {
-   "title": "重庆中欧班列2026年开行量突破1000列",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/2ff66aea9b3e4e08845c83b8e336a697/c.html"
-  },
-  {
-   "title": "苹果 Siri AI 调度规则曝光：约 2% 英文请求走本地 AI 模型，覆盖定时等高频操作",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 13:19",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/754.htm"
-  },
-  {
-   "title": "不再固定 3 分钟：苹果 macOS 27.3 版密码应用将支持定制锁定时间",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 12:58",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/753.htm"
-  },
-  {
-   "title": "Windows Server 开发新思路：微软推出 TAP 计划，邀请真实客户“共同排雷”",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 12:48",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/752.htm"
-  },
-  {
-   "title": "那个焚烧教材的少年，后来组建了两千多人的青年消防志愿队",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/964248b543caded8678334e16d96fe9e.html"
-  },
-  {
-   "title": "锚定农林牧渔万亿元产值目标，广东明确“十五五”三农路线图",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/2c2108aff5baf7f7b48e371497da8894.html"
-  },
-  {
-   "title": "前三季度净利大增超800%！这家公司目前PCB产能较为饱满，半导体ATE ...",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:23",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2aa6893774d5dacfcefe6ca7f90ec&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000010644.shtml&c=3177589444095401936&mkt=en-us"
-  },
-  {
-   "title": "事关“一老一小”、教育等！国家发改委最新发声",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:23",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2aa6893774d5dacfcefe6ca7f90ec&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000017417.shtml&c=16346877150189716864&mkt=en-us"
-  },
-  {
-   "title": "11月9日华创云信主力资金净流入 当前估值处历史低位区间",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:23",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089053.shtml"
-  },
-  {
-   "title": "英伟达黄仁勋遭股东集体诉讼，出轨丑闻致公司市值蒸发超万亿元",
-   "source": "IT之家",
-   "section": "全球头条",
-   "ts": "2026-11-10 13:28",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTFBFZk5LaVhSd2M5OXFvNkt1UTJDV1R0eHRzWExOZ0ItbkxNSkRqUVpFdHRWUTVUbWRxNWd0bXppV1pwb0tkcWp1VlpId04?oc=5"
-  },
-  {
-   "title": "第九届进博会丨进博会人文交流活动精彩纷呈",
-   "source": "新华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 14:51",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMif0FVX3lxTFBSNEFtT0NSUGJPdzZjR3AzVW5qcWk3YUJwWGR3OFVGd0hPdHNiOXRkdVc0OENGNmtfNXEzS3JQZU54VGozaEJqSExMclUxOTVEdjhKX2FrMFJWT0p1Y19OX3U1ZE1uSlJSQnlPYkFNbnl0NHFwMklva0NtTnZrOE0?oc=5"
-  },
-  {
-   "title": "港股午评：恒生指数涨0.29% 恒生科技指数涨0.7%",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-11-10 13:37",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE11ZGhxSWlTY0dYZzlpS1FNWENxWlA0SzhPaWJmWG9pcU5UT1Vnd3ZTX1dfUGdsN0NPMWhlRzIyUjdocTRBREdaa0RHVmhqbzNqN1F1QWlTZFpvSW5XWmNlWWQzWUVvZw?oc=5"
-  },
-  {
-   "title": "创业板半日涨近1.5%，AI硬件反弹、“易中天”拉升，机器人爆发、宇树市值重回3000亿，恒科指一度涨1%",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 12:05",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBtcjJEUExUVC1mVXMyWDhjd29QRXJIeXpWRkEyYWNZMVFHbDdtaExxelZCM3BkSUtKdmJfM3R6RmpOQlQ2alhGdjhJcnhIaXNfSElj?oc=5"
-  },
-  {
-   "title": "在乌镇峰会论智能体互信互联",
-   "source": "人民网财经",
-   "section": "全球头条",
-   "ts": "2026-11-10 07:43",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTFBRbWx1b24xMEx5bklhREp6ZDh5YjN3WS1OOWRRQlZwX2V3cFZSZEx2SEZxcTVjUzhzcW82c1JLb2s2MnFva0RaYlpBNF85MkhZWUlieFFtTzRqckUwcU1BR09MVm55MEw2a0xLZFJB?oc=5"
-  },
-  {
-   "title": "阿斯利康九赴进博之约，以全价值链加速助力\"健康中国\"",
-   "source": "美通社",
-   "section": "全球头条",
-   "ts": "2026-11-10 14:00",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTE1BV21NTkpOallmZml0c3pyTVhyVjNRbWVMNzlXbTFJeTUyS0R0LVE1UzdOWnJSTlZpTlVqS1FOUU9FQnZvbUtOY3UxZE1uUjFENjFWaE1wZGJvNTg5ZHc?oc=5"
-  },
-  {
-   "title": "Anthropic IPO申报定价信息“闹乌龙”：先发每股70至80美元区间后撤回",
-   "source": "凤凰网",
-   "section": "全球头条",
-   "ts": "2026-11-10 10:39",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiUkFVX3lxTE1NSUhYeURQd0tiZFZWRHV0T1dTRjhBUldUVkZXYU02dnNrUDNxSEVaRU5MRWVSa1dyckVjd3RNTWctb3hvSWxBR2NxRWFWV09vUUE?oc=5"
-  },
-  {
-   "title": "【刘海星分别会见刚果（布）、意大利客人】11月10日，中共中央对外联络部部长刘海星在北京分别会见刚果劳动党总书记穆萨和意大利前总理达莱马，就落实双方领导人共识，加强交流合作，推动中非、中欧关系发展等交换意见。（新华社）",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 16:28",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfuyy2730040.d.html"
-  },
-  {
-   "title": "【嘉友国际：与MCS集团签订中蒙区域战略合作协议】嘉友国际公告称，公司与蒙古国头部多元化产业集团MCS MONGOLIA LLC及其下属子公司签订《框架合作协议》，双方将在产业投资、全面物流、贸易、供应链科技平台四大领域开展合作，涵盖农业及",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 16:27",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfuza9325790.d.html"
-  },
-  {
-   "title": "【中国广核：苍南4号机组开始全面建设】中国广核公告称，公司子公司中广核苍南第二核电有限公司的苍南4号机组已于2026年11月10日完成核反应堆主厂房第一罐混凝土浇筑，开始全面建设并进入土建施工阶段",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 16:26",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfuyy2728920.d.html"
-  },
-  {
-   "title": "【广电运通：转让数据交易公司30%股权完成摘牌签约】广电运通公告称，公司公开挂牌转让持有的广州数据交易有限公司30%股权，挂牌底价304.50万元，近日广州市政府采购中心以304.50万元摘牌并签署《产权交易合同》",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 16:26",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfuyz2676895.d.html"
-  },
-  {
-   "title": "【安培龙：获得压电MEMS陀螺相关发明专利证书】安培龙公告称，公司近日收到国家知识产权局颁发的1项发明专利证书，发明名称为压电MEMS陀螺正交解耦信号处理电路及方法，专利号ZL202611424602.9，专利权期限20年",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 16:26",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyfuyy2728807.d.html"
-  },
-  {
-   "title": "【郭Sir財經 直播】2026-11-10 大市整固等變交投偏疏︱早市直播︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 11:09",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=vuyPcJhUEuw"
-  },
-  {
-   "title": "納指、恒指完美判斷回顧｜交易尋秦記！？看清以己度人的真相【 LIVE 我要炒期貨】2026/11/10 #艾文 #恒指",
-   "source": "施凌部署",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 14:27",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=59dgJw6CeDo"
-  },
-  {
-   "title": "西貢十年一遇獨立屋新盤！4.5米特高樓底 靜中帶旺配套全解析｜港房研究所",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 12:00",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=sVANhYxtmtk"
-  },
-  {
-   "title": "【港股收市】恒指升108點 滙豐升逾4%、渣打升5% 智譜、MINIMAX升逾一成 ...",
-   "source": "香港经济日报 HKET·财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 08:12",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2d6293cee4c04af552b27fb6cb076&url=https%3a%2f%2finews.hket.com%2farticle%2f4222504%2f%25E3%2580%2590%25E6%25B8%25AF%25E8%2582%25A1%25E6%2594%25B6%25E5%25B8%2582%25E3%2580%2591%25E6%2581%2592%25E6%258C%2587%25E5%258D%2587108%25E9%25BB%259E%25E3%2580%2580%25E6%25BB%2599%25E8%25B1%2590%25E5%258D%2587%25E9%2580%25BE4-%25E3%2580%2581%25E6%25B8%25A3%25E6%2589%2593%25E5%258D%25875-%25E3%2580%2580%25E6%2599%25BA%25E8%25AD%259C%25E3%2580%2581MINIMAX%25E5%258D%2587%25E9%2580%25BE%25E4%25B8%2580%25E6%2588%2590%25E3%2580%2580%25E9%2598%25BF%25E9%2587%258C%25E5%25B7%25B4%25E5%25B7%25B4%25E9%2580%2586%25E5%25B8%2582%25E8%25B7%258C%25EF%25BC%2588%25E4%25B8%258D%25E6%2596%25B7%25E6%259B%25B4%25E6%2596%25B0%25EF%25BC%2589&c=2687862509160220229&mkt=en-us"
-  },
-  {
-   "title": "People and partnerships power Hang Seng’s fintech innovation",
-   "source": "南华早报 SCMP·Business",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 15:00",
-   "date": "2026-11-10",
-   "url": "https://www.scmp.com/presented/business/topics/hang-sengs-inclusive-fintech-future/article/3373876/people-and-partnerships-power-hang-sengs-fintech-innovation"
-  },
-  {
-   "title": "港股收盘：恒生科技指数涨1% 光通信股涨幅居前",
-   "source": "财联社·电报",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 00:10",
-   "date": "2026-11-10",
-   "url": "https://www.cls.cn/detail/2530271"
-  },
-  {
-   "title": "算力悲观预期修复！港股半导体板块走强 芯德半导体上市首日涨超30%",
-   "source": "财联社·电报",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 02:01",
-   "date": "2026-11-10",
-   "url": "https://www.cls.cn/detail/2530232"
-  },
-  {
-   "title": "港股午评：恒生指数涨0.29% 恒生科技指数涨0.7% - 东方财富",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 13:42",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE11ZGhxSWlTY0dYZzlpS1FNWENxWlA0SzhPaWJmWG9pcU5UT1Vnd3ZTX1dfUGdsN0NPMWhlRzIyUjdocTRBREdaa0RHVmhqbzNqN1F1QWlTZFpvSW5XWmNlWWQzWUVvZw?oc=5"
-  },
-  {
-   "title": "13:11:15【港股半导体、大模型概念股早盘走强，港股通信息技术ETF易方达（159196）标的指数涨近3%】 - 财联社",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 13:11",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE4yZnV1UjZJdGdiMHlfVHUxam5wZUpWaHM0MTBMWGdkZktPakxtbjNrd1EyWnFndHloYktlSmo0Z0NYWndmaVJGcw?oc=5"
-  },
-  {
-   "title": "登临科技在港交所上市 苏州境内外上市公司增至300家",
-   "source": "凤凰网财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 00:50",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xwJ6wuAJMM"
-  },
-  {
-   "title": "People and partnerships power Hang Seng’s fintech innovation - South China Morning Post",
-   "source": "Google 新闻·英文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 15:00",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMi7wFBVV95cUxQYnlPa0RhV08xUnVqNEs3eENVN1JzUjAtaHBDQWNDcTJKLVFqankyLUJDZVF1N2pZZzF0ZmhlWTVTOXNucWFsakhZMkFocFpHN29CVEQwY1J5NjFEYW51U1pKWGFoT2dwVnpuM3R2c2tUdzhBMV9paUY4MUJwVExhWTNoOXI1bnZWekpMUGhSVnRuUjJDeDFxMWJMRzk0SzBTbGcyS2h5RkRzVlJ6SlhNd0xJOGoxMDR2b2pLVzA2LTdZcUtBbDRSRTFVSUpoQU9GVHMyN09XYjVyVFVpOF9CNmZfSTVrbmVjb3V2UGxIcw?oc=5"
-  },
-  {
-   "title": "国内期货收盘跌多涨少 纯苯跌停",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 01:15",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/zzqh2020/2026/11/10/detail_2026111010051118.html"
-  },
-  {
-   "title": "富德生命人寿与腾讯签署战略合作协议 共建保险AI新生态",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 01:54",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2d62bfbf8464095278ee33a2dc04b&url=http%3a%2f%2fwww.zqrb.cn%2fjrjg%2finsurance%2f2026-11-10%2fA1794296873312.html&c=3030168868634836170&mkt=en-us"
-  },
-  {
-   "title": "【视频】11月10日收评：全市场超4200只个股上涨",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 01:47",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2d62bfbf8464095278ee33a2dc04b&url=http%3a%2f%2fwww.zqrb.cn%2fvideo%2fshichangkuaixun%2f2026-11-10%2fA1794296873311.html&c=22869961767326940&mkt=en-us"
-  },
-  {
-   "title": "毕马威：跨国企业正把中国变成创新基地",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:24",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2d62bfbf8464095278ee33a2dc04b&url=http%3a%2f%2fwww.zqrb.cn%2ffund%2fjijinlunshi%2f2026-11-10%2fA1794281939106.html&c=4088017539187017459&mkt=en-us"
-  },
-  {
-   "title": "中国金币集团发布风险提示",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:03",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR62b97263-2e29-e0ab-5452-3a24d62d9929"
-  },
-  {
-   "title": "华能水电：拟87.01亿元收购控股股东旗下HNYL公司100%股权",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:20",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1693893.shtml"
-  },
-  {
-   "title": "大众公用：大众企管质押2500万股用于日常经营周转",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:15",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1693857.shtml"
-  },
-  {
-   "title": "明阳智能：海风新增订单短期偏少，低价订单年内有望消化，实控人 ...",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:05",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1693803.shtml"
-  },
-  {
-   "title": "“聪明钱”QFII优化持仓 配置指向产业升级",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/d16ab03da1e44f39bf362d4f4b93c23b/c.html"
-  },
-  {
-   "title": "拥抱AI浪潮 驶向变革深处——来自第七届世界媒体峰会的观察",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/2404cf9327854dcaa29036d98cc1a37f/c.html"
-  },
-  {
-   "title": "太空建造迈出关键一步：机器人首次在太空自主组装天线桁架，未来或建造千米级结构",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 16:30",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/880.htm"
-  },
-  {
-   "title": "全新林肯 Z 上市：定位中大型豪华旗舰轿车可选燃油 / 强混，限时权益价 16.99 万起",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 16:26",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/879.htm"
-  },
-  {
-   "title": "漫步者 PW108“广场级音效”蓝牙音响发售：20W 额定功率，到手 699 元",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 16:22",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/024/878.htm"
-  },
-  {
-   "title": "博远基金钟鸣远升任董事长；又有现金流ETF变更扩位证券简称",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643652.html"
-  },
-  {
-   "title": "德邦资管高琳：2027年不是躺赢之年，而是精耕之年",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643522.html"
-  },
-  {
-   "title": "现金变厚 回购落地 利润承压下小熊电器的产品迭代和效率提升",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:42",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af2d62cc9d047c7914781a30a3ccb44&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000025454.shtml&c=5017517702821113998&mkt=en-us"
-  },
-  {
-   "title": "缩量分化！A股接下来怎么走？",
-   "source": "和讯网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:09",
-   "date": "2026-11-10",
-   "url": "https://stock.hexun.com/2026-11-10/225250210.html"
-  },
-  {
-   "title": "11月9日扬农化工主力资金净流入，当前估值处于历史低位区间",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:16",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089304.shtml"
-  },
-  {
-   "title": "博思软件近5日震荡持平大盘 11月9日主力资金净流出 当前估值处历史 ...",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:15",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089302.shtml"
-  },
-  {
-   "title": "800现金流ETF汇添富份额规模双降，近一年跌4.81%最大回撤22.6%",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:01",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089284.shtml"
-  },
-  {
-   "title": "第九届进博会按年计意向成交额突破854亿美元",
-   "source": "珠海网",
-   "section": "全球头条",
-   "ts": "2026-11-10 15:46",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTFA4TTJoazZnbWVDNVl2S0lhYktpRTJFOHBPUEc4UGpYNzctS2dUdS1MNlE2dkdEaV9qUnBISlRlQXYtNWdNZlRYWGhfLU53Q0ptb0RMdy00VDI2eXo4b3YwRVA0c2JXRXBfU1lvUktRdmRNdDB4N3Jz?oc=5"
-  },
-  {
-   "title": "港股10日涨0.44% 收报24557.04点",
-   "source": "新华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 17:45",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxPZE5fVjZQUDNNX3ZSZk1MV09FcVFuVGVqcnVWV1J0cU1PX3U5ZUpxWnJaSnZfWnpJdnR3Z24zMHFFelBsWDQwQWxSRDQ5UEZCLVI0ay1IYXA0ejA3RHRVQUlaaWx1andQakRQNHBPREVmVzJaRHN1YXp0c2g4bHdWbERfN29OMlVK?oc=5"
-  },
-  {
-   "title": "布油暴跌超6%！特朗普言论缓解紧张局势",
-   "source": "中华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 15:19",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE96bFQyVm9uYnVvMnpKTnZQRnNmT1BSUUtLTEhubkhzSjNINUZ3aHJDZ0ZCVjhmNGVOcDBFY0pJTzlRZEhaTVIwWUVsTlNJZGpTY2lBZ2R3b3FXWGkwTHVUaW5jcDczaDBWbjZPckgyaGU?oc=5"
-  },
-  {
-   "title": "创业板涨近1.5%，AI硬件活跃，机器人爆发、宇树市值重回3000亿，恒科指涨超1%，AI大模型股双雄大涨10%",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 16:23",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBtcjJEUExUVC1mVXMyWDhjd29QRXJIeXpWRkEyYWNZMVFHbDdtaExxelZCM3BkSUtKdmJfM3R6RmpOQlQ2alhGdjhJcnhIaXNfSElj?oc=5"
-  },
-  {
-   "title": "纳指期货跳水！沃勒释放美联储“最鹰信号”：若通胀居高不下，12月应加息50基点",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 17:28",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE9qQlIzcFlkTWxOV0NTWTJKMjBqdzFTbjM2SDJod2o5Rnl2OW03WTQ4YXh1eEstaGVLWGxZMmhYTGxKUTdzYmFINXdIc1lkWXUwdjRZ?oc=5"
-  },
-  {
-   "title": "星云星座计划发布国产算力采购需求增强，创业板算力ETF易方达（158050）受资金青睐-ETF火线",
-   "source": "金融界",
-   "section": "全球头条",
-   "ts": "2026-11-10 12:43",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE9ieUpEOVJoQi1YR2ZfZmd4Q2RmNzdhcHpDSnBxRUk1czVUbmN3NG5ONUJWSkdoWG43S2hTNjVWSVZUVFJHanBpTWI4aWUzanpFNE1RX3d2a1dhc01TcmxvWUx1TWM1MWQ4MEU5WXB4Ukw?oc=5"
-  },
-  {
-   "title": "美国参议员沃伦、默克利致函白宫的沙尔夫。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 19:49",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhfqs5813172.d.html"
-  },
-  {
-   "title": "台积电已获批对OpenAI的投资，最高额度为5亿美元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 19:48",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhfqv2519713.d.html"
-  },
-  {
-   "title": "截至2026年9月30日，Anthropic的总负债为62亿美元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 19:48",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhfqs5812982.d.html"
-  },
-  {
-   "title": "台积电已获批对Anthropic的投资，最高额度为5亿美元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 19:48",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhfqs5812788.d.html"
-  },
-  {
-   "title": "加拿大蒙特利尔银行将沃尔玛目标价从126美元上调至136美元。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 19:48",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhfqs5812720.d.html"
-  },
-  {
-   "title": "【郭Sir財經 收市匯報】2026-11-10 大市喘定 但交投漸見萎縮︱郭思治︱廣東話",
-   "source": "郭思治（郭Sir）",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 17:42",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=f3b1SIC5_zY"
-  },
-  {
-   "title": "《哥斯拉-0.0》揭示戰敗國日本的恐懼與懺悔？許楨拆解民間藉電影向極右政客抗衡軍國主義丨哥斯拉丨日本軍國主義丨再納粹化丨極右政府丨高市早苗丨山崎貴丨庵野秀明丨濱邊美波丨楨觀天下丨許楨",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 19:00",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=dMJkBroT_sQ"
-  },
-  {
-   "title": "Independent Hong Kong book fair urges transparency after 5 exhibitors barred under ‘force ...",
-   "source": "香港自由新闻 HKFP",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 03:47",
-   "date": "2026-11-10",
-   "url": "https://hongkongfp.com/2026/11/10/independent-hong-kong-book-fair-urges-transparency-after-5-exhibitors-barred-under-force-majeure/"
-  },
-  {
-   "title": "港元拆息个别发展 一个月息由升转跌报2.59%",
-   "source": "智通财经·推荐",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 11:22",
-   "date": "2026-11-10",
-   "url": "https://www.zhitongcaijing.com/content/detail/1520891.html"
-  },
-  {
-   "title": "港股收盘 | 三大指数集体收涨 人工智能概念再度走强 - 财联社",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 16:46",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1ZcGw4c29oTmRqR0hPRFBjREw4NlJzMVJmdExJZGthcTRPYWNEU3NmRms3X2gtdmVrNEduWFd1V0xxa3Fka1hJaA?oc=5"
-  },
-  {
-   "title": "港股收盘：恒生科技指数涨1.08% 光通信股芯片股领涨 - 观点网",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 16:27",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE5WN2hTTUpLakQ3Q3BHZExnX2R6aU04Ty1IaWZ6MUFVZjRVS0ZJR3Z3d2dZQlZhNGpvYW8xaGd5UjR0bi1XSlA1VFlmV09HaFdidXduZ0RIcjRfOWVnZlRVeTRR?oc=5"
-  },
-  {
-   "title": "港股收评：恒生指数涨0.44% 恒生科技指数涨1.08%",
-   "source": "中证网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 02:59",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/gppd/ggzx/2026/11/10/detail_2026111010051161.html"
-  },
-  {
-   "title": "中彩网通控股更换核数师 委任天职香港接替康盈",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:28",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694370.shtml"
-  },
-  {
-   "title": "汇丰银行就7只恒指牛熊证刊发补充上市文件，拟于11月12日上市",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:08",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694315.shtml"
-  },
-  {
-   "title": "广州遇见小面于香港联交所购回80,000股H股 涉资307,135港元",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:02",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694287.shtml"
-  },
-  {
-   "title": "智谱：拟斥资不超40亿港元回购H股",
-   "source": "每日经济新闻",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:26",
-   "date": "2026-11-10",
-   "url": "https://www.nbd.com.cn/articles/2026-11-10/4643996.html"
-  },
-  {
-   "title": "南向资金今日净卖出逾27亿港元 盈富基金遭卖出居前",
-   "source": "每日经济新闻",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 03:44",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af305096a7b4510b049f14a34c4fa38&url=https%3a%2f%2fm.nbd.com.cn%2farticles%2f2026-11-10%2f4643854.html&c=14795411141019387581&mkt=en-us"
-  },
-  {
-   "title": "新华视点｜九载进博启新程",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 02:22",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/xwzx/01/2026/11/10/detail_2026111010051135.html"
-  },
-  {
-   "title": "江苏银行：行长任职资格获监管机构核准",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:15",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/yh/04/2026/11/10/detail_2026111010051198.html"
-  },
-  {
-   "title": "为GEP核算提供有力支撑——国家统计局有关负责人就《生态产品总值 ...",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:46",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/xwzx/01/2026/11/10/detail_2026111010051170.html"
-  },
-  {
-   "title": "A股三大指数集体收涨 影视院线板块上涨6.80%表现强势",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:12",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3050b85954c5b856ed897d7e40a70&url=http%3a%2f%2fwww.zqrb.cn%2fstock%2fredian%2f2026-11-10%2fA1794296873318.html&c=11635770467162331234&mkt=en-us"
-  },
-  {
-   "title": "高校和金融机构人士共议：广西地方国企转型与信用重塑",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:52",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3050b85954c5b856ed897d7e40a70&url=http%3a%2f%2fwww.zqrb.cn%2ffinance%2fhongguanjingji%2f2026-11-10%2fA1794296873324.html&c=18246057579537934669&mkt=en-us"
-  },
-  {
-   "title": "宝丽迪：2026年中期权益分派实施公告",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:18",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3050b85954c5b856ed897d7e40a70&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fggkx%2f2026-11-10%2fA1794296873347.html&c=4581776514640663778&mkt=en-us"
-  },
-  {
-   "title": "券商三季报说明会密集召开：投资者追问业绩、出海与AI赋能",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:17",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/ARfcd43607-299c-1d6c-34a7-3a24d7060cca"
-  },
-  {
-   "title": "美股芯片、光通信股盘前普跌，英伟达涨超1%；美联储理事沃勒：将 ...",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:46",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR7f5cb6ee-afee-d0ac-e699-3a24d6ebff7b"
-  },
-  {
-   "title": "ST龙大被证监会立案，因涉嫌信息披露违法违规",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:46",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR7548518d-8db9-f72e-4c71-3a24d71929d9"
-  },
-  {
-   "title": "洛阳钼业披露回购A股股份前十大股东持股情况",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:37",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694405.shtml"
-  },
-  {
-   "title": "伟工控股将于11月20日举行董事会会议 审议截至9月底中期业绩",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:18",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694036.shtml"
-  },
-  {
-   "title": "内控合规风险影响显现 圣诺生物退还客户货款2496万美元",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/0891a875a2814bae9c05fb7a10d760e6/c.html"
-  },
-  {
-   "title": "极氪1—10月交付超32万辆，提前超额完成全年目标",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/b1937e7de87340efa03adfcc8aef934c/c.html"
-  },
-  {
-   "title": "友望 S20 洗地机 2499 → 386 元低过闲鱼，推入式基站更方便 + IPX6 级随便冲洗",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 19:46",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/025/128.htm"
-  },
-  {
-   "title": "曝 Anthropic 拟通过 IPO 筹集最多 644 亿美元，上市推介启动在即",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 19:40",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/025/127.htm"
-  },
-  {
-   "title": "原生支持 3D 高斯泼溅，免费开源 3D 创作软件 Blender 5.3 发布",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 19:38",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/025/126.htm"
-  },
-  {
-   "title": "软银上半财年由盈转亏，OpenAI累计投资达646亿美元",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:44",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643928.html"
-  },
-  {
-   "title": "积存金赛道竞速：银行从费率战走向交易功能升级",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 11:00",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/eab63cb30f37a622d129685e7beb447b.html"
-  },
-  {
-   "title": "17天股价涨超105%，上纬新材紧急提示风险",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:43",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/eff595fd5b5ae656e16f9167f9f9c06a.html"
-  },
-  {
-   "title": "累计涨幅超100%！人形机器人热门股，提示风险",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:26",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/42c1d84d59afbab27947e6aad09fb866.html"
-  },
-  {
-   "title": "武汉天源：拟5000万元—1亿元回购股份 用于注销减少注册资本",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:55",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3050c16e54a31a4fd90e3d2ebe77a&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000039693.shtml&c=13263439358722323126&mkt=en-us"
-  },
-  {
-   "title": "帝尔激光：拟5000万元—1亿元回购公司股份",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:01",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3050c16e54a31a4fd90e3d2ebe77a&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000039703.shtml&c=3082345609872431765&mkt=en-us"
-  },
-  {
-   "title": "爱尔眼科：本次推出的爱启瞳等新品，丰富了近视防控产品矩阵",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:59",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3050c16e54a31a4fd90e3d2ebe77a&url=https%3a%2f%2fstock.stockstar.com%2fRB2026111000039373.shtml&c=15270876072556541168&mkt=en-us"
-  },
-  {
-   "title": "数说APEC：经济增长跑赢全球 中国贡献有目共睹",
-   "source": "和讯网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 09:35",
-   "date": "2026-11-10",
-   "url": "https://news.hexun.com/2026-11-10/225250628.html"
-  },
-  {
-   "title": "美股盘前：黄金、白银跳水，英伟达涨近2%",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 11:50",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089605.shtml"
-  },
-  {
-   "title": "【环球财经】今年前10个月吉尔吉斯斯坦出口乳制品超3.3万吨",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 11:50",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089419.shtml"
-  },
-  {
-   "title": "专访联合国全球契约组织驻华代表刘萌：让可持续的企业构筑可持续 ...",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 11:50",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089420.shtml"
-  },
-  {
-   "title": "利好来了，英伟达直线拉升",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:16",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xwTYptahHE"
-  },
-  {
-   "title": "“东方”系，再掀涨停潮",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 11:26",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xw4NM1p6po"
-  },
-  {
-   "title": "åºéä¼ç®¡çæ¡ä¾",
-   "source": "中国政府网",
-   "section": "国家政策",
-   "ts": "",
-   "date": "2026-11-10",
-   "url": "https://www.gov.cn/zhengce/content/202611/content_7085661.htm",
-   "official": true
-  },
-  {
-   "title": "黄仁勋婚外情：被指为中共间谍的黄乐是谁？",
-   "source": "BBC",
-   "section": "全球头条",
-   "ts": "2026-11-10 16:29",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE83d2N2eVhiUnQ0Rk9ZZy04eEVZdnVGSlpZdXFlSnZNV0k3SEh5RTRyNDBsSG5LLWpTSEhlUVZFaDM5YWlQcGZhclc3NFBxai0xTThtNFBCUGt6cU1JMEY5QmxLb3ZkZzDSAWxBVV95cUxQMXZlaEpzVnQwa3R2Q0xsOFR3LThlOVJBQ05CbWMtMUlFOG9GYkFGWFVvTG1qQWE5OTBfNlB2NW1NclVyc3JnWUtOR2NVVEczMGF0YUNiSlk3YVNpVU81RE52MkJFdmtLVk8wQVI?oc=5"
-  },
-  {
-   "title": "“成绩单”再刷新！第九届进博会按年计意向成交金额达854.5亿美元",
-   "source": "中国科技网",
-   "section": "全球头条",
-   "ts": "2026-11-10 20:58",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE51WDVBbktTWHUzcHU1WEVTRnk0VVVxZXU4R2R0ZzlsT05YYlc3blJoQWlTOE5VQWN5UnV4QVRzM0xEOGlfM04tbHNDQ25BTlMyT043TTlLUUJrLXd3Qmkya2dvZTFaZHI3VTdzU1JDMno?oc=5"
-  },
-  {
-   "title": "Anthropic IPO 每股定价区间 70-78 美元，剑指 1.4 万亿美元完全摊薄估值",
-   "source": "IT之家",
-   "section": "全球头条",
-   "ts": "2026-11-10 20:25",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE10aXY0RTR5WlJHakpIaEJlV1N2ZjVYNEtuVFJUQXRLNUE4M3JaYzJGbk5IQjFYclNMUGJ2N3B0eWItV3dtazhPRTd6SUY?oc=5"
-  },
-  {
-   "title": "港股收盘 | 三大指数集体收涨 人工智能概念再度走强",
-   "source": "财联社",
-   "section": "全球头条",
-   "ts": "2026-11-10 16:46",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE1ZcGw4c29oTmRqR0hPRFBjREw4NlJzMVJmdExJZGthcTRPYWNEU3NmRms3X2gtdmVrNEduWFd1V0xxa3Fka1hJaA?oc=5"
-  },
-  {
-   "title": "美国10月CPI环比0.4%、核心环比0.3%，双双超预期！",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 21:30",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBlZlgxNEp6MnFxZ1VhcVVFRjJKLUlKYnltSVE2ajlKUHVhVVlRNTc0TUJnV0FmaEhHblZMTE5HNWZKNzF4RHRKS1RtTXFfZC0zVG9R?oc=5"
-  },
-  {
-   "title": "沃勒释放强硬加息信号金价冲高回落_金市直播",
-   "source": "黄金网",
-   "section": "全球头条",
-   "ts": "2026-11-10 22:14",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTE0xQ1RYdEdOR1J0U010andSV2djVVQxQmMtajZoWmRzOVhiUVVrVENYem1CSE5SV2Y1V0gzTE1oWFNacGVKLW1JdnBDdG8tczVtcDhPTEZYeTNuVWg5ZzYyaTE2OU5Wamlf?oc=5"
-  },
-  {
-   "title": "进博会丨聚焦重点领域 关注特殊人群 进博会凸显全球医药创新风向",
-   "source": "中国食品药品网",
-   "section": "全球头条",
-   "ts": "2026-11-10 21:04",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE5fM09sQ1RKai1aa2xTandJOWNVNjBFVHpWNE9Lejd6RVRMdG5jdnpjSERJZy05RlhkOFJHTkJIX1NiMVI3TS16bDI1TUt2TVJ1eC1iMUVTOXc2djJIWml3?oc=5"
-  },
-  {
-   "title": "【报告：预计绿氢燃机经济性拐点出现在2030年前后】在第九届中国国际进口博览会（以下简称“进博会”）期间，GE Vernova联合北京大学能源研究院共同发布《中国绿氢燃机应用与展望》（下称“报告”）",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 23:38",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhmwt2473772.d.html"
-  },
-  {
-   "title": "内塔尼亚胡呼吁在面临威胁之际组建全国团结政府。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 23:36",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhmwt2473231.d.html"
-  },
-  {
-   "title": "【IBM将停止为美国咨询部门大部分岗位提供签证和绿卡担保】在特朗普政府收紧一项长期为科技行业输送人才的签证计划后，IBM最大业务部门将停止为部分职位提供移民担保",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 23:36",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhmwu9121343.d.html"
-  },
-  {
-   "title": "【俄通报称继续打击乌克兰能源设施和船只】俄罗斯国防部10日发布通报称，俄武装力量继续使用无人机打击支持乌克兰军工企业运转的能源基础设施，以及运送军用物资和军民两用货物的船只",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 23:36",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhmws2555681.d.html"
-  },
-  {
-   "title": "土耳其与沙特阿拉伯签署电力项目谅解备忘录。",
-   "source": "东方财富",
-   "section": "东财快讯",
-   "ts": "2026-11-10 23:32",
-   "date": "2026-11-10",
-   "url": "https://finance.sina.cn/7x24/2026-11-10/detail-iniyhmwq5778505.d.html"
-  },
-  {
-   "title": "FBI出手調查 黃仁勳出軌疑點重重！炸彈由特朗普引爆 3大部署劍指中國？",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 20:00",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=i2SSJfV-9dU"
-  },
-  {
-   "title": "【代幣化】渣打香港夥螞蟻國際完成代幣化貨幣市場基金贖回融資 ...",
-   "source": "香港经济日报 HKET·财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 14:42",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af33b9868a74f488ca796014fd4b888&url=https%3a%2f%2finews.hket.com%2farticle%2f4223040%2f%25E3%2580%2590%25E4%25BB%25A3%25E5%25B9%25A3%25E5%258C%2596%25E3%2580%2591%25E6%25B8%25A3%25E6%2589%2593%25E9%25A6%2599%25E6%25B8%25AF%25E5%25A4%25A5%25E8%259E%259E%25E8%259F%25BB%25E5%259C%258B%25E9%259A%259B%25E5%25AE%258C%25E6%2588%2590%25E4%25BB%25A3%25E5%25B9%25A3%25E5%258C%2596%25E8%25B2%25A8%25E5%25B9%25A3%25E5%25B8%2582%25E5%25A0%25B4%25E5%259F%25BA%25E9%2587%2591%25E8%25B4%2596%25E5%259B%259E%25E8%259E%258D%25E8%25B3%2587%25E8%25A9%25A6%25E9%25BB%259E%25E3%2580%2580%25E4%25B8%258B%25E4%25B8%2580%25E6%25AD%25A5%25E6%258E%25A2%25E7%25B4%25A2%25E6%2595%25B8%25E7%25A2%25BC%25E8%25B3%2587%25E7%2594%25A2%25E6%258A%25B5%25E6%258A%25BC&c=10997958296422565131&mkt=en-us"
-  },
-  {
-   "title": "Alibaba chip unit T-Head files Hong Kong IPO plan amid China’s AI self-sufficiency drive",
-   "source": "南华早报 SCMP·Business",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 21:20",
-   "date": "2026-11-10",
-   "url": "https://www.scmp.com/business/companies/article/3373974/alibaba-chip-unit-t-head-files-hong-kong-ipo-plan-amid-chinas-ai-self-sufficiency-drive"
-  },
-  {
-   "title": "港股收评：恒指涨0.44%！PCB、半导体走强，石油股下挫",
-   "source": "格隆汇·实时快讯",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 04:45",
-   "date": "2026-11-10",
-   "url": "https://www.gelonghui.com/news/5348664"
-  },
-  {
-   "title": "香港置业：首10个月香港一手住宅成交金额突破2千亿港元 创5年新高",
-   "source": "智通财经·推荐",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 07:23",
-   "date": "2026-11-10",
-   "url": "https://www.zhitongcaijing.com/content/detail/1521333.html"
-  },
-  {
-   "title": "经络：香港楼市处于整固阶段 10月按保数字急跌创逾十年半新低",
-   "source": "智通财经·推荐",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 06:11",
-   "date": "2026-11-10",
-   "url": "https://www.zhitongcaijing.com/content/detail/1521281.html"
-  },
-  {
-   "title": "港股集体收涨；金融股强势，汇丰控股涨超4%领涨恒指；大模型和AI应用股大爆发 - 中国基金报",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 18:25",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiekFVX3lxTE1WOXBhYjNIWU9CZ2QxOW1yNTB4RFBBMy1XZHJFek4wbEsxQTRMYlhIVnJ6dkNraTlFd0NxMzN6M29SbkNjV3h1akVLNExEU280UGxOMVh5dGVXd1hYeVFYWHh6VF9NNFpqeWhzcm9JWUtwRnhwRDZubGxR?oc=5"
-  },
-  {
-   "title": "阿里巴巴拟分拆平头哥港股独立上市",
-   "source": "中国基金报",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 08:17",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/ARb3e036cd-8bf5-a6e0-b259-3a24d7d40d04"
-  },
-  {
-   "title": "广发证券2026年全球投资论坛在中国香港成功举办",
-   "source": "中国基金报",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 06:40",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR5b98e721-5949-9b79-5dd1-3a24d70213c4"
-  },
-  {
-   "title": "瀚天天成11月10日回购47,150股H股 耗资约386.6万港元",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:35",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694403.shtml"
-  },
-  {
-   "title": "普冉股份：筹划发行H股并在香港联交所上市",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 06:15",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694543.shtml"
-  },
-  {
-   "title": "新荷花IPO定价40.20港元 香港公开发售超额认购2190.99倍",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 05:40",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694408.shtml"
-  },
-  {
-   "title": "阿里巴巴拟分拆平头哥赴港独立上市",
-   "source": "经济观察网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 15:43",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089638.shtml"
-  },
-  {
-   "title": "牛津儀器股價今日上漲，原因何在？ 作者 Investing.com - Investing.com 香港",
-   "source": "Investing.com·市场新闻",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 17:21",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE50SS1xNkcxRWZKXzZpOHhFZzhGRnNTVHFTQVJwUlhJRm14ODdoWlJZTUZBQlpzRXRzRWhHT3ZMUnBxR2FsdUdkV0hPY2dNejdHTFBwSnpiVzZMcnR6N21UMjV0MWJSYlc0TGVLdS1iVXd5MC1QM29z?oc=5"
-  },
-  {
-   "title": "HANG SENG INDEX (^HSI) charts, data and news - Yahoo Finance UK",
-   "source": "Google 新闻·英文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 11:50",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiVEFVX3lxTE5feXVRZzg1UHZ6ZVp3aWJNczJ5VDRFbzNjRHlXSzN6cm56bGIwSTZZbDQyQ1Bidm9WTWd6ai1jUnIzeThOa2RCVVpuX3ctN3VrTVpUbg?oc=5"
-  },
-  {
-   "title": "首发新品“白名单”助力国际消费品牌集聚上海",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:16",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/xwzx/01/2026/11/10/detail_2026111010051273.html"
-  },
-  {
-   "title": "新华三在中国虚拟机软件市场份额排名升至第二位",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:14",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/ssgs/01/2026/11/10/detail_2026111010051271.html"
-  },
-  {
-   "title": "新能源汽车概念板块表现活跃 科瑞思等25只概念股涨停",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:15",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af33b9b31574a329a4fa7e5a783bbe6&url=http%3a%2f%2fwww.zqrb.cn%2fstock%2fredian%2f2026-11-10%2fA1794296873337.html&c=5001958161421569694&mkt=en-us"
-  },
-  {
-   "title": "东吴证券：关于发行股份及支付现金购买资产暨关联交易报告书（上 ...",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:23",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af33b9b31574a329a4fa7e5a783bbe6&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fggkx%2f2026-11-10%2fA1794296873352.html&c=5322370412457051794&mkt=en-us"
-  },
-  {
-   "title": "华利集团拟以自有资金不超过33.58亿元人民币，投资光通信公司",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:37",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR798cea3e-f924-4c5e-2692-3a24d7890b31"
-  },
-  {
-   "title": "东吴证券收购东海证券83.68%股份交易申请收到上交所意见落实函",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:37",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/ARa560ec72-7357-c7bf-dd13-3a24d7bc7165"
-  },
-  {
-   "title": "剑桥科技：拟于2027年底前将高速光模块产品的年产能再扩充至少1000万支",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:16",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694546.shtml"
-  },
-  {
-   "title": "厦门钨业：与洛阳钼业仲裁案因管辖权异议中止程序",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:48",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694233.shtml"
-  },
-  {
-   "title": "拓展机器人业务打开远期成长空间，浙商证券：维持新泉股份\"买入\"评级",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 01:44",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1693738.shtml"
-  },
-  {
-   "title": "最终定价2897万元 西菱动力收购舍弗勒在华涡轮增压业务收官",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/a9150257bbfb47949154080a5c8fffd7/c.html"
-  },
-  {
-   "title": "华培动力澄清“人形机器人”概念：相关产品尚未形成收入",
-   "source": "经济参考网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.jjckb.cn/20261110/3ac49989f5b842d8b3c953d92dba7b35/c.html"
-  },
-  {
-   "title": "奥迪上汽战略合作 CEO 舒睿泽：未来三年将推出三款新车",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 23:34",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/025/192.htm"
-  },
-  {
-   "title": "MiniMax 开源 H3-Image 生图模型，10 秒就能生成一张 4K 图像",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 23:25",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/025/191.htm"
-  },
-  {
-   "title": "高盛预计 Anthropic 2030 年营收突破 6000 亿美元，并跻身全球营收最高企业之列",
-   "source": "IT之家",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 23:17",
-   "date": "2026-11-10",
-   "url": "https://www.ithome.com/1/025/190.htm"
-  },
-  {
-   "title": "机构席位买入455.37万 北交所上市公司森峰激光登龙虎榜",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:51",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643876.html"
-  },
-  {
-   "title": "小盘风格表现较为强势，中证2000ETF易方达（159532）标的指数收涨2.5%",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 04:33",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643927.html"
-  },
-  {
-   "title": "“爱国者”导弹短缺欧洲要保自用而不愿援乌",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 03:58",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643896.html"
-  },
-  {
-   "title": "140亿元投向“一老一小”：钱花在哪，服务如何跟上",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:25",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/5727a531ebd99933fbb1c28bb724edbb.html"
-  },
-  {
-   "title": "白石涌：水清归处烟火聚｜走读中山水岸会客厅",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:14",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/53cde79e82712dbd13061d675d2f5148.html"
-  },
-  {
-   "title": "海能达：计划与部分汽车品牌开展合作 开发适合车载应用的通信解决 ...",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:31",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af33b9b6c844a67b2e88a53d19fd70f&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000046619.shtml&c=13051026547544003771&mkt=en-us"
-  },
-  {
-   "title": "进出口两旺！10月外贸跑出年内新高，全球AI投资热潮未减",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:25",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af33b9b6c844a67b2e88a53d19fd70f&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000046608.shtml&c=9579180174394438919&mkt=en-us"
-  },
-  {
-   "title": "估值大缩水！万亿AI巨头，IPO定价区间确定",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:39",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af33b9b6c844a67b2e88a53d19fd70f&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000046623.shtml&c=4916627465467158483&mkt=en-us"
-  },
-  {
-   "title": "美国财政部拍卖580亿美元三年期国债，得标利率4.627%",
-   "source": "和讯网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 05:12",
-   "date": "2026-11-10",
-   "url": "https://news.hexun.com/2026-11-10/225249959.html"
-  },
-  {
-   "title": "美国10月CPI环比增长超预期 现货黄金跌超2%",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 15:43",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089637.shtml"
-  },
-  {
-   "title": "南方铜业Q3单位现金成本大降 瑞银认为其估值回落至近年均值附近",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 09:23",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089642.shtml"
-  },
-  {
-   "title": "美股三大股指集体低开，英伟达开盘续跌近3%",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:32",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xwo3P6iPq3"
-  },
-  {
-   "title": "今后谁给黄仁勋买皮衣？ 年销3亿欧元的时装品牌TOM FORD恐失免费代言人",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 12:55",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xw9aO91xpP"
-  },
-  {
-   "title": "英伟达因黄仁勋涉谍案遭起诉 诉讼曝光之际股价已跌近5%",
-   "source": "RFI",
-   "section": "全球头条",
-   "ts": "2026-11-10 23:34",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiggNBVV95cUxNYnpCNjJBWnhxRF90X1A3ZGJmTmFiYk9hQWJDMEtFSnMtRGhkYXh5cE81ZFAwelBEdkpOOXJLclBWb0JZb1JkY3llR2hzQTltdDhKYVlzODEzc0dhTE52N3JYbzdnbFZQV1FpRDkwcGpRY1FPalNybnE3LUoydXlkZm9XMTFjSDJEbFliS3kycWIxQVdTeXZiUVg5YW1rMzdKV1VsSG9INEJmdFNPTVRKZ3h4b3NOYWVNZ2xoLVB3U3FSR0ZXQUduYk1qOVBMYkVWV1pPODNqcS1kVVRzcXRoUWdxejFhUW1rY1NCc2RnNURoSkpyY0w5S3JlSUpiOUFvVGpVTVZGSGREZG5DTW16YkFncDJoME1aZ2VybmFiY3Y0MWlaaEJrOXhtaTZpYlQtVkloMHZzR21pZmtseHE5TFBiX1RUWnV6aXUxSFlPdzlTV1NJTWk4Q2ZjSmIzenQxOG1MakwyYjIza3dZdlRyUVRkZk83bHZveWlRLXVSNVRjQQ?oc=5"
-  },
-  {
-   "title": "ST龙大遭证监会立案 实控人被查引发关注",
-   "source": "中华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 22:10",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTE1kTkc2cTVHNDlZVlRHTm15X0VHQTJzSUZkSEZBRzk3ZXpHVl9PV3NkcU5IZjcxa0VlTExGNmVvQk1UcmVlUTVCYy11MDF3TVdzNlg4cFFIcjU4TTNybkNRdkt1NzVvNGxLc0ptM1RBY3U?oc=5"
-  },
-  {
-   "title": "404.03元→809元！宇树科技18个交易日股价翻倍 市值重回3000亿元",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-11-10 17:33",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9yWGZTWDZaeElHSUVMRXZiNnhDcFFHbWc5TDRjblp6WWVZTVh3WHpoVTdqQXVpWWRnTG0zVGtjNHBHNEJQZnE4cDdzaTE0RWRmREdSS2l4UG9GVkZ0eU5oNDFhNTBWQQ?oc=5"
-  },
-  {
    "title": "摩根士丹利将兆易创新A股评级下调至平配，目标价259元。",
    "source": "东方财富",
    "section": "东财快讯",
@@ -1715,78 +42,6 @@
    "url": "https://finance.sina.cn/7x24/2026-11-11/detail-iniyhser2362304.d.html"
   },
   {
-   "title": "今日發生強制收回事件的牛熊證(強制贖回事件時間)",
-   "source": "港交所·新闻稿",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 01:29",
-   "date": "2026-11-10",
-   "url": "https://www.hkex.com.hk/chi/cbbc/mce/mcetoday_c.htm"
-  },
-  {
-   "title": "阿里巴巴：拟分拆平头哥在港股独立上市 - 华尔街见闻",
-   "source": "Google 新闻·中文港股聚合",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 20:38",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTE1kaENfcl8weVJzUGlSUEQ3ZU5MUFVXQWtDdk9sZ3FpNEtBYVlmSUFxSGE4VG53UHo2YW1rVlBMM2pUX3hzUlB4MnFDZFdyR190MUk0?oc=5"
-  },
-  {
-   "title": "中国天保集团发展：独立非执行董事辞任，未符港交所上市规则多项 ...",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 07:27",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694687.shtml"
-  },
-  {
-   "title": "快手加码AI互动玩法，将推Yoola面向创作者提供一站式服务",
-   "source": "和讯网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 03:25",
-   "date": "2026-11-10",
-   "url": "https://news.hexun.com/2026-11-10/225253564.html"
-  },
-  {
-   "title": "阿里巴巴建议分拆平头哥于港交所上市",
-   "source": "经济观察网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 17:19",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1110/1089630.shtml"
-  },
-  {
-   "title": "Novanta股價今日為何暴跌逾14%？ 作者 Investing.com - Investing.com 香港",
-   "source": "Investing.com·市场新闻",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 23:44",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMid0FVX3lxTE1uTmlLQWNQazd3bzFzTmRyVF9uSDQ4VzR3ZzE2ZXZKNjlQb0tTbkY1Sng5VjlwZXlJVUxvWW1STFR1cnpva29ETk80c3dLNUZCOFNiUWw2UGlrVGlVcFBJLVBKUEZXVFgteEdpZ2hhT2pFRmZpSU9F?oc=5"
-  },
-  {
-   "title": "频准激光：关于召开2026年第三季度业绩说明会的公告",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:48",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af3521841e9458b8a817a107ade7ee7&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fggkx%2f2026-11-10%2fA1794296873547.html&c=4545613373478063796&mkt=en-us"
-  },
-  {
-   "title": "今夜，利空突袭！直线大跳水，美联储加息大消息",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:17",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/ARa21baaee-de14-0514-541b-3a24d802a3ba"
-  },
-  {
-   "title": "今年双11流行囤Token， 双11半小时卖出约2万亿Token",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:19",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694673.shtml"
-  },
-  {
    "title": "嵌入式 x86 算力天花板：AMD 霄龙嵌入式 9006 系列 SP7 处理器发布，吞吐量飙升 1.8 倍",
    "source": "IT之家",
    "section": "内地财经媒体",
@@ -1801,94 +56,6 @@
    "ts": "2026-11-11 00:14",
    "date": "2026-11-11",
    "url": "https://www.ithome.com/1/025/194.htm"
-  },
-  {
-   "title": "年出口数亿美元的塞舌尔 想直接对接中国合作伙伴",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:29",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4644015.html"
-  },
-  {
-   "title": "机器人概念带飞股价？金杯汽车喜提2连板，最新回应",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:21",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4644199.html"
-  },
-  {
-   "title": "中兵红箭：如有回购注销等重大事项，公司将及时履行信息披露义务",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:00",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af352186a5d4011849e0219e1cadaac&url=https%3a%2f%2fstock.stockstar.com%2fRB2026111000044764.shtml&c=4864107188437740425&mkt=en-us"
-  },
-  {
-   "title": "价格大跳水，车厘子即将大批量上市",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:10",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xvl8uitfzD"
-  },
-  {
-   "title": "法国报纸摘要 - 黄仁勋陷疑似中国间谍事件 人工智能行业震荡",
-   "source": "RFI",
-   "section": "全球头条",
-   "ts": "2026-11-10 20:22",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMi8gNBVV95cUxOWEd1M2FRc0lYR3dBMzhfX1QzcmxMV1MyM3J2NklJUnc4WkxhaWxlTHVJNXRpYUllc3IxNndTLXNvU1pUNW5tdlltVHRqbGlVUDdYUTZodU1hbEhTc0dPdEtqd3RfdEROcmFEMDZnb3UzNW9Xd1gxWGNHSW9iX0Zxc0p4b3pzUm83elpTU0RtazFsSkEtdUZhUzA5end1Nk1XZ1Z2b19fMnhBalNjNm5Wek0tM1NzN0V0ZC1RUWR4Zmx0aE55MTREU2pBSGFwUG16M0E5R3VJUVZIeGJLeUFqZWVCYlZjam1qamNsZGtxbk9qZGRxRW9ZeURmSUF6YkVoTk9JYmVBdDJYazhGMUM1cEVPNXZKTDYwQ09ZQnMwVjcxclhTajRJY0E1bHhzMy1ZdDdvZDdvSUZXWXlQVkE4aWlWQW1oSVNHTEs0cXRRSDdhS2tnRkFCNVJEcFpNSHpqS3lOT2J5TERoaGdXSXl5aGV6ZExUcWtyaU9FMnlTVXU2d09neERPby1kQ3VjVTNZVmFleXNBN2JXTHNLOVliSkpoeVgwRk96S1M3SVlfNGpjdW14OS1kZ1NFZWpiaVFJSFlfc1NhcUtKTERVRVByMnhIeDJSRHgtYlZSU2FQWUJoeTE1TUprdXZvc2ZvNURSUEE?oc=5"
-  },
-  {
-   "title": "Anthropic IPO拟发行8.25亿股 AI巨头冲刺上市",
-   "source": "中华网",
-   "section": "全球头条",
-   "ts": "2026-11-10 23:42",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMicEFVX3lxTFB6UlVndXFIb0VZRl9sMlZNVl84aDhVVlBaTVg3SGpyTHFnZjZxcWtqSDhPbTA2Y2dOYlBQS2VnUGJuX2FtcUlkTFhTd3dWUWpOMC1jSGFOd3hZTVdfQmJXdHJiZnF4dDBZTUZDTE9Fa0w?oc=5"
-  },
-  {
-   "title": "美国10月核心CPI环比上涨0.3%超预期，12月加息50基点预期骤然升温",
-   "source": "华尔街见闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 22:37",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiU0FVX3lxTFBlZlgxNEp6MnFxZ1VhcVVFRjJKLUlKYnltSVE2ajlKUHVhVVlRNTc0TUJnV0FmaEhHblZMTE5HNWZKNzF4RHRKS1RtTXFfZC0zVG9R?oc=5"
-  },
-  {
-   "title": "国内商品期货夜盘开盘 主力合约大面积飘绿",
-   "source": "东方财富",
-   "section": "全球头条",
-   "ts": "2026-11-10 21:00",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE9nczRvb2tITXdEQXpfWElRN214aFRBeUk1Znp4WXA0T2FjQUNyVjNVN2xjZWxxNmJIQ2lRakNnWFhjdEhoYjdEN1BPUWVFZmF6X1ROa2ZnR0xOTFNTQ0xqeUpSSTlYQQ?oc=5"
-  },
-  {
-   "title": "ST龙大：公司因涉嫌信息披露违法违规被中国证监会立案",
-   "source": "新浪网",
-   "section": "全球头条",
-   "ts": "2026-11-10 17:39",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiS0FVX3lxTFBFZzR2OG1LdTUyLTlTeWZ5cWVmVmR5NG1hLTJzU3hscjdEd1ZtMHFULTRGN3duX1hPSVRlQjIxUTBJTVNWbVhxdjBqVQ?oc=5"
-  },
-  {
-   "title": "中广核浙江三澳核电项目4号机组主体工程开工",
-   "source": "科学网—新闻",
-   "section": "全球头条",
-   "ts": "2026-11-10 22:28",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE82RVNPYW1veUYwNDlhbUpPeDBuYUJmbndVM2Z6Q0o2TVZjWW5UUElkNmprbENfdmdmenR1UE5pRGtKdTFJUGdSeVNjWDFMT0ZwZVNYY1d6UzhoRmpFRUNYamZsSnRidw?oc=5"
-  },
-  {
-   "title": "中信建投证券董事长刘成：稳市机制持续完善，资本市场更加重视投资者回报",
-   "source": "同花顺财经",
-   "section": "全球头条",
-   "ts": "2026-11-10 14:27",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE93bmRLVWVkUTdOSDBsRWlRdWowTko3cENfVzJBSUpzSEl2WE9meHdEY0ZobEtYYVFXbEloWU5Zc3ZQOHc3LWxjRTh2dVZkQmNxbnJ3ZmVBbVdaUG5OOGZKNUZR?oc=5"
   },
   {
    "title": "泽连斯基：我们将要求举行领导人会议，但不确定俄罗斯是否准备好。",
@@ -1939,100 +106,12 @@
    "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFB3Q0FncUtpYWJqZ09FTUw4YmR6UmgwX1ZOWWVSX2VzWUdmQlZvSEhfb1lVQlh2T2t0eTlBTzg2MlZkUmV2Y2IxZmFlMlhZazdfOVQxaVNBSS1zUXNsbkhyRG9HOEREdw?oc=5"
   },
   {
-   "title": "汇丰银行6只牛熊证强制赎回 代号63468每买卖单位剩余价值190港元",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 17:29",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694037.shtml"
-  },
-  {
    "title": "Hong Kong Stock Exchange: Hang Seng Index Rises to 24,557.04 as HSBC and Chip Stocks Lead - BBN Times",
    "source": "Google 新闻·英文港股聚合",
    "section": "港股新闻源头",
    "ts": "2026-11-11 04:23",
    "date": "2026-11-11",
    "url": "https://news.google.com/rss/articles/CBMiwAFBVV95cUxQbDE5Q256NDRNYWlkMk9XSzF3M0psMS1kWjE4QmJvT2p1cG1oVzZ4eVFBbXV6ZUdHU1BpY0NhejdBYnFuTzFZbkNiWFdkdDlCeWZEM2pZU3lweUgydnp3NWZCTXhJNzl6UGQ2YzJmSzVYTWpQMGxQbVdBVnVUOXdpbXFPUF9FNXI4YTVrSUlCTEQtOUFmbEJHZ1d3VHUySVVJMFJoQTk4dnpPMDBhM3dyQk83ODZrQndaVXZ4eFM1eFk?oc=5"
-  },
-  {
-   "title": "国内商品期货夜盘开盘 原油跌超3%",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 07:33",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/zzqh2020/2026/11/10/detail_2026111010051280.html"
-  },
-  {
-   "title": "读懂这张投给中国市场的“信心票”",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 10:46",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af37e8223804fe798c92109aae1c365&url=http%3a%2f%2fwww.zqrb.cn%2freview%2fjinrishidian%2f2026-11-11%2fA1794315619180.html&c=59171876849853056&mkt=en-us"
-  },
-  {
-   "title": "国家发展改革委将从三方面撬动银发消费需求",
-   "source": "证券日报网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:36",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af37e8223804fe798c92109aae1c365&url=http%3a%2f%2fwww.zqrb.cn%2ffinance%2fhongguanjingji%2f2026-11-10%2fA1794296873497.html&c=15863558505477048340&mkt=en-us"
-  },
-  {
-   "title": "机构席位买入516.02万 北交所上市公司艾能聚登龙虎榜",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 17:51",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643875.html"
-  },
-  {
-   "title": "合肥武汉之后，终于轮到郑州“上桌”了？",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 06:29",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4644019.html"
-  },
-  {
-   "title": "新三板创新层公司陆海科技大宗交易折价10%，成交金额384.38万元",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 17:57",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-10/4643894.html"
-  },
-  {
-   "title": "热财经｜2030年，广东电网预计接入3500万千瓦海上风电",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 08:16",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261110/herald/ebcaa90bca1d2858e642916e9c7fd79a.html"
-  },
-  {
-   "title": "常德市委副书记、市长周振宇主持召开全市重点企业上市培育工作 ...",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 09:15",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af37e820d6c4890abc51dc99ae675e2&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111000048837.shtml&c=7326338453844181132&mkt=en-us"
-  },
-  {
-   "title": "司美格鲁肽等“减肥神药”可能导致失明，FDA要求GLP-1药企标注风险",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 20:28",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1111/1089654.shtml"
-  },
-  {
-   "title": "大疆Pocket4系列要涨价13%？客服回应",
-   "source": "经济观察网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 20:28",
-   "date": "2026-11-10",
-   "url": "https://www.eeo.com.cn/2026/1111/1089652.shtml"
   },
   {
    "title": "黄仁勋婚外情涉谍案！为何导致英伟达公司股东提集体诉讼？",
@@ -2089,14 +168,6 @@
    "ts": "2026-11-11 08:46",
    "date": "2026-11-11",
    "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1KMkVVaGo0VzgzSWFFaGJ4X1d3NDFBdWFSNVZFckFDNHBWNmRFUEs0VlQwWWx4Ym5UZUxCcHNNNER6d2JXUU11dktPTDltb3NNSGdnLTRnMUtoWXpsM3p2cw?oc=5"
-  },
-  {
-   "title": "中信建投最新研判：新一轮修复行情正在到来",
-   "source": "21财经",
-   "section": "全球头条",
-   "ts": "2026-11-10 21:47",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxONUVfLXNJQVJxTHVWaUZON1ZUREpobUN4WlhwVTZ5VnR4dWRCajZWU0N4aWNrcUNDWWQxY3YxQjZFTWRvakxMem5reGZqUkcyUm9lS2xseVlsZGhCaUxWU214M3RyS0MzbzVkd3B3U3FicnliVjZsQmpWT0cxZk1ZSU9vZmREM0I5b0xSMg?oc=5"
   },
   {
    "title": "阿克苏诺贝尔确认英国竞争与市场管理局就拟议合并作出的决定。",
@@ -2171,14 +242,6 @@
    "url": "https://www.scmp.com/business/article/3373919/new-huanggang-port-opening-sparks-push-hong-kong-homebuyers-greater-bay-area"
   },
   {
-   "title": "今日發生強制收回事件的牛熊證",
-   "source": "港交所·新闻稿",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.hkex.com.hk/chi/cbbc/mce/mce_c.htm"
-  },
-  {
    "title": "今日發生強制收回事件的牛熊證(強制贖回事件時間)",
    "source": "港交所·新闻稿",
    "section": "港股新闻源头",
@@ -2193,14 +256,6 @@
    "ts": "2026-11-11 00:00",
    "date": "2026-11-11",
    "url": "https://hongkongfp.com/2026/11/11/hkfp-lens-hong-kong-lgbtq-groups-stage-rainbow-strength-fitness-contest-after-pride-market-venue-axed/"
-  },
-  {
-   "title": "港股异动丨油价重新走高削弱成本缓解逻辑，三大航空股集体回落 ...",
-   "source": "格隆汇·实时快讯",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 00:00",
-   "date": "2026-11-10",
-   "url": "https://www.gelonghui.com/live/2756348"
   },
   {
    "title": "港股午评：恒生指数跌0.83% 恒生科技指数跌1.36% - 东方财富",
@@ -2225,30 +280,6 @@
    "ts": "2026-11-11 08:51",
    "date": "2026-11-11",
    "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTFBUblcwNERpQUYyWkNGdzVJQlBWMTF2VFdURW5rQTZ6bGY3a2plbGgxWjRtbzlyTXRmT0JvZUNxeDhCRFdOSVpLMg?oc=5"
-  },
-  {
-   "title": "恒指低开0.83% 恒生科技指数跌0.96%",
-   "source": "中证网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 19:29",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/gppd/ggzx/2026/11/11/detail_2026111110051366.html"
-  },
-  {
-   "title": "汽车板块整体活跃，港股通汽车ETF易方达（159121）标的指数收涨2%",
-   "source": "每日经济新闻",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 18:35",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af41deddba04afbb54cea3b24b72908&url=https%3a%2f%2fm.nbd.com.cn%2farticles%2f2026-11-10%2f4643936.html&c=3319001124612238286&mkt=en-us"
-  },
-  {
-   "title": "国产AI芯片加速上市，阿里拟分拆平头哥上港股，已递交申请",
-   "source": "凤凰网财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 22:07",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xxg4GHOvfr"
   },
   {
    "title": "水星系統股價今日為何下跌？ 作者 Investing.com - Investing.com 香港",
@@ -2283,76 +314,12 @@
    "url": "https://news.google.com/rss/articles/CBMivAFBVV95cUxPSmRQZ3Vualp1ejNBMlBFN0FIWFhpNFJxV1d3NGtoSDVnTVpBU1B3TlBpeVh4QXd2aFAwaGdvQnltaWJ3YjdhdjFTQTVvYjQwbjFNekdWOG5mekh2dVZfT0Z4ajNGdjFSV1l5cVRIbnk4SHA3dGZUWjdGak90WFBtZm1nWmtBMEd4YjZrSWRMYmtpRDYwMnpGVVJiWnhhSzdaZ1k3STlqUG5OTDZjOTE5WWNRejVIaEdJaERGaQ?oc=5"
   },
   {
-   "title": "进博会上，中国“超级买家”带动全球商机",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 18:50",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/xwzx/01/2026/11/11/detail_2026111110051348.html"
-  },
-  {
-   "title": "第九届进博会闭幕",
-   "source": "中证网（中国证券报）",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 18:03",
-   "date": "2026-11-10",
-   "url": "https://www.cs.com.cn/xwzx/01/2026/11/11/detail_2026111110051321.html"
-  },
-  {
    "title": "41家财险公司前三季度车均保费同比下降",
    "source": "证券日报网",
    "section": "内地财经媒体",
    "ts": "2026-11-11 00:46",
    "date": "2026-11-11",
    "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af41df01aab4745b1d589392c7ddda0&url=http%3a%2f%2fwww.zqrb.cn%2fjrjg%2finsurance%2f2026-11-11%2fA1794315619194.html&c=13515563127865976844&mkt=en-us"
-  },
-  {
-   "title": "A股通信板块走强，光伏概念股短线拉升，大东方7日5板",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 20:25",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR509c8aac-7936-2c3e-335e-3a24da7fa1e9"
-  },
-  {
-   "title": "英伟达“亲儿子”CoreWeave三季度营收同比增长168%，盘后跳涨超6%",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 20:15",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR6c6af356-0c74-d544-2f2e-3a24da359a73"
-  },
-  {
-   "title": "日韩股市开盘涨跌不一，日本股市早盘短线跳水，软银集团股价跌幅 ...",
-   "source": "中国基金报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 18:42",
-   "date": "2026-11-10",
-   "url": "https://www.chnfund.com/article/AR38559cbd-6556-a274-3a6d-3a24da2bf995"
-  },
-  {
-   "title": "江西生物盘中涨超11%，获行业影响力奖",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 22:08",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1695145.shtml"
-  },
-  {
-   "title": "北交所午评：北证50涨0.47%",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 21:32",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1695117.shtml"
-  },
-  {
-   "title": "禾赛-W盘中涨超10%，Q3营收增34% SGI翻倍，机器人收入超50%",
-   "source": "财闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 19:49",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1694945.shtml"
   },
   {
    "title": "倒计时1天！第六届中国城市国际传播论坛将在山东青岛举行",
@@ -2403,30 +370,6 @@
    "url": "https://www.ithome.com/1/025/552.htm"
   },
   {
-   "title": "美国信用卡债务总额升至1.29万亿美元 创历史新高",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 17:51",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-11/4644374.html"
-  },
-  {
-   "title": "韩国KOSPI指数开盘下跌0.56%日经225指数高开0.11%",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 18:02",
-   "date": "2026-11-10",
-   "url": "https://m.nbd.com.cn/articles/2026-11-11/4644381.html"
-  },
-  {
-   "title": "全球资金，盯上新兴市场低估值资产",
-   "source": "21世纪经济报道",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 19:22",
-   "date": "2026-11-10",
-   "url": "https://m.21jingji.com/article/20261111/herald/4c8f67644e157ed107527edc75ace736.html"
-  },
-  {
    "title": "券商把脉2027年A股：盈利才是硬主线，AI要看商业落地",
    "source": "21世纪经济报道",
    "section": "内地财经媒体",
@@ -2449,38 +392,6 @@
    "ts": "2026-11-11 01:40",
    "date": "2026-11-11",
    "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af41df0618f4df19b538bb1f976aa14&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111100017023.shtml&c=4415718307791584618&mkt=en-us"
-  },
-  {
-   "title": "AI算力拉动PCB需求升温 QFII加仓24股",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 19:35",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af41df0618f4df19b538bb1f976aa14&url=https%3a%2f%2fstock.stockstar.com%2fSS2026111100015428.shtml&c=18373778299881554719&mkt=en-us"
-  },
-  {
-   "title": "国产机器人出口势头好猛 营收迈开腿盈利在赶路",
-   "source": "和讯网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 17:53",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af41df008884318bfd807fc706b742b&url=https%3a%2f%2ftech.hexun.com%2f2026-11-11%2f225255771.html&c=5590583593013582213&mkt=en-us"
-  },
-  {
-   "title": "14个城市，冲击万亿GDP",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 21:47",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xxlHPQ2TME"
-  },
-  {
-   "title": "通胀扩散，美国10月CPI超预期，美联储理事喊出50个基点加息",
-   "source": "凤凰网财经",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 17:55",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xxVMsy9Ycn"
   },
   {
    "title": "中行上海市分行升级第九届进博会金融服务，七大数智场景全链条落地",
@@ -2715,22 +626,6 @@
    "url": "https://www.cs.com.cn/gppd/ggzx/2026/11/11/detail_2026111110051366.html"
   },
   {
-   "title": "光通信概念港股逆市走强 剑桥科技涨近18%",
-   "source": "财闻网",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 23:27",
-   "date": "2026-11-10",
-   "url": "https://www.caiwennews.com/article/1695270.shtml"
-  },
-  {
-   "title": "港股午评：恒科跌超1%，CPO、光纤、光通信、PCB走强",
-   "source": "凤凰网财经",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 22:04",
-   "date": "2026-11-10",
-   "url": "https://finance.ifeng.com/c/8xxm56Rafzl"
-  },
-  {
    "title": "China Plans $2 Billion Bond Sale in Hong Kong as Issuance Grows",
    "source": "Bloomberg·Markets",
    "section": "港股新闻源头",
@@ -2843,22 +738,6 @@
    "url": "https://www.ithome.com/1/025/734.htm"
   },
   {
-   "title": "进博专访 | 迅达中国新梯副总裁鲍俊青：数字化将成为重塑电梯市场竞争格局的关键驱动力",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 12:50",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE5ST0ZIS3FJWTBhMG54Z0JDRV9ySjJuWlpmMWFwaW1GS1J4MzBfazMzWjV2cU1iV2ZBbFI0b1BUcUlud1pDcVBCaUk0Rkt0c0tDeFVIUGdpTkJodGdKNVVyRGFBQ2JPUQ?oc=5"
-  },
-  {
-   "title": "进博会专访丨周杰伦IP加持，这款机器狗售价4.39万元，明星IP价值如何持续放大？巨星传奇CFO赖国辉：IP的下一站是AI",
-   "source": "每日经济新闻",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 22:56",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE8xWW5RYXNweEtIa2NJTk9ZM3hHTzlxZDczX2hxTUExZHR6UFdSekxBV3dodFdNQ08tRGdEV3VIRGctMnpKMFVUMm85eEhVT21pbGZmSDJIZU56cWlMSGFCUmFvMGYyUQ?oc=5"
-  },
-  {
    "title": "全球资金，盯上新兴市场低估值资产",
    "source": "21世纪经济报道",
    "section": "内地财经媒体",
@@ -2905,14 +784,6 @@
    "ts": "2026-11-11 07:53",
    "date": "2026-11-11",
    "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af451e08f55409fa96a8c42bede9fc1&url=https%3a%2f%2ftech.hexun.com%2f2026-11-11%2f225255771.html&c=5590583593013582213&mkt=en-us"
-  },
-  {
-   "title": "11月以来8家A股公司被立案，信披违规成监管高频打击方向",
-   "source": "和讯网",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 15:50",
-   "date": "2026-11-10",
-   "url": "https://stock.hexun.com/2026-11-10/225254498.html"
   },
   {
    "title": "离岸信托收益征税平稳有序推进，个人所得税申报超1600亿",
@@ -3153,14 +1024,6 @@
    "ts": "2026-11-11 06:18",
    "date": "2026-11-11",
    "url": "https://m.21jingji.com/article/20261111/herald/e2a35736aa5376dd63fd27db67e64422.html"
-  },
-  {
-   "title": "华帝股份潘楚欣荣获证券之星第十四届“资本力量”卓越董秘奖",
-   "source": "证券之星",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 09:56",
-   "date": "2026-11-10",
-   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af48a306d924cacb90d0baf00990789&url=https%3a%2f%2fstock.stockstar.com%2fSS2026111000011114.shtml&c=15734057797900200989&mkt=en-us"
   },
   {
    "title": "美伊局势仍存变数，美股三大指数集体下跌！",
@@ -3473,14 +1336,6 @@
    "ts": "2026-11-11 15:59",
    "date": "2026-11-11",
    "url": "https://www.cls.cn/detail/2531423"
-  },
-  {
-   "title": "香港金融发展局报告：建议研究将内地退休基金纳入债券通“南向通”",
-   "source": "同花顺·7×24 要闻",
-   "section": "港股新闻源头",
-   "ts": "2026-11-10 23:44",
-   "date": "2026-11-10",
-   "url": "https://news.10jqka.com.cn/20261111/c681701297.shtml"
   },
   {
    "title": "港股打新回暖！新荷花超购逾2100倍，首日盘中涨超90% - 东方财富",
@@ -4955,14 +2810,6 @@
    "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6af5e406aae348d5acef60d10ee102e0&url=https%3a%2f%2fstock.stockstar.com%2fIG2026111200036759.shtml&c=1721897114570583229&mkt=en-us"
   },
   {
-   "title": "名家金论坛",
-   "source": "金融投资报",
-   "section": "内地财经媒体",
-   "ts": "2026-11-10 16:00",
-   "date": "2026-11-10",
-   "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFA1cTBicEFaN3ZtYTdNeDE4VDFwNWFsTllCSVJ1MHlVUS1PUlo1Z1JJX0hMWmtoT2hHMUQyaG9jd3FFNzQ5UGdUZDVmWDFudlpLRE9aUkR5SkJJR2s?oc=5"
-  },
-  {
    "title": "【环球财经】标普全球：清洁能源投资增强欧洲抵御能源冲击的能力",
    "source": "经济观察网",
    "section": "内地财经媒体",
@@ -5521,14 +3368,6 @@
    "ts": "2026-11-11 20:30",
    "date": "2026-11-11",
    "url": "https://www.youtube.com/watch?v=nb2e06XsaYU"
-  },
-  {
-   "title": "FBI出手調查 黃仁勳出軌疑點重重！炸彈由特朗普引爆 3大部署劍指中國？｜仁勳出軌 EP.2",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 20:00",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=i2SSJfV-9dU"
   },
   {
    "title": "香港經濟｜陳茂波︰第三季按年增長5.2% 五年來同期最快 惟各行業 ...",
@@ -6225,14 +4064,6 @@
    "ts": "2026-11-11 20:30",
    "date": "2026-11-11",
    "url": "https://www.youtube.com/watch?v=nb2e06XsaYU"
-  },
-  {
-   "title": "勳外情EP.2｜FBI出手調查 黃仁勳出軌疑點重重！炸彈由特朗普引爆 3大部署劍指中國？",
-   "source": "Finance730",
-   "section": "港股名家频道",
-   "ts": "2026-11-10 20:00",
-   "date": "2026-11-10",
-   "url": "https://www.youtube.com/watch?v=i2SSJfV-9dU"
   },
   {
    "title": "Beijing clarifies offshore trust tax rules, exempting Hong Kong MPF accounts",
@@ -29537,9 +27368,409 @@
    "ts": "2026-11-27 00:33",
    "date": "2026-11-27",
    "url": "https://finance.ifeng.com/c/8yOV1u9OafP"
+  },
+  {
+   "title": "英伟达暂停向东南亚四国交付AI服务器，全球供给缺口或将扩大？",
+   "source": "钛媒体",
+   "section": "全球头条",
+   "ts": "2026-11-27 16:12",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiTEFVX3lxTE9kVERCZkNSVmJnOWlSZjh6bkVxUUgzYWRVVnRESFZJOUFfMnIyVHU0QXBpWmV2ZGN2SklBa1lOODB5cWQzc0ZFVldhTXg?oc=5"
+  },
+  {
+   "title": "A股狂飙超400股涨停，国务院常务会议后证监会回应：抓紧研究出台增量政策",
+   "source": "上观新闻",
+   "section": "全球头条",
+   "ts": "2026-11-27 21:54",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE04Tm1lUFBtLTR2TEN3c3lkQW02bkpMOGxZTlR3UzlyZ2ZENTJlTjhTdnN2T3YzSFlFQURLVDg4TWk3WkdOc3l5bFY5MUtUaklGRmF1WVh6UmFoZw?oc=5"
+  },
+  {
+   "title": "港股上行 恒生科技指数领跑大市",
+   "source": "东方财富",
+   "section": "全球头条",
+   "ts": "2026-11-27 22:07",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTE5ma2hOSDItOVlpZXFFQkdNT3V4Tm5vSWUxeExuTEU4cEl2cHkzX3NJcXQxdnNrVGV3S3pUZGhRRGZWQmxzZ1ZxT3BKeW9VYlNXTWpwdFhldlhiN2F3eEg5YWUtdnJ3QQ?oc=5"
+  },
+  {
+   "title": "入围银行加速响应股票回购增持贷，城商行也有项目落地，先进制造领域成投放重点",
+   "source": "财联社",
+   "section": "全球头条",
+   "ts": "2026-11-27 20:49",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiSEFVX3lxTE5SdnF4M3JydnA1OERIWFVuRFAyYlpScGpyX3lkVy1MRlNtLUYwajFIUUhhM3dGUk9nQndqTXE2VVJ3ckY0ZTN3Rg?oc=5"
+  },
+  {
+   "title": "国务院国资委：中央企业对产能过剩、低价竞争的板块要坚决合并精简",
+   "source": "新京报",
+   "section": "全球头条",
+   "ts": "2026-11-27 15:11",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiZEFVX3lxTE1TUThZV1NnNDJOcU9JeGp2dWhWQmVGOVhQZFBFa29qcHZ2SVEyY1VLOXI4QVhtZWdIOUppTnc4V2lsdTBpX0lqYnJidFFfZUxFblVmN0hQMGkzbGtuXzhMMVRXdWk?oc=5"
+  },
+  {
+   "title": "央行发布《人民币存贷款利率管理规定》",
+   "source": "新华网",
+   "section": "全球头条",
+   "ts": "2026-11-27 23:05",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiiAFBVV95cUxNNlBMMlVqcUprSjFIM2VNSXFnNnZKWWR6TjVWLW1aVHVqQWpmUXFqTlFoNFY4WHl6aFV2bUdMNDNkTmFtVUM1SHVQWlZNaU1lYjVsb1dVa05zeG5kLTc3dk94RkEtMGZBYWUyenIyRzU2U1R5SmFpVkpCcVZYQktVM0UyMHM5bTVx?oc=5"
+  },
+  {
+   "title": "特朗普发侮辱女性的黄仁勋举红文胸AI图，并称涉间谍婚外情风波可能是“净利好”；有谁关心首席财务官克雷斯的遭遇",
+   "source": "DW.com",
+   "section": "全球头条",
+   "ts": "2026-11-27 21:12",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiwAJBVV95cUxPQlgyd0tCam9meXFxZW9QU0c0UUE1MGN0VnF1UFhzSXQwcUFuQ2JQdnpzT2c5dGtSVTFiemxJZVhwTFlscmVhTVJvNF9hTHpoRVBpWjdONThXZnFUdmZaWXpzUDY0N012UkcyT25jWjhSd2RZVjNKeHVaN2k5S3gtdnNTNWNuY2E3Z1VHOXdfZE81TnpRTU9lb0JhbURtcTlRUFdXZWhSb2l2MUVOZzJfbkNxNEk3aDR0N0hMamt6bEk0QUEtaGZrWDNJUmdQQlE1aWFkZ3FqNEF6S19uUGRjRjVUQ0VlMVM5el9LTXI0QVFmWUt1YkN6ZFdOVVhlVHhKZGtNZGpSOU1wNlUwdU5wdERPYlYtc0NwS3dVNVIwSnNCSlJHM0Z5YVg4QjF4M1lNRnBGdksyM2twT1hqcU1xT9IBwAJBVV95cUxQZGQyeERsMWtLSXhJVXljRzZrcDRZalBOY1M2M2lnU0d1RnZMdnJCSHVjWE5ENFJVMktGTjVNMkpicGZhMVpKVnN0bzFFbXkxN3lfTmgzY1BlZUMyQ0JzQ2x4SG02RUE0M1ZkM1BDNGRyOEhyQnZlTEZKQ1hPdHhmNUNZS1RfZGg5aFZ3ckVCMGhSVXFndlY1Q0UyZDNUUkx1eTYxVTJsci1wUHc4ZGxyUVpUemd6TG9RQWg0MDNmcW5qUk51NUpDTlRPVW1WMHJHM19tY1JtTU96cUNoX1IxcE5FdXRlWlVjM0RDdEpabUxJSHcwMk1UTTliUEYyTzRXZ09sckpRaHZZS01sZkNEbXYwTENUQ00zWnhORUhrSVk4VXVLUF9RWGpRaGNqT01zNWYzaU9LWEhRZndVc3EzYg?oc=5"
+  },
+  {
+   "title": "汽车之家广州车展超级直播周观察：见证中国品牌向上，服务用户购车决策",
+   "source": "新华网",
+   "section": "全球头条",
+   "ts": "2026-11-27 17:11",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxNMkI4emUxeUpUd3hYZlpXVjdRa05QY0MtaXpsQTZCenJ5VlNlR0VzaE5iTUU3MzlkMVNSRUVVRENRcTdETnhKQUxIMTNaTWtmeDl0TDFid19vWVRoTGdnS2p3ZFpkb2ZmY3hwLWJMb093YjMtZFBTeEI0dzVyaFkwTFdUclNHQQ?oc=5"
+  },
+  {
+   "title": "威瑞森拟议的潜在交易可能使Fidium的企业价值（包括债务）达到约60亿美元，该交易可能在未来几周内达成。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-11-28 01:32",
+   "date": "2026-11-28",
+   "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafazu7720823.d.html"
+  },
+  {
+   "title": "威瑞森电信就以60亿美元收购FIDIUM进行谈判，以扩大宽带覆盖范围。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-11-28 01:31",
+   "date": "2026-11-28",
+   "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafazu7720251.d.html"
+  },
+  {
+   "title": "俄罗斯外交部表示，俄罗斯保留对拉脱维亚采取报复措施的权利。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-11-28 01:28",
+   "date": "2026-11-28",
+   "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafazt0942913.d.html"
+  },
+  {
+   "title": "【10年期德债收益率周五涨约2个基点，本周整体跌幅收窄至不足4个基点】周五（11月27日）欧市尾盘，德国10年期国债收益率涨1.9个基点，报3.269%，本周累计下跌3.5个基点，交投于3.326%-3.207%区间，整体呈现出平坦的V形走",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-11-28 01:28",
+   "date": "2026-11-28",
+   "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafazt0942857.d.html"
+  },
+  {
+   "title": "惠誉：稳定的市场结构与成熟的连接收入支撑欧洲电信行业2027年中性展望。",
+   "source": "东方财富",
+   "section": "东财快讯",
+   "ts": "2026-11-28 01:28",
+   "date": "2026-11-28",
+   "url": "https://finance.sina.cn/7x24/2026-11-28/detail-inkafazu7719252.d.html"
+  },
+  {
+   "title": "【郭Sir財經 鍾極財智】2026-11-27 環球股市絕地反彈 内存芯片全線爆升 恆指22000已見底？︱鍾俊鏘︱廣東話",
+   "source": "郭思治（郭Sir）",
+   "section": "港股名家频道",
+   "ts": "2026-11-27 21:31",
+   "date": "2026-11-27",
+   "url": "https://www.youtube.com/watch?v=awSApL_8p7w"
+  },
+  {
+   "title": "盤點資料外洩風暴！單月15宗 345萬人次個人資料「裸跑」 做足4招可保一命！為何資料外洩事件不斷發生？",
+   "source": "Finance730",
+   "section": "港股名家频道",
+   "ts": "2026-11-27 20:30",
+   "date": "2026-11-27",
+   "url": "https://www.youtube.com/watch?v=ggqkTLfGAQs"
+  },
+  {
+   "title": "港股科技板块延续强势表现，港股通信息技术ETF易方达（159196）标的 ...",
+   "source": "财联社·电报",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 13:00",
+   "date": "2026-11-27",
+   "url": "https://www.cls.cn/detail/2546338"
+  },
+  {
+   "title": "天立国际控股(01773)将于2027年3月12日派发末期股息每股0.0307港元",
+   "source": "智通财经·推荐",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 09:13",
+   "date": "2026-11-27",
+   "url": "https://www.zhitongcaijing.com/content/detail/1530465.html"
+  },
+  {
+   "title": "创业集团控股(02221)发布中期业绩 股东应占溢利593万港元 同比扭亏为盈",
+   "source": "智通财经·推荐",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 08:57",
+   "date": "2026-11-27",
+   "url": "https://www.zhitongcaijing.com/content/detail/1530452.html"
+  },
+  {
+   "title": "港股上行 恒生科技指数领跑大市 - 中国新闻网",
+   "source": "Google 新闻·中文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 21:54",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiaEFVX3lxTFBUcXJfUXpsRTZyTm1YMGpCdE5CZE81UjktNElWNjQtRDg1alRoa1RLeUpUcDM3alo5cmxmZXpnRWtWa0tXbEVsaU1LNHlHWkpNNVF2UDdwUDFaVW52OVVPN3BZdnVJS3dR?oc=5"
+  },
+  {
+   "title": "魏牌高山右舵版车型在香港市场上市，今年第四季度还将登陆澳洲",
+   "source": "IT之家",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 23:04",
+   "date": "2026-11-27",
+   "url": "https://www.ithome.com/1/033/771.htm"
+  },
+  {
+   "title": "恒大汽车：香港联交所上市委员会决定取消公司的上市地位，最快 12 月 14 日摘牌",
+   "source": "IT之家",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 22:38",
+   "date": "2026-11-27",
+   "url": "https://www.ithome.com/1/033/767.htm"
+  },
+  {
+   "title": "美团 CEO 王兴谈外卖行业拐点：客单价同比明显回升，行业补贴趋于理性",
+   "source": "IT之家",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 22:24",
+   "date": "2026-11-27",
+   "url": "https://www.ithome.com/1/033/764.htm"
+  },
+  {
+   "title": "恒大汽车：联交所上市委员会已决定取消本公司的上市地位",
+   "source": "每日经济新闻",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 08:33",
+   "date": "2026-11-27",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6b09bf50320e484aaf14583b900ebb72&url=https%3a%2f%2fm.nbd.com.cn%2farticles%2f2026-11-27%2f4661693.html&c=8766694422692447309&mkt=en-us"
+  },
+  {
+   "title": "Hong Kong Is Selling The City It Used To Be",
+   "source": "Bloomberg·Markets",
+   "section": "港股新闻源头",
+   "ts": "2026-11-28 01:23",
+   "date": "2026-11-28",
+   "url": "https://www.bloomberg.com/news/videos/2026-11-27/hong-kong-is-selling-the-city-it-used-to-be-video"
+  },
+  {
+   "title": "Hong Kong Stocks Jump 2.1% on Friday as Tech Shares Lead Broad Rebound; Simcere Pharma Up 4% - marketscreener.com",
+   "source": "Google 新闻·英文港股聚合",
+   "section": "港股新闻源头",
+   "ts": "2026-11-27 16:58",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMi2gFBVV95cUxNbTZJWGNmVnVJQjRJdUJDLUhMTUJmWFMzeXB2YlIwSWUxVE1uaVFkbTFEN1NBb0puSGFSV0JZcTZrdUN5N05fcDNyUkp0WnNWV3g4NHFmdF9OU1RSNkstbHRQY1ptZ0h0ZXNDd1kxVmNEYWJKTFJOT3R5NmR1dkJBNjRnZm85SzVLUjVFUjRHVmppZzM1cko5QTJLRDYzbERTWDlSMXJWc3M2VTdXdDZHeV9JZk1OanEyNS1Tc3cxVG1mbVNRVTFGTzQxdzdoZlExak1iUExlaUxVUQ?oc=5"
+  },
+  {
+   "title": "新华鲜报丨迎来200期，新闻茶座助力更好读懂中国",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 07:37",
+   "date": "2026-11-27",
+   "url": "https://www.cs.com.cn/xwzx/01/2026/11/27/detail_2026112710055295.html"
+  },
+  {
+   "title": "浙港科技金融会客厅落地 浙商证券深化“浙港联动”",
+   "source": "中证网（中国证券报）",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 07:50",
+   "date": "2026-11-27",
+   "url": "https://www.cs.com.cn/qs/2026/11/27/detail_2026112710055300.html"
+  },
+  {
+   "title": "陕建股份13亿元中期票据完成发行 票面利率2.90%",
+   "source": "证券日报网",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 06:02",
+   "date": "2026-11-27",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6b09bf527872446aaea7959ba2ae3d0b&url=http%3a%2f%2fwww.zqrb.cn%2fgscy%2fgongsi%2f2026-11-27%2fA1795779701973.html&c=12065367048142229049&mkt=en-us"
+  },
+  {
+   "title": "美股集体走高，中概股大涨",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 10:02",
+   "date": "2026-11-27",
+   "url": "https://www.chnfund.com/article/AR193c6a70-b963-642f-1c35-3a252ff09086"
+  },
+  {
+   "title": "*ST数源被罚800万元，定期报告存在虚假记载",
+   "source": "中国基金报",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 08:42",
+   "date": "2026-11-27",
+   "url": "https://www.chnfund.com/article/ARddd2d53e-f7c0-58e6-cccc-3a252f1815d2"
+  },
+  {
+   "title": "天元股份：罗耀东质押196.2万股用于置换存量质押融资",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 05:34",
+   "date": "2026-11-27",
+   "url": "https://www.caiwennews.com/article/1723078.shtml"
+  },
+  {
+   "title": "2连板东易日盛：和林格尔智算中心目前尚在建设中 尚未产生收入",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 05:43",
+   "date": "2026-11-27",
+   "url": "https://www.caiwennews.com/article/1723112.shtml"
+  },
+  {
+   "title": "中科星图：杨宇辞去副总经理等职位",
+   "source": "财闻",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 05:31",
+   "date": "2026-11-27",
+   "url": "https://www.caiwennews.com/article/1723071.shtml"
+  },
+  {
+   "title": "我国自主聚变能源解决方案发布工程初步规划，拟分两个阶段实施",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 22:58",
+   "date": "2026-11-27",
+   "url": "https://www.ithome.com/1/033/770.htm"
+  },
+  {
+   "title": "华擎推出旗舰一体式液冷 Taichi AQUA 360 LCD：引入分体式设计",
+   "source": "IT之家",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 22:48",
+   "date": "2026-11-27",
+   "url": "https://www.ithome.com/1/033/769.htm"
+  },
+  {
+   "title": "傲拓科技股份有限公司首次公开发行股票并在科创板上市招股说明书提示性公告",
+   "source": "券商中国",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:16",
+   "date": "2026-11-27",
+   "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5BVktDY19fNEVfSFZvTVE2cVluNzNCZEFENl9DS1JEQTlXR1lrazNuRVlKN2dUUXBWQnc1TkF6Y25xcWN2NlFDWG5QZEtWRzZxQi1IU3JYYXJ3SDNMU0Jjd3ZIa2c2eXB5LVE?oc=5"
+  },
+  {
+   "title": "机构席位买入3274.39万 北交所上市公司宇特光电登龙虎榜",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:08",
+   "date": "2026-11-27",
+   "url": "https://m.nbd.com.cn/articles/2026-11-27/4661263.html"
+  },
+  {
+   "title": "新三板基础层公司杰事杰大宗交易折价30%，成交金额1288万元",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:17",
+   "date": "2026-11-27",
+   "url": "https://m.nbd.com.cn/articles/2026-11-27/4661301.html"
+  },
+  {
+   "title": "政策持续释放稳市信号，中证A500指数涨超5%，关注A500ETF易方达（159361 ...",
+   "source": "每日经济新闻",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 04:15",
+   "date": "2026-11-27",
+   "url": "https://m.nbd.com.cn/articles/2026-11-27/4661385.html"
+  },
+  {
+   "title": "防AI作弊 韩国学校抢购金属探测器",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 14:14",
+   "date": "2026-11-27",
+   "url": "https://m.21jingji.com/article/20261127/herald/5c14bd8be1807d29e56a4a1c1b016beb.html"
+  },
+  {
+   "title": "唯有源音乐娱乐汪久：聚焦海外艺人现场演出赛道，储备头部项目",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 13:04",
+   "date": "2026-11-27",
+   "url": "https://m.21jingji.com/article/20261127/herald/3918d3a2643c1a11bfa3ee46d42cb19a.html"
+  },
+  {
+   "title": "科创板首个市值退市股，下周摘牌，股价从48元跌到4毛",
+   "source": "21世纪经济报道",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 14:03",
+   "date": "2026-11-27",
+   "url": "https://m.21jingji.com/article/20261127/herald/588b11a310b26ebed7f45cf98fe2397a.html"
+  },
+  {
+   "title": "永和股份：11月23日至11月26日董事童建国增持股份合计142.14万股",
+   "source": "证券之星",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 06:00",
+   "date": "2026-11-27",
+   "url": "https://www.bing.com/news/apiclick.aspx?ref=FexRss&aid=&tid=6b09bf52bdc84644901762d05dbe4820&url=https%3a%2f%2fstock.stockstar.com%2fRB2026112700037531.shtml&c=5459294252890636374&mkt=en-us"
+  },
+  {
+   "title": "一文看完2026广州车展重磅新车：上市、预售、首秀全盘点",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 15:13",
+   "date": "2026-11-27",
+   "url": "https://auto.hexun.com/2026-11-27/225346427.html"
+  },
+  {
+   "title": "“大车”霸屏广州车展：SUV越做越大，MPV越卖越少，家庭出行该选 ...",
+   "source": "和讯网",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 12:23",
+   "date": "2026-11-27",
+   "url": "https://auto.hexun.com/2026-11-27/225345623.html"
+  },
+  {
+   "title": "伊拉克关闭库区管理的两个边境口岸",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:35",
+   "date": "2026-11-27",
+   "url": "https://www.eeo.com.cn/2026/1127/1105606.shtml"
+  },
+  {
+   "title": "生态环境部：应对超强厄尔尼诺紧盯空气“冒泡”",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:35",
+   "date": "2026-11-27",
+   "url": "https://www.eeo.com.cn/2026/1127/1105609.shtml"
+  },
+  {
+   "title": "AI交易回暖，美股纳指高开1.5%，存储、光通信、新云服务商等走强",
+   "source": "经济观察网",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:35",
+   "date": "2026-11-27",
+   "url": "https://www.eeo.com.cn/2026/1128/1105813.shtml"
+  },
+  {
+   "title": "今夜A股重大调整，科技股重磅入局",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 08:46",
+   "date": "2026-11-27",
+   "url": "https://finance.ifeng.com/c/8yP3q4DAG3s"
+  },
+  {
+   "title": "A股年内涨幅第一，谁在炒作九阳股份？",
+   "source": "凤凰网财经",
+   "section": "内地财经媒体",
+   "ts": "2026-11-27 17:06",
+   "date": "2026-11-27",
+   "url": "https://finance.ifeng.com/c/8yOelB6uO80"
   }
  ],
- "updated_cst": "2026-11-27 21:14:25",
+ "updated_cst": "2026-11-28 01:37:59",
  "industry_rotation_diag": {
   "ran_at": "2026-11-10 16:31:05",
   "cutoff": "2026-11-10",
